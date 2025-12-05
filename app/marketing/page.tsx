@@ -1,0 +1,744 @@
+"use client"
+
+import Link from "next/link"
+import {
+  BarChart3,
+  Brain,
+  Calculator,
+  TrendingUp,
+  Check,
+  ArrowRight,
+  Play,
+  FileText,
+  AlertTriangle,
+  RotateCcw,
+  Menu,
+  X,
+  Shield,
+  Award,
+  Minus,
+} from "lucide-react"
+import { useState } from "react"
+import { ConcentradeLogo } from "@/components/concentrade-logo"
+import "./marketing.css"
+
+export default function MarketingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+    }
+    setMobileMenuOpen(false)
+  }
+
+  return (
+    <div className="min-h-screen">
+      {/* Navigation */}
+      <nav className="marketing-nav">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <ConcentradeLogo size={32} variant="full" />
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <button onClick={() => scrollToSection("features")} className="nav-link">
+                Features
+              </button>
+              <button onClick={() => scrollToSection("pricing")} className="nav-link">
+                Pricing
+              </button>
+              <button onClick={() => scrollToSection("testimonials")} className="nav-link">
+                Reviews
+              </button>
+              <button onClick={() => scrollToSection("demo")} className="nav-link">
+                Demo
+              </button>
+              <Link href="/login" className="nav-link">
+                Login
+              </Link>
+              <Link href="/signup" className="btn-primary">
+                Start Free Trial
+              </Link>
+            </div>
+
+            {/* Mobile menu button */}
+            <button className="md:hidden text-text-primary" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 space-y-2">
+              <button onClick={() => scrollToSection("features")} className="block w-full text-left nav-link">
+                Features
+              </button>
+              <button onClick={() => scrollToSection("pricing")} className="block w-full text-left nav-link">
+                Pricing
+              </button>
+              <button onClick={() => scrollToSection("testimonials")} className="block w-full text-left nav-link">
+                Reviews
+              </button>
+              <button onClick={() => scrollToSection("demo")} className="block w-full text-left nav-link">
+                Demo
+              </button>
+              <Link href="/login" className="block w-full text-left nav-link">
+                Login
+              </Link>
+              <Link href="/signup" className="btn-primary mt-4">
+                Start Free Trial
+              </Link>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Hero Section with Candlestick Background */}
+      <section className="hero-section py-20 px-4 text-center pt-32">
+        <div className="hero-content container mx-auto max-w-6xl">
+          <div className="mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-sm font-medium text-accent">
+              <ConcentradeLogo size={16} variant="icon" />
+              Join 15,000+ profitable traders
+            </span>
+          </div>
+
+          <h1 className="hero-title">
+            Turn Your Trading <span className="gradient-text">Chaos</span>
+            <br />
+            Into Consistent <span className="gradient-text">Profits</span>
+          </h1>
+
+          <p className="hero-subtitle max-w-3xl mx-auto">
+            The only trading journal that combines professional analytics with emotional intelligence to eliminate
+            costly mistakes and build winning strategies.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+            <a href="/signup" className="btn-primary">
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Start Free 14-Day Trial
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </a>
+            <Link href="/demo" className="btn-secondary">
+              <Play className="h-5 w-5 mr-2" />
+              Watch Live Demo
+            </Link>
+          </div>
+
+          <div className="stats-container mt-16">
+            <div className="stat-item">
+              <span className="stat-number">15,000+</span>
+              <span className="stat-label">Active Traders</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">+127%</span>
+              <span className="stat-label">Avg Profit Improvement</span>
+            </div>
+            <div className="stat-item flex items-center justify-center gap-2">
+              <Shield className="h-6 w-6 text-accent" />
+              <div>
+                <span className="stat-number text-lg">SSL</span>
+                <span className="stat-label">Secured</span>
+              </div>
+            </div>
+            <div className="stat-item flex items-center justify-center gap-2">
+              <Award className="h-6 w-6 text-accent" />
+              <div>
+                <span className="stat-number text-lg">SOC 2</span>
+                <span className="stat-label">Compliant</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem Section - "Tired of Losing Money" */}
+      <section className="py-20 px-4 bg-secondary/10">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Are You Tired of <span className="text-red-gradient">Losing Money</span> to the Same Mistakes?
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              95% of retail traders fail because they can't identify patterns in their losses. Sound familiar?
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="problem-card animate-fade-in-up">
+              <div className="problem-icon">
+                <FileText className="h-8 w-8 text-error" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Scattered Records</h3>
+              <p className="text-gray-300 mb-6">
+                Trading notes across multiple spreadsheets, apps, and sticky notes make it impossible to spot profitable
+                patterns.
+              </p>
+              <div className="text-error font-bold text-lg">Average Loss: -$2,847/month</div>
+            </div>
+
+            <div className="problem-card animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+              <div className="problem-icon">
+                <AlertTriangle className="h-8 w-8 text-error" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Emotional Decisions</h3>
+              <p className="text-gray-300 mb-6">
+                Fear and greed drive your trades instead of data, leading to revenge trading and blown accounts.
+              </p>
+              <div className="text-error font-bold text-lg">Emotional Cost: -$4,231/month</div>
+            </div>
+
+            <div className="problem-card animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+              <div className="problem-icon">
+                <RotateCcw className="h-8 w-8 text-error" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Repeated Mistakes</h3>
+              <p className="text-gray-300 mb-6">
+                Without proper analysis, you keep making the same costly errors that drain your account.
+              </p>
+              <div className="text-error font-bold text-lg">Repeat Losses: -$3,156/month</div>
+            </div>
+          </div>
+
+          <div className="text-center mb-12">
+            <h3 className="text-2xl font-bold mb-8">Which Challenge Hits Closest to Home?</h3>
+            <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+              <a href="/signup" className="challenge-button">
+                <div className="font-semibold mb-2">Poor Record-Keeping</div>
+                <div className="text-sm text-gray-400">Can't track what's working</div>
+              </a>
+              <a href="/signup" className="challenge-button">
+                <div className="font-semibold mb-2">Emotional Trading</div>
+                <div className="text-sm text-gray-400">FOMO and revenge trades</div>
+              </a>
+              <a href="/signup" className="challenge-button">
+                <div className="font-semibold mb-2">Tax Complications</div>
+                <div className="text-sm text-gray-400">Nightmare at tax time</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">
+              Professional-grade tools that transform scattered data into actionable insights.
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="feature-card animate-fade-in-up">
+              <div className="feature-card-icon">
+                <BarChart3 className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Advanced Analytics</h3>
+              <p className="text-gray-300 mb-6">
+                Discover hidden patterns in your trading with AI-powered analysis that identifies your most profitable
+                setups and costly mistakes.
+              </p>
+              <div className="bg-secondary/30 p-4 rounded-lg mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-medium">Win Rate Trend</span>
+                  <span className="text-accent font-semibold">+12% this month</span>
+                </div>
+                <div className="flex gap-1">
+                  {[40, 60, 45, 70, 85, 75, 90].map((height, i) => (
+                    <div key={i} className="bg-accent/70 rounded-sm flex-1" style={{ height: `${height / 2}px` }} />
+                  ))}
+                </div>
+              </div>
+              <Link href="#" className="text-accent hover:underline font-medium">
+                Explore Analytics →
+              </Link>
+            </div>
+
+            <div className="feature-card animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+              <div className="feature-card-icon">
+                <Brain className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Emotional Intelligence</h3>
+              <p className="text-gray-300 mb-6">
+                Track your emotional state during trades and discover how fear, greed, and confidence impact your
+                performance.
+              </p>
+              <div className="bg-secondary/30 p-4 rounded-lg mb-4">
+                <div className="mb-3">
+                  <span className="text-sm font-medium">Today's Emotional State</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Confident</span>
+                    <div className="w-24 h-2 bg-secondary rounded-full">
+                      <div className="w-4/5 h-full bg-accent rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Fearful</span>
+                    <div className="w-24 h-2 bg-secondary rounded-full">
+                      <div className="w-1/4 h-full bg-warning rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Link href="#" className="text-accent hover:underline font-medium">
+                Learn More →
+              </Link>
+            </div>
+
+            <div className="feature-card animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+              <div className="feature-card-icon">
+                <Calculator className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Automated Tax Reporting</h3>
+              <p className="text-gray-300 mb-6">
+                Generate IRS-compliant reports instantly. No more spreadsheet nightmares at tax time.
+              </p>
+              <div className="bg-secondary/30 p-4 rounded-lg mb-4">
+                <div className="mb-3">
+                  <span className="text-sm font-medium">2025 Tax Summary</span>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Short-term gains:</span>
+                    <span className="text-accent">$12,450</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Long-term gains:</span>
+                    <span className="text-accent">$8,230</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Wash sales:</span>
+                    <span className="text-error">-$1,200</span>
+                  </div>
+                </div>
+              </div>
+              <Link href="#" className="text-accent hover:underline font-medium">
+                View Tax Features →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Expanded Testimonials Section */}
+      <section id="testimonials" className="py-20 px-4 bg-secondary/20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Real Traders, Real Results</h2>
+            <p className="text-xl text-gray-300">See how Concentrade transformed their trading</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            <div className="testimonial-card">
+              <div className="testimonial-quote">
+                "Concentrade helped me identify my emotional trading patterns. I've reduced my losses by 60% and my win
+                rate improved from 45% to 72%. Best $29/month I've ever spent."
+              </div>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">MC</div>
+                <div>
+                  <div className="font-semibold">Mike Chen</div>
+                  <div className="text-sm text-gray-400">Day Trader, 3 years</div>
+                  <div className="text-sm text-accent">+$18,500 this quarter</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="testimonial-card">
+              <div className="testimonial-quote">
+                "The analytics are incredible. I discovered I was overtrading on Fridays and losing money consistently.
+                Fixed that one issue and gained $15K this quarter."
+              </div>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">SR</div>
+                <div>
+                  <div className="font-semibold">Sarah Rodriguez</div>
+                  <div className="text-sm text-gray-400">Swing Trader, 5 years</div>
+                  <div className="text-sm text-accent">+$15,000 this quarter</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="testimonial-card">
+              <div className="testimonial-quote">
+                "Tax season used to be a nightmare. Now I generate my reports in seconds. The automated wash sale
+                detection saved me thousands in penalties."
+              </div>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">DJ</div>
+                <div>
+                  <div className="font-semibold">David Johnson</div>
+                  <div className="text-sm text-gray-400">Options Trader, 7 years</div>
+                  <div className="text-sm text-accent">Saved $3,200 in taxes</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional testimonials row */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="testimonial-card">
+              <div className="testimonial-quote">
+                "I was bleeding money for months until I started using Concentrade. The emotional tracking showed me I
+                was revenge trading after losses. Now I'm profitable 3 months straight."
+              </div>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">AL</div>
+                <div>
+                  <div className="font-semibold">Alex Liu</div>
+                  <div className="text-sm text-gray-400">Forex Trader, 2 years</div>
+                  <div className="text-sm text-accent">+$22,800 in 3 months</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="testimonial-card">
+              <div className="testimonial-quote">
+                "The ROI tracking is game-changing. I can see exactly which strategies work and which don't. My Sharpe
+                ratio improved from 0.8 to 2.1 in just 4 months."
+              </div>
+              <div className="testimonial-author">
+                <div className="testimonial-avatar">JM</div>
+                <div>
+                  <div className="font-semibold">Jessica Martinez</div>
+                  <div className="text-sm text-gray-400">Crypto Trader, 4 years</div>
+                  <div className="text-sm text-accent">163% Sharpe improvement</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Section */}
+      <section id="demo" className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">See Concentrade in Action</h2>
+            <p className="text-xl text-gray-300">Experience the full platform before you sign up</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-2xl p-12 border border-accent/20 shadow-2xl text-center">
+            <div className="max-w-2xl mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Play className="h-10 w-10 text-white" />
+              </div>
+              <h3 className="text-3xl font-bold mb-4">Try the Full Platform</h3>
+              <p className="text-lg text-gray-300 mb-8">
+                Explore a complete replica of Concentrade with real features and sample data. No signup required.
+              </p>
+              <Link
+                href="/demo"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Play className="h-6 w-6" />
+                Launch Interactive Demo
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+              <p className="text-sm text-gray-400 mt-4">Full access • No credit card • No signup required</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20 px-4 bg-secondary/20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Choose Your Plan</h2>
+            <p className="text-xl text-gray-300">Start free, upgrade when you're ready</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="pricing-card">
+              <h3 className="text-xl font-semibold mb-2">Starter</h3>
+              <div className="mb-6">
+                <span className="text-3xl font-bold">$0</span>
+                <span className="text-gray-400">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Up to 50 trades/month</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Basic analytics</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Trade journal</span>
+                </li>
+              </ul>
+              <Link href="/signup" className="btn-secondary w-full">
+                Get Started Free
+              </Link>
+            </div>
+
+            <div className="pricing-card featured">
+              <div className="pricing-badge">Most Popular</div>
+              <h3 className="text-xl font-semibold mb-2">Professional</h3>
+              <div className="mb-6">
+                <span className="text-3xl font-bold">$29</span>
+                <span className="text-gray-400">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Unlimited trades</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Advanced analytics</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Emotional intelligence</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Tax reporting</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Priority support</span>
+                </li>
+              </ul>
+              <a href="/signup" className="btn-primary w-full">
+                Start Free Trial
+              </a>
+            </div>
+
+            <div className="pricing-card">
+              <h3 className="text-xl font-semibold mb-2">Enterprise</h3>
+              <div className="mb-6">
+                <span className="text-3xl font-bold">$99</span>
+                <span className="text-gray-400">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Everything in Professional</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Team collaboration</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Custom integrations</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-accent" />
+                  <span>Dedicated support</span>
+                </li>
+              </ul>
+              <a href="/signup" className="btn-secondary w-full">
+                Contact Sales
+              </a>
+            </div>
+          </div>
+
+          {/* Comparison Table */}
+          <div className="mt-16">
+            <h3 className="text-2xl font-bold text-center mb-8">Concentrade vs. Spreadsheets</h3>
+            <div className="bg-secondary/30 rounded-2xl overflow-hidden border border-accent/20 shadow-xl">
+              <div className="comparison-table-grid">
+                {/* Header Row */}
+                <div className="comparison-table-header rounded-tl-2xl">Feature</div>
+                <div className="comparison-table-header">Spreadsheets</div>
+                <div className="comparison-table-header rounded-tr-2xl text-accent">Concentrade</div>
+
+                {/* Row 1: Setup Time */}
+                <div className="comparison-table-row group">
+                  <div className="comparison-table-cell">Setup Time</div>
+                  <div className="comparison-table-cell text-error">
+                    <Minus className="h-5 w-5 mr-2" />
+                    Hours
+                  </div>
+                  <div className="comparison-table-cell concentrade-advantage text-accent">
+                    <Check className="h-5 w-5 mr-2" />2 minutes
+                  </div>
+                </div>
+
+                {/* Row 2: Pattern Recognition */}
+                <div className="comparison-table-row group">
+                  <div className="comparison-table-cell">Pattern Recognition</div>
+                  <div className="comparison-table-cell text-error">
+                    <Minus className="h-5 w-5 mr-2" />
+                    Manual
+                  </div>
+                  <div className="comparison-table-cell concentrade-advantage text-accent">
+                    <Check className="h-5 w-5 mr-2" />
+                    AI-Powered
+                  </div>
+                </div>
+
+                {/* Row 3: Emotional Tracking */}
+                <div className="comparison-table-row group">
+                  <div className="comparison-table-cell">Emotional Tracking</div>
+                  <div className="comparison-table-cell text-error">
+                    <X className="h-5 w-5 mr-2" />
+                    None
+                  </div>
+                  <div className="comparison-table-cell concentrade-advantage text-accent">
+                    <Check className="h-5 w-5 mr-2" />
+                    Advanced
+                  </div>
+                </div>
+
+                {/* Row 4: Tax Reports */}
+                <div className="comparison-table-row group">
+                  <div className="comparison-table-cell">Tax Reports</div>
+                  <div className="comparison-table-cell text-error">
+                    <Minus className="h-5 w-5 mr-2" />
+                    Manual
+                  </div>
+                  <div className="comparison-table-cell concentrade-advantage text-accent">
+                    <Check className="h-5 w-5 mr-2" />
+                    Automated
+                  </div>
+                </div>
+
+                {/* Row 5: Mobile Access */}
+                <div className="comparison-table-row group">
+                  <div className="comparison-table-cell">Mobile Access</div>
+                  <div className="comparison-table-cell text-error">
+                    <Minus className="h-5 w-5 mr-2" />
+                    Limited
+                  </div>
+                  <div className="comparison-table-cell concentrade-advantage text-accent">
+                    <Check className="h-5 w-5 mr-2" />
+                    Full App
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-4xl font-bold mb-4">Ready to Transform Your Trading?</h2>
+          <p className="text-xl text-gray-300 mb-8">
+            Join thousands of traders who've eliminated costly mistakes and built consistent profits.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/signup" className="btn-primary text-lg px-8 py-4">
+              <TrendingUp className="h-6 w-6 mr-2" />
+              Start Your Free Trial
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </a>
+          </div>
+          <p className="text-sm text-gray-400 mt-4">No credit card required • 14-day free trial • Cancel anytime</p>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-primary/50 py-12 px-4 border-t border-accent/20">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <ConcentradeLogo size={24} variant="icon" />
+                <span className="text-lg font-bold">Concentrade</span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Transform your trading chaos into consistent profits with professional analytics and emotional
+                intelligence.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link href="#features" className="hover:text-accent">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#pricing" className="hover:text-accent">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#demo" className="hover:text-accent">
+                    Demo
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/signup" className="hover:text-accent">
+                    Free Trial
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link href="/privacy" className="hover:text-accent">
+                    Privacy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="hover:text-accent">
+                    Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent">
+                    Support
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent">
+                    Contact
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  <Link href="#" className="hover:text-accent">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent">
+                    Guides
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent">
+                    API Docs
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-accent">
+                    Status
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-accent/20 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; 2025 Concentrade. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}

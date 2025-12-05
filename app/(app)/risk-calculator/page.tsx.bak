@@ -1,0 +1,860 @@
+"use client"
+
+import { useState, useMemo, useCallback } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Slider } from "@/components/ui/slider"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import {
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  BarChart3,
+  PieChart,
+  Zap,
+  Brain,
+  Target,
+  AlertTriangle,
+  DollarSign,
+  Percent,
+  Gauge,
+  LineChart,
+  Sparkles,
+  Cpu,
+  Orbit,
+} from "lucide-react"
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  LineChart as RechartsLineChart,
+  Line,
+  Area,
+  AreaChart,
+  RadialBarChart,
+  RadialBar,
+  ComposedChart,
+} from "recharts"
+
+interface RiskInputs {
+  accountBalance: number
+  riskPercentage: number
+  entryPrice: number
+  stopLoss: number
+  takeProfit: number
+  volatility: number
+  timeHorizon: number
+}
+
+interface MonteCarloResult {
+  finalPnL: number
+  maxDrawdown: number
+  sharpeRatio: number
+  winRate: number
+  maxConsecutiveLosses: number
+  valueAtRisk95: number
+  valueAtRisk99: number
+  expectedReturn: number
+}
+
+interface SimulationData {
+  pnlDistribution: { pnl: number; frequency: number; cumulative: number }[]
+  drawdownDistribution: { drawdown: number; frequency: number }[]
+  timeSeriesData: { day: number; pnl: number; cumulative: number; drawdown: number }[]
+  riskMetrics: {
+    var95: number
+    var99: number
+    expectedShortfall: number
+    sharpeRatio: number
+    sortinoRatio: number
+    maxDrawdown: number
+    winRate: number
+    profitFactor: number
+    calmarRatio: number
+  }
+  sensitivityData: {
+    riskPercentage: { value: number; pnl: number; sharpe: number }[]
+    volatility: { value: number; pnl: number; sharpe: number }[]
+    stopLoss: { value: number; pnl: number; sharpe: number }[]
+  }
+}
+
+const COLORS = {
+  primary: "hsl(var(--primary))",
+  secondary: "hsl(var(--secondary))",
+  accent: "hsl(var(--accent))",
+  destructive: "hsl(var(--destructive))",
+  success: "#10b981",
+  warning: "#f59e0b",
+  info: "#3b82f6",
+  purple: "#8b5cf6",
+  cyan: "#06b6d4",
+  pink: "#ec4899",
+}
+
+export default function AdvancedRiskCalculator() {
+  const [inputs, setInputs] = useState<RiskInputs>({
+    accountBalance: 10000,
+    riskPercentage: 2,
+    entryPrice: 100,
+    stopLoss: 95,
+    takeProfit: 110,
+    volatility: 20,
+    timeHorizon: 30,
+  })
+
+  const positionSize = useMemo(() => {
+    const riskAmount = inputs.accountBalance * (inputs.riskPercentage / 100)
+    const stopLossDistance = Math.abs(inputs.entryPrice - inputs.stopLoss)
+    return stopLossDistance > 0 ? Math.floor(riskAmount / stopLossDistance) : 0
+  }, [inputs.accountBalance, inputs.riskPercentage, inputs.entryPrice, inputs.stopLoss])
+
+  const [isSimulating, setIsSimulating] = useState(false)
+  const [simulationData, setSimulationData] = useState<SimulationData | null>(null)
+  const [activeTab, setActiveTab] = useState("overview")
+  const [sensitivityVariable, setSensitivityVariable] = useState<keyof RiskInputs>("riskPercentage")
+
+  // Calculate position size based on risk
+  const calculatePositionSize = useCallback((testInputs: RiskInputs) => {
+    const riskAmount = testInputs.accountBalance * (testInputs.riskPercentage / 100)
+    const stopLossDistance = Math.abs(testInputs.entryPrice - testInputs.stopLoss)
+    return stopLossDistance > 0 ? Math.floor(riskAmount / stopLossDistance) : 0
+  }, [])
+
+  // Monte Carlo Simulation
+  const runMonteCarloSimulation = useCallback(async (inputs: RiskInputs, iterations = 10000) => {
+    setIsSimulating(true)
+
+    // Simulate with a small delay to show loading state
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    const results: MonteCarloResult[] = []
+    const pnlHistory: number[] = []
+    const drawdownHistory: number[] = []
+    const timeSeriesData: { day: number; pnl: number; cumulative: number; drawdown: number }[] = []
+
+    const riskAmount = inputs.accountBalance * (inputs.riskPercentage / 100)
+    const stopLossDistance = Math.abs(inputs.entryPrice - inputs.stopLoss)
+    const takeProfitDistance = Math.abs(inputs.takeProfit - inputs.entryPrice)
+    const winProbability = 0.4 + (takeProfitDistance / stopLossDistance) * 0.1 // Simplified win probability
+
+    for (let i = 0; i < iterations; i++) {
+      let cumulativePnL = 0
+      let maxDrawdown = 0
+      let currentDrawdown = 0
+      let wins = 0
+      let trades = 0
+      let consecutiveLosses = 0
+      let maxConsecutiveLosses = 0
+
+      // Simulate trading over time horizon
+      for (let day = 0; day < inputs.timeHorizon; day++) {
+        // Random number of trades per day (0-3)
+        const tradesPerDay = Math.floor(Math.random() * 4)
+
+        for (let trade = 0; trade < tradesPerDay; trade++) {
+          trades++
+          const random = Math.random()
+          let tradePnL = 0
+
+          if (random < winProbability) {
+            // Win
+            tradePnL = takeProfitDistance * positionSize
+            wins++
+            consecutiveLosses = 0
+          } else {
+            // Loss
+            tradePnL = -stopLossDistance * positionSize
+            consecutiveLosses++
+            maxConsecutiveLosses = Math.max(maxConsecutiveLosses, consecutiveLosses)
+          }
+
+          // Add volatility factor
+          const volatilityFactor = 1 + (Math.random() - 0.5) * (inputs.volatility / 100)
+          tradePnL *= volatilityFactor
+
+          cumulativePnL += tradePnL
+          currentDrawdown = Math.min(0, cumulativePnL)
+          maxDrawdown = Math.min(maxDrawdown, currentDrawdown)
+        }
+
+        // Store daily data for first simulation only
+        if (i === 0) {
+          timeSeriesData.push({
+            day: day + 1,
+            pnl: cumulativePnL - (timeSeriesData[day - 1]?.cumulative || 0),
+            cumulative: cumulativePnL,
+            drawdown: currentDrawdown,
+          })
+        }
+      }
+
+      const winRate = trades > 0 ? wins / trades : 0
+      const sharpeRatio = trades > 0 ? cumulativePnL / trades / (riskAmount * 0.1) : 0
+
+      results.push({
+        finalPnL: cumulativePnL,
+        maxDrawdown,
+        sharpeRatio,
+        winRate,
+        maxConsecutiveLosses,
+        valueAtRisk95: 0, // Will calculate below
+        valueAtRisk99: 0, // Will calculate below
+        expectedReturn: cumulativePnL,
+      })
+
+      pnlHistory.push(cumulativePnL)
+      drawdownHistory.push(maxDrawdown)
+    }
+
+    // Calculate VaR and other metrics
+    pnlHistory.sort((a, b) => a - b)
+    drawdownHistory.sort((a, b) => a - b)
+
+    const var95Index = Math.floor(iterations * 0.05)
+    const var99Index = Math.floor(iterations * 0.01)
+    const var95 = pnlHistory[var95Index]
+    const var99 = pnlHistory[var99Index]
+
+    const expectedReturn = pnlHistory.reduce((sum, pnl) => sum + pnl, 0) / iterations
+    const variance = pnlHistory.reduce((sum, pnl) => sum + Math.pow(pnl - expectedReturn, 2), 0) / iterations
+    const standardDeviation = Math.sqrt(variance)
+    const sharpeRatio = standardDeviation > 0 ? expectedReturn / standardDeviation : 0
+
+    // Calculate downside deviation for Sortino ratio
+    const downsideReturns = pnlHistory.filter((pnl) => pnl < 0)
+    const downsideVariance =
+      downsideReturns.length > 0
+        ? downsideReturns.reduce((sum, pnl) => sum + Math.pow(pnl, 2), 0) / downsideReturns.length
+        : 0
+    const downsideDeviation = Math.sqrt(downsideVariance)
+    const sortinoRatio = downsideDeviation > 0 ? expectedReturn / downsideDeviation : 0
+
+    const maxDrawdown = Math.min(...drawdownHistory)
+    const calmarRatio = maxDrawdown < 0 ? expectedReturn / Math.abs(maxDrawdown) : 0
+
+    const winRate = results.reduce((sum, r) => sum + r.winRate, 0) / results.length
+    const avgWin =
+      pnlHistory.filter((pnl) => pnl > 0).reduce((sum, pnl) => sum + pnl, 0) /
+        pnlHistory.filter((pnl) => pnl > 0).length || 0
+    const avgLoss = Math.abs(
+      pnlHistory.filter((pnl) => pnl < 0).reduce((sum, pnl) => sum + pnl, 0) /
+        pnlHistory.filter((pnl) => pnl < 0).length || 0,
+    )
+    const profitFactor = avgLoss > 0 ? avgWin / avgLoss : 0
+
+    // Create distribution data
+    const pnlDistribution = createDistribution(pnlHistory, 50)
+    const drawdownDistribution = createDistribution(drawdownHistory, 30)
+
+    // Sensitivity analysis
+    const sensitivityData = {
+      riskPercentage: generateSensitivityData(inputs, "riskPercentage", [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]),
+      volatility: generateSensitivityData(inputs, "volatility", [10, 15, 20, 25, 30, 35, 40]),
+      stopLoss: generateSensitivityData(inputs, "stopLoss", [90, 92, 94, 95, 96, 97, 98]),
+    }
+
+    const simulationResult: SimulationData = {
+      pnlDistribution,
+      drawdownDistribution,
+      timeSeriesData,
+      riskMetrics: {
+        var95,
+        var99,
+        expectedShortfall: pnlHistory.slice(0, var95Index).reduce((sum, pnl) => sum + pnl, 0) / var95Index,
+        sharpeRatio,
+        sortinoRatio,
+        maxDrawdown,
+        winRate,
+        profitFactor,
+        calmarRatio,
+      },
+      sensitivityData,
+    }
+
+    setSimulationData(simulationResult)
+    setIsSimulating(false)
+  }, [])
+
+  const createDistribution = (data: number[], bins: number) => {
+    const min = Math.min(...data)
+    const max = Math.max(...data)
+    const binSize = (max - min) / bins
+    const distribution = Array(bins)
+      .fill(0)
+      .map((_, i) => ({
+        pnl: min + i * binSize + binSize / 2,
+        frequency: 0,
+        cumulative: 0,
+      }))
+
+    data.forEach((value) => {
+      const binIndex = Math.min(Math.floor((value - min) / binSize), bins - 1)
+      distribution[binIndex].frequency++
+    })
+
+    let cumulative = 0
+    distribution.forEach((bin) => {
+      cumulative += bin.frequency
+      bin.cumulative = (cumulative / data.length) * 100
+    })
+
+    return distribution
+  }
+
+  const generateSensitivityData = (baseInputs: RiskInputs, variable: keyof RiskInputs, values: number[]) => {
+    return values.map((value) => {
+      const testInputs = { ...baseInputs, [variable]: value }
+      const positionSize = calculatePositionSize(testInputs)
+      const riskAmount = testInputs.accountBalance * (testInputs.riskPercentage / 100)
+      const stopLossDistance = Math.abs(testInputs.entryPrice - testInputs.stopLoss)
+      const takeProfitDistance = Math.abs(testInputs.takeProfit - testInputs.entryPrice)
+
+      // Simplified expected return calculation
+      const winProb = 0.4 + (takeProfitDistance / stopLossDistance) * 0.1
+      const expectedPnL = winProb * takeProfitDistance * positionSize - (1 - winProb) * stopLossDistance * positionSize
+      const sharpe = expectedPnL / (riskAmount * 0.2) // Simplified Sharpe
+
+      return {
+        value,
+        pnl: expectedPnL,
+        sharpe,
+      }
+    })
+  }
+
+  const handleInputChange = useCallback((field: keyof RiskInputs, value: number) => {
+    setInputs((prev) => ({ ...prev, [field]: value }))
+  }, [])
+
+  const handleRunSimulation = useCallback(() => {
+    runMonteCarloSimulation(inputs)
+  }, [inputs, runMonteCarloSimulation])
+
+  const riskLevel = useMemo(() => {
+    if (inputs.riskPercentage <= 1) return { level: "Conservative", color: COLORS.success, score: 25 }
+    if (inputs.riskPercentage <= 2) return { level: "Moderate", color: COLORS.warning, score: 50 }
+    if (inputs.riskPercentage <= 3) return { level: "Aggressive", color: "#f97316", score: 75 }
+    return { level: "Extreme", color: COLORS.destructive, score: 100 }
+  }, [inputs.riskPercentage])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-4 md:p-6">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl animate-bounce"></div>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <div className="relative">
+              <Cpu className="h-12 w-12 text-cyan-400 animate-spin-slow" />
+              <Sparkles className="absolute -top-1 -right-1 h-6 w-6 text-purple-400 animate-pulse" />
+            </div>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+            Quantum Risk Engine
+          </h1>
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+            Advanced Monte Carlo simulations and AI-powered risk assessment for next-generation trading
+          </p>
+        </div>
+
+        {/* Input Panel */}
+        <Card className="mb-8 bg-slate-800/50 border-slate-700/50 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center text-cyan-400">
+              <Orbit className="mr-2 h-6 w-6 animate-spin-slow" />
+              Risk Parameters Matrix
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="space-y-2">
+                <Label className="text-slate-300 flex items-center">
+                  <DollarSign className="mr-1 h-4 w-4" />
+                  Account Balance
+                </Label>
+                <Input
+                  type="number"
+                  value={inputs.accountBalance}
+                  onChange={(e) => handleInputChange("accountBalance", Number(e.target.value))}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300 flex items-center">
+                  <Percent className="mr-1 h-4 w-4" />
+                  Risk Per Trade (%)
+                </Label>
+                <div className="space-y-2">
+                  <Slider
+                    value={[inputs.riskPercentage]}
+                    onValueChange={(value) => handleInputChange("riskPercentage", value[0])}
+                    max={5}
+                    min={0.1}
+                    step={0.1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-slate-400">
+                    <span>0.1%</span>
+                    <span className="text-cyan-400 font-semibold">{inputs.riskPercentage}%</span>
+                    <span>5%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300">Entry Price</Label>
+                <Input
+                  type="number"
+                  value={inputs.entryPrice}
+                  onChange={(e) => handleInputChange("entryPrice", Number(e.target.value))}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300">Stop Loss</Label>
+                <Input
+                  type="number"
+                  value={inputs.stopLoss}
+                  onChange={(e) => handleInputChange("stopLoss", Number(e.target.value))}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300">Take Profit</Label>
+                <Input
+                  type="number"
+                  value={inputs.takeProfit}
+                  onChange={(e) => handleInputChange("takeProfit", Number(e.target.value))}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300 flex items-center">
+                  <Activity className="mr-1 h-4 w-4" />
+                  Volatility (%)
+                </Label>
+                <div className="space-y-2">
+                  <Slider
+                    value={[inputs.volatility]}
+                    onValueChange={(value) => handleInputChange("volatility", value[0])}
+                    max={50}
+                    min={5}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="text-center text-xs text-cyan-400 font-semibold">{inputs.volatility}%</div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300">Time Horizon (days)</Label>
+                <Input
+                  type="number"
+                  value={inputs.timeHorizon}
+                  onChange={(e) => handleInputChange("timeHorizon", Number(e.target.value))}
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300">Position Size</Label>
+                <div className="text-2xl font-bold text-cyan-400">{positionSize.toLocaleString()}</div>
+                <div className="text-xs text-slate-400">shares/units</div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col sm:flex-row gap-4 items-center">
+              <Button
+                onClick={handleRunSimulation}
+                disabled={isSimulating}
+                className="bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white px-8 py-3 text-lg font-semibold"
+              >
+                {isSimulating ? (
+                  <>
+                    <Cpu className="mr-2 h-5 w-5 animate-spin" />
+                    Running Quantum Simulation...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="mr-2 h-5 w-5" />
+                    Execute Monte Carlo Analysis
+                  </>
+                )}
+              </Button>
+
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Gauge className="h-5 w-5 text-slate-400" />
+                  <span className="text-slate-300">Risk Level:</span>
+                  <Badge style={{ backgroundColor: riskLevel.color }} className="text-white font-semibold">
+                    {riskLevel.level}
+                  </Badge>
+                </div>
+                <Progress value={riskLevel.score} className="w-24" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Results Dashboard */}
+        {simulationData && (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-slate-700">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-cyan-500/20">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="distributions" className="data-[state=active]:bg-purple-500/20">
+                <PieChart className="mr-2 h-4 w-4" />
+                Distributions
+              </TabsTrigger>
+              <TabsTrigger value="sensitivity" className="data-[state=active]:bg-pink-500/20">
+                <Brain className="mr-2 h-4 w-4" />
+                Sensitivity
+              </TabsTrigger>
+              <TabsTrigger value="timeseries" className="data-[state=active]:bg-green-500/20">
+                <LineChart className="mr-2 h-4 w-4" />
+                Time Series
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-6">
+              {/* Risk Metrics Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border-cyan-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-cyan-300 text-sm">VaR (95%)</p>
+                        <p className="text-2xl font-bold text-white">${simulationData.riskMetrics.var95.toFixed(0)}</p>
+                      </div>
+                      <TrendingDown className="h-8 w-8 text-cyan-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-purple-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-300 text-sm">Sharpe Ratio</p>
+                        <p className="text-2xl font-bold text-white">
+                          {simulationData.riskMetrics.sharpeRatio.toFixed(2)}
+                        </p>
+                      </div>
+                      <Target className="h-8 w-8 text-purple-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-300 text-sm">Win Rate</p>
+                        <p className="text-2xl font-bold text-white">
+                          {(simulationData.riskMetrics.winRate * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-green-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-orange-500/20 to-red-500/20 border-orange-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-orange-300 text-sm">Max Drawdown</p>
+                        <p className="text-2xl font-bold text-white">
+                          ${simulationData.riskMetrics.maxDrawdown.toFixed(0)}
+                        </p>
+                      </div>
+                      <AlertTriangle className="h-8 w-8 text-orange-400" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Advanced Metrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="bg-slate-800/50 border-slate-700/50">
+                  <CardHeader>
+                    <CardTitle className="text-cyan-400">Risk-Adjusted Returns</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-300">Sortino Ratio</span>
+                        <span className="text-white font-semibold">
+                          {simulationData.riskMetrics.sortinoRatio.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-300">Calmar Ratio</span>
+                        <span className="text-white font-semibold">
+                          {simulationData.riskMetrics.calmarRatio.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-300">Profit Factor</span>
+                        <span className="text-white font-semibold">
+                          {simulationData.riskMetrics.profitFactor.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-300">Expected Shortfall</span>
+                        <span className="text-white font-semibold">
+                          ${simulationData.riskMetrics.expectedShortfall.toFixed(0)}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-800/50 border-slate-700/50">
+                  <CardHeader>
+                    <CardTitle className="text-purple-400">Risk Gauge</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart
+                          cx="50%"
+                          cy="50%"
+                          innerRadius="60%"
+                          outerRadius="90%"
+                          data={[{ name: "Risk Score", value: riskLevel.score, fill: riskLevel.color }]}
+                        >
+                          <RadialBar dataKey="value" cornerRadius={10} fill={riskLevel.color} />
+                        </RadialBarChart>
+                      </ResponsiveContainer>
+                      <div className="text-center -mt-32">
+                        <div className="text-3xl font-bold text-white">{riskLevel.score}</div>
+                        <div className="text-slate-400">{riskLevel.level}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="distributions" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="bg-slate-800/50 border-slate-700/50">
+                  <CardHeader>
+                    <CardTitle className="text-cyan-400">P&L Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={simulationData.pnlDistribution}>
+                          <XAxis
+                            dataKey="pnl"
+                            tick={{ fill: "#94a3b8", fontSize: 12 }}
+                            tickFormatter={(value) => `$${value.toFixed(0)}`}
+                          />
+                          <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                          <RechartsTooltip
+                            contentStyle={{
+                              backgroundColor: "#1e293b",
+                              border: "1px solid #475569",
+                              borderRadius: "8px",
+                              color: "#f1f5f9",
+                            }}
+                            formatter={(value: number) => [`${value} simulations`, "Frequency"]}
+                            labelFormatter={(value: number) => `P&L: $${value.toFixed(0)}`}
+                          />
+                          <Bar dataKey="frequency" fill="url(#pnlGradient)" />
+                          <defs>
+                            <linearGradient id="pnlGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                            </linearGradient>
+                          </defs>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-800/50 border-slate-700/50">
+                  <CardHeader>
+                    <CardTitle className="text-purple-400">Drawdown Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={simulationData.drawdownDistribution}>
+                          <XAxis
+                            dataKey="drawdown"
+                            tick={{ fill: "#94a3b8", fontSize: 12 }}
+                            tickFormatter={(value) => `$${value.toFixed(0)}`}
+                          />
+                          <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                          <RechartsTooltip
+                            contentStyle={{
+                              backgroundColor: "#1e293b",
+                              border: "1px solid #475569",
+                              borderRadius: "8px",
+                              color: "#f1f5f9",
+                            }}
+                          />
+                          <Area type="monotone" dataKey="frequency" stroke="#ec4899" fill="url(#drawdownGradient)" />
+                          <defs>
+                            <linearGradient id="drawdownGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="#f97316" stopOpacity={0.3} />
+                            </linearGradient>
+                          </defs>
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="sensitivity" className="space-y-6">
+              <Card className="bg-slate-800/50 border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-pink-400">Sensitivity Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                      <h4 className="text-cyan-400 font-semibold mb-4">Risk Percentage Impact</h4>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsLineChart data={simulationData.sensitivityData.riskPercentage}>
+                            <XAxis dataKey="value" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                            <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                            <RechartsTooltip
+                              contentStyle={{
+                                backgroundColor: "#1e293b",
+                                border: "1px solid #475569",
+                                borderRadius: "8px",
+                                color: "#f1f5f9",
+                              }}
+                            />
+                            <Line type="monotone" dataKey="pnl" stroke="#06b6d4" strokeWidth={3} />
+                          </RechartsLineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-purple-400 font-semibold mb-4">Volatility Impact</h4>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsLineChart data={simulationData.sensitivityData.volatility}>
+                            <XAxis dataKey="value" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                            <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                            <RechartsTooltip
+                              contentStyle={{
+                                backgroundColor: "#1e293b",
+                                border: "1px solid #475569",
+                                borderRadius: "8px",
+                                color: "#f1f5f9",
+                              }}
+                            />
+                            <Line type="monotone" dataKey="pnl" stroke="#8b5cf6" strokeWidth={3} />
+                          </RechartsLineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-pink-400 font-semibold mb-4">Stop Loss Impact</h4>
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsLineChart data={simulationData.sensitivityData.stopLoss}>
+                            <XAxis dataKey="value" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                            <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                            <RechartsTooltip
+                              contentStyle={{
+                                backgroundColor: "#1e293b",
+                                border: "1px solid #475569",
+                                borderRadius: "8px",
+                                color: "#f1f5f9",
+                              }}
+                            />
+                            <Line type="monotone" dataKey="pnl" stroke="#ec4899" strokeWidth={3} />
+                          </RechartsLineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="timeseries" className="space-y-6">
+              <Card className="bg-slate-800/50 border-slate-700/50">
+                <CardHeader>
+                  <CardTitle className="text-green-400">Portfolio Evolution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={simulationData.timeSeriesData}>
+                        <XAxis dataKey="day" tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                        <YAxis tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                        <RechartsTooltip
+                          contentStyle={{
+                            backgroundColor: "#1e293b",
+                            border: "1px solid #475569",
+                            borderRadius: "8px",
+                            color: "#f1f5f9",
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="cumulative"
+                          fill="url(#cumulativeGradient)"
+                          stroke="#10b981"
+                          strokeWidth={2}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="drawdown"
+                          stroke="#ef4444"
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                        />
+                        <defs>
+                          <linearGradient id="cumulativeGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
+                          </linearGradient>
+                        </defs>
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
+      </div>
+    </div>
+  )
+}

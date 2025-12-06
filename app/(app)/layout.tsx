@@ -4,7 +4,7 @@ import type React from "react"
 import { Navbar } from "@/components/layout/navbar"
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
-import { AIChatBubble } from "@/components/ai-chat/ai-chat-bubble"
+// REMOVED: import { AIChatBubble } from "@/components/ai-chat/ai-chat-bubble"
 import { TutorialProvider } from "@/components/tutorial/tutorial-provider"
 import { TutorialOrchestrator } from "@/components/tutorial/tutorial-orchestrator"
 
@@ -21,7 +21,7 @@ export default function AppLayout({
           {children}
         </main>
         <Toaster />
-        <AIChatBubble />
+        {/* REMOVED: <AIChatBubble /> */}
         <TutorialOrchestrator />
       </div>
     </TutorialProvider>

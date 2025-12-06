@@ -1,3 +1,5 @@
+// components/recharts-trading-chart.tsx
+
 "use client"
 
 import type React from "react"
@@ -15,10 +17,10 @@ import {
   Cell,
 } from "recharts"
 import type { CandlestickData, ActiveIndicator } from "@/types"
-import { AVAILABLE_INDICATORS } from "@/types" // For MA calculation logic
+import { AVAILABLE_INDICATORS } from "@/types"
 import { cn } from "@/lib/utils"
 
-// Helper to calculate Moving Average (remains the same)
+// Helper to calculate Moving Average
 const calculateMA = (data: CandlestickData[], period: number): { time: number; value: number }[] => {
   if (data.length < period) return []
   const result: { time: number; value: number }[] = []
@@ -34,12 +36,12 @@ const calculateMA = (data: CandlestickData[], period: number): { time: number; v
 
 interface RechartsTradingChartProps {
   data: CandlestickData[]
-  activeIndicators?: ActiveIndicator[] // Made optional for easier dashboard integration initially
+  activeIndicators?: ActiveIndicator[]
   height?: string | number
   className?: string
 }
 
-// Custom shape for Candlestick (remains largely the same, ensures fill is passed)
+// Custom shape for Candlestick
 const CandlestickShape = (props: any) => {
   if (
     !props.payload ||
@@ -53,18 +55,18 @@ const CandlestickShape = (props: any) => {
     return null
   }
   const { low, high, open, close } = props.payload
-  const { x, width, yAxis, fill } = props // Ensure fill is destructured
+  const { x, width, yAxis, fill } = props
 
   const candleX = x + width / 2
   const wickY1 = yAxis.scale(high)
   const wickY2 = yAxis.scale(low)
   const bodyTopScreenY = yAxis.scale(Math.max(open, close))
   const bodyBottomScreenY = yAxis.scale(Math.min(open, close))
-  const bodyHeight = Math.max(1, Math.abs(bodyTopScreenY - bodyBottomScreenY)) // Ensure min height of 1px for visibility
+  const bodyHeight = Math.max(1, Math.abs(bodyTopScreenY - bodyBottomScreenY))
 
   return (
     <g>
-      <line x1={candleX} y1={wickY1} x2={candleX} y2={wickY2} stroke={fill} strokeWidth={1.5} /> {/* Thicker wick */}
+      <line x1={candleX} y1={wickY1} x2={candleX} y2={wickY2} stroke={fill} strokeWidth={1.5} />
       <rect x={x} y={bodyTopScreenY} width={width} height={bodyHeight} fill={fill} />
     </g>
   )
@@ -110,7 +112,7 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
       })
     })
     if (minPrice === Number.POSITIVE_INFINITY || maxPrice === Number.NEGATIVE_INFINITY) return ["auto", "auto"]
-    const padding = (maxPrice - minPrice) * 0.1 // 10% padding
+    const padding = (maxPrice - minPrice) * 0.1
     return [minPrice - padding, maxPrice + padding]
   }, [chartDataWithIndicators, activeIndicators, data])
 
@@ -128,17 +130,15 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
     )
   }
 
-  // Determine a dynamic Y-axis domain to give some padding
-
   return (
     <ResponsiveContainer width="100%" height={height} className={cn(className)}>
       <ComposedChart
         data={chartDataWithIndicators}
         margin={{
-          top: 15, // Reduced top margin
-          right: 5, // Reduced right margin for Y-axis labels
-          left: 5, // Reduced left margin
-          bottom: 5, // Reduced bottom margin
+          top: 15,
+          right: 5,
+          left: 5,
+          bottom: 5,
         }}
       >
         <CartesianGrid stroke="hsl(var(--border) / 0.5)" strokeDasharray="3 3" />
@@ -148,7 +148,7 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
             new Date(unixTime * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric" })
           }
           stroke="hsl(var(--muted-foreground) / 0.8)"
-          dy={10} // Pushes tick labels down a bit
+          dy={10}
           tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
           axisLine={{ stroke: "hsl(var(--border) / 0.7)" }}
           tickLine={{ stroke: "hsl(var(--border) / 0.7)" }}
@@ -156,27 +156,28 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
         <YAxis
           orientation="right"
           stroke="hsl(var(--muted-foreground) / 0.8)"
-          domain={yDomain as [number, number]} // Apply dynamic domain
+          domain={yDomain as [number, number]}
           tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-          tickFormatter={(value) => value.toFixed(2)} // Format to 2 decimal places
+          tickFormatter={(value) => value.toFixed(2)}
           axisLine={{ stroke: "hsl(var(--border) / 0.7)" }}
           tickLine={{ stroke: "hsl(var(--border) / 0.7)" }}
-          width={55} // Ensure enough space for labels
+          width={55}
         />
         <Tooltip
+          // FIXED: Added cursor prop object to resolve "Received true for non-boolean attribute" warning
+          cursor={{ fill: "hsl(var(--muted) / 0.2)" }}
           contentStyle={{
-            backgroundColor: "hsl(var(--popover))", // Use popover for consistency
+            backgroundColor: "hsl(var(--popover))",
             borderColor: "hsl(var(--border))",
             color: "hsl(var(--popover-foreground))",
-            borderRadius: "var(--radius-md)", // Use theme radius
-            boxShadow: "var(--shadow-lg)", // Use theme shadow
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-lg)",
             padding: "8px 12px",
           }}
           itemStyle={{ color: "hsl(var(--popover-foreground))", fontSize: 13 }}
           labelStyle={{ color: "hsl(var(--primary))", marginBottom: "4px", fontSize: 14, fontWeight: "bold" }}
           formatter={(value: number | string, name: string, entry: any) => {
             if (name === "Price") {
-              // "Price" is the name of the Bar component for candlesticks
               const { open, high, low, close } = entry.payload
               return [
                 <>
@@ -187,7 +188,7 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
                     L: {low?.toFixed(2)} C: {close?.toFixed(2)}
                   </div>
                 </>,
-                "OHLC", // Displayed name in tooltip
+                "OHLC",
               ]
             }
             if (typeof value === "number") {
@@ -199,7 +200,7 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
         />
         <Legend
           wrapperStyle={{
-            paddingTop: "15px", // Add some space above legend
+            paddingTop: "15px",
             color: "hsl(var(--muted-foreground))",
             fontSize: "13px",
           }}
@@ -219,7 +220,6 @@ const RechartsTradingChart: React.FC<RechartsTradingChartProps> = ({
         {activeIndicators.map((indicator) => {
           if (indicator.type === "MA" && AVAILABLE_INDICATORS.MA) {
             const maKey = `MA_${indicator.params.period}`
-            // Use a theme-aligned color, e.g., secondary or a specific accent
             const lineColor = indicator.params.color || "hsl(var(--secondary))"
             return (
               <Line

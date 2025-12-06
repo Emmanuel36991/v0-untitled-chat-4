@@ -33,7 +33,9 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
   const [tradeToDelete, setTradeToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
-  const { isOpen, advisorData, openTradeAdvisor, close } = useAIAdvisor()
+  
+  // FIX: Destructure the correct values from the hook
+  const { openAdvisor, advisorProps } = useAIAdvisor()
 
   const handleDeleteClick = (tradeId: string) => {
     setTradeToDelete(tradeId)
@@ -287,7 +289,8 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => openTradeAdvisor(trade)}
+                            // FIX: Use openAdvisor properly
+                            onClick={() => openAdvisor("Trade Analysis", "trade", trade)}
                             className="hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 hover:scale-110"
                             title="Get AI insights for this trade"
                           >
@@ -332,15 +335,8 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
         </CardContent>
       </Card>
 
-      {advisorData && (
-        <AdvisorPanel
-          isOpen={isOpen}
-          onClose={close}
-          type={advisorData.type}
-          data={advisorData.data}
-          title={advisorData.title}
-        />
-      )}
+      {/* FIX: Use advisorProps to spread all necessary props */}
+      <AdvisorPanel {...advisorProps} />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

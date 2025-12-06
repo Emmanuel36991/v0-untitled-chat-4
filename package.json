@@ -78,7 +78,7 @@
     "tw-animate-css": "latest",
     "uuid": "latest",
     "vaul": "latest",
-    "zod": "3.23.8"
+    "zod": "3.22.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",

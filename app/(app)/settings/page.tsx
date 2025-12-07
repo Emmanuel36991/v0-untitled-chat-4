@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
 import { Sun, Moon, Laptop, Settings2 } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default function SettingsPage() {
   const router = useRouter()
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -96,7 +98,7 @@ export default function SettingsPage() {
             </p>
             <Button
               onClick={handleChangePreferences}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto bg-transparent"
               disabled={!isUserConfigLoaded}
               variant="outline"
             >

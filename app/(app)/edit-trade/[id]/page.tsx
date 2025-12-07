@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = "force-dynamic"
+
 import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { TradeForm } from "@/components/trade-form"
@@ -134,7 +136,7 @@ export default function EditTradePage() {
           variant="outline"
           size="icon"
           asChild
-          className="glass-card border-cyan-500/30 hover:border-cyan-400 hover:neon-glow-cyan transition-all duration-300"
+          className="glass-card border-cyan-500/30 hover:border-cyan-400 hover:neon-glow-cyan transition-all duration-300 bg-transparent"
         >
           <Link href="/trades" aria-label="Back to trades list">
             <ArrowLeft className="h-5 w-5 text-cyan-400" />

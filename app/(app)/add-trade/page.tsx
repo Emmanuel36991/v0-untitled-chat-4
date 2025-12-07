@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 // CHANGE: Removed curly braces to use default import
-import TradeForm from "@/components/trade-form" 
+import TradeForm from "@/components/trade-form"
 import { addTrade } from "@/app/actions/trade-actions"
 import type { NewTradeInput, Trade } from "@/types"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+
+export const dynamic = "force-dynamic"
 
 export default function AddTradePage() {
   const router = useRouter()

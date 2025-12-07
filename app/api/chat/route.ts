@@ -1,46 +1,52 @@
-import { streamText } from "ai"
-import { groq, GROQ_MODEL, GROQ_FALLBACK_MODEL } from "@/lib/ai/groq"
+import { callGroqAPI, GROQ_MODEL, GROQ_FALLBACK_MODEL } from "@/lib/ai/groq"
 import { TRADING_SYSTEM_PROMPTS } from "@/lib/ai/trading-prompts"
 
 export async function POST(req: Request) {
   try {
     const { messages, context } = await req.json()
 
-    // 1. Prepare system prompt
+    // Prepare system prompt with context
     let systemPrompt = TRADING_SYSTEM_PROMPTS.base
     if (context) {
       systemPrompt += `\n\nCURRENT USER CONTEXT:\n${context}`
     }
 
     try {
-      // 2. Call Primary Model
-      const result = streamText({
-        model: groq(GROQ_MODEL),
-        messages,
-        system: systemPrompt,
-        temperature: 0.7,
-        maxTokens: 1000,
+      // Call primary Groq model
+      const stream = await callGroqAPI(messages, systemPrompt, GROQ_MODEL)
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
       })
-      
-      return result.toTextStreamResponse()
     } catch (primaryError) {
-      console.warn("Primary Groq model failed, switching to fallback")
-      
-      // 3. Call Fallback Model
-      const result = streamText({
-        model: groq(GROQ_FALLBACK_MODEL),
-        messages,
-        system: systemPrompt,
-        temperature: 0.7,
-        maxTokens: 1000,
-      })
-      
-      return result.toTextStreamResponse()
+      console.warn("[v0] Primary Groq model failed, switching to fallback")
+
+      // Fallback to faster model
+      try {
+        const stream = await callGroqAPI(messages, systemPrompt, GROQ_FALLBACK_MODEL)
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        })
+      } catch (fallbackError) {
+        console.error("[v0] Both models failed:", fallbackError)
+        return new Response(JSON.stringify({ error: "Chat service unavailable" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        })
+      }
     }
   } catch (error) {
-    console.error("Chat API Error:", error)
-    return new Response(JSON.stringify({ error: "Failed to process chat" }), { 
-      status: 500 
+    console.error("[v0] Chat API Error:", error)
+    return new Response(JSON.stringify({ error: "Failed to process chat" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
     })
   }
 }

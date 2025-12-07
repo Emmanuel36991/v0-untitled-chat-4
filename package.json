@@ -9,9 +9,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ai-sdk/google": "latest",
-    "@ai-sdk/groq": "latest",
-    "@ai-sdk/react": "latest",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "latest",
@@ -44,7 +41,6 @@
     "@react-three/fiber": "latest",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
-    "ai": "latest",
     "chart.js": "latest",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

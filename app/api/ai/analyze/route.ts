@@ -1,5 +1,4 @@
-import { streamText } from "ai"
-import { groq, GROQ_MODEL, GROQ_FALLBACK_MODEL, ANALYZE_SYSTEM_PROMPT } from "@/lib/ai/groq"
+import { callGroqAPI, GROQ_MODEL, GROQ_FALLBACK_MODEL, ANALYZE_SYSTEM_PROMPT } from "@/lib/ai/groq"
 import type { NextRequest } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -14,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (type === "trade") {
       systemPrompt =
         "You are an expert trading advisor powered by Groq's Llama 3.3. Analyze trades thoroughly with deep knowledge of technical analysis, risk management, and trading psychology. Provide actionable insights. Be specific and reference the trade metrics provided."
-      
+
       userPrompt = `Analyze this trade and provide insights:
 
 Trade Details:
@@ -41,7 +40,7 @@ Be specific, educational, and practical.`
     } else if (type === "statistic") {
       systemPrompt =
         "You are a trading performance advisor powered by Groq's Llama 3.3. Explain trading metrics clearly and provide actionable recommendations to improve trading performance."
-      
+
       userPrompt = `Analyze this trading metric:
 
 Metric: ${data.name}
@@ -66,34 +65,28 @@ Be clear, educational, and provide practical trading wisdom.`
 
     try {
       console.log("[v0] Streaming analysis with model:", GROQ_MODEL)
-      
-      // FIX: Use 'messages' array instead of 'prompt' string
-      const result = streamText({
-        model: groq(GROQ_MODEL),
-        system: systemPrompt,
-        messages: [
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.7,
-        maxTokens: 1000,
+
+      const stream = await callGroqAPI([{ role: "user", content: userPrompt }], systemPrompt, GROQ_MODEL)
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
       })
-      
-      return result.toTextStreamResponse()
     } catch (primaryError) {
       console.warn("[v0] Primary model failed, switching to fallback:", GROQ_FALLBACK_MODEL)
-      
-      // Fallback with correct structure
-      const result = streamText({
-        model: groq(GROQ_FALLBACK_MODEL),
-        system: systemPrompt,
-        messages: [
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.7,
-        maxTokens: 1000,
+
+      const stream = await callGroqAPI([{ role: "user", content: userPrompt }], systemPrompt, GROQ_FALLBACK_MODEL)
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
       })
-      
-      return result.toTextStreamResponse()
     }
   } catch (error) {
     console.error("[v0] [AI Analysis Error]", error)

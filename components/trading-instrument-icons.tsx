@@ -1,567 +1,247 @@
 import type React from "react"
+import { cn } from "@/lib/utils"
+
+// --- Helper Components for Consistent Styling ---
+
+const IconBase = ({ 
+  children, 
+  className, 
+  ...props 
+}: React.SVGProps<SVGSVGElement>) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg" 
+    className={cn("w-full h-full", className)}
+    {...props}
+  >
+    {children}
+  </svg>
+)
+
+// Professional Ticker Badge (Bloomberg Terminal Style)
+const TickerBadge = ({ 
+  symbol, 
+  color = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  className
+}: { 
+  symbol: string, 
+  color?: string,
+  className?: string 
+}) => (
+  <div className={cn(
+    "flex items-center justify-center w-full h-full rounded-lg font-sans font-bold tracking-tight select-none border border-black/5 dark:border-white/5",
+    color,
+    className
+  )}>
+    {symbol}
+  </div>
+)
+
+// --- 1. TRADING METHODOLOGIES (Technical Schematics) ---
 
 export const TradingMethodologyIcons = {
-  // Smart Money Concepts - Institutional flow visualization
-  smc: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="smc-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3B82F6" />
-          <stop offset="100%" stopColor="#1E40AF" />
-        </linearGradient>
-      </defs>
-      {/* Institutional building with flow arrows */}
-      <rect x="8" y="12" width="16" height="16" rx="2" fill="url(#smc-gradient)" opacity="0.2" />
-      <rect x="8" y="12" width="16" height="16" rx="2" stroke="url(#smc-gradient)" strokeWidth="2" fill="none" />
-      <rect x="10" y="14" width="2" height="3" fill="url(#smc-gradient)" />
-      <rect x="13" y="14" width="2" height="3" fill="url(#smc-gradient)" />
-      <rect x="16" y="14" width="2" height="3" fill="url(#smc-gradient)" />
-      <rect x="19" y="14" width="2" height="3" fill="url(#smc-gradient)" />
-      {/* Liquidity flow arrows */}
-      <path
-        d="M4 8L8 12L4 16"
-        stroke="url(#smc-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M28 8L24 12L28 16"
-        stroke="url(#smc-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="16" cy="6" r="2" fill="url(#smc-gradient)" />
-    </svg>
+  // SMC: The "Break of Structure" Schematic
+  smc: (props: any) => (
+    <IconBase {...props}>
+      <path d="M3 17L9 11L13 15L21 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13 15H21" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" className="opacity-50"/>
+      <circle cx="21" cy="5" r="2" fill="currentColor" className="text-blue-500"/>
+      <rect x="7" y="9" width="4" height="10" fill="currentColor" className="text-blue-500/10"/>
+    </IconBase>
   ),
 
-  // ICT - Target with precision zones
-  ict: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="ict-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F97316" />
-          <stop offset="100%" stopColor="#EA580C" />
-        </linearGradient>
-      </defs>
-      {/* Precision target circles */}
-      <circle cx="16" cy="16" r="12" stroke="url(#ict-gradient)" strokeWidth="2" fill="none" />
-      <circle cx="16" cy="16" r="8" stroke="url(#ict-gradient)" strokeWidth="1.5" fill="none" />
-      <circle cx="16" cy="16" r="4" stroke="url(#ict-gradient)" strokeWidth="1" fill="none" />
-      <circle cx="16" cy="16" r="2" fill="url(#ict-gradient)" />
-      {/* Kill zone markers */}
-      <rect x="15" y="2" width="2" height="4" fill="url(#ict-gradient)" />
-      <rect x="15" y="26" width="2" height="4" fill="url(#ict-gradient)" />
-      <rect x="2" y="15" width="4" height="2" fill="url(#ict-gradient)" />
-      <rect x="26" y="15" width="4" height="2" fill="url(#ict-gradient)" />
-    </svg>
+  // ICT: The "Fair Value Gap" + Time
+  ict: (props: any) => (
+    <IconBase {...props}>
+      {/* Candles */}
+      <path d="M6 7V17" stroke="currentColor" strokeWidth="1.5" className="opacity-70"/>
+      <path d="M18 5V15" stroke="currentColor" strokeWidth="1.5" className="opacity-70"/>
+      {/* FVG Box */}
+      <rect x="8" y="8" width="8" height="4" fill="currentColor" className="text-orange-500/20"/>
+      <path d="M12 2V22" stroke="currentColor" strokeWidth="1" strokeDasharray="1 3" className="text-orange-500"/>
+    </IconBase>
   ),
 
-  // Wyckoff - Price-Volume relationship
-  wyckoff: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="wyckoff-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="100%" stopColor="#059669" />
-        </linearGradient>
-      </defs>
-      {/* Price line with volume bars */}
-      <path
-        d="M4 24L8 20L12 22L16 16L20 18L24 12L28 14"
-        stroke="url(#wyckoff-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Volume bars */}
-      <rect x="6" y="26" width="2" height="4" fill="url(#wyckoff-gradient)" opacity="0.6" />
-      <rect x="10" y="24" width="2" height="6" fill="url(#wyckoff-gradient)" opacity="0.6" />
-      <rect x="14" y="22" width="2" height="8" fill="url(#wyckoff-gradient)" opacity="0.6" />
-      <rect x="18" y="20" width="2" height="10" fill="url(#wyckoff-gradient)" opacity="0.6" />
-      <rect x="22" y="25" width="2" height="5" fill="url(#wyckoff-gradient)" opacity="0.6" />
-      <rect x="26" y="23" width="2" height="7" fill="url(#wyckoff-gradient)" opacity="0.6" />
-    </svg>
+  // Wyckoff: The "Accumulation" Schematic
+  wyckoff: (props: any) => (
+    <IconBase {...props}>
+      <path d="M2 12C4 12 4 17 7 17C10 17 10 7 13 7C16 7 16 20 19 20C22 20 22 2 22 2" 
+            stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="2" y1="7" x2="16" y2="7" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" className="opacity-40"/>
+      <line x1="2" y1="17" x2="14" y2="17" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" className="opacity-40"/>
+    </IconBase>
   ),
 
-  // Volume Profile - Volume distribution
-  volume: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="volume-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="100%" stopColor="#7C3AED" />
-        </linearGradient>
-      </defs>
-      {/* Volume profile bars */}
-      <rect x="4" y="6" width="8" height="2" fill="url(#volume-gradient)" opacity="0.4" />
-      <rect x="4" y="9" width="12" height="2" fill="url(#volume-gradient)" opacity="0.6" />
-      <rect x="4" y="12" width="20" height="2" fill="url(#volume-gradient)" />
-      <rect x="4" y="15" width="24" height="2" fill="url(#volume-gradient)" />
-      <rect x="4" y="18" width="16" height="2" fill="url(#volume-gradient)" opacity="0.8" />
-      <rect x="4" y="21" width="10" height="2" fill="url(#volume-gradient)" opacity="0.5" />
-      <rect x="4" y="24" width="6" height="2" fill="url(#volume-gradient)" opacity="0.3" />
-      {/* POC line */}
-      <line x1="28" y1="15" x2="28" y2="17" stroke="url(#volume-gradient)" strokeWidth="3" strokeLinecap="round" />
-    </svg>
+  // Volume: Profile Histogram
+  volume: (props: any) => (
+    <IconBase {...props}>
+      <path d="M21 21V10" stroke="currentColor" strokeWidth="3" className="text-slate-200 dark:text-slate-800"/>
+      <path d="M16 21V6" stroke="currentColor" strokeWidth="3" className="text-purple-500"/>
+      <path d="M11 21V12" stroke="currentColor" strokeWidth="3" className="text-slate-300 dark:text-slate-700"/>
+      <path d="M6 21V15" stroke="currentColor" strokeWidth="3" className="text-slate-200 dark:text-slate-800"/>
+    </IconBase>
   ),
 
-  // Support & Resistance - Horizontal levels
-  sr: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="sr-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#D97706" />
-        </linearGradient>
-      </defs>
-      {/* Price action with S&R levels */}
-      <path
-        d="M4 20L8 16L12 18L16 12L20 14L24 8L28 10"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Resistance level */}
-      <line x1="4" y1="8" x2="28" y2="8" stroke="url(#sr-gradient)" strokeWidth="2" strokeDasharray="4 2" />
-      <text x="30" y="10" fontSize="8" fill="url(#sr-gradient)">
-        R
-      </text>
-      {/* Support level */}
-      <line x1="4" y1="22" x2="28" y2="22" stroke="url(#sr-gradient)" strokeWidth="2" strokeDasharray="4 2" />
-      <text x="30" y="24" fontSize="8" fill="url(#sr-gradient)">
-        S
-      </text>
-    </svg>
+  // S/R: Clean Levels
+  sr: (props: any) => (
+    <IconBase {...props}>
+      <line x1="2" y1="6" x2="22" y2="6" stroke="currentColor" strokeWidth="2" className="text-red-500/70"/>
+      <line x1="2" y1="18" x2="22" y2="18" stroke="currentColor" strokeWidth="2" className="text-emerald-500/70"/>
+      <path d="M4 14L8 18L12 10L16 18L20 12" stroke="currentColor" strokeWidth="1.5" className="opacity-60"/>
+    </IconBase>
   ),
 
-  // Pure Price Action - Clean candlesticks
-  price: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="price-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#EF4444" />
-          <stop offset="100%" stopColor="#DC2626" />
-        </linearGradient>
-      </defs>
-      {/* Candlestick pattern */}
-      <line x1="6" y1="8" x2="6" y2="24" stroke="currentColor" strokeWidth="1" />
-      <rect x="4" y="12" width="4" height="8" fill="#10B981" />
-
-      <line x1="12" y1="6" x2="12" y2="26" stroke="currentColor" strokeWidth="1" />
-      <rect x="10" y="10" width="4" height="6" fill="url(#price-gradient)" />
-
-      <line x1="18" y1="4" x2="18" y2="20" stroke="currentColor" strokeWidth="1" />
-      <rect x="16" y="8" width="4" height="8" fill="#10B981" />
-
-      <line x1="24" y1="10" x2="24" y2="28" stroke="currentColor" strokeWidth="1" />
-      <rect x="22" y="14" width="4" height="10" fill="url(#price-gradient)" />
-    </svg>
+  // Price Action: Clean Candlesticks
+  price: (props: any) => (
+    <IconBase {...props}>
+      <path d="M8 4V20" stroke="currentColor" strokeWidth="1.5" className="opacity-50"/>
+      <rect x="6" y="8" width="4" height="8" fill="currentColor" className="text-emerald-500"/>
+      <path d="M16 4V20" stroke="currentColor" strokeWidth="1.5" className="opacity-50"/>
+      <rect x="14" y="10" width="4" height="6" fill="currentColor" className="text-red-500"/>
+    </IconBase>
   ),
 }
+
+// --- 2. INSTRUMENT CATEGORIES (Abstract Symbols) ---
 
 export const InstrumentCategoryIcons = {
-  // Futures - Contract document with chart
-  futures: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="futures-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#D97706" />
-        </linearGradient>
-      </defs>
-      <rect x="6" y="4" width="20" height="24" rx="2" stroke="url(#futures-gradient)" strokeWidth="2" fill="none" />
-      <rect x="6" y="4" width="20" height="24" rx="2" fill="url(#futures-gradient)" opacity="0.1" />
-      {/* Contract lines */}
-      <line x1="10" y1="8" x2="22" y2="8" stroke="url(#futures-gradient)" strokeWidth="1" />
-      <line x1="10" y1="11" x2="18" y2="11" stroke="url(#futures-gradient)" strokeWidth="1" />
-      {/* Mini chart */}
-      <path
-        d="M10 16L13 14L16 18L19 15L22 13"
-        stroke="url(#futures-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Expiry indicator */}
-      <circle cx="20" cy="24" r="2" fill="url(#futures-gradient)" />
-      <text x="19" y="25" fontSize="6" fill="white">
-        F
-      </text>
-    </svg>
+  // Futures: The Clock/Time Factor
+  futures: (props: any) => (
+    <IconBase {...props}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M12 3V5" stroke="currentColor" strokeWidth="1.5"/>
+    </IconBase>
   ),
 
-  // Forex - Currency exchange arrows
-  forex: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="forex-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="100%" stopColor="#059669" />
-        </linearGradient>
-      </defs>
-      {/* Currency symbols */}
-      <circle cx="10" cy="12" r="6" stroke="url(#forex-gradient)" strokeWidth="2" fill="none" />
-      <text x="8" y="15" fontSize="8" fill="url(#forex-gradient)" fontWeight="bold">
-        $
-      </text>
-
-      <circle cx="22" cy="20" r="6" stroke="url(#forex-gradient)" strokeWidth="2" fill="none" />
-      <text x="20" y="23" fontSize="8" fill="url(#forex-gradient)" fontWeight="bold">
-        €
-      </text>
-
-      {/* Exchange arrows */}
-      <path d="M14 10L18 14" stroke="url(#forex-gradient)" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M16 12L18 14L16 16"
-        stroke="url(#forex-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      <path d="M18 18L14 22" stroke="url(#forex-gradient)" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M16 20L14 22L16 24"
-        stroke="url(#forex-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+  // Forex: The Global Exchange
+  forex: (props: any) => (
+    <IconBase {...props}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" className="opacity-20"/>
+      <path d="M2 12H22" stroke="currentColor" strokeWidth="1.5" className="opacity-20"/>
+      <path d="M12 2C14.5 4.5 16 8 16 12C16 16 14.5 19.5 12 22C9.5 19.5 8 16 8 12C8 8 9.5 4.5 12 2Z" stroke="currentColor" strokeWidth="1.5" className="opacity-20"/>
+      <path d="M16 9L19 12L16 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 15L5 12L8 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </IconBase>
   ),
 
-  // Stocks - Rising bar chart
-  stocks: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="stocks-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#3B82F6" />
-          <stop offset="100%" stopColor="#1E40AF" />
-        </linearGradient>
-      </defs>
-      {/* Stock chart bars */}
-      <rect x="4" y="20" width="3" height="8" fill="url(#stocks-gradient)" />
-      <rect x="8" y="16" width="3" height="12" fill="url(#stocks-gradient)" />
-      <rect x="12" y="12" width="3" height="16" fill="url(#stocks-gradient)" />
-      <rect x="16" y="8" width="3" height="20" fill="url(#stocks-gradient)" />
-      <rect x="20" y="6" width="3" height="22" fill="url(#stocks-gradient)" />
-      <rect x="24" y="4" width="3" height="24" fill="url(#stocks-gradient)" />
-      {/* Trend arrow */}
-      <path d="M6 22L26 6" stroke="url(#stocks-gradient)" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M22 4L26 6L24 10"
-        stroke="url(#stocks-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+  // Stocks: The Trend
+  stocks: (props: any) => (
+    <IconBase {...props}>
+      <path d="M3 21H21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M3 15L9 9L13 13L21 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M21 3V9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M21 3H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </IconBase>
   ),
 
-  // Crypto - Blockchain blocks
-  crypto: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="crypto-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8B5CF6" />
-          <stop offset="100%" stopColor="#7C3AED" />
-        </linearGradient>
-      </defs>
-      {/* Blockchain blocks */}
-      <rect x="4" y="12" width="6" height="6" rx="1" fill="url(#crypto-gradient)" />
-      <rect x="13" y="12" width="6" height="6" rx="1" fill="url(#crypto-gradient)" />
-      <rect x="22" y="12" width="6" height="6" rx="1" fill="url(#crypto-gradient)" />
-
-      {/* Connection lines */}
-      <line x1="10" y1="15" x2="13" y2="15" stroke="url(#crypto-gradient)" strokeWidth="2" />
-      <line x1="19" y1="15" x2="22" y2="15" stroke="url(#crypto-gradient)" strokeWidth="2" />
-
-      {/* Bitcoin symbol */}
-      <circle cx="16" cy="6" r="4" stroke="url(#crypto-gradient)" strokeWidth="2" fill="none" />
-      <text x="14" y="8" fontSize="6" fill="url(#crypto-gradient)" fontWeight="bold">
-        ₿
-      </text>
-
-      {/* Digital waves */}
-      <path
-        d="M4 24L8 22L12 24L16 22L20 24L24 22L28 24"
-        stroke="url(#crypto-gradient)"
-        strokeWidth="1"
-        strokeLinecap="round"
-      />
-    </svg>
+  // Crypto: The Network
+  crypto: (props: any) => (
+    <IconBase {...props}>
+      <circle cx="12" cy="5" r="2" fill="currentColor"/>
+      <circle cx="5" cy="19" r="2" fill="currentColor"/>
+      <circle cx="19" cy="19" r="2" fill="currentColor"/>
+      <line x1="12" y1="5" x2="5" y2="19" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="12" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="1.5"/>
+      <line x1="5" y1="19" x2="19" y2="19" stroke="currentColor" strokeWidth="1.5"/>
+    </IconBase>
   ),
 
-  // Commodities - Gold bars and oil barrel
-  commodities: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="commodities-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#D97706" />
-        </linearGradient>
-      </defs>
-      {/* Gold bars */}
-      <rect x="4" y="16" width="8" height="4" rx="1" fill="url(#commodities-gradient)" />
-      <rect x="6" y="12" width="8" height="4" rx="1" fill="url(#commodities-gradient)" />
-      <rect x="8" y="8" width="8" height="4" rx="1" fill="url(#commodities-gradient)" />
-
-      {/* Oil barrel */}
-      <ellipse cx="22" cy="20" rx="4" ry="6" fill="url(#commodities-gradient)" opacity="0.8" />
-      <ellipse cx="22" cy="14" rx="4" ry="1" fill="url(#commodities-gradient)" />
-      <ellipse cx="22" cy="26" rx="4" ry="1" fill="url(#commodities-gradient)" />
-      <line x1="18" y1="18" x2="26" y2="18" stroke="url(#commodities-gradient)" strokeWidth="1" />
-      <line x1="18" y1="22" x2="26" y2="22" stroke="url(#commodities-gradient)" strokeWidth="1" />
-    </svg>
+  // Commodities: The Physical Resource
+  commodities: (props: any) => (
+    <IconBase {...props}>
+       <path d="M12 3L20 7V17L12 21L4 17V7L12 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+       <path d="M12 3V21" stroke="currentColor" strokeWidth="1.5" className="opacity-50"/>
+       <path d="M4 7L20 7" stroke="currentColor" strokeWidth="1.5" className="opacity-50"/>
+       <path d="M4 17L20 17" stroke="currentColor" strokeWidth="1.5" className="opacity-50"/>
+    </IconBase>
   ),
 
-  // Options - Curved payoff diagram
-  options: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="options-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#6366F1" />
-          <stop offset="100%" stopColor="#4F46E5" />
-        </linearGradient>
-      </defs>
-      {/* Axes */}
-      <line x1="4" y1="28" x2="28" y2="28" stroke="currentColor" strokeWidth="1" />
-      <line x1="4" y1="28" x2="4" y2="4" stroke="currentColor" strokeWidth="1" />
-
-      {/* Option payoff curve */}
-      <path
-        d="M4 28L12 28L16 20L20 12L24 8L28 6"
-        stroke="url(#options-gradient)"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-
-      {/* Strike price line */}
-      <line x1="16" y1="4" x2="16" y2="28" stroke="url(#options-gradient)" strokeWidth="1" strokeDasharray="2 2" />
-
-      {/* Greeks indicators */}
-      <circle cx="20" cy="12" r="2" fill="url(#options-gradient)" opacity="0.6" />
-      <circle cx="24" cy="8" r="1.5" fill="url(#options-gradient)" opacity="0.8" />
-    </svg>
+  // Options: The Greeks/Delta
+  options: (props: any) => (
+    <IconBase {...props}>
+      <path d="M3 21H21" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M3 21C9 21 12 3 21 3" stroke="currentColor" strokeWidth="1.5"/>
+    </IconBase>
   ),
 }
 
-export const SpecificInstrumentIcons = {
-  // Index Futures
-  ES: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="es-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3B82F6" />
-          <stop offset="100%" stopColor="#1E40AF" />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="6" width="20" height="12" rx="2" stroke="url(#es-gradient)" strokeWidth="2" fill="none" />
-      <text x="12" y="13" fontSize="8" fill="url(#es-gradient)" textAnchor="middle" fontWeight="bold">
-        S&P
-      </text>
-      <path
-        d="M4 16L8 12L12 14L16 10L20 12"
-        stroke="url(#es-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
+// --- 3. SPECIFIC INSTRUMENTS (Monograms) ---
 
-  NQ: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="nq-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="100%" stopColor="#059669" />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="6" width="20" height="12" rx="2" stroke="url(#nq-gradient)" strokeWidth="2" fill="none" />
-      <text x="12" y="13" fontSize="7" fill="url(#nq-gradient)" textAnchor="middle" fontWeight="bold">
-        NASDAQ
-      </text>
-      <path
-        d="M4 14L6 10L8 12L10 8L12 10L14 6L16 8L18 4L20 6"
-        stroke="url(#nq-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+// This maps specific symbols to their "Badge" look
+export const SpecificInstrumentIcons: Record<string, (props: any) => JSX.Element> = {
+  // Indices
+  ES: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="ES" color="bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300" />
+    </div>
   ),
-
-  // Forex Pairs
-  EURUSD: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="eurusd-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#D97706" />
-        </linearGradient>
-      </defs>
-      <circle cx="8" cy="12" r="6" stroke="url(#eurusd-gradient)" strokeWidth="2" fill="none" />
-      <text x="6.5" y="14" fontSize="8" fill="url(#eurusd-gradient)" fontWeight="bold">
-        €
-      </text>
-      <circle cx="16" cy="12" r="6" stroke="url(#eurusd-gradient)" strokeWidth="2" fill="none" />
-      <text x="14.5" y="14" fontSize="8" fill="url(#eurusd-gradient)" fontWeight="bold">
-        $
-      </text>
-      <path
-        d="M12 8L14 12L12 16"
-        stroke="url(#eurusd-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+  NQ: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="NQ" color="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300" />
+    </div>
   ),
-
-  GBPUSD: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="gbpusd-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#EF4444" />
-          <stop offset="100%" stopColor="#DC2626" />
-        </linearGradient>
-      </defs>
-      <circle cx="8" cy="12" r="6" stroke="url(#gbpusd-gradient)" strokeWidth="2" fill="none" />
-      <text x="6.5" y="14" fontSize="8" fill="url(#gbpusd-gradient)" fontWeight="bold">
-        £
-      </text>
-      <circle cx="16" cy="12" r="6" stroke="url(#gbpusd-gradient)" strokeWidth="2" fill="none" />
-      <text x="14.5" y="14" fontSize="8" fill="url(#gbpusd-gradient)" fontWeight="bold">
-        $
-      </text>
-      <path
-        d="M12 8L14 12L12 16"
-        stroke="url(#gbpusd-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+  RTY: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="RTY" color="bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300" />
+    </div>
   ),
-
-  // Crypto
-  BTCUSD: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="btc-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F7931A" />
-          <stop offset="100%" stopColor="#E8831A" />
-        </linearGradient>
-      </defs>
-      <circle cx="12" cy="12" r="10" fill="url(#btc-gradient)" />
-      <text x="12" y="16" fontSize="12" fill="white" textAnchor="middle" fontWeight="bold">
-        ₿
-      </text>
-      <path d="M4 4L20 20M20 4L4 20" stroke="url(#btc-gradient)" strokeWidth="1" opacity="0.3" />
-    </svg>
-  ),
-
-  ETHUSD: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="eth-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#627EEA" />
-          <stop offset="100%" stopColor="#4F6BD5" />
-        </linearGradient>
-      </defs>
-      <circle cx="12" cy="12" r="10" fill="url(#eth-gradient)" />
-      <path d="M12 4L8 12L12 14L16 12L12 4Z" fill="white" />
-      <path d="M8 13L12 20L16 13L12 15L8 13Z" fill="white" opacity="0.8" />
-    </svg>
-  ),
-
-  // Individual Stocks
-  AAPL: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="aapl-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#007AFF" />
-          <stop offset="100%" stopColor="#0056CC" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M12 2C8 2 6 5 8 8C6 8 4 10 4 13C4 18 8 22 12 22C16 22 20 18 20 13C20 10 18 8 16 8C18 5 16 2 12 2Z"
-        fill="url(#aapl-gradient)"
-      />
-      <path d="M14 6C15 4 16 3 17 4" stroke="url(#aapl-gradient)" strokeWidth="1" fill="none" />
-    </svg>
-  ),
-
-  TSLA: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="tsla-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#E31E24" />
-          <stop offset="100%" stopColor="#CC1B1F" />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="10" width="16" height="8" rx="4" fill="url(#tsla-gradient)" />
-      <circle cx="7" cy="16" r="2" stroke="url(#tsla-gradient)" strokeWidth="2" fill="white" />
-      <circle cx="17" cy="16" r="2" stroke="url(#tsla-gradient)" strokeWidth="2" fill="white" />
-      <path
-        d="M8 10L12 6L16 10"
-        stroke="url(#tsla-gradient)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="12" r="1" fill="white" />
-    </svg>
+  YM: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="YM" color="bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300" />
+    </div>
   ),
 
   // Commodities
-  GC: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFD700" />
-          <stop offset="100%" stopColor="#FFA500" />
-        </linearGradient>
-      </defs>
-      <rect x="6" y="8" width="12" height="6" rx="1" fill="url(#gold-gradient)" />
-      <rect x="8" y="6" width="8" height="4" rx="1" fill="url(#gold-gradient)" />
-      <rect x="10" y="4" width="4" height="4" rx="1" fill="url(#gold-gradient)" />
-      <text x="12" y="12" fontSize="6" fill="#8B4513" textAnchor="middle" fontWeight="bold">
-        Au
-      </text>
-      <circle cx="12" cy="18" r="3" stroke="url(#gold-gradient)" strokeWidth="2" fill="none" />
-    </svg>
+  GC: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="GC" color="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300" />
+    </div>
+  ),
+  CL: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="CL" color="bg-zinc-100 text-zinc-700 dark:bg-zinc-700/50 dark:text-zinc-300" />
+    </div>
+  ),
+  SI: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="SI" color="bg-gray-100 text-gray-700 dark:bg-gray-500/20 dark:text-gray-300" />
+    </div>
   ),
 
-  CL: (props: React.SVGProps<SVGSVGElement>) => (
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <defs>
-        <linearGradient id="oil-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2D3748" />
-          <stop offset="100%" stopColor="#1A202C" />
-        </linearGradient>
-      </defs>
-      <ellipse cx="12" cy="14" rx="6" ry="8" fill="url(#oil-gradient)" />
-      <ellipse cx="12" cy="6" rx="6" ry="1" fill="url(#oil-gradient)" />
-      <ellipse cx="12" cy="22" rx="6" ry="1" fill="url(#oil-gradient)" />
-      <line x1="6" y1="10" x2="18" y2="10" stroke="#4A5568" strokeWidth="1" />
-      <line x1="6" y1="14" x2="18" y2="14" stroke="#4A5568" strokeWidth="1" />
-      <line x1="6" y1="18" x2="18" y2="18" stroke="#4A5568" strokeWidth="1" />
-      <text x="12" y="15" fontSize="6" fill="white" textAnchor="middle" fontWeight="bold">
-        OIL
-      </text>
-    </svg>
+  // Crypto
+  BTCUSD: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="BTC" color="bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300" />
+    </div>
+  ),
+  ETHUSD: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="ETH" color="bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300" />
+    </div>
+  ),
+
+  // Forex
+  EURUSD: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="EU" color="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300" />
+    </div>
+  ),
+  GBPUSD: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="GU" color="bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300" />
+    </div>
+  ),
+  USDJPY: (props) => (
+    <div {...props}>
+      <TickerBadge symbol="UJ" color="bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300" />
+    </div>
   ),
 }
 
-// Selector component for dynamic icon rendering
+// --- 4. SELECTOR COMPONENT ---
+
 export interface InstrumentIconSelectorProps {
   type: "methodology" | "category" | "specific"
   name: string
@@ -581,8 +261,20 @@ export const InstrumentIconSelector: React.FC<InstrumentIconSelectorProps> = ({ 
       return CategoryIcon ? <CategoryIcon {...iconProps} /> : null
 
     case "specific":
-      const SpecificIcon = SpecificInstrumentIcons[name as keyof typeof SpecificInstrumentIcons]
-      return SpecificIcon ? <SpecificIcon {...iconProps} /> : null
+      // Check if we have a specific monogram defined
+      const SpecificIcon = SpecificInstrumentIcons[name] || SpecificInstrumentIcons[name.toUpperCase()]
+      
+      if (SpecificIcon) {
+        return <SpecificIcon {...iconProps} />
+      }
+
+      // Fallback: Generate a generic monogram on the fly
+      const shortName = name.slice(0, 3).toUpperCase()
+      return (
+        <div className={className}>
+          <TickerBadge symbol={shortName} />
+        </div>
+      )
 
     default:
       return null

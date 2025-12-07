@@ -26,7 +26,7 @@ export const NQFuturesIcon = ({ className }: { className?: string }) => (
   // Fixed template literal syntax
   <svg viewBox="0 0 24 24" className={`group ${className}`} xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <style>{`.st0 { stroke: #8B5CF6; fill: none; transition: stroke 0.2s; stroke-width: 2; } .group:hover .st0 { stroke: #7C3AED; }`}</style>
+      <style>{`.st0 { stroke:rgb(37, 24, 69); fill: none; transition: stroke 0.2s; stroke-width: 2; } .group:hover .st0 { stroke: #7C3AED; }`}</style>
     </defs>
     <path d="M2 20 L6 16 L10 20 L14 14 L18 18 L22 12" className="st0" strokeLinecap="round" />
   </svg>

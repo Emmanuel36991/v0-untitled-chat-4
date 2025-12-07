@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useRef, useEffect } from "react"
 import { Bot, X, Send, Sparkles, Minimize2, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -39,63 +41,89 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input
+      content: input,
     }
 
     // 1. Add User Message
-    setMessages(prev => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setInput("")
     setIsLoading(true)
 
     try {
       // 2. Prepare Assistant Message Placeholder
       const assistantMessageId = (Date.now() + 1).toString()
-      setMessages(prev => [...prev, {
-        id: assistantMessageId,
-        role: "assistant",
-        content: ""
-      }])
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantMessageId,
+          role: "assistant",
+          content: "",
+        },
+      ])
 
       // 3. Fetch Stream
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
-          context: initialContext
-        })
+          messages: [...messages, userMessage].map(({ role, content }) => ({ role, content })),
+          context: initialContext,
+        }),
       })
 
       if (!response.ok) throw new Error("Failed to send message")
       if (!response.body) throw new Error("No response body")
 
-      // 4. Read Stream
+      // 4. Read Stream - Fix stream parsing to handle SSE format
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let done = false
       let accumulatedContent = ""
+      let buffer = ""
 
       while (!done) {
         const { value, done: doneReading } = await reader.read()
         done = doneReading
         const chunkValue = decoder.decode(value, { stream: true })
-        accumulatedContent += chunkValue
+        buffer += chunkValue
 
-        // Update the last message (assistant) with new content
-        setMessages(prev => prev.map(msg => 
-          msg.id === assistantMessageId 
-            ? { ...msg, content: accumulatedContent }
-            : msg
-        ))
+        const lines = buffer.split("\n")
+        buffer = lines[lines.length - 1] // Keep incomplete line in buffer
+
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i].trim()
+          if (line.startsWith("data: ")) {
+            try {
+              const jsonStr = line.slice(6) // Remove "data: " prefix
+              if (jsonStr === "[DONE]") continue
+
+              const json = JSON.parse(jsonStr)
+              const content = json.choices?.[0]?.delta?.content || ""
+
+              if (content) {
+                accumulatedContent += content
+                // Update the last message (assistant) with new content
+                setMessages((prev) =>
+                  prev.map((msg) => (msg.id === assistantMessageId ? { ...msg, content: accumulatedContent } : msg)),
+                )
+              }
+            } catch (e) {
+              // Skip malformed JSON
+              console.log("[v0] Skipped malformed JSON chunk")
+            }
+          }
+        }
       }
-
     } catch (error) {
       console.error("Chat Error:", error)
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again."
-      }])
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+        },
+      ])
     } finally {
       setIsLoading(false)
     }
@@ -117,12 +145,10 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
   }
 
   return (
-    <div 
+    <div
       className={cn(
         "fixed bottom-6 right-6 z-50 flex flex-col bg-slate-900 border border-slate-700/50 shadow-2xl transition-all duration-300 backdrop-blur-xl",
-        isExpanded 
-          ? "w-[90vw] h-[80vh] max-w-4xl rounded-xl" 
-          : "w-[380px] h-[600px] rounded-2xl"
+        isExpanded ? "w-[90vw] h-[80vh] max-w-4xl rounded-xl" : "w-[380px] h-[600px] rounded-2xl",
       )}
     >
       {/* Header */}
@@ -170,22 +196,16 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
               </p>
             </div>
           )}
-          
+
           <div className="space-y-4 pb-4">
             {messages.map((m) => (
-              <div
-                key={m.id}
-                className={cn(
-                  "flex w-full",
-                  m.role === "user" ? "justify-end" : "justify-start"
-                )}
-              >
+              <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
                 <div
                   className={cn(
                     "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                     m.role === "user"
                       ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-none"
+                      : "bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-none",
                   )}
                 >
                   <p className="whitespace-pre-wrap">{m.content}</p>
@@ -216,8 +236,8 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
             placeholder="Ask about your trades..."
             className="bg-slate-900/50 border-slate-700 text-slate-200 focus:ring-blue-500 focus:border-blue-500"
           />
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isLoading || !input.trim()}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >

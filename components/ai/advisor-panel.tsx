@@ -43,19 +43,34 @@ export function AdvisorPanel({ isOpen, onClose, title, type, data, context }: Ad
         throw new Error(`HTTP ${response.status}`)
       }
 
-      // Handle streaming response
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let fullText = ""
+      let buffer = ""
 
       if (reader) {
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
 
-          const chunk = decoder.decode(value, { stream: true })
-          fullText += chunk
-          setAnalysis(fullText)
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split("\n")
+          buffer = lines.pop() || ""
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const jsonStr = line.slice(6)
+                const data = JSON.parse(jsonStr)
+                if (data.choices?.[0]?.delta?.content) {
+                  fullText += data.choices[0].delta.content
+                  setAnalysis(fullText)
+                }
+              } catch {
+                // Skip invalid JSON lines
+              }
+            }
+          }
         }
       }
     } catch (err) {

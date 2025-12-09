@@ -6,7 +6,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, List, BarChart3, Calculator, BookOpen, Users, Menu, ShieldCheck, FileText, LogOut, Sparkles } from 'lucide-react'
+import { LayoutDashboard, List, BarChart3, BookOpen, Users, Menu, ShieldCheck, FileText, LogOut } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
@@ -16,14 +16,12 @@ const mainNavItems = [
   { name: "Trades", href: "/trades", icon: List },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Psychology Journal", href: "/psychology", icon: ShieldCheck },
-  { name: "AI Insights", href: "/insights", icon: Sparkles },
   { name: "Backtesting", href: "/backtesting", icon: FileText },
   { name: "Community", href: "/social-insights", icon: Users },
   { name: "Guides", href: "/guides", icon: BookOpen },
-  { name: "Tutorials", href: "/tutorials", icon: Sparkles },
 ]
 
-const secondaryNavItems = []
+const secondaryNavItems: any[] = []
 
 export function Navbar() {
   const pathname = usePathname()

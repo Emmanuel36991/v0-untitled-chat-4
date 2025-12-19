@@ -8,11 +8,13 @@ export interface CategorizedConcept {
   subCategory: string // Specific sub-category like "Market Structure", "Order Blocks"
 }
 
+
 export type NewTradeInput = Omit<
   Trade,
   "id" | "pnl" | "outcome" | "created_at" | "updated_at" | "risk_reward_ratio"
 > & {
   // Existing optional fields
+    playbook_strategy_id?: string | null // <--- NEW FIELD
   setupName?: string | null
   notes?: string | null
   screenshotBeforeUrl?: string | null
@@ -88,6 +90,11 @@ export type NewTradeInput = Omit<
 }
 
 export interface Trade {
+    id: string
+  user_id: string
+  // ... existing fields ...
+  playbook_strategy_id?: string | null // <--- NEW FIELD
+  // ...
   id: string
   user_id?: string | null
   date: string // Keep as string for form compatibility, convert to Date object when needed

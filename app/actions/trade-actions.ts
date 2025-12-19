@@ -27,6 +27,9 @@ function mapRowToTrade(row: any): Trade {
     screenshot_before_url: row.screenshot_before_url,
     screenshot_after_url: row.screenshot_after_url,
 
+    // *** NEW FIELD MAPPING ***
+    playbook_strategy_id: row.playbook_strategy_id,
+
     // Enhanced timing fields
     duration_minutes: row.duration_minutes ? Number(row.duration_minutes) : null,
     trade_session: row.trade_session,
@@ -109,6 +112,8 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
     if (value === undefined) return // skip undefined values
     if (Array.isArray(value) && value.length === 0) return // skip empty arrays
 
+    // Handle playbook_strategy_id explicitly or via the regex
+    // Since it's already snake_case in your input type, camelToSnake handles it (no change) or we pass it directly
     const snakeKey = camelToSnake(key)
     payload[snakeKey] = value
   })
@@ -334,6 +339,9 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
     console.log("[v0] Trade successfully inserted:", data?.id)
 
     revalidatePath("/trades")
+    revalidatePath("/playbook")
+    revalidatePath("/dashboard")
+    
     return {
       success: true,
       trade: mapRowToTrade(data),
@@ -377,6 +385,8 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
     }
 
     revalidatePath("/trades")
+    revalidatePath("/playbook")
+    
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
     console.error("Exception in updateTrade:", error)
@@ -403,6 +413,8 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
     }
 
     revalidatePath("/trades")
+    revalidatePath("/playbook")
+    
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
     console.error("Exception in deleteTrade:", error)
@@ -429,6 +441,8 @@ export async function deleteAllTrades(): Promise<SubmitTradeResult> {
     }
 
     revalidatePath("/trades")
+    revalidatePath("/playbook")
+    
     return { success: true, message: "All trades deleted successfully!" }
   } catch (error: any) {
     console.error("Exception in deleteAllTrades:", error)
@@ -465,6 +479,8 @@ export async function addMultipleTrades(
     }
 
     revalidatePath("/trades")
+    revalidatePath("/playbook")
+    
     return {
       successCount: data?.length || 0,
       errorCount: trades.length - (data?.length || 0),

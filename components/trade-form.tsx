@@ -29,6 +29,8 @@ import {
   Plus,
   Layers,
   Scale,
+  BookOpen,
+  ListChecks // Added for rules checklist
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -61,6 +63,9 @@ import {
   type CategorizedConcept,
   type ChecklistItem,
 } from "@/types"
+
+// *** NEW IMPORT ***
+import { getStrategies, type PlaybookStrategy } from "@/app/actions/playbook-actions"
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                    */
@@ -215,6 +220,7 @@ const getInitialFormState = (initialTrade?: Trade): NewTradeInput => {
     size: 0,
     setupName: "",
     notes: "",
+    playbook_strategy_id: null, // NEW FIELD
     take_profit: undefined,
     durationMinutes: undefined,
     tradeSession: undefined,
@@ -528,6 +534,9 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [customInstruments, setCustomInstruments] = useState<CustomInstrument[]>([])
 
+  // *** NEW: Strategies State ***
+  const [strategies, setStrategies] = useState<PlaybookStrategy[]>([])
+
   // Psychology specific
   const [showPsychologyForm, setShowPsychologyForm] = useState(true) // Default open to encourage use
   const [psychologyMood, setPsychologyMood] = useState("")
@@ -540,6 +549,19 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const [psychologyLessons, setPsychologyLessons] = useState("")
 
   // --- EFFECTS ---
+
+  // 1. Fetch Strategies
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getStrategies()
+        setStrategies(data)
+      } catch (error) {
+        console.error("Failed to load strategies", error)
+      }
+    }
+    load()
+  }, [])
 
   // Load Draft
   useEffect(() => {
@@ -748,8 +770,12 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
     setIsSubmitting(true)
     try {
-      // 1. Save Trade
-      const result = await onSubmitTrade({ ...formData })
+      // 1. Save Trade with auto-calc PnL if needed
+      const submissionData = {
+        ...formData,
+        pnl: formData.pnl || pnlResult || 0
+      }
+      const result = await onSubmitTrade(submissionData)
 
       if (result.success) {
         // 2. If Psychology data exists, save Journal Entry linked to Trade ID
@@ -1163,6 +1189,92 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                 <Button variant="outline" size="sm" onClick={() => setActiveTab("setup")}>
                   <ChevronLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
+              </div>
+
+              {/* *** STRATEGY SELECTION SECTION (Now matches other sections) *** */}
+              <div className="border rounded-xl overflow-hidden mb-6 border-indigo-200 dark:border-indigo-900">
+                {/* Section Header - Same style as others */}
+                <div className="p-3 border-b flex items-center gap-2 bg-indigo-50/20 border-indigo-200 dark:border-indigo-900">
+                  <div className="p-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30">
+                    <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="font-bold text-indigo-700 dark:text-indigo-300">Playbook Strategy</h3>
+                </div>
+
+                <div className="p-4 bg-card grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {strategies.length === 0 ? (
+                    <div className="col-span-full text-center p-6 border-2 border-dashed border-indigo-200 dark:border-indigo-800 rounded-xl">
+                      <p className="text-sm text-muted-foreground mb-4">No strategies found in your playbook.</p>
+                      <Button variant="outline" size="sm" onClick={() => router.push('/playbook')}>Go to Playbook</Button>
+                    </div>
+                  ) : (
+                    strategies.map(strat => {
+                      const isSelected = formData.playbook_strategy_id === strat.id
+                      return (
+                        <div key={strat.id} className="h-full flex flex-col gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ 
+                              ...prev, 
+                              playbook_strategy_id: isSelected ? null : strat.id,
+                              setupName: isSelected ? "" : strat.name // Auto-fill setup name
+                            }))}
+                            className={cn(
+                              "relative flex flex-col items-start p-4 rounded-xl border-2 text-left transition-all duration-200 w-full h-full",
+                              "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500",
+                              isSelected
+                                ? "bg-background shadow-md scale-[1.02] border-indigo-500/50 bg-indigo-50/10"
+                                : "border-border/40 bg-card/50 hover:bg-accent/50 hover:border-border"
+                            )}
+                          >
+                            {isSelected && (
+                              <div className="absolute top-3 right-3 p-1 rounded-full bg-indigo-100 dark:bg-indigo-900">
+                                <CheckCircle className="w-4 h-4 text-indigo-600" />
+                              </div>
+                            )}
+
+                            <div className="mb-2 flex items-center justify-center w-8 h-8 rounded-lg bg-background border border-border/50 shadow-sm">
+                              <BookOpen className={cn("w-4 h-4", isSelected ? "text-indigo-600" : "text-muted-foreground")} />
+                            </div>
+
+                            <h4 className={cn("font-bold text-sm mb-1 pr-6 leading-tight", isSelected ? "text-foreground" : "text-muted-foreground")}>
+                              {strat.name}
+                            </h4>
+                            
+                            <p className="text-[11px] text-muted-foreground/70 leading-snug line-clamp-2">
+                              {strat.description || "No description provided."}
+                            </p>
+
+                            <div className="mt-2 flex items-center gap-2">
+                              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500">
+                                {strat.win_rate}% WR
+                              </Badge>
+                            </div>
+
+                            {isSelected && <div className="absolute inset-0 rounded-xl bg-indigo-500/5 pointer-events-none" />}
+                          </button>
+
+                          {/* INLINE RULES CHECKLIST */}
+                          {isSelected && strat.rules && strat.rules.length > 0 && (
+                            <div className="ml-4 pl-4 border-l-2 border-indigo-200/50 dark:border-indigo-800/50 py-1 animate-in slide-in-from-left-2 duration-300">
+                              <div className="flex items-center gap-2 mb-2 text-[10px] font-bold uppercase text-indigo-500 tracking-wider">
+                                <ListChecks className="w-3 h-3" /> Required Rules
+                              </div>
+                              <ul className="space-y-1.5">
+                                {strat.rules.map((rule, idx) => (
+                                  <li key={idx} className="flex items-start gap-2 text-xs text-muted-foreground">
+                                    <div className="w-1 h-1 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                                    <span>{rule.text}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
               </div>
 
               {/* 1. SMC Section */}

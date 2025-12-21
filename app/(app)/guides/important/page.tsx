@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, BookOpen, Clock, Star, Download } from "lucide-react"
 import Link from "next/link"
 
+// Ensure this page is treated as dynamic to match the layout's requirements
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Important Trading Guides",
   description: "Essential guides and resources for successful trading",

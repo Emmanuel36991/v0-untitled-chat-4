@@ -8,6 +8,10 @@ import { TradingAssistant } from "@/components/ai/trading-assistant"
 import { getTrades } from "@/app/actions/trade-actions"
 import { buildTradingContext } from "@/lib/ai/context-builder"
 
+// FORCE DYNAMIC: This layout fetches user-specific data (trades) via cookies.
+// It cannot be statically generated.
+export const dynamic = "force-dynamic"
+
 export default async function AppLayout({
   children,
 }: {

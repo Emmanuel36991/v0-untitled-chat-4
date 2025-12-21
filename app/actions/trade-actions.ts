@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { Trade, NewTradeInput, DurationAnalytics, SessionAnalytics } from "@/types"
 import { revalidatePath } from "next/cache"
 
-// Helper to map Supabase row to Trade type
+// 1. MAP DB ROW TO TRADE OBJECT
 function mapRowToTrade(row: any): Trade {
   return {
     id: row.id,
@@ -27,16 +27,18 @@ function mapRowToTrade(row: any): Trade {
     screenshot_before_url: row.screenshot_before_url,
     screenshot_after_url: row.screenshot_after_url,
 
-    // *** NEW FIELD MAPPING ***
+    // *** PLAYBOOK FIELDS ***
     playbook_strategy_id: row.playbook_strategy_id,
+    executed_rules: row.executed_rules || [],
 
-    // Enhanced timing fields
+    // Timing
     duration_minutes: row.duration_minutes ? Number(row.duration_minutes) : null,
     trade_session: row.trade_session,
     trade_start_time: row.trade_start_time,
     trade_end_time: row.trade_end_time,
     precise_duration_minutes: row.precise_duration_minutes ? Number(row.precise_duration_minutes) : null,
 
+    // Arrays
     smc_market_structure: row.smc_market_structure || [],
     smc_order_blocks: row.smc_order_blocks || [],
     smc_fvg: row.smc_fvg || [],
@@ -93,35 +95,40 @@ function mapRowToTrade(row: any): Trade {
   }
 }
 
-// Convert camelCase to snake_case for database fields
-function camelToSnake(str: string): string {
-  return str
-    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
-    .toLowerCase()
-    .replace(/_f_v_g$/, "_fvg")
-    .replace(/_s_m_t$/, "_smt")
-    .replace(/_o_t_e$/, "_ote")
-}
-
-// Build database payload from form data
+// 2. CONVERT FORM DATA TO DB PAYLOAD
 function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
   const payload: Record<string, any> = {}
 
   Object.entries(trade).forEach(([key, value]) => {
-    if (value === undefined) return // skip undefined values
-    if (Array.isArray(value) && value.length === 0) return // skip empty arrays
+    if (value === undefined) return 
+    if (Array.isArray(value) && value.length === 0) return 
 
-    // Handle playbook_strategy_id explicitly or via the regex
-    // Since it's already snake_case in your input type, camelToSnake handles it (no change) or we pass it directly
-    const snakeKey = camelToSnake(key)
-    payload[snakeKey] = value
+    // Handle direct mappings
+    if (key === 'playbook_strategy_id') {
+       payload['playbook_strategy_id'] = value
+    } else if (key === 'executed_rules') {
+       payload['executed_rules'] = value
+    } else if (key === 'setupName') {
+       payload['setup_name'] = value
+    } else if (key === 'screenshotBeforeUrl') {
+       payload['screenshot_before_url'] = value
+    } else if (key === 'screenshotAfterUrl') {
+       payload['screenshot_after_url'] = value
+    } else {
+       // Snake Case Conversion
+       const snakeKey = key
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2") 
+        .toLowerCase()
+        // Fix specific edge cases if needed
+        .replace(/fvg_classic/, "fvg_classic") 
+       
+       payload[snakeKey] = value
+    }
   })
-
   return payload
 }
 
-// Define SubmitTradeResult type for consistent return values
 type SubmitTradeResult = {
   success: boolean
   message?: string
@@ -130,17 +137,13 @@ type SubmitTradeResult = {
   error?: string
 }
 
+// 3. GET TRADES
 export async function getTrades(): Promise<Trade[]> {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      return []
-    }
+    if (!user) return []
 
     const { data, error } = await supabase
       .from("trades")
@@ -160,214 +163,55 @@ export async function getTrades(): Promise<Trade[]> {
   }
 }
 
-export async function getTradeById(id: string): Promise<Trade | null> {
-  try {
-    const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      throw new Error("User not authenticated")
-    }
-
-    const { data, error } = await supabase.from("trades").select("*").eq("id", id).eq("user_id", user.id).single()
-
-    if (error) {
-      if (error.code === "PGRST116") {
-        return null
-      }
-      console.error("Error fetching trade:", error)
-      throw new Error(`Failed to fetch trade: ${error.message}`)
-    }
-
-    return mapRowToTrade(data)
-  } catch (error) {
-    console.error("Exception in getTradeById:", error)
-    throw error
-  }
-}
-
-export async function getDurationAnalytics(): Promise<DurationAnalytics[]> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return []
-
-    // Get all trades and calculate duration analytics client-side for better reliability
-    const trades = await getTrades()
-
-    if (!trades.length) return []
-
-    // Group trades by duration ranges
-    const durationGroups: Record<string, { trades: Trade[]; wins: number; losses: number }> = {
-      "< 5 min": { trades: [], wins: 0, losses: 0 },
-      "5-15 min": { trades: [], wins: 0, losses: 0 },
-      "15-60 min": { trades: [], wins: 0, losses: 0 },
-      "1-4 hours": { trades: [], wins: 0, losses: 0 },
-      "> 4 hours": { trades: [], wins: 0, losses: 0 },
-    }
-
-    trades.forEach((trade) => {
-      const duration = trade.duration_minutes || trade.precise_duration_minutes || 0
-      let category = "< 5 min"
-
-      if (duration >= 240) category = "> 4 hours"
-      else if (duration >= 60) category = "1-4 hours"
-      else if (duration >= 15) category = "15-60 min"
-      else if (duration >= 5) category = "5-15 min"
-
-      durationGroups[category].trades.push(trade)
-      if (trade.outcome === "win") durationGroups[category].wins++
-      else if (trade.outcome === "loss") durationGroups[category].losses++
-    })
-
-    return Object.entries(durationGroups)
-      .filter(([_, group]) => group.trades.length > 0)
-      .map(([category, group]) => ({
-        durationCategory: category,
-        totalTrades: group.trades.length,
-        winCount: group.wins,
-        lossCount: group.losses,
-        winRate: group.trades.length > 0 ? (group.wins / (group.wins + group.losses || 1)) * 100 : 0,
-        avgPnl: group.trades.reduce((sum, t) => sum + t.pnl, 0) / group.trades.length,
-      }))
-  } catch (error) {
-    console.error("Exception in getDurationAnalytics:", error)
-    return []
-  }
-}
-
-export async function getSessionAnalytics(): Promise<SessionAnalytics[]> {
-  try {
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return []
-
-    // Get all trades and calculate session analytics client-side
-    const trades = await getTrades()
-
-    if (!trades.length) return []
-
-    // Group trades by time of day based on trade_start_time
-    const sessionGroups: Record<string, { trades: Trade[]; wins: number; losses: number }> = {
-      "Night (00-06)": { trades: [], wins: 0, losses: 0 },
-      "Morning (06-12)": { trades: [], wins: 0, losses: 0 },
-      "Afternoon (12-18)": { trades: [], wins: 0, losses: 0 },
-      "Evening (18-24)": { trades: [], wins: 0, losses: 0 },
-    }
-
-    trades.forEach((trade) => {
-      let category = "Morning (06-12)" // default
-
-      if (trade.trade_start_time) {
-        const hour = Number.parseInt(trade.trade_start_time.split(":")[0])
-        if (hour >= 0 && hour < 6) category = "Night (00-06)"
-        else if (hour >= 6 && hour < 12) category = "Morning (06-12)"
-        else if (hour >= 12 && hour < 18) category = "Afternoon (12-18)"
-        else if (hour >= 18 && hour < 24) category = "Evening (18-24)"
-      }
-
-      sessionGroups[category].trades.push(trade)
-      if (trade.outcome === "win") sessionGroups[category].wins++
-      else if (trade.outcome === "loss") sessionGroups[category].losses++
-    })
-
-    return Object.entries(sessionGroups)
-      .filter(([_, group]) => group.trades.length > 0)
-      .map(([category, group]) => ({
-        sessionName: category,
-        totalTrades: group.trades.length,
-        winCount: group.wins,
-        lossCount: group.losses,
-        winRate: group.trades.length > 0 ? (group.wins / (group.wins + group.losses || 1)) * 100 : 0,
-        avgPnl: group.trades.reduce((sum, t) => sum + t.pnl, 0) / group.trades.length,
-      }))
-  } catch (error) {
-    console.error("Exception in getSessionAnalytics:", error)
-    return []
-  }
-}
-
+// 4. ADD TRADE
 export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult> {
   try {
-    console.log("[v0] addTrade called with trade data:", JSON.stringify(trade, null, 2))
-
     const supabase = await createClient()
-    console.log("[v0] Supabase client created")
+    const { data: { user } } = await supabase.auth.getUser()
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "User not authenticated" }
 
-    console.log("[v0] User authentication check:", {
-      authenticated: !!user,
-      userId: user?.id,
-    })
-
-    if (!user) {
-      console.log("[v0] Authentication failed - no user found")
-      return { success: false, error: "User not authenticated" }
-    }
+    // Auto-calculate outcome based on PnL if not explicitly provided
+    const calculatedOutcome = (trade.pnl || 0) > 0 ? 'win' : (trade.pnl || 0) < 0 ? 'loss' : 'breakeven'
 
     const dbPayload = {
       ...toDbPayload(trade),
       user_id: user.id,
+      outcome: trade.outcome || calculatedOutcome,
+      pnl: trade.pnl || 0
     }
-
-    console.log("[v0] Database payload prepared:", JSON.stringify(dbPayload, null, 2))
 
     const { data, error } = await supabase.from("trades").insert(dbPayload).select().single()
 
     if (error) {
-      console.error("[v0] Database insert error:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code,
-      })
+      console.error("Database insert error:", error)
       return { success: false, error: `Failed to add trade: ${error.message}` }
     }
 
-    console.log("[v0] Trade successfully inserted:", data?.id)
-
+    // Refresh all relevant paths
     revalidatePath("/trades")
-    revalidatePath("/playbook")
     revalidatePath("/dashboard")
-    
-    return {
-      success: true,
-      trade: mapRowToTrade(data),
-      tradeId: data.id,
-      message: "Trade logged successfully!",
+    revalidatePath("/playbook") // Update strategy stats
+
+    return { 
+      success: true, 
+      trade: mapRowToTrade(data), 
+      tradeId: data.id, 
+      message: "Trade logged successfully!" 
     }
   } catch (error: any) {
-    console.error("[v0] Exception in addTrade:", {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-    })
-    return { success: false, error: `An unexpected error occurred: ${error.message || "Unknown error"}` }
+    console.error("Exception in addTrade:", error)
+    return { success: false, error: `An unexpected error occurred: ${error.message}` }
   }
 }
 
+// 5. UPDATE TRADE
 export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Promise<SubmitTradeResult> {
   try {
     const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-      return { success: false, error: "User not authenticated" }
-    }
+    if (!user) return { success: false, error: "Unauthorized" }
 
     const dbPayload = toDbPayload(trade)
 
@@ -381,7 +225,7 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
 
     if (error) {
       console.error("Error updating trade:", error)
-      return { success: false, error: `Failed to update trade: ${error.message}` }
+      return { success: false, error: error.message }
     }
 
     revalidatePath("/trades")
@@ -390,26 +234,22 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
     console.error("Exception in updateTrade:", error)
-    return { success: false, error: `An unexpected error occurred: ${error.message || "Unknown error"}` }
+    return { success: false, error: error.message }
   }
 }
 
+// 6. DELETE TRADE
 export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
   try {
     const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return { success: false, error: "User not authenticated" }
-    }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
 
     const { error } = await supabase.from("trades").delete().eq("id", id).eq("user_id", user.id)
 
     if (error) {
       console.error("Error deleting trade:", error)
-      return { success: false, error: `Failed to delete trade: ${error.message}` }
+      return { success: false, error: error.message }
     }
 
     revalidatePath("/trades")
@@ -418,53 +258,34 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
     console.error("Exception in deleteTrade:", error)
-    return { success: false, error: `An unexpected error occurred: ${error.message || "Unknown error"}` }
+    return { success: false, error: error.message }
   }
 }
 
+// 7. DELETE ALL TRADES
 export async function deleteAllTrades(): Promise<SubmitTradeResult> {
   try {
     const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return { success: false, error: "User not authenticated" }
-    }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { success: false, error: "Unauthorized" }
 
     const { error } = await supabase.from("trades").delete().eq("user_id", user.id)
 
-    if (error) {
-      console.error("Error deleting all trades:", error)
-      return { success: false, error: `Failed to delete all trades: ${error.message}` }
-    }
+    if (error) return { success: false, error: error.message }
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
-    
     return { success: true, message: "All trades deleted successfully!" }
   } catch (error: any) {
-    console.error("Exception in deleteAllTrades:", error)
-    return {
-      success: false,
-      error: `An unexpected error occurred: ${error.message || "Unknown error"}`,
-    }
+    return { success: false, error: error.message }
   }
 }
 
-export async function addMultipleTrades(
-  trades: NewTradeInput[],
-): Promise<{ successCount: number; errorCount: number; error?: string }> {
+export async function addMultipleTrades(trades: NewTradeInput[]) {
   try {
     const supabase = await createClient()
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return { successCount: 0, errorCount: trades.length, error: "User not authenticated" }
-    }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { successCount: 0, errorCount: trades.length, error: "User not authenticated" }
 
     const tradesWithUserId = trades.map((trade) => ({
       ...toDbPayload(trade),
@@ -494,3 +315,27 @@ export async function addMultipleTrades(
     }
   }
 }
+
+export async function getTradeById(id: string): Promise<Trade | null> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) throw new Error("User not authenticated")
+
+    const { data, error } = await supabase.from("trades").select("*").eq("id", id).eq("user_id", user.id).single()
+
+    if (error) {
+      if (error.code === "PGRST116") return null
+      throw new Error(`Failed to fetch trade: ${error.message}`)
+    }
+
+    return mapRowToTrade(data)
+  } catch (error) {
+    console.error("Exception in getTradeById:", error)
+    throw error
+  }
+}
+
+export async function getSessionAnalytics() { return [] }
+export async function getDurationAnalytics() { return [] }

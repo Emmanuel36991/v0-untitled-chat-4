@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   ArrowLeft,
   Calendar,
@@ -30,7 +30,8 @@ import {
   Layers,
   Scale,
   BookOpen,
-  ListChecks // Added for rules checklist
+  ListChecks,
+  CheckSquare
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -55,42 +56,17 @@ import { createBrowserClient } from "@supabase/ssr"
 import {
   type Trade,
   type NewTradeInput,
-  AVAILABLE_SMC_CONCEPTS,
-  AVAILABLE_ICT_CONCEPTS,
-  AVAILABLE_WYCKOFF_CONCEPTS,
-  AVAILABLE_VOLUME_CONCEPTS,
-  AVAILABLE_SR_CONCEPTS,
-  type CategorizedConcept,
-  type ChecklistItem,
+  type StrategyRule,
+  AVAILABLE_PSYCHOLOGY_FACTORS,
 } from "@/types"
 
-// *** NEW IMPORT ***
 import { getStrategies, type PlaybookStrategy } from "@/app/actions/playbook-actions"
 
 /* -------------------------------------------------------------------------- */
-/* TYPES                                    */
-/* -------------------------------------------------------------------------- */
-
-type SubmitTradeResult = {
-  success: boolean
-  message?: string
-  trade?: Trade
-  tradeId?: string
-  error?: string
-}
-
-interface TradeFormProps {
-  onSubmitTrade: (trade: NewTradeInput) => Promise<SubmitTradeResult>
-  initialTradeData?: Trade
-  mode?: "add" | "edit"
-}
-
-/* -------------------------------------------------------------------------- */
-/* CONSTANTS & CONFIG                             */
+/* CONSTANTS & CONFIG                                                         */
 /* -------------------------------------------------------------------------- */
 
 const FORM_STORAGE_KEY = "trade_form_draft"
-const PSYCHOLOGY_RETURN_KEY = "psychology_return_context"
 
 const MOODS = [
   {
@@ -206,7 +182,7 @@ const TRADING_SESSIONS = [
 ]
 
 /* -------------------------------------------------------------------------- */
-/* HELPER FUNCTIONS                               */
+/* HELPER FUNCTIONS                                                           */
 /* -------------------------------------------------------------------------- */
 
 const getInitialFormState = (initialTrade?: Trade): NewTradeInput => {
@@ -220,61 +196,16 @@ const getInitialFormState = (initialTrade?: Trade): NewTradeInput => {
     size: 0,
     setupName: "",
     notes: "",
-    playbook_strategy_id: null, // NEW FIELD
+    playbook_strategy_id: null,
+    executed_rules: [], // Initialize executed rules array
     take_profit: undefined,
     durationMinutes: undefined,
     tradeSession: undefined,
     tradeStartTime: undefined,
     tradeEndTime: undefined,
     preciseDurationMinutes: undefined,
-    // Initialize arrays
+    // Initialize legacy arrays just in case (though unused in new logic)
     smcMarketStructure: [],
-    smcOrderBlocks: [],
-    smcFVG: [],
-    smcFvgClassic: [],
-    smcFvgIfvg: [],
-    smcLiquidityConcepts: [],
-    smcBreakerMitigationBlocks: [],
-    smcMitigationFillZones: [],
-    smcWyckoffOverlaps: [],
-    ictMarketStructureShift: [],
-    ictOrderFlowBlocks: [],
-    ictLiquidityPoolsStops: [],
-    ictKillZones: [],
-    ictOTE: [],
-    ictFibonacciClusters: [],
-    ictPowerOfThree: [],
-    ictSMTDivergence: [],
-    ictDailyBiasSessionDynamics: [],
-    ictEntryModel: [],
-    ictLiquidityConcepts: [],
-    ictMarketStructure: [],
-    ictTimeAndPrice: [],
-    ictBiasContext: [],
-    ictLiquidityEvents: [],
-    ictFibonacciLevels: [],
-    ictPriceActionPatterns: [],
-    ictConfluence: [],
-    wyckoffPriceVolume: [],
-    wyckoffPhases: [],
-    wyckoffCompositeMan: [],
-    wyckoffSpringUpthrust: [],
-    wyckoffCauseEffect: [],
-    wyckoffSR: [],
-    wyckoffEffortResult: [],
-    volumeSpikesClusters: [],
-    volumeProfileMarketProfile: [],
-    volumeTrends: [],
-    volumeOBVAD: [],
-    volumeImbalance: [],
-    srHorizontalLevels: [],
-    srDynamic: [],
-    srSupplyDemandZones: [],
-    srFlip: [],
-    srConfluenceZones: [],
-    srMicroMacro: [],
-    srOrderFlow: [],
-    supportResistanceUsed: [],
     psychologyFactors: [],
     screenshotBeforeUrl: "",
     screenshotAfterUrl: "",
@@ -293,145 +224,113 @@ const getInitialFormState = (initialTrade?: Trade): NewTradeInput => {
   return baseState
 }
 
-const getFormDataKeyFromConceptId = (conceptId: string): keyof NewTradeInput | undefined => {
-  // SMC
-  if (conceptId.startsWith("smc_ms_")) return "smcMarketStructure"
-  if (conceptId.startsWith("smc_ob_")) return "smcOrderBlocks"
-  if (conceptId === "smc_fvg_classic") return "smcFvgClassic"
-  if (conceptId === "smc_fvg_ifvg") return "smcFvgIfvg"
-  if (conceptId.startsWith("smc_fvg_")) return "smcFVG"
-  if (conceptId.startsWith("smc_liq_")) return "smcLiquidityConcepts"
-  if (conceptId.startsWith("smc_brk_mit_")) return "smcBreakerMitigationBlocks"
-  if (conceptId.startsWith("smc_fill_zones")) return "smcMitigationFillZones"
-  if (conceptId.startsWith("smc_wyckoff_")) return "smcWyckoffOverlaps"
-  // ICT
-  if (conceptId.startsWith("ict_mss_")) return "ictMarketStructureShift"
-  if (conceptId.startsWith("ict_ob_")) return "ictOrderFlowBlocks"
-  if (conceptId.startsWith("ict_liq_")) return "ictLiquidityPoolsStops"
-  if (conceptId.startsWith("ict_kz_")) return "ictKillZones"
-  if (conceptId.startsWith("ict_ote_")) return "ictOTE"
-  if (conceptId.startsWith("ict_fib_clusters")) return "ictFibonacciClusters"
-  if (conceptId.startsWith("ict_p3_")) return "ictPowerOfThree"
-  if (conceptId.startsWith("ict_smt_")) return "ictSMTDivergence"
-  if (conceptId.startsWith("ict_bias_")) return "ictDailyBiasSessionDynamics"
-  // Wyckoff
-  if (conceptId.startsWith("wyckoff_pv_")) return "wyckoffPriceVolume"
-  if (conceptId.startsWith("wyckoff_phase_")) return "wyckoffPhases"
-  if (conceptId.startsWith("wyckoff_cm_")) return "wyckoffCompositeMan"
-  if (conceptId.startsWith("wyckoff_spring") || conceptId.startsWith("wyckoff_upthrust")) return "wyckoffSpringUpthrust"
-  if (conceptId.startsWith("wyckoff_cause_effect_")) return "wyckoffCauseEffect"
-  if (conceptId.startsWith("wyckoff_sr_")) return "wyckoffSR"
-  if (conceptId.startsWith("wyckoff_effort_result_")) return "wyckoffEffortResult"
-  // Volume
-  if (conceptId.startsWith("vol_spikes") || conceptId.startsWith("vol_poc_va")) return "volumeSpikesClusters"
-  if (conceptId.startsWith("vol_vwap") || conceptId.startsWith("vol_price_levels")) return "volumeProfileMarketProfile"
-  if (conceptId.startsWith("vol_trends_")) return "volumeTrends"
-  if (conceptId.startsWith("vol_obv") || conceptId.startsWith("vol_ad_line")) return "volumeOBVAD"
-  if (conceptId.startsWith("vol_imbalance_")) return "volumeImbalance"
-  // Support & Resistance
-  if (conceptId.startsWith("sr_horiz_")) return "srHorizontalLevels"
-  if (conceptId.startsWith("sr_dyn_")) return "srDynamic"
-  if (conceptId.startsWith("sr_sd_zones")) return "srSupplyDemandZones"
-  if (conceptId.startsWith("sr_flip_")) return "srFlip"
-  if (conceptId.startsWith("sr_conf_")) return "srConfluenceZones"
-  if (conceptId.startsWith("sr_micro_macro_")) return "srMicroMacro"
-  if (conceptId.startsWith("sr_orderflow_")) return "srOrderFlow"
-  // Psychology
-  if (conceptId.startsWith("psy_")) return "psychologyFactors"
-
-  return undefined
-}
-
-const formatDuration = (minutes: number | undefined): string => {
-  if (!minutes) return "0m"
-  const hours = Math.floor(minutes / 60)
-  const mins = Math.round(minutes % 60)
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
-}
-
-const getDurationCategory = (minutes: number | undefined): string => {
-  if (!minutes) return "Unknown"
-  if (minutes <= 5) return "Scalp (≤5min)"
-  if (minutes <= 30) return "Short-term (5-30min)"
-  if (minutes <= 240) return "Intraday (30min-4h)"
-  if (minutes <= 1440) return "Day Trade (4h-1d)"
-  return "Swing (>1d)"
-}
-
-const getSessionOverlaps = (timeStr: string): string[] => {
-  if (!timeStr) return []
-  const [hours, minutes] = timeStr.split(":").map(Number)
-  const totalMinutes = hours * 60 + minutes
-  const overlaps: string[] = []
-  if (totalMinutes >= 1260 || totalMinutes <= 360) overlaps.push("Asian")
-  if (totalMinutes >= 420 && totalMinutes <= 960) overlaps.push("London")
-  if (totalMinutes >= 720 && totalMinutes <= 1260) overlaps.push("New York")
-  return overlaps
-}
-
-/* -------------------------------------------------------------------------- */
-/* SUB-COMPONENTS                                    */
-/* -------------------------------------------------------------------------- */
-
-// 1. Enhanced Concept Card
-const ConceptCard = ({
-  concept,
-  isSelected,
-  onToggle,
-  colorClass = "text-primary",
-  bgClass = "bg-primary/5",
-  borderClass = "border-primary/30",
-}: {
-  concept: CategorizedConcept | ChecklistItem
-  isSelected: boolean
-  onToggle: () => void
-  colorClass?: string
-  bgClass?: string
-  borderClass?: string
+// 1. Strategy Item Card (Renamed to match usage)
+const StrategyItemCard = ({ 
+  title, 
+  description, 
+  tags, 
+  isSelected, 
+  onToggle, 
+  winRate 
+}: { 
+  title: string, 
+  description?: string, 
+  tags: string[], 
+  isSelected: boolean, 
+  onToggle: () => void, 
+  winRate: number 
 }) => {
+  
+  // Dynamic Icon Selection based on tags/name
+  let Icon = BookOpen
+  if (tags.some(t => t.toLowerCase().includes("ict"))) Icon = Crosshair
+  else if (tags.some(t => t.toLowerCase().includes("smc"))) Icon = Zap
+  else if (tags.some(t => t.toLowerCase().includes("wyckoff"))) Icon = Layers
+  else if (tags.some(t => t.toLowerCase().includes("volume"))) Icon = BarChart3
+
   return (
     <button
       type="button"
       onClick={onToggle}
       className={cn(
         "relative flex flex-col items-start p-4 rounded-xl border-2 text-left transition-all duration-200 h-full w-full",
-        "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary",
-        isSelected
-          ? cn("bg-background shadow-md scale-[1.02]", borderClass)
-          : "border-border/40 bg-card/50 hover:bg-accent/50 hover:border-border",
+        "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500",
+        isSelected 
+          ? "bg-indigo-50/50 border-indigo-500 ring-1 ring-indigo-500 dark:bg-indigo-900/20 dark:border-indigo-500" 
+          : "bg-card border-border/40 hover:bg-accent/50 hover:border-indigo-200 dark:hover:border-indigo-800"
       )}
     >
-      {isSelected && (
-        <div className={cn("absolute top-3 right-3 p-1 rounded-full", bgClass)}>
-          <CheckCircle className={cn("w-4 h-4", colorClass)} />
+      <div className="flex justify-between w-full mb-3">
+        <div className={cn("p-2 rounded-lg border shadow-sm", isSelected ? "bg-indigo-100 border-indigo-200 dark:bg-indigo-900 dark:border-indigo-800" : "bg-background border-border")}>
+          <Icon className={cn("w-5 h-5", isSelected ? "text-indigo-600" : "text-muted-foreground")} />
         </div>
-      )}
-
-      <div className="mb-2 flex items-center justify-center w-8 h-8 rounded-lg bg-background border border-border/50 shadow-sm">
-        <Zap className={cn("w-4 h-4", isSelected ? colorClass : "text-muted-foreground")} />
+        {isSelected && (
+           <div className="bg-indigo-100 dark:bg-indigo-900 text-indigo-600 rounded-full p-1">
+             <CheckCircle className="w-4 h-4" />
+           </div>
+        )}
       </div>
 
-      <h4
-        className={cn(
-          "font-bold text-sm mb-1 pr-6 leading-tight",
-          isSelected ? "text-foreground" : "text-muted-foreground",
-        )}
-      >
-        {concept.name}
+      <h4 className={cn("font-bold text-sm mb-1 leading-tight", isSelected ? "text-indigo-900 dark:text-indigo-100" : "text-foreground")}>
+        {title}
       </h4>
+      
+      <p className="text-[11px] text-muted-foreground line-clamp-2 mb-4 h-8 leading-snug">
+        {description || "No description provided."}
+      </p>
 
-      {"description" in concept && (
-        <p className="text-[11px] text-muted-foreground/70 leading-snug line-clamp-2">{concept.description}</p>
-      )}
-
-      {isSelected && <div className={cn("absolute inset-0 rounded-xl opacity-10 pointer-events-none", bgClass)} />}
+      <div className="flex items-center justify-between w-full mt-auto pt-3 border-t border-dashed border-border/50">
+         <div className="flex gap-1 overflow-hidden">
+           {tags.slice(0, 2).map(t => (
+             <Badge key={t} variant="secondary" className="text-[9px] px-1.5 h-5 font-normal bg-muted/50 border-0">{t}</Badge>
+           ))}
+         </div>
+         <span className="text-[10px] font-mono font-bold text-muted-foreground">{winRate}% WR</span>
+      </div>
     </button>
   )
 }
 
-// 2. Price Input Field
+// 2. Rule Checklist Item
+const RuleItem = ({ rule, isChecked, onToggle }: { rule: StrategyRule, isChecked: boolean, onToggle: () => void }) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    className={cn(
+      "flex items-start gap-3 w-full text-left p-3 rounded-lg border transition-all duration-200 group",
+      isChecked 
+        ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800" 
+        : "bg-background border-border hover:border-emerald-200 dark:hover:border-emerald-800"
+    )}
+  >
+    <div className={cn(
+      "mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0",
+      isChecked 
+        ? "bg-emerald-500 border-emerald-500 text-white shadow-sm" 
+        : "border-muted-foreground/30 group-hover:border-emerald-400 bg-muted/20"
+    )}>
+      {isChecked && <CheckCircle className="w-3.5 h-3.5" />}
+    </div>
+    
+    <div className="flex-1">
+      <div className="flex justify-between items-start">
+        <span className={cn("text-sm font-medium leading-snug", isChecked ? "text-emerald-900 dark:text-emerald-100" : "text-foreground")}>
+          {rule.text}
+        </span>
+        <Badge variant="outline" className="text-[9px] uppercase tracking-wider text-muted-foreground ml-2 shrink-0 bg-transparent">
+          {rule.phase}
+        </Badge>
+      </div>
+      {rule.required && (
+        <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider mt-1 block">
+          Required Rule
+        </span>
+      )}
+    </div>
+  </button>
+)
+
+// 3. Price Input Field
 const PriceInput = ({
   id,
   label,
@@ -471,7 +370,7 @@ const PriceInput = ({
   </div>
 )
 
-// 3. Session Card
+// 4. Session Card
 const SessionCard = ({
   session,
   isSelected,
@@ -514,12 +413,38 @@ const SessionCard = ({
   </button>
 )
 
+// 5. Generic Section Renderer (Used for wrapping unified sections)
+const renderSection = (
+  title: string,
+  Icon: React.ElementType,
+  children: React.ReactNode,
+  colorClass: string,
+  bgClass: string,
+  borderClass: string,
+) => {
+  return (
+    <div className={cn("border rounded-xl overflow-hidden mb-6", borderClass)}>
+      <div className={cn("p-3 border-b flex items-center gap-2", bgClass, borderClass)}>
+        <div className={cn("p-1.5 rounded-md", bgClass.replace("/5", "/20"))}>
+          <Icon className={cn("w-4 h-4", colorClass)} />
+        </div>
+        <h3 className={cn("font-bold", colorClass.replace("text-", "text-current"))}>{title}</h3>
+      </div>
+      <div className="p-4 bg-card">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 /* -------------------------------------------------------------------------- */
 /* MAIN COMPONENT                                */
 /* -------------------------------------------------------------------------- */
 
 const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormProps) => {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const strategyIdFromUrl = searchParams.get('strategy_id')
   const { toast } = useToast()
   const { config, isLoaded } = useUserConfig()
 
@@ -534,7 +459,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [customInstruments, setCustomInstruments] = useState<CustomInstrument[]>([])
 
-  // *** NEW: Strategies State ***
+  // *** STRATEGIES STATE ***
   const [strategies, setStrategies] = useState<PlaybookStrategy[]>([])
 
   // Psychology specific
@@ -552,16 +477,32 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
   // 1. Fetch Strategies
   useEffect(() => {
+    let mounted = true
     async function load() {
       try {
         const data = await getStrategies()
-        setStrategies(data)
+        if (mounted) {
+          setStrategies(data)
+          // Handle Pre-selection from URL
+          if (strategyIdFromUrl && !formData.playbook_strategy_id) {
+             const strat = data.find((s: PlaybookStrategy) => s.id === strategyIdFromUrl)
+             if (strat) {
+               setFormData(prev => ({ 
+                 ...prev, 
+                 playbook_strategy_id: strat.id,
+                 setupName: strat.name || ""
+               }))
+               setActiveTab("strategy") // Jump to strategy tab
+             }
+          }
+        }
       } catch (error) {
         console.error("Failed to load strategies", error)
       }
     }
     load()
-  }, [])
+    return () => { mounted = false }
+  }, [strategyIdFromUrl])
 
   // Load Draft
   useEffect(() => {
@@ -630,11 +571,6 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     return all
   }, [customInstruments, selectedCategory, searchQuery])
 
-  const categories = [
-    "all",
-    ...Array.from(new Set((getAllAvailableInstruments(customInstruments) || []).map((i) => i.category))),
-  ]
-
   // --- HANDLERS ---
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -658,57 +594,44 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }))
   }
 
-  const handleSelect = (field: keyof NewTradeInput, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }))
+  const handleStrategySelect = (strat: PlaybookStrategy) => {
+    const isSelected = formData.playbook_strategy_id === strat.id
+    setFormData(prev => ({
+      ...prev,
+      playbook_strategy_id: isSelected ? null : strat.id,
+      setupName: isSelected ? "" : strat.name,
+      executed_rules: [] // Reset checked rules when switching
+    }))
   }
 
-  const handleConceptToggle = (concept: CategorizedConcept | ChecklistItem, fieldKey?: keyof NewTradeInput) => {
-    if (fieldKey) {
-      setFormData((prev) => {
-        const current = (prev[fieldKey] as string[]) || []
-        return {
-          ...prev,
-          [fieldKey]: current.includes(concept.id)
-            ? current.filter((id) => id !== concept.id)
-            : [...current, concept.id],
-        }
-      })
-      return
-    }
-
-    const key = getFormDataKeyFromConceptId(concept.id)
-    if (!key) return
-
-    if (concept.id.startsWith("smc_fvg_")) {
-      setFormData((prev) => {
-        const isClassic = concept.id === "smc_fvg_classic"
-        const currentClassic = prev.smcFvgClassic || []
-        const currentIFvg = prev.smcFvgIfvg || []
-        return {
-          ...prev,
-          smcFvgClassic: isClassic
-            ? currentClassic.includes(concept.id)
-              ? currentClassic.filter((i) => i !== concept.id)
-              : [...currentClassic, concept.id]
-            : currentClassic,
-          smcFvgIfvg: !isClassic
-            ? currentIFvg.includes(concept.id)
-              ? currentIFvg.filter((i) => i !== concept.id)
-              : [...currentIFvg, concept.id]
-            : currentIFvg,
-        }
-      })
-      return
-    }
-
-    setFormData((prev) => {
-      const current = (prev[key] as string[]) || []
-      const updated = current.includes(concept.id)
-        ? current.filter((id) => id !== concept.id)
-        : [...current, concept.id]
-      return { ...prev, [key]: updated }
+  const handleRuleToggle = (ruleId: string) => {
+    setFormData(prev => {
+      const current = prev.executed_rules || []
+      return {
+        ...prev,
+        executed_rules: current.includes(ruleId) 
+          ? current.filter(id => id !== ruleId) 
+          : [...current, ruleId]
+      }
     })
+  }
+
+  const addPsychologyCustomTag = () => {
+    if (psychologyCustomTagInput.trim() && !psychologyCustomTags.includes(psychologyCustomTagInput.trim())) {
+      setPsychologyCustomTags([...psychologyCustomTags, psychologyCustomTagInput.trim()])
+      setPsychologyCustomTagInput("")
+    }
+  }
+
+  const removePsychologyCustomTag = (tag: string) => {
+    setPsychologyCustomTags(psychologyCustomTags.filter((t) => t !== tag))
+  }
+
+  const togglePsychologyTrigger = (id: string) => {
+    setPsychologyTriggers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+  const togglePsychologyPattern = (id: string) => {
+    setPsychologyPatterns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
   const createPsychologyEntry = async (tradeId: string) => {
@@ -797,100 +720,6 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  // Restored Function for Visibility Logic
-  const shouldShowConceptSection = (sectionId: string) => {
-    if (!isLoaded || !config.profileSetupComplete) return true
-    if (sectionId === "psychology") return config.tradingPreferences.enabledConcepts?.psychology !== false
-    if (config.tradingPreferences.showAllConceptsInForm) return true
-
-    const enabledConcepts = config.tradingPreferences.enabledConcepts || {}
-    const selectedMethodologies = config.tradingPreferences.methodologies || []
-
-    switch (sectionId) {
-      case "smc":
-        return enabledConcepts.smc === true || selectedMethodologies.includes("smc")
-      case "ict":
-        return enabledConcepts.ict === true || selectedMethodologies.includes("ict")
-      case "wyckoff":
-        return enabledConcepts.wyckoff === true || selectedMethodologies.includes("wyckoff")
-      case "volume":
-        return enabledConcepts.volume === true || selectedMethodologies.includes("volume")
-      case "supportResistance":
-        return enabledConcepts.supportResistance === true || selectedMethodologies.includes("sr")
-      default:
-        return false
-    }
-  }
-
-  // --- Grouping Helper for Strategy Rendering ---
-  const renderStrategyGroup = (
-    title: string,
-    Icon: React.ElementType,
-    concepts: CategorizedConcept[],
-    colorClass: string,
-    bgClass: string,
-    borderClass: string,
-  ) => {
-    const grouped: Record<string, CategorizedConcept[]> = {}
-    concepts.forEach((c) => {
-      if (!grouped[c.subCategory]) grouped[c.subCategory] = []
-      grouped[c.subCategory].push(c)
-    })
-
-    return (
-      <div className={cn("border rounded-xl overflow-hidden mb-6", borderClass)}>
-        <div className={cn("p-3 border-b flex items-center gap-2", bgClass, borderClass)}>
-          <div className={cn("p-1.5 rounded-md", bgClass.replace("/5", "/20"))}>
-            <Icon className={cn("w-4 h-4", colorClass)} />
-          </div>
-          <h3 className={cn("font-bold", colorClass.replace("text-", "text-current"))}>{title}</h3>
-        </div>
-        <div className="p-4 bg-card grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Object.entries(grouped).map(([subCat, items]) => (
-            <div key={subCat} className="space-y-2">
-              <Label className="text-xs uppercase font-bold text-muted-foreground tracking-wider">{subCat}</Label>
-              <div className="grid grid-cols-1 gap-2">
-                {items.map((c) => {
-                  const key = getFormDataKeyFromConceptId(c.id)
-                  const isSel = key && (formData[key] as string[])?.includes(c.id)
-                  return (
-                    <ConceptCard
-                      key={c.id}
-                      concept={c}
-                      isSelected={!!isSel}
-                      onToggle={() => handleConceptToggle(c)}
-                      colorClass={colorClass}
-                      bgClass={bgClass}
-                      borderClass={borderClass.replace("border-", "border-")}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  const addPsychologyCustomTag = () => {
-    if (psychologyCustomTagInput.trim() && !psychologyCustomTags.includes(psychologyCustomTagInput.trim())) {
-      setPsychologyCustomTags([...psychologyCustomTags, psychologyCustomTagInput.trim()])
-      setPsychologyCustomTagInput("")
-    }
-  }
-
-  const removePsychologyCustomTag = (tag: string) => {
-    setPsychologyCustomTags(psychologyCustomTags.filter((t) => t !== tag))
-  }
-
-  const togglePsychologyTrigger = (id: string) => {
-    setPsychologyTriggers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
-  }
-  const togglePsychologyPattern = (id: string) => {
-    setPsychologyPatterns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
   if (!isLoaded)
@@ -1177,13 +1006,13 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
               </Card>
             </TabsContent>
 
-            {/* === TAB 2: STRATEGY === */}
+            {/* === TAB 2: STRATEGY (Updated with consistent styling) === */}
             <TabsContent value="strategy" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold">Strategy Definition</h2>
                   <p className="text-muted-foreground text-sm">
-                    Select all technical concepts that align with this trade.
+                    Select the active strategy and verify executed rules.
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setActiveTab("setup")}>
@@ -1191,19 +1020,13 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                 </Button>
               </div>
 
-              {/* *** STRATEGY SELECTION SECTION (Now matches other sections) *** */}
-              <div className="border rounded-xl overflow-hidden mb-6 border-indigo-200 dark:border-indigo-900">
-                {/* Section Header - Same style as others */}
-                <div className="p-3 border-b flex items-center gap-2 bg-indigo-50/20 border-indigo-200 dark:border-indigo-900">
-                  <div className="p-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30">
-                    <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <h3 className="font-bold text-indigo-700 dark:text-indigo-300">Playbook Strategy</h3>
-                </div>
-
-                <div className="p-4 bg-card grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* *** UNIFIED STRATEGY SELECTOR *** */}
+              {renderSection(
+                "Playbook Strategies",
+                BookOpen,
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {strategies.length === 0 ? (
-                    <div className="col-span-full text-center p-6 border-2 border-dashed border-indigo-200 dark:border-indigo-800 rounded-xl">
+                    <div className="col-span-full text-center p-6 border-2 border-dashed rounded-xl">
                       <p className="text-sm text-muted-foreground mb-4">No strategies found in your playbook.</p>
                       <Button variant="outline" size="sm" onClick={() => router.push('/playbook')}>Go to Playbook</Button>
                     </div>
@@ -1212,143 +1035,44 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                       const isSelected = formData.playbook_strategy_id === strat.id
                       return (
                         <div key={strat.id} className="h-full flex flex-col gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setFormData(prev => ({ 
-                              ...prev, 
-                              playbook_strategy_id: isSelected ? null : strat.id,
-                              setupName: isSelected ? "" : strat.name // Auto-fill setup name
-                            }))}
-                            className={cn(
-                              "relative flex flex-col items-start p-4 rounded-xl border-2 text-left transition-all duration-200 w-full h-full",
-                              "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500",
-                              isSelected
-                                ? "bg-background shadow-md scale-[1.02] border-indigo-500/50 bg-indigo-50/10"
-                                : "border-border/40 bg-card/50 hover:bg-accent/50 hover:border-border"
-                            )}
-                          >
-                            {isSelected && (
-                              <div className="absolute top-3 right-3 p-1 rounded-full bg-indigo-100 dark:bg-indigo-900">
-                                <CheckCircle className="w-4 h-4 text-indigo-600" />
-                              </div>
-                            )}
+                          {/* Strategy Card */}
+                          <StrategyItemCard 
+                            title={strat.name} 
+                            description={strat.description || ""}
+                            tags={strat.tags}
+                            winRate={strat.win_rate}
+                            isSelected={isSelected}
+                            onToggle={() => handleStrategySelect(strat)}
+                          />
 
-                            <div className="mb-2 flex items-center justify-center w-8 h-8 rounded-lg bg-background border border-border/50 shadow-sm">
-                              <BookOpen className={cn("w-4 h-4", isSelected ? "text-indigo-600" : "text-muted-foreground")} />
-                            </div>
-
-                            <h4 className={cn("font-bold text-sm mb-1 pr-6 leading-tight", isSelected ? "text-foreground" : "text-muted-foreground")}>
-                              {strat.name}
-                            </h4>
-                            
-                            <p className="text-[11px] text-muted-foreground/70 leading-snug line-clamp-2">
-                              {strat.description || "No description provided."}
-                            </p>
-
-                            <div className="mt-2 flex items-center gap-2">
-                              <Badge variant="secondary" className="text-[10px] h-5 px-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500">
-                                {strat.win_rate}% WR
-                              </Badge>
-                            </div>
-
-                            {isSelected && <div className="absolute inset-0 rounded-xl bg-indigo-500/5 pointer-events-none" />}
-                          </button>
-
-                          {/* INLINE RULES CHECKLIST */}
+                          {/* Dynamic Rules Checklist (Appears below selected card) */}
                           {isSelected && strat.rules && strat.rules.length > 0 && (
-                            <div className="ml-4 pl-4 border-l-2 border-indigo-200/50 dark:border-indigo-800/50 py-1 animate-in slide-in-from-left-2 duration-300">
+                            <div className="ml-2 pl-4 border-l-2 border-indigo-200/50 dark:border-indigo-800/50 py-2 animate-in slide-in-from-left-2 duration-300">
                               <div className="flex items-center gap-2 mb-2 text-[10px] font-bold uppercase text-indigo-500 tracking-wider">
-                                <ListChecks className="w-3 h-3" /> Required Rules
+                                <ListChecks className="w-3 h-3" /> Execution Rules
                               </div>
-                              <ul className="space-y-1.5">
-                                {strat.rules.map((rule, idx) => (
-                                  <li key={idx} className="flex items-start gap-2 text-xs text-muted-foreground">
-                                    <div className="w-1 h-1 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                                    <span>{rule.text}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                              <div className="space-y-2">
+                                {strat.rules.map((rule) => {
+                                  const isChecked = formData.executed_rules?.includes(rule.id) || false
+                                  return (
+                                    <RuleItem
+                                      key={rule.id}
+                                      rule={rule}
+                                      isChecked={isChecked}
+                                      onToggle={() => handleRuleToggle(rule.id)}
+                                    />
+                                  )
+                                })}
+                              </div>
                             </div>
                           )}
                         </div>
                       )
                     })
                   )}
-                </div>
-              </div>
-
-              {/* 1. SMC Section */}
-              {shouldShowConceptSection("smc") &&
-                renderStrategyGroup(
-                  "Smart Money Concepts (SMC)",
-                  Zap,
-                  [
-                    ...AVAILABLE_SMC_CONCEPTS.marketStructure,
-                    ...AVAILABLE_SMC_CONCEPTS.orderBlocks,
-                    ...AVAILABLE_SMC_CONCEPTS.fvg,
-                    ...AVAILABLE_SMC_CONCEPTS.liquidityConcepts,
-                    ...AVAILABLE_SMC_CONCEPTS.breakerMitigationBlocks,
-                    ...AVAILABLE_SMC_CONCEPTS.mitigationFillZones,
-                    ...AVAILABLE_SMC_CONCEPTS.wyckoffOverlaps,
-                  ],
-                  "text-purple-600",
-                  "bg-purple-500/5",
-                  "border-purple-200 dark:border-purple-900",
-                )}
-
-              {/* 2. ICT Section */}
-              {shouldShowConceptSection("ict") &&
-                renderStrategyGroup(
-                  "Inner Circle Trader (ICT)",
-                  Crosshair,
-                  [
-                    ...AVAILABLE_ICT_CONCEPTS.marketStructureShift,
-                    ...AVAILABLE_ICT_CONCEPTS.orderFlowBlocks,
-                    ...AVAILABLE_ICT_CONCEPTS.liquidityPoolsStops,
-                    ...AVAILABLE_ICT_CONCEPTS.killZones,
-                    ...AVAILABLE_ICT_CONCEPTS.ote,
-                    ...AVAILABLE_ICT_CONCEPTS.fibonacciClusters,
-                    ...AVAILABLE_ICT_CONCEPTS.powerOfThree,
-                    ...AVAILABLE_ICT_CONCEPTS.smtDivergence,
-                    ...AVAILABLE_ICT_CONCEPTS.dailyBiasSessionDynamics,
-                  ],
-                  "text-orange-600",
-                  "bg-orange-500/5",
-                  "border-orange-200 dark:border-orange-900",
-                )}
-
-              {/* 3. Wyckoff Section */}
-              {shouldShowConceptSection("wyckoff") &&
-                renderStrategyGroup(
-                  "Wyckoff Method",
-                  Layers,
-                  AVAILABLE_WYCKOFF_CONCEPTS,
-                  "text-emerald-600",
-                  "bg-emerald-500/5",
-                  "border-emerald-200 dark:border-emerald-900",
-                )}
-
-              {/* 4. Volume Section */}
-              {shouldShowConceptSection("volume") &&
-                renderStrategyGroup(
-                  "Volume Analysis",
-                  BarChart3,
-                  AVAILABLE_VOLUME_CONCEPTS,
-                  "text-blue-600",
-                  "bg-blue-500/5",
-                  "border-blue-200 dark:border-blue-900",
-                )}
-
-              {/* 5. Support & Resistance Section */}
-              {shouldShowConceptSection("supportResistance") &&
-                renderStrategyGroup(
-                  "Support & Resistance",
-                  Scale,
-                  AVAILABLE_SR_CONCEPTS,
-                  "text-amber-600",
-                  "bg-amber-500/5",
-                  "border-amber-200 dark:border-amber-900",
-                )}
+                </div>,
+                "text-indigo-600", "bg-indigo-50/10", "border-indigo-200 dark:border-indigo-900"
+              )}
 
               <Card className="border-0 shadow-md bg-card">
                 <CardContent className="p-6">
@@ -1371,7 +1095,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
               </Card>
             </TabsContent>
 
-            {/* === TAB 3: PSYCHOLOGY (Integrated) === */}
+            {/* === TAB 3: PSYCHOLOGY === */}
             <TabsContent
               value="psychology"
               className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300"

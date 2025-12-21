@@ -1,10 +1,12 @@
 "use client"
 
 import type React from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Badge } from "@/components/ui/badge" // <--- ADDED THIS IMPORT
 import { 
   LayoutDashboard, 
   List, 
@@ -15,22 +17,25 @@ import {
   ShieldCheck, 
   FileText, 
   LogOut, 
-  Settings 
+  Settings,
+  Zap 
 } from 'lucide-react'
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
+import { WhatsNewDialog } from "@/components/whats-new-dialog"
+import { LATEST_UPDATE_ID } from "@/lib/updates"
 
 const mainNavItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Trades", href: "/trades", icon: List },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Playbook", href: "/playbook", icon: BookOpen }, // Added Playbook
+  { name: "Playbook", href: "/playbook", icon: BookOpen }, 
   { name: "Psychology", href: "/psychology", icon: ShieldCheck },
   { name: "Backtesting", href: "/backtesting", icon: FileText },
   { name: "Community", href: "/social-insights", icon: Users },
   { name: "Guides", href: "/guides", icon: BookOpen },
-  { name: "Settings", href: "/settings", icon: Settings }, // Added Settings
+  { name: "Settings", href: "/settings", icon: Settings }, 
 ]
 
 const secondaryNavItems: any[] = []
@@ -39,6 +44,26 @@ export function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
+
+  // Updates State
+  const [showUpdates, setShowUpdates] = useState(false)
+  const [hasUnreadUpdates, setHasUnreadUpdates] = useState(false)
+
+  // Check for updates on mount
+  useEffect(() => {
+    const lastSeen = localStorage.getItem("lastSeenUpdate")
+    if (lastSeen !== LATEST_UPDATE_ID) {
+      // If they haven't seen this specific update ID, show popup and dot
+      setShowUpdates(true)
+      setHasUnreadUpdates(true)
+    }
+  }, [])
+
+  const handleOpenUpdates = () => {
+    setShowUpdates(true)
+    setHasUnreadUpdates(false) // Clear the dot
+    localStorage.setItem("lastSeenUpdate", LATEST_UPDATE_ID)
+  }
 
   const visibleMainNavItems = mainNavItems
   const visibleSecondaryNavItems = secondaryNavItems
@@ -64,6 +89,10 @@ export function Navbar() {
 
   const NavContent = () => (
     <div className="relative flex h-16 items-center border-b border-gray-200 dark:border-gray-800 px-4 lg:px-6 sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-sm">
+      
+      {/* Mount the Dialog Component */}
+      <WhatsNewDialog open={showUpdates} onOpenChange={setShowUpdates} />
+
       {/* Subtle background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-gray-50/50 via-white/50 to-gray-50/50 dark:from-gray-900/50 dark:via-gray-800/50 dark:to-gray-900/50 pointer-events-none"></div>
 
@@ -94,6 +123,23 @@ export function Navbar() {
 
       {/* Right side controls with modern styling */}
       <div className="ml-auto flex items-center gap-3 z-10">
+        
+        {/* NEW: Updates Button */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleOpenUpdates}
+          className="hidden md:flex gap-2 items-center border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 relative shadow-sm"
+        >
+          <Zap className="h-4 w-4 fill-current" />
+          <span className="font-medium text-xs uppercase tracking-wide">Updates</span>
+          
+          {/* Notification Dot */}
+          {hasUnreadUpdates && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-gray-900 shadow-sm" />
+          )}
+        </Button>
+
         {/* Modern Logout Button */}
         <Button
           onClick={handleLogout}
@@ -145,6 +191,21 @@ export function Navbar() {
                     </NavLink>
                   ))}
                 </nav>
+
+                {/* Mobile Updates Button */}
+                <div className="mt-6 px-4">
+                   <Button 
+                    variant="outline" 
+                    onClick={handleOpenUpdates}
+                    className="w-full justify-start gap-3 text-base py-6 rounded-xl border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-300"
+                  >
+                    <Zap className="h-5 w-5 fill-current" />
+                    <span className="font-medium">What's New</span>
+                    {hasUnreadUpdates && (
+                      <Badge className="ml-auto bg-red-500 text-white border-0">New</Badge>
+                    )}
+                  </Button>
+                </div>
 
                 {/* Mobile secondary navigation */}
                 {visibleSecondaryNavItems.length > 0 && (

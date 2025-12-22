@@ -156,7 +156,8 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
     className={cn(
       "flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200 bg-card hover:bg-accent/50",
       isSelected 
-        ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(var(--primary),0.1)]" 
+        // Fixed: Use shadow-primary/10 instead of invalid rgba(var(--primary))
+        ? "border-primary bg-primary/5 shadow-lg shadow-primary/10" 
         : "border-border/60"
     )}
   >
@@ -340,18 +341,21 @@ function ProfileSetupContent() {
               </div>
             </div>
           </div>
+          
           <div className="flex-1 overflow-y-auto py-6 px-3">
             {stepConfig.map((step) => (
               <SidebarStep key={step.id} step={step} currentStep={currentStep} />
             ))}
           </div>
+
           <div className="p-6 border-t border-border/40 bg-background/30">
              <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-wider">
                 <span>Initialization</span>
                 <span>{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
              </div>
              <div className="h-1 w-full bg-muted/50 rounded-full overflow-hidden">
-                <div className="h-full bg-primary transition-all duration-500 shadow-[0_0_10px_rgba(var(--primary),0.5)]" style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }} />
+                {/* Fixed: Use standard shadow utility */}
+                <div className="h-full bg-primary transition-all duration-500 shadow-[0_0_10px] shadow-primary/50" style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }} />
              </div>
           </div>
         </aside>
@@ -504,7 +508,8 @@ function ProfileSetupContent() {
                                         className={cn(
                                            "relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between",
                                            isVisible 
-                                              ? "bg-indigo-500/5 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.1)]" 
+                                              // Fixed: Use shadow-indigo-500/10 instead of invalid rgba
+                                              ? "bg-indigo-500/5 border-indigo-500/40 shadow-lg shadow-indigo-500/10" 
                                               : "bg-card/20 border-border/40 hover:bg-muted/20 opacity-60 hover:opacity-100"
                                         )}
                                      >
@@ -542,18 +547,21 @@ function ProfileSetupContent() {
                       </div>
                    )}
                    
+                   {/* STEP 6: LEGAL */}
                    {currentStep === 6 && (
                       <div className="bg-card/30 border rounded-xl p-6 backdrop-blur-sm">
                          <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
                       </div>
                    )}
                    
+                   {/* STEP 7: REVIEW */}
                    {currentStep === 7 && (
                       <div className="bg-card/30 border rounded-xl p-6 backdrop-blur-sm">
                          <ReviewConfirmationStep config={config} />
                       </div>
                    )}
                    
+                   {/* STEP 8: DEPLOY */}
                    {currentStep === 8 && (
                       <div className="flex flex-col items-center justify-center py-24 text-center">
                          <div className="relative mb-8">

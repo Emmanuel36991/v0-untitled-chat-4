@@ -4,8 +4,7 @@ import React, { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Plus, Search, Trash2, Edit2, Shield, MoreHorizontal,
-  Loader2, X, ListChecks, TrendingUp,
-  Trophy, Zap, Layers, ArrowDown
+  Loader2, X, TrendingUp, Trophy, Layers, BookOpen
 } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer } from "recharts"
 
@@ -33,12 +32,21 @@ import {
   type StrategyPhase,
 } from "@/app/actions/playbook-actions"
 
-// --- SPARKLINE CHART ---
+// --- SPARKLINE CHART (Fixed for Hydration) ---
 const Sparkline = ({ data, color }: { data: number[]; color: string }) => {
+  const [mounted, setMounted] = useState(false)
+
+  // Prevent SSR Hydration Mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [{ val: 0 }, { val: 0 }]
     return data.map((val, i) => ({ i, val }))
   }, [data])
+
+  if (!mounted) return null // Don't render on server
 
   return (
     <div className="h-full w-full absolute inset-0 opacity-[0.06] pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen">
@@ -64,7 +72,7 @@ const Sparkline = ({ data, color }: { data: number[]; color: string }) => {
   )
 }
 
-// --- STRATEGY BUILDER (REDESIGNED) ---
+// --- STRATEGY BUILDER ---
 function StrategyBuilder({
   open,
   onOpenChange,
@@ -134,7 +142,6 @@ function StrategyBuilder({
     setNewTag("")
   }
 
-  // Group rules for display
   const rulesByPhase = {
     setup: formData.rules?.filter(r => r.phase === "setup") || [],
     confirmation: formData.rules?.filter(r => r.phase === "confirmation") || [],
@@ -143,7 +150,6 @@ function StrategyBuilder({
 
   const renderPhaseSection = (phase: StrategyPhase, title: string, colorClass: string, number: string) => (
     <div className="relative pl-6 pb-6 last:pb-0">
-      {/* Connector Line */}
       {phase !== 'execution' && (
         <div className="absolute left-[11px] top-6 bottom-0 w-[2px] bg-border/50" />
       )}
@@ -205,7 +211,6 @@ function StrategyBuilder({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-xl w-full flex flex-col bg-background p-0 border-l border-border shadow-2xl">
-        {/* Header */}
         <SheetHeader className="px-6 py-5 border-b bg-background sticky top-0 z-10">
           <div className="flex items-center gap-3">
              <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500">
@@ -221,8 +226,6 @@ function StrategyBuilder({
 
         <ScrollArea className="flex-1">
           <div className="px-6 py-6 space-y-8">
-            
-            {/* 1. Identity */}
             <div className="space-y-4">
                <div className="space-y-2">
                  <Label className="text-xs font-semibold text-muted-foreground uppercase">Name</Label>
@@ -265,7 +268,6 @@ function StrategyBuilder({
 
             <div className="w-full h-px bg-border/50" />
 
-            {/* 2. Visual Logic Builder */}
             <div>
                <Label className="text-xs font-semibold text-muted-foreground uppercase mb-4 block">Execution Logic</Label>
                <div className="bg-card/30 rounded-xl border p-4">
@@ -274,7 +276,6 @@ function StrategyBuilder({
                  {renderPhaseSection("execution", "Execution Trigger", "border-emerald-500 text-emerald-500", "3")}
                </div>
             </div>
-
           </div>
         </ScrollArea>
 
@@ -297,17 +298,20 @@ export default function PlaybookPage() {
   const [isBuilderOpen, setIsBuilderOpen] = useState(false)
   const [editingStrategy, setEditingStrategy] = useState<PlaybookStrategy | null>(null)
 
-  // Stats
-  const totalPnL = strategies.reduce((acc, s) => acc + (s.pnl || 0), 0)
-  const bestStrategy = strategies.length > 0 ? strategies.reduce((prev, current) => (prev.win_rate > current.win_rate ? prev : current)) : null
-
+  // Safe Data Loading
   const loadData = async () => {
     setIsLoading(true)
     try {
       const data = await getStrategies()
-      setStrategies(data)
+      if (Array.isArray(data)) {
+        setStrategies(data)
+      } else {
+        setStrategies([]) // Fallback to empty array
+      }
     } catch (e) {
+      console.error(e)
       toast({ title: "Error", description: "Failed to load playbook", variant: "destructive" })
+      setStrategies([])
     } finally {
       setIsLoading(false)
     }
@@ -327,16 +331,22 @@ export default function PlaybookPage() {
     loadData()
   }
 
+  // Safe Stats Calculation
+  const totalPnL = strategies.reduce((acc, s) => acc + (s.pnl || 0), 0)
+  const bestStrategy = strategies.length > 0 
+    ? strategies.reduce((prev, current) => ((prev.win_rate || 0) > (current.win_rate || 0) ? prev : current), strategies[0]) 
+    : null
+
   const filtered = strategies.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())),
+      s.tags?.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
   return (
     <div className="min-h-screen bg-background">
       
-      {/* 1. Command Center Header */}
+      {/* Header */}
       <div className="bg-background border-b border-border sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-6">
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -390,7 +400,7 @@ export default function PlaybookPage() {
         </div>
       </div>
 
-      {/* 2. Strategy Grid */}
+      {/* Grid */}
       <div className="max-w-7xl mx-auto px-6 py-10">
          {isLoading ? (
             <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-indigo-500" /></div>
@@ -418,10 +428,8 @@ export default function PlaybookPage() {
                           className="group h-full"
                        >
                           <Card className="h-full border-border/60 bg-card overflow-hidden hover:shadow-xl hover:border-indigo-500/20 transition-all duration-300">
-                             
-                             {/* Card Header area */}
                              <div className="h-32 relative p-6 flex flex-col justify-between border-b border-border/40 bg-gradient-to-b from-background to-card">
-                                <Sparkline data={strat.equity_curve} color={isProfitable ? "#10b981" : "#ef4444"} />
+                                <Sparkline data={strat.equity_curve || []} color={isProfitable ? "#10b981" : "#ef4444"} />
                                 
                                 <div className="relative z-10 flex justify-between items-start">
                                    <div className="flex gap-2">
@@ -450,7 +458,6 @@ export default function PlaybookPage() {
                                    {strat.description || "No description provided."}
                                 </p>
 
-                                {/* Stats Grid */}
                                 <div className="grid grid-cols-3 gap-2 py-2">
                                    <div className="text-center">
                                       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Win Rate</div>
@@ -458,7 +465,7 @@ export default function PlaybookPage() {
                                    </div>
                                    <div className="text-center border-l border-border/50">
                                       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Trades</div>
-                                      <div className="text-lg font-bold text-foreground">{strat.trades_count}</div>
+                                      <div className="text-lg font-bold text-foreground">{strat.trades_count || 0}</div>
                                    </div>
                                    <div className="text-center border-l border-border/50">
                                       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net PnL</div>
@@ -466,7 +473,6 @@ export default function PlaybookPage() {
                                    </div>
                                 </div>
 
-                                {/* Rules Structure Visualization */}
                                 <div className="space-y-2">
                                    <div className="flex justify-between items-end">
                                       <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Strategy Structure</span>
@@ -493,7 +499,6 @@ export default function PlaybookPage() {
          )}
       </div>
 
-      {/* Editor Sheet */}
       <StrategyBuilder 
          open={isBuilderOpen} 
          onOpenChange={setIsBuilderOpen} 

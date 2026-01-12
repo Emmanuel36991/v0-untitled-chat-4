@@ -62,6 +62,15 @@ Provide psychological insights and mental training advice.`,
 - Key levels and zones
 - Risk factors
 Focus on actionable market intelligence.`,
+
+  // --- NEW: Periodic Review Prompt ---
+  periodicReview: `Analyze performance across different time horizons (Daily, Weekly, Monthly, Yearly).
+Look for:
+- Consistency of returns across timeframes
+- Scaling issues or improvements
+- Adaptation to different market conditions over time
+- Long-term viability of the current strategy
+Provide a holistic view of the trader's journey.`,
 }
 
 export const PROMPT_TEMPLATES = {
@@ -81,4 +90,14 @@ What specific area would you like to improve?`,
 
   riskAssessment: (stats: any) =>
     `Your risk management shows ${stats.riskManagement} practices. With a max drawdown of $${stats.maxDrawdown.toFixed(2)} and profit factor of ${stats.profitFactor.toFixed(2)}, here's what I recommend...`,
+
+  // --- NEW: Summary Analysis Template ---
+  summaryAnalysis: (data: any) =>
+    `I've analyzed your trading summary.
+Daily: $${data.daily?.totalPnl?.toFixed(2) ?? '0.00'} P&L
+Weekly: $${data.weekly?.totalPnl?.toFixed(2) ?? '0.00'} P&L
+Monthly: $${data.monthly?.totalPnl?.toFixed(2) ?? '0.00'} P&L
+Yearly: $${data.yearly?.totalPnl?.toFixed(2) ?? '0.00'} P&L
+
+Here are my key takeaways regarding your performance consistency and trends:`,
 }

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { createClient } from "@/lib/supabase/client"
 import { AnimatedTradingBackground } from "@/components/animated-trading-background"
@@ -20,6 +21,7 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -67,7 +69,6 @@ export default function LoginPage() {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        // FIXED: Point to the callback route we created
         redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
       },
     })
@@ -161,7 +162,21 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="remember" 
+                        checked={rememberMe} 
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        className="border-slate-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                      />
+                      <label
+                        htmlFor="remember"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-600"
+                      >
+                        Remember me
+                      </label>
+                    </div>
                     <Link href="/forgot-password" className="text-sm text-purple-600 hover:text-purple-700 underline">Forgot password?</Link>
                   </div>
 
@@ -186,7 +201,7 @@ export default function LoginPage() {
 
                 <div className="text-center mt-4">
                   <Link href="/signup">
-                    <Button variant="ghost" className="w-full text-slate-600">Don't have an account? Sign Up</Button>
+                    <Button variant="ghost" className="w-full text-slate-600">Don&apos;t have an account? Sign Up</Button>
                   </Link>
                 </div>
               </CardContent>

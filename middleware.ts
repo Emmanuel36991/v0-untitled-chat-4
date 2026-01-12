@@ -1,7 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
+import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    const rateLimitKey = getRateLimitKey("api")
+    const limit = rateLimiter({
+      key: rateLimitKey,
+      limit: 100,
+      window: 60, // 100 requests per minute
+    })
+
+    if (!limit.allowed) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+  }
+
   const response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -38,26 +55,34 @@ export async function middleware(request: NextRequest) {
   })
 
   // Refresh session if expired
-  await supabase.auth.getSession()
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  // FIXED: Removed the profile setup check block entirely.
-  // The middleware now simply refreshes the session and allows navigation to proceed.
+  const isPublicRoute =
+    request.nextUrl.pathname === "/" || // Allow root page to redirect to marketing
+    request.nextUrl.pathname.startsWith("/marketing") ||
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/signup") ||
+    request.nextUrl.pathname.startsWith("/auth") ||
+    request.nextUrl.pathname.startsWith("/forgot-password") ||
+    request.nextUrl.pathname.startsWith("/reset-password")
+
+  // Block unauthenticated access to protected routes
+  if (!session && !isPublicRoute) {
+    const redirectUrl = new URL("/login", request.url)
+    redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (session && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup"))) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
+  }
 
   return response
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - marketing (public marketing page)
-     * - login (auth page)
-     * - signup (auth page)
-     * - auth (auth callbacks)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|marketing|login|signup|auth).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 }

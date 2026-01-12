@@ -36,11 +36,111 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Sparkles,
+  Loader2,
+  CheckCircle,
+  XCircle
 } from "lucide-react"
 import TradingChart from "@/components/trading-chart"
 import { getTradeById, deleteTrade } from "@/app/actions/trade-actions"
 import type { Trade } from "@/types"
 import { cn } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
+
+// --- Simple Markdown Component (Visual Fix) ---
+const SimpleMarkdown = ({ content }: { content: string }) => {
+  if (!content) return null
+
+  // Split by newlines
+  const lines = content.split('\n')
+  const elements: React.ReactNode[] = []
+  
+  let currentList: React.ReactNode[] = []
+  let inList = false
+
+  const flushList = () => {
+    if (inList && currentList.length > 0) {
+      elements.push(
+        <ul key={`list-${elements.length}`} className="list-disc pl-5 space-y-1 mb-4">
+          {currentList}
+        </ul>
+      )
+      currentList = []
+      inList = false
+    }
+  }
+
+  // Helper to parse bold text (**text**)
+  const parseInline = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g)
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="font-semibold text-indigo-900 dark:text-indigo-100">{part.slice(2, -2)}</strong>
+      }
+      return part
+    })
+  }
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      flushList()
+      return
+    }
+
+    // 1. Headers (## Title)
+    if (trimmed.startsWith('## ')) {
+      flushList()
+      elements.push(
+        <h3 key={i} className="text-lg font-bold text-indigo-600 dark:text-indigo-400 mt-6 mb-2">
+          {trimmed.replace(/^##\s+/, '')}
+        </h3>
+      )
+    } 
+    // 2. Sub-headers (### Title) or Bold lines acting as headers
+    else if (trimmed.startsWith('### ') || (trimmed.startsWith('**') && trimmed.endsWith('**') && trimmed.length < 50)) {
+      flushList()
+      const text = trimmed.replace(/^###\s+/, '').replace(/^\*\*/, '').replace(/\*\*$/, '')
+      elements.push(
+        <h4 key={i} className="text-base font-bold text-slate-800 dark:text-slate-200 mt-4 mb-2">
+          {text}
+        </h4>
+      )
+    }
+    // 3. Bullet Lists (- Item or * Item)
+    else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      inList = true
+      currentList.push(
+        <li key={i} className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
+          {parseInline(trimmed.replace(/^[-*]\s+/, ''))}
+        </li>
+      )
+    }
+    // 4. Numbered Lists (1. Item)
+    else if (/^\d+\.\s/.test(trimmed)) {
+        flushList()
+        elements.push(
+            <div key={i} className="flex gap-2 mb-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                <span className="font-bold min-w-[20px] text-indigo-600 dark:text-indigo-400">{trimmed.match(/^\d+\./)?.[0]}</span>
+                <span>{parseInline(trimmed.replace(/^\d+\.\s/, ''))}</span>
+            </div>
+        )
+    }
+    // 5. Regular Paragraphs
+    else {
+      flushList()
+      elements.push(
+        <p key={i} className="mb-2 text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+          {parseInline(trimmed)}
+        </p>
+      )
+    }
+  })
+
+  flushList() // Final flush
+
+  return <div>{elements}</div>
+}
 
 export default function EnhancedTradeDetailsPage() {
   const params = useParams()
@@ -50,6 +150,11 @@ export default function EnhancedTradeDetailsPage() {
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isChartFullscreen, setIsChartFullscreen] = useState(false)
+  
+  // AI State
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiAnalysis, setAiAnalysis] = useState("")
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     overview: true,
     analysis: true,
@@ -88,6 +193,56 @@ export default function EnhancedTradeDetailsPage() {
 
     loadTrade()
   }, [tradeId])
+
+  const generateAnalysis = async () => {
+    if (!trade) return
+    setAiLoading(true)
+    setAiAnalysis("")
+    try {
+      const response = await fetch("/api/ai/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "trade",
+          data: trade
+        })
+      })
+
+      if (!response.ok) throw new Error("Analysis failed")
+      if (!response.body) return
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ""
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        
+        const chunk = decoder.decode(value, { stream: true })
+        buffer += chunk
+        
+        const lines = buffer.split("\n")
+        buffer = lines.pop() || ""
+
+        for (const line of lines) {
+            const trimmed = line.trim()
+            if (trimmed.startsWith("data: ")) {
+                try {
+                    const jsonStr = trimmed.substring(6)
+                    const json = JSON.parse(jsonStr)
+                    const content = json.choices?.[0]?.delta?.content || ""
+                    setAiAnalysis(prev => prev + content)
+                } catch (e) {}
+            }
+        }
+      }
+    } catch (error) {
+      console.error("AI Error", error)
+    } finally {
+      setAiLoading(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!trade || !confirm("Are you sure you want to delete this trade?")) return
@@ -267,6 +422,15 @@ export default function EnhancedTradeDetailsPage() {
               </div>
 
               <div className="flex items-center gap-2 ml-auto">
+                <Button 
+                    onClick={generateAnalysis} 
+                    disabled={aiLoading} 
+                    className="hidden sm:flex bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 shadow-md hover:shadow-lg transition-all mr-2"
+                >
+                    {aiLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2"/> : <Sparkles className="w-4 h-4 mr-2"/>}
+                    Analyze Trade
+                </Button>
+
                 <div className="flex items-center bg-slate-100 rounded-lg p-1 mr-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -446,6 +610,34 @@ export default function EnhancedTradeDetailsPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* AI Analysis Section (Dynamic) */}
+          <AnimatePresence>
+            {(aiAnalysis || aiLoading) && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} className="mb-8">
+                <Card className="border border-indigo-100 dark:border-indigo-900 bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-900 shadow-md overflow-hidden relative">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-indigo-600" />
+                            <CardTitle className="text-lg text-indigo-900 dark:text-indigo-100">Trade Analysis</CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {aiLoading && !aiAnalysis ? (
+                            <div className="flex items-center gap-2 text-slate-500 py-4">
+                            <Loader2 className="w-4 h-4 animate-spin" /> Analyzing trade execution...
+                            </div>
+                        ) : (
+                            <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <SimpleMarkdown content={aiAnalysis} />
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+                </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Main Content Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">

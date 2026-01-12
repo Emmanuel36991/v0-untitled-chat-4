@@ -58,7 +58,7 @@ export interface Trade {
   trade_start_time?: string | null
   trade_end_time?: string | null
   precise_duration_minutes?: number | null
-  
+
   // Legacy Arrays (Kept optional to prevent build errors during migration, but UI will ignore them)
   smc_market_structure?: string[] | null
   smc_order_blocks?: string[] | null
@@ -121,18 +121,18 @@ export type NewTradeInput = Omit<
 > & {
   pnl?: number | null
   outcome?: TradeOutcome
-  
+
   // Form specific fields
   setupName?: string | null
   screenshotBeforeUrl?: string | null
   screenshotAfterUrl?: string | null
-  
+
   durationMinutes?: number | null
   tradeSession?: string | null
   tradeStartTime?: string | null
   tradeEndTime?: string | null
   preciseDurationMinutes?: number | null
-  
+
   psychologyFactors?: string[] | null
 }
 
@@ -154,6 +154,372 @@ export interface SessionAnalytics {
   winRate: number
   avgPnl: number
 }
+
+// --- CHART AND INDICATOR TYPES ---
+export interface IndicatorParam {
+  type: "number" | "color" | "boolean" | "select"
+  label: string
+  defaultValue: any
+  min?: number
+  max?: number
+  step?: number
+  options?: string[]
+}
+
+export interface IndicatorDefinition {
+  id: string
+  label: string
+  params: Record<string, IndicatorParam>
+}
+
+export interface ActiveIndicator {
+  id: string
+  type: string
+  label: string
+  params: Record<string, any>
+  seriesIds?: string[]
+}
+
+export interface Strategy {
+  id: string
+  name: string
+  description: string
+  indicators: Array<{
+    type: string
+    label: string
+    params: Record<string, any>
+  }>
+}
+
+export interface CandlestickData {
+  time: number
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
+// --- AVAILABLE INDICATORS ---
+export const AVAILABLE_INDICATORS: Record<string, IndicatorDefinition> = {
+  MA: {
+    id: "MA",
+    label: "Moving Average",
+    params: {
+      period: {
+        type: "number",
+        label: "Period",
+        defaultValue: 20,
+        min: 1,
+        max: 200,
+        step: 1,
+      },
+      color: {
+        type: "color",
+        label: "Color",
+        defaultValue: "#2196F3",
+      },
+    },
+  },
+  EMA: {
+    id: "EMA",
+    label: "Exponential Moving Average",
+    params: {
+      period: {
+        type: "number",
+        label: "Period",
+        defaultValue: 20,
+        min: 1,
+        max: 200,
+        step: 1,
+      },
+      color: {
+        type: "color",
+        label: "Color",
+        defaultValue: "#FF9800",
+      },
+    },
+  },
+  RSI: {
+    id: "RSI",
+    label: "Relative Strength Index",
+    params: {
+      period: {
+        type: "number",
+        label: "Period",
+        defaultValue: 14,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+      overbought: {
+        type: "number",
+        label: "Overbought Level",
+        defaultValue: 70,
+        min: 50,
+        max: 100,
+        step: 1,
+      },
+      oversold: {
+        type: "number",
+        label: "Oversold Level",
+        defaultValue: 30,
+        min: 0,
+        max: 50,
+        step: 1,
+      },
+      color: {
+        type: "color",
+        label: "Color",
+        defaultValue: "#9C27B0",
+      },
+    },
+  },
+  BOLLINGER: {
+    id: "BOLLINGER",
+    label: "Bollinger Bands",
+    params: {
+      period: {
+        type: "number",
+        label: "Period",
+        defaultValue: 20,
+        min: 2,
+        max: 100,
+        step: 1,
+      },
+      stdDev: {
+        type: "number",
+        label: "Standard Deviations",
+        defaultValue: 2,
+        min: 1,
+        max: 3,
+        step: 0.5,
+      },
+      color: {
+        type: "color",
+        label: "Color",
+        defaultValue: "#4CAF50",
+      },
+    },
+  },
+  MACD: {
+    id: "MACD",
+    label: "MACD",
+    params: {
+      fastPeriod: {
+        type: "number",
+        label: "Fast Period",
+        defaultValue: 12,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+      slowPeriod: {
+        type: "number",
+        label: "Slow Period",
+        defaultValue: 26,
+        min: 2,
+        max: 100,
+        step: 1,
+      },
+      signalPeriod: {
+        type: "number",
+        label: "Signal Period",
+        defaultValue: 9,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+      color: {
+        type: "color",
+        label: "Color",
+        defaultValue: "#F44336",
+      },
+    },
+  },
+}
+
+// --- BACKTESTING TYPES ---
+export interface BacktestParams {
+  instrument: string
+  strategyId: string
+  timeframe: string
+  startDate: string
+  endDate: string
+  initialCapital: number
+  strategyParams?: Record<string, any>
+  riskFreeRate?: number
+  stopLossPercent?: number
+  takeProfitPercent?: number
+}
+
+export interface BacktestTrade {
+  entryTime: string
+  exitTime: string
+  direction: "long" | "short"
+  entryPrice: number
+  exitPrice: number
+  pnl: number
+  pnlPercent: number
+  outcome: "win" | "loss" | "breakeven"
+}
+
+export interface EquityDataPoint {
+  time: string
+  equity: number
+}
+
+export interface DrawdownPoint {
+  time: string
+  drawdown: number
+}
+
+export interface PnlDistributionPoint {
+  range: string
+  count: number
+}
+
+export interface BacktestResults {
+  totalTrades: number
+  winningTrades: number
+  losingTrades: number
+  winRate: number
+  totalPnl: number
+  totalPnlPercent: number
+  avgWin: number
+  avgLoss: number
+  largestWin: number
+  largestLoss: number
+  profitFactor: number
+  sharpeRatio: number
+  maxDrawdown: number
+  maxDrawdownPercent: number
+  finalEquity: number
+  trades: BacktestTrade[]
+  equityCurve: EquityDataPoint[]
+  drawdownCurve: DrawdownPoint[]
+  pnlDistribution: PnlDistributionPoint[]
+  logs: string[]
+}
+
+export interface BacktestStrategyDefinition {
+  id: string
+  name: string
+  description: string
+  params: Record<string, IndicatorParam>
+}
+
+// --- AVAILABLE BACKTEST STRATEGIES ---
+export const AVAILABLE_BACKTEST_STRATEGIES: BacktestStrategyDefinition[] = [
+  {
+    id: "sma_crossover",
+    name: "SMA Crossover",
+    description: "Buy when fast SMA crosses above slow SMA, sell when it crosses below",
+    params: {
+      shortMAPeriod: {
+        type: "number",
+        label: "Fast SMA Period",
+        defaultValue: 10,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+      longMAPeriod: {
+        type: "number",
+        label: "Slow SMA Period",
+        defaultValue: 20,
+        min: 5,
+        max: 200,
+        step: 1,
+      },
+    },
+  },
+  {
+    id: "rsi_threshold",
+    name: "RSI Threshold",
+    description: "Buy when RSI crosses below oversold, sell when it crosses above overbought",
+    params: {
+      rsiPeriod: {
+        type: "number",
+        label: "RSI Period",
+        defaultValue: 14,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+      oversoldThreshold: {
+        type: "number",
+        label: "Oversold Threshold",
+        defaultValue: 30,
+        min: 10,
+        max: 40,
+        step: 1,
+      },
+      overboughtThreshold: {
+        type: "number",
+        label: "Overbought Threshold",
+        defaultValue: 70,
+        min: 60,
+        max: 90,
+        step: 1,
+      },
+    },
+  },
+  {
+    id: "bollinger_breakout",
+    name: "Bollinger Band Breakout",
+    description: "Buy when price breaks above upper band, sell when it breaks below lower band",
+    params: {
+      period: {
+        type: "number",
+        label: "BB Period",
+        defaultValue: 20,
+        min: 5,
+        max: 100,
+        step: 1,
+      },
+      stdDev: {
+        type: "number",
+        label: "Standard Deviations",
+        defaultValue: 2,
+        min: 1,
+        max: 3,
+        step: 0.5,
+      },
+    },
+  },
+  {
+    id: "macd_crossover",
+    name: "MACD Crossover",
+    description: "Buy when MACD crosses above signal, sell when it crosses below",
+    params: {
+      fastPeriod: {
+        type: "number",
+        label: "Fast Period",
+        defaultValue: 12,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+      slowPeriod: {
+        type: "number",
+        label: "Slow Period",
+        defaultValue: 26,
+        min: 5,
+        max: 100,
+        step: 1,
+      },
+      signalPeriod: {
+        type: "number",
+        label: "Signal Period",
+        defaultValue: 9,
+        min: 2,
+        max: 50,
+        step: 1,
+      },
+    },
+  },
+]
 
 // --- CONSTANTS ---
 // Psychology is still useful as a generic list

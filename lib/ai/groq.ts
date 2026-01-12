@@ -39,6 +39,8 @@ export async function callGroqAPI(
   systemPrompt: string,
   model: string = GROQ_MODEL,
 ): Promise<ReadableStream<Uint8Array>> {
+  console.log("[v0] Calling Groq API with model:", model)
+
   const sanitizedMessages = messages.map(({ role, content }) => ({ role, content }))
 
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -58,8 +60,10 @@ export async function callGroqAPI(
 
   if (!response.ok) {
     const errorText = await response.text()
+    console.error("[v0] Groq API error response:", errorText)
     throw new Error(`Groq API error: ${errorText}`)
   }
 
+  console.log("[v0] Groq API call successful, streaming response")
   return response.body as ReadableStream<Uint8Array>
 }

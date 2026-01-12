@@ -58,9 +58,11 @@ import {
   Clock,
   ArrowLeft,
   Search,
-  Check
+  Check,
+  Layers
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
+import { getAnalyticsData } from "@/app/actions/analytics-actions" // New Import
 import type { Trade } from "@/types"
 import { DateRange } from "react-day-picker"
 import { format, subDays, endOfDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay } from "date-fns"
@@ -72,6 +74,8 @@ import { InsightsWindows } from "@/components/insights/insights-windows"
 import { AnalyticsLogoSelector } from "@/components/analytics-logos"
 import { TimingAnalyticsDashboard } from "@/components/charts/timing-analytics-dashboard"
 import { SetupScatterChart } from "@/components/insights/setup-scatter-chart"
+import { AiSummaryCard } from "@/components/analytics/ai-summary-card"
+import { ConfluencePerformance } from "@/components/analytics/confluence-performance" // New Component
 
 // Import Insight Analyzers
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
@@ -223,8 +227,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                    className={cn(
                      "flex items-center justify-between text-left text-sm px-3 py-2 rounded-lg transition-all",
                      isActive 
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium" 
-                      : "hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                       ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium" 
+                       : "hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                    )}
                  >
                    {preset.label}
@@ -610,13 +614,14 @@ const DashboardSkeleton = () => (
 
 export default function AnalyticsPage() {
   const [trades, setTrades] = useState<Trade[]>([])
+  const [confluenceStats, setConfluenceStats] = useState<any[]>([]) // Store confluence data
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [mainTab, setMainTab] = useState("overview")
   const [insightsTab, setInsightsTab] = useState("setups")
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [aiReport, setAiReport] = useState<string | null>(null)
-  
+   
   const [filters, setFilters] = useState<AnalyticsFilters>({
     dateRange: {
       from: subDays(new Date(), 90),
@@ -631,10 +636,6 @@ export default function AnalyticsPage() {
   // AI Advisor Hook
   const { openAdvisor, isOpen, close, advisorData } = useAIAdvisor()
 
-  const openStatisticAdvisor = (title: string, data: string, context: string) => {
-    openAdvisor(title, "analytics", data, context)
-  }
-
   const handleGenerateAIReport = () => {
     setIsGeneratingAI(true)
     setTimeout(() => {
@@ -645,18 +646,26 @@ export default function AnalyticsPage() {
 
   // --- DATA FETCHING ---
   useEffect(() => {
-    const fetchTrades = async () => {
+    const fetchData = async () => {
       setLoading(true)
       try {
-        const data = await getTrades()
-        setTrades(data || [])
+        const [tradesData, analyticsData] = await Promise.all([
+          getTrades(),
+          getAnalyticsData()
+        ])
+        
+        setTrades(tradesData || [])
+        
+        if (analyticsData?.confluenceStats) {
+          setConfluenceStats(analyticsData.confluenceStats)
+        }
       } catch (error) {
-        console.error("Failed to fetch trades", error)
+        console.error("Failed to fetch analytics data", error)
       } finally {
         setLoading(false)
       }
     }
-    fetchTrades()
+    fetchData()
   }, [])
 
   // --- MEMOIZED ANALYTICS ---
@@ -927,6 +936,9 @@ export default function AnalyticsPage() {
       </header>
 
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+
+        {/* --- NEW: AI Summary Card added here --- */}
+        <AiSummaryCard />
         
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
           <div className="flex justify-center">
@@ -1199,7 +1211,7 @@ export default function AnalyticsPage() {
             )}
 
             <Tabs value={insightsTab} onValueChange={setInsightsTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-white/50 backdrop-blur-sm rounded-xl p-1 border border-slate-200">
+              <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm rounded-xl p-1 border border-slate-200">
                 <TabsTrigger value="setups" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
                   <Target className="h-4 w-4 mr-2" />
                   Setup Patterns
@@ -1211,6 +1223,10 @@ export default function AnalyticsPage() {
                 <TabsTrigger value="risk" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
                   <Shield className="h-4 w-4 mr-2" />
                   Risk Calculator
+                </TabsTrigger>
+                <TabsTrigger value="playbook" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
+                  <Layers className="h-4 w-4 mr-2" />
+                  Playbook Stats
                 </TabsTrigger>
               </TabsList>
 
@@ -1524,6 +1540,26 @@ export default function AnalyticsPage() {
                   </Card>
                 )}
               </TabsContent>
+
+              {/* NEW SUB-TAB: PLAYBOOK STATS */}
+              <TabsContent value="playbook" className="space-y-6 mt-6">
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* The new Confluence Component */}
+                    <ConfluencePerformance data={confluenceStats || []} />
+
+                    {/* We can re-use the Setup Scatter Chart here or specific Setup list if needed */}
+                    <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
+                       <CardHeader>
+                          <CardTitle>Strategy Efficiency</CardTitle>
+                          <CardDescription>Setup Win Rate vs. Frequency</CardDescription>
+                       </CardHeader>
+                       <CardContent>
+                          <SetupScatterChart data={scatterData} />
+                       </CardContent>
+                    </Card>
+                 </div>
+              </TabsContent>
+
             </Tabs>
           </TabsContent>
         </Tabs>

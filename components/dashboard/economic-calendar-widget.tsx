@@ -6,83 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Calendar, AlertCircle, Filter, Clock, ChevronDown, ChevronUp } from "lucide-react"
+import { Newspaper, AlertCircle, Filter, Clock, ChevronDown, ChevronUp, Calendar, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { EconomicEvent, EventImpact, EventCategory, EconomicCalendarFilters } from "@/types/economic-calendar"
-
-// Sample data - replace with API call
-const SAMPLE_EVENTS: EconomicEvent[] = [
-  {
-    id: "1",
-    title: "Federal Reserve Interest Rate Decision",
-    date: new Date("2024-01-20"),
-    time: "14:00 EST",
-    country: "United States",
-    countryCode: "US",
-    category: "interest-rate",
-    impact: "high",
-    description: "The Federal Open Market Committee announces its decision on interest rates",
-    previous: "5.25%",
-    forecast: "5.50%",
-    currency: "USD",
-  },
-  {
-    id: "2",
-    title: "Consumer Price Index (CPI)",
-    date: new Date("2024-01-18"),
-    time: "08:30 EST",
-    country: "United States",
-    countryCode: "US",
-    category: "inflation",
-    impact: "high",
-    description: "Monthly inflation data measuring price changes",
-    previous: "3.2%",
-    forecast: "3.1%",
-    currency: "USD",
-  },
-  {
-    id: "3",
-    title: "Non-Farm Payrolls",
-    date: new Date("2024-01-19"),
-    time: "08:30 EST",
-    country: "United States",
-    countryCode: "US",
-    category: "employment",
-    impact: "high",
-    description: "Monthly employment report",
-    previous: "199K",
-    forecast: "180K",
-    currency: "USD",
-  },
-  {
-    id: "4",
-    title: "ECB Interest Rate Decision",
-    date: new Date("2024-01-22"),
-    time: "07:15 EST",
-    country: "Euro Zone",
-    countryCode: "EU",
-    category: "interest-rate",
-    impact: "high",
-    description: "European Central Bank monetary policy announcement",
-    previous: "4.00%",
-    forecast: "4.00%",
-    currency: "EUR",
-  },
-  {
-    id: "5",
-    title: "Retail Sales",
-    date: new Date("2024-01-17"),
-    time: "08:30 EST",
-    country: "United States",
-    countryCode: "US",
-    category: "retail",
-    impact: "medium",
-    description: "Monthly retail sales data",
-    previous: "0.3%",
-    forecast: "0.4%",
-    currency: "USD",
-  },
-]
 
 const IMPACT_CONFIG: Record<EventImpact, { label: string; color: string; bgColor: string; icon: React.ElementType }> = {
   high: {
@@ -122,22 +48,75 @@ interface EconomicCalendarWidgetProps {
 }
 
 export function EconomicCalendarWidget({ className, maxHeight = "600px" }: EconomicCalendarWidgetProps) {
+  const [events, setEvents] = React.useState<EconomicEvent[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+
   const [filters, setFilters] = React.useState<EconomicCalendarFilters>({})
   const [selectedPeriod, setSelectedPeriod] = React.useState<"today" | "week" | "month">("week")
   const [expandedEvent, setExpandedEvent] = React.useState<string | null>(null)
   const [showFilters, setShowFilters] = React.useState(false)
 
+  const fetchEvents = React.useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      console.log("[v0] Fetching economic events...")
+
+      const response = await fetch("/api/economic-events")
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch events: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("[v0] Received events:", data.events?.length || 0)
+
+      // Parse dates
+      const parsedEvents = (data.events || []).map((event: any) => ({
+        ...event,
+        date: new Date(event.date),
+      }))
+
+      setEvents(parsedEvents)
+    } catch (err: any) {
+      console.error("[v0] Error fetching events:", err.message)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    fetchEvents()
+  }, [fetchEvents])
+
   const filteredEvents = React.useMemo(() => {
-    return SAMPLE_EVENTS.filter((event) => {
+    return events.filter((event) => {
       if (filters.impact && filters.impact.length > 0 && !filters.impact.includes(event.impact)) {
         return false
       }
       if (filters.category && filters.category.length > 0 && !filters.category.includes(event.category)) {
         return false
       }
-      return true
+
+      // Filter by selected period
+      const now = new Date()
+      const eventDate = new Date(event.date)
+
+      if (selectedPeriod === "today") {
+        return eventDate.toDateString() === now.toDateString()
+      } else if (selectedPeriod === "week") {
+        const weekFromNow = new Date()
+        weekFromNow.setDate(weekFromNow.getDate() + 7)
+        return eventDate >= now && eventDate <= weekFromNow
+      } else {
+        const monthFromNow = new Date()
+        monthFromNow.setMonth(monthFromNow.getMonth() + 1)
+        return eventDate >= now && eventDate <= monthFromNow
+      }
     })
-  }, [filters])
+  }, [events, filters, selectedPeriod])
 
   const toggleFilter = (type: keyof EconomicCalendarFilters, value: string) => {
     setFilters((prev) => {
@@ -165,22 +144,27 @@ export function EconomicCalendarWidget({ className, maxHeight = "600px" }: Econo
       <CardHeader className="p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg shadow-md">
-              <Calendar className="h-5 w-5 text-white" />
+            <div className="p-2 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg shadow-md">
+              <Newspaper className="h-5 w-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-xl">Economic Calendar</CardTitle>
-              <CardDescription className="text-sm">Upcoming market events</CardDescription>
+              <CardTitle className="text-xl">Economic News</CardTitle>
+              <CardDescription className="text-sm">Live market events</CardDescription>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)} className="relative">
-            <Filter className="h-4 w-4" />
-            {activeFilterCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-blue-500">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="icon" onClick={fetchEvents} disabled={loading} className="h-8 w-8">
+              <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)} className="relative">
+              <Filter className="h-4 w-4" />
+              {activeFilterCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-blue-500">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Period Selection */}
@@ -261,12 +245,32 @@ export function EconomicCalendarWidget({ className, maxHeight = "600px" }: Econo
       <CardContent className="p-0">
         <ScrollArea style={{ maxHeight }}>
           <div className="p-4 space-y-3">
-            {filteredEvents.length === 0 ? (
+            {loading && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <RefreshCw className="h-12 w-12 mx-auto mb-2 opacity-50 animate-spin" />
+                <p className="text-sm">Loading economic events...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-8 text-red-500 dark:text-red-400">
+                <AlertCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Failed to load events</p>
+                <Button variant="outline" size="sm" onClick={fetchEvents} className="mt-2 bg-transparent">
+                  Try Again
+                </Button>
+              </div>
+            )}
+
+            {!loading && !error && filteredEvents.length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No events match your filters</p>
               </div>
-            ) : (
+            )}
+
+            {!loading &&
+              !error &&
               filteredEvents.map((event) => {
                 const impactConfig = IMPACT_CONFIG[event.impact]
                 const categoryConfig = CATEGORY_CONFIG[event.category]
@@ -330,34 +334,35 @@ export function EconomicCalendarWidget({ className, maxHeight = "600px" }: Econo
                         <p className="text-sm text-gray-600 dark:text-gray-300">{event.description}</p>
 
                         {/* Data Points */}
-                        <div className="grid grid-cols-3 gap-3">
-                          {event.previous && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Previous</p>
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.previous}</p>
-                            </div>
-                          )}
-                          {event.forecast && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Forecast</p>
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.forecast}</p>
-                            </div>
-                          )}
-                          {event.actual && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Actual</p>
-                              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                                {event.actual}
-                              </p>
-                            </div>
-                          )}
-                        </div>
+                        {(event.previous || event.forecast || event.actual) && (
+                          <div className="grid grid-cols-3 gap-3">
+                            {event.previous && (
+                              <div className="space-y-1">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Previous</p>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.previous}</p>
+                              </div>
+                            )}
+                            {event.forecast && (
+                              <div className="space-y-1">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Forecast</p>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{event.forecast}</p>
+                              </div>
+                            )}
+                            {event.actual && (
+                              <div className="space-y-1">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Actual</p>
+                                <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                                  {event.actual}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 )
-              })
-            )}
+              })}
           </div>
         </ScrollArea>
       </CardContent>

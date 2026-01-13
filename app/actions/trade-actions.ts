@@ -1,7 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import type { Trade, NewTradeInput, DurationAnalytics, SessionAnalytics } from "@/types"
+import type { Trade, NewTradeInput } from "@/types"
 import { revalidatePath } from "next/cache"
 
 // 1. MAP DB ROW TO TRADE OBJECT
@@ -334,6 +334,47 @@ export async function getTradeById(id: string): Promise<Trade | null> {
   } catch (error) {
     console.error("Exception in getTradeById:", error)
     throw error
+  }
+}
+
+// 8. CREATE PSYCHOLOGY ENTRY
+export async function createPsychologyEntry(data: {
+  trade_id: string
+  mood?: string
+  triggers?: string[]
+  patterns?: string[]
+  tags?: string[]
+  pre_thoughts?: string
+  post_thoughts?: string
+  lessons?: string
+}) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: "User not authenticated" }
+
+    const { error } = await supabase.from("psychology_journal").insert({
+      trade_id: data.trade_id,
+      user_id: user.id,
+      mood: data.mood,
+      emotional_triggers: data.triggers,
+      behavioral_patterns: data.patterns,
+      custom_tags: data.tags,
+      pre_trade_thoughts: data.pre_thoughts,
+      post_trade_thoughts: data.post_thoughts,
+      lessons_learned: data.lessons
+    })
+
+    if (error) {
+      console.error("Error creating psychology entry:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error: any) {
+    console.error("Exception in createPsychologyEntry:", error)
+    return { success: false, error: error.message }
   }
 }
 

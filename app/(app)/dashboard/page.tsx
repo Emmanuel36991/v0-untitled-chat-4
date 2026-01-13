@@ -1,31 +1,21 @@
 "use client"
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import React, { useState, useEffect, useMemo, useCallback } from "react"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
   Target,
   Calendar,
   BarChart3,
@@ -35,16 +25,12 @@ import {
   Award,
   AlertTriangle,
   BookOpen,
-  Eye,
   Activity,
   Clock,
   RefreshCw,
   PieChart,
-  LineChart,
   Zap,
   ChevronRight,
-  TrendingUp as TrendUp,
-  Star,
   Flame,
   Shield,
   Rocket,
@@ -52,14 +38,13 @@ import {
   Sparkles,
   Hexagon,
   MoreHorizontal,
-  Filter,
   Download,
-  Share2,
-  Maximize2,
   AlertCircle,
   BrainCircuit,
   Timer,
   Wallet,
+  ArrowRight,
+  Filter,
 } from "lucide-react"
 import {
   Area,
@@ -76,8 +61,6 @@ import {
   Bar,
   ReferenceLine,
   Legend,
-  ComposedChart,
-  Line,
 } from "recharts"
 import Link from "next/link"
 import type { Trade } from "@/types"
@@ -91,13 +74,11 @@ import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 import {
   format,
   subDays,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
   isSameDay,
-  getDay,
+  eachDayOfInterval,
   startOfMonth,
   endOfMonth,
+  getDay,
 } from "date-fns"
 
 // --- Types & Interfaces ---
@@ -109,18 +90,10 @@ interface MetricCardProps {
   changeType?: "positive" | "negative" | "neutral"
   icon: React.ElementType
   iconColor: string
-  trendData?: any[] // Array for sparkline
+  trendData?: any[]
   subtitle?: string
   tooltipInfo?: string
   onClick?: () => void
-}
-
-interface QuickStatProps {
-  label: string
-  value: string
-  icon: React.ElementType
-  color: string
-  trend?: "up" | "down" | "flat"
 }
 
 interface CalendarHeatmapProps {
@@ -130,56 +103,41 @@ interface CalendarHeatmapProps {
 
 // --- Constants & Configuration ---
 
-const ANIMATION_DELAY_BASE = 100
-
-// Expanded Strategy Palette for complex visualizations
 const STRATEGY_COLORS = [
   {
     bg: "bg-blue-500",
     gradient: "from-blue-500 to-blue-600",
     text: "text-blue-700 dark:text-blue-300",
-    light: "bg-blue-50 dark:bg-blue-950/30",
-    border: "border-blue-200 dark:border-blue-800",
     stroke: "#3b82f6",
   },
   {
     bg: "bg-purple-500",
     gradient: "from-purple-500 to-purple-600",
     text: "text-purple-700 dark:text-purple-300",
-    light: "bg-purple-50 dark:bg-purple-950/30",
-    border: "border-purple-200 dark:border-purple-800",
     stroke: "#a855f7",
   },
   {
     bg: "bg-emerald-500",
     gradient: "from-emerald-500 to-emerald-600",
     text: "text-emerald-700 dark:text-emerald-300",
-    light: "bg-emerald-50 dark:bg-emerald-950/30",
-    border: "border-emerald-200 dark:border-emerald-800",
     stroke: "#10b981",
   },
   {
     bg: "bg-amber-500",
     gradient: "from-amber-500 to-amber-600",
     text: "text-amber-700 dark:text-amber-300",
-    light: "bg-amber-50 dark:bg-amber-950/30",
-    border: "border-amber-200 dark:border-amber-800",
     stroke: "#f59e0b",
   },
   {
     bg: "bg-rose-500",
     gradient: "from-rose-500 to-rose-600",
     text: "text-rose-700 dark:text-rose-300",
-    light: "bg-rose-50 dark:bg-rose-950/30",
-    border: "border-rose-200 dark:border-rose-800",
     stroke: "#f43f5e",
   },
   {
     bg: "bg-cyan-500",
     gradient: "from-cyan-500 to-cyan-600",
     text: "text-cyan-700 dark:text-cyan-300",
-    light: "bg-cyan-50 dark:bg-cyan-950/30",
-    border: "border-cyan-200 dark:border-cyan-800",
     stroke: "#06b6d4",
   },
 ]
@@ -203,6 +161,7 @@ const MOTIVATIONAL_QUOTES = [
   "Risk comes from not knowing what you are doing.",
   "Limit your size in any position so that fear does not become the prevailing instinct.",
   "It's not whether you're right or wrong that's important, but how much money you make when you're right.",
+  "Amateurs think about how much they can make. Professionals think about how much they can lose.",
 ]
 
 // --- Helper Functions ---
@@ -242,8 +201,7 @@ const AnimatedTitle = React.memo<{
   <h1
     className={cn(
       "text-3xl font-extrabold tracking-tight",
-      "animate-fade-in-up",
-      "bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-slate-800 to-gray-900 dark:from-white dark:via-slate-200 dark:to-white",
+      "bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-slate-700 to-gray-900 dark:from-white dark:via-slate-200 dark:to-white",
       className,
     )}
     style={{ animationDelay: `${delay}ms` }}
@@ -256,35 +214,35 @@ const AnimatedTitle = React.memo<{
 const CustomChartTooltip = ({ active, payload, label, currency = false }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 border-b border-gray-100 dark:border-gray-800 pb-1">
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-3 rounded-xl shadow-xl">
+        <p className="text-xs font-medium text-muted-foreground mb-2 border-b border-gray-100 dark:border-gray-800 pb-1">
           {label}
         </p>
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-3 py-1">
-            <div
-              className="w-2 h-8 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            ></div>
-            <div>
-              <p className="text-xs text-muted-foreground capitalize">
+          <div key={index} className="flex items-center justify-between gap-4 py-1">
+            <div className="flex items-center gap-2">
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              ></div>
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
                 {entry.name === "cumulativePnl" ? "Net P&L" : entry.name}
               </p>
-              <p
-                className={cn(
-                  "text-sm font-bold font-mono",
-                  typeof entry.value === "number" && entry.value > 0
-                    ? "text-green-600 dark:text-green-400"
-                    : typeof entry.value === "number" && entry.value < 0
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-gray-900 dark:text-gray-100",
-                )}
-              >
-                {currency && typeof entry.value === "number" ? "$" : ""}
-                {typeof entry.value === "number" ? entry.value.toFixed(2) : entry.value}
-                {!currency && typeof entry.value === "number" ? "%" : ""}
-              </p>
             </div>
+            <p
+              className={cn(
+                "text-xs font-bold font-mono",
+                typeof entry.value === "number" && entry.value > 0
+                  ? "text-green-600 dark:text-green-400"
+                  : typeof entry.value === "number" && entry.value < 0
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-gray-900 dark:text-gray-100",
+              )}
+            >
+              {currency && typeof entry.value === "number" ? (entry.value < 0 ? "-" : "") + "$" : ""}
+              {typeof entry.value === "number" ? Math.abs(entry.value).toFixed(2) : entry.value}
+              {!currency && typeof entry.value === "number" ? "%" : ""}
+            </p>
           </div>
         ))}
       </div>
@@ -293,7 +251,7 @@ const CustomChartTooltip = ({ active, payload, label, currency = false }: any) =
   return null
 }
 
-// 3. Advanced Metric Card with Sparkline
+// 3. Metric Card
 const MetricCard = React.memo<MetricCardProps>(
   ({
     title,
@@ -309,36 +267,31 @@ const MetricCard = React.memo<MetricCardProps>(
   }) => (
     <Card
       className={cn(
-        "relative overflow-hidden border-0 shadow-lg transition-all duration-300 group cursor-pointer",
-        "bg-white dark:bg-gray-900/80 backdrop-blur-xl",
-        "hover:shadow-2xl hover:-translate-y-1 hover:ring-1 hover:ring-primary/20",
+        "relative overflow-hidden border border-gray-200/60 dark:border-gray-800/60 shadow-sm transition-all duration-300 group cursor-pointer",
+        "bg-white dark:bg-gray-900/40 backdrop-blur-xl",
+        "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5",
       )}
       onClick={onClick}
     >
-      {/* Decorative gradient blob */}
-      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl opacity-50 group-hover:opacity-100 transition-opacity" />
-
       <CardContent className="p-6 relative z-10">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-3">
           <div
             className={cn(
-              "p-3 rounded-2xl shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3",
+              "p-2.5 rounded-xl transition-all duration-300 group-hover:scale-110",
               iconColor,
+              "bg-opacity-10 dark:bg-opacity-20",
             )}
           >
-            <Icon className="h-6 w-6 text-white drop-shadow-md" />
+            <Icon className="h-5 w-5" />
           </div>
           {change && (
             <Badge
-              variant="outline"
+              variant="secondary"
               className={cn(
-                "font-mono text-xs px-2 py-0.5 border-0 bg-opacity-20 backdrop-blur-sm",
-                changeType === "positive" &&
-                  "text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/30",
-                changeType === "negative" &&
-                  "text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/30",
-                changeType === "neutral" &&
-                  "text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-800",
+                "font-mono text-[10px] px-2 py-0.5 border-0",
+                changeType === "positive" && "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10",
+                changeType === "negative" && "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10",
+                changeType === "neutral" && "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-800",
               )}
             >
               {changeType === "positive" ? (
@@ -354,65 +307,34 @@ const MetricCard = React.memo<MetricCardProps>(
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
             {title}
             {tooltipInfo && <AlertCircle className="h-3 w-3 text-muted-foreground/50" />}
-          </p>
+          </div>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl font-extrabold tracking-tighter text-foreground">
+            <h3 className="text-2xl font-bold tracking-tight text-foreground font-mono">
               {value}
             </h3>
           </div>
           {subtitle && (
-            <p className="text-xs text-muted-foreground/80 font-medium">{subtitle}</p>
+            <p className="text-[11px] text-muted-foreground/80 font-medium pt-1">{subtitle}</p>
           )}
         </div>
 
-        {/* Sparkline Area */}
+        {/* Subtle Sparkline Background */}
         {trendData && trendData.length > 0 && (
-          <div className="h-16 w-full mt-4 -mb-2 opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+          <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trendData}>
-                <defs>
-                  <linearGradient id={`gradient-${title}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="currentColor"
-                      stopOpacity={0.3}
-                      className={
-                        changeType === "positive"
-                          ? "text-green-500"
-                          : changeType === "negative"
-                          ? "text-red-500"
-                          : "text-gray-500"
-                      }
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="currentColor"
-                      stopOpacity={0}
-                      className={
-                        changeType === "positive"
-                          ? "text-green-500"
-                          : changeType === "negative"
-                          ? "text-red-500"
-                          : "text-gray-500"
-                      }
-                    />
-                  </linearGradient>
-                </defs>
                 <Area
                   type="monotone"
                   dataKey="value"
                   stroke="currentColor"
                   strokeWidth={2}
-                  fill={`url(#gradient-${title})`}
+                  fill="currentColor"
                   className={
-                    changeType === "positive"
-                      ? "text-green-500"
-                      : changeType === "negative"
-                      ? "text-red-500"
-                      : "text-gray-500"
+                    changeType === "positive" ? "text-green-500" :
+                    changeType === "negative" ? "text-red-500" : "text-gray-500"
                   }
                 />
               </AreaChart>
@@ -424,51 +346,7 @@ const MetricCard = React.memo<MetricCardProps>(
   ),
 )
 
-// 4. Quick Stat Component
-const QuickStat = React.memo<QuickStatProps>(({ label, value, icon: Icon, color, trend }) => (
-  <div className="group relative flex items-center p-4 bg-white/50 dark:bg-gray-900/40 rounded-2xl border border-gray-100 dark:border-gray-800/60 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-300 hover:shadow-lg backdrop-blur-sm overflow-hidden">
-    <div
-      className={cn(
-        "absolute right-0 top-0 w-16 h-16 rounded-bl-full opacity-10 transition-opacity group-hover:opacity-20",
-        color.replace("bg-gradient-to-br", "bg"), // Simplified color extraction for bg
-      )}
-    />
-    <div
-      className={cn(
-        "p-3 rounded-xl shadow-lg mr-4 group-hover:scale-110 transition-transform duration-300",
-        color,
-      )}
-    >
-      <Icon className="h-5 w-5 text-white" />
-    </div>
-    <div className="flex-1">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">
-        {label}
-      </p>
-      <div className="flex items-center gap-2">
-        <p className="text-lg font-bold text-foreground">{value}</p>
-        {trend && (
-          <span
-            className={cn(
-              "text-xs px-1.5 py-0.5 rounded-full bg-opacity-20",
-              trend === "up"
-                ? "bg-green-500 text-green-600"
-                : "bg-red-500 text-red-600",
-            )}
-          >
-            {trend === "up" ? (
-              <TrendingUp className="w-3 h-3" />
-            ) : (
-              <TrendingDown className="w-3 h-3" />
-            )}
-          </span>
-        )}
-      </div>
-    </div>
-  </div>
-))
-
-// 5. Calendar Heatmap Component (Visualization of trading activity)
+// 4. Calendar Heatmap Component
 const CalendarHeatmap = React.memo<CalendarHeatmapProps>(({ trades, currentDate }) => {
   const [hoveredDay, setHoveredDay] = useState<any>(null)
 
@@ -476,8 +354,6 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(({ trades, currentDate 
     const start = startOfMonth(currentDate)
     const end = endOfMonth(currentDate)
     const days = eachDayOfInterval({ start, end })
-
-    // Pad the beginning
     const startDay = getDay(start)
     const paddedDays = Array(startDay).fill(null).concat(days)
     return paddedDays
@@ -492,10 +368,10 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(({ trades, currentDate 
   }
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-7 gap-2 mb-2">
+    <div className="w-full select-none">
+      <div className="grid grid-cols-7 gap-2 mb-3">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <div key={d} className="text-center text-xs font-medium text-muted-foreground">
+          <div key={d} className="text-center text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             {d}
           </div>
         ))}
@@ -505,56 +381,59 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(({ trades, currentDate 
           const data = getDayData(day)
           if (!day) return <div key={`empty-${idx}`} className="aspect-square" />
 
-          const pnlColor =
-            !data || data.count === 0
-              ? "bg-gray-100 dark:bg-gray-800"
-              : data.pnl > 0
-              ? "bg-green-500"
-              : data.pnl < 0
-              ? "bg-red-500"
-              : "bg-yellow-500"
+          // Determine color intensity
+          let bgClass = "bg-gray-100 dark:bg-gray-800/50"
+          if (data && data.count > 0) {
+            if (data.pnl > 0) bgClass = "bg-emerald-500"
+            else if (data.pnl < 0) bgClass = "bg-rose-500"
+            else bgClass = "bg-amber-400"
+          }
 
-          const opacity =
-            !data || data.count === 0
-              ? "opacity-100"
-              : Math.min(Math.abs(data.pnl) / 500, 1) * 0.8 + 0.2 // Dynamic opacity based on PnL magnitude
+          // Dynamic opacity logic for intensity
+          const opacity = !data || data.count === 0
+              ? 1
+              : Math.min(Math.abs(data.pnl) / 1000, 1) * 0.6 + 0.4
 
           return (
             <Tooltip
               key={day.toISOString()}
               content={
                 data && data.count > 0 ? (
-                  <div className="p-2 bg-white dark:bg-gray-900 border rounded shadow-lg text-xs">
-                    <p className="font-bold">{format(day, "MMM dd, yyyy")}</p>
-                    <p
-                      className={
-                        data.pnl >= 0 ? "text-green-500" : "text-red-500"
-                      }
-                    >
-                      {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
-                    </p>
-                    <p className="text-muted-foreground">{data.count} trades</p>
+                  <div className="p-2.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl text-xs z-50">
+                    <p className="font-semibold mb-1">{format(day, "MMM dd, yyyy")}</p>
+                    <div className="space-y-0.5">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Net P&L:</span>
+                        <span className={cn("font-mono font-bold", data.pnl >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                          {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Trades:</span>
+                        <span className="font-mono">{data.count}</span>
+                      </div>
+                    </div>
                   </div>
                 ) : null
               }
             >
               <div
-                className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 dark:ring-offset-gray-900"
+                className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 dark:ring-offset-gray-950"
                 onMouseEnter={() => setHoveredDay(data)}
                 onMouseLeave={() => setHoveredDay(null)}
               >
                 <div
                   className={cn(
                     "absolute inset-0 rounded-md transition-colors duration-300",
-                    pnlColor,
+                    bgClass,
                   )}
                   style={{ opacity: data && data.count > 0 ? opacity : 1 }}
                 />
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span
                     className={cn(
-                      "text-[10px] font-semibold",
-                      data && data.count > 0 ? "text-white" : "text-gray-400",
+                      "text-[10px] font-medium transition-colors",
+                      data && data.count > 0 ? "text-white/90" : "text-gray-400 dark:text-gray-600",
                     )}
                   >
                     {format(day, "d")}
@@ -580,7 +459,7 @@ export default function DashboardPage() {
   
   // UI Controls
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "ytd" | "all">("30d")
-  const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily" | "volume">("cumulative")
+  const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily">("cumulative")
   const [quoteIndex, setQuoteIndex] = useState(0)
   
   // Custom Hooks
@@ -597,7 +476,7 @@ export default function DashboardPage() {
     
     setError(null)
     try {
-      // Simulate network delay for smoother UI if strictly local
+      // Simulate network delay for smoother UI
       await new Promise(resolve => setTimeout(resolve, 600)) 
       const fetchedTrades = await getTrades()
       setTrades(fetchedTrades || [])
@@ -615,15 +494,14 @@ export default function DashboardPage() {
     loadTrades()
   }, [loadTrades])
 
-  // Rotation for quotes
   useEffect(() => {
     const interval = setInterval(() => {
       setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)
-    }, 10000)
+    }, 12000)
     return () => clearInterval(interval)
   }, [])
 
-  // --- Data Processing & Calculation (Heavy Lifting) ---
+  // --- Data Processing ---
 
   const filteredTrades = useMemo(() => {
     if (selectedPeriod === "all") return trades
@@ -639,7 +517,6 @@ export default function DashboardPage() {
   }, [trades, selectedPeriod])
 
   const stats = useMemo(() => {
-    // Return default object if no trades
     if (filteredTrades.length === 0) {
       return {
         totalPnL: 0,
@@ -649,10 +526,7 @@ export default function DashboardPage() {
         totalTrades: 0,
         winningTrades: 0,
         losingTrades: 0,
-        bestTrade: null,
-        worstTrade: null,
         consecutiveWins: 0,
-        consecutiveLosses: 0,
         avgWin: 0,
         avgLoss: 0,
         expectancy: 0,
@@ -686,22 +560,16 @@ export default function DashboardPage() {
     const avgWin = wins.length > 0 ? grossProfit / wins.length : 0
     const avgLoss = losses.length > 0 ? grossLoss / losses.length : 0
     
-    // Expectancy calculation: (Win % * Avg Win) - (Loss % * Avg Loss)
+    // Expectancy: (Win % * Avg Win) - (Loss % * Avg Loss)
     const winPct = wins.length / totalTrades
     const lossPct = losses.length / totalTrades
     const expectancy = (winPct * avgWin) - (lossPct * avgLoss)
-
-    // Sort for Min/Max
-    const sortedByPnL = [...processedTrades].sort((a, b) => b.adjustedPnL - a.adjustedPnL)
-    const bestTrade = sortedByPnL[0]
-    const worstTrade = sortedByPnL[sortedByPnL.length - 1]
 
     // Drawdown Calculation
     let peak = -Infinity
     let maxDrawdown = 0
     let runningPnL = 0
     
-    // Sort by Date for Drawdown & Streak
     const sortedByDate = [...processedTrades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     
     let currentWinStreak = 0
@@ -710,13 +578,11 @@ export default function DashboardPage() {
     let maxLossStreak = 0
 
     sortedByDate.forEach(trade => {
-      // Drawdown
       runningPnL += trade.adjustedPnL
       if (runningPnL > peak) peak = runningPnL
       const drawdown = peak - runningPnL
       if (drawdown > maxDrawdown) maxDrawdown = drawdown
 
-      // Streaks
       if (trade.outcome === 'win') {
         currentWinStreak++
         currentLossStreak = 0
@@ -736,10 +602,7 @@ export default function DashboardPage() {
       totalTrades,
       winningTrades: wins.length,
       losingTrades: losses.length,
-      bestTrade,
-      worstTrade,
       consecutiveWins: maxWinStreak,
-      consecutiveLosses: maxLossStreak,
       avgWin,
       avgLoss,
       expectancy,
@@ -761,7 +624,7 @@ export default function DashboardPage() {
         fullDate: format(new Date(trade.date), "yyyy-MM-dd HH:mm"),
         cumulativePnl: cumulative,
         tradePnl: adjustedPnL,
-        volume: trade.size, // Simplified volume
+        volume: trade.size,
         outcome: trade.outcome
       }
     })
@@ -792,22 +655,22 @@ export default function DashboardPage() {
   // Loading State
   if ((isLoading && !isRefreshing) && trades.length === 0) {
     return (
-      <div className="min-h-screen bg-background p-6 lg:p-10 space-y-8">
-        <div className="flex justify-between items-center">
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-muted animate-pulse rounded-md" />
-            <div className="h-4 w-48 bg-muted animate-pulse rounded-md" />
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0B0D12] p-6 lg:p-8 space-y-8">
+        <div className="flex justify-between items-center max-w-[1600px] mx-auto">
+          <div className="space-y-3">
+            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg" />
+            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg" />
           </div>
-          <div className="h-10 w-32 bg-muted animate-pulse rounded-md" />
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-lg" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-[1600px] mx-auto">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-40 rounded-xl bg-muted animate-pulse" />
+            <div key={i} className="h-32 rounded-2xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
           ))}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 h-96 rounded-xl bg-muted animate-pulse" />
-          <div className="h-96 rounded-xl bg-muted animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-[1600px] mx-auto">
+          <div className="lg:col-span-2 h-[450px] rounded-2xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          <div className="h-[450px] rounded-2xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
         </div>
       </div>
     )
@@ -816,14 +679,16 @@ export default function DashboardPage() {
   // Error State
   if (error && !isLoading && trades.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
-        <div className="text-center space-y-4 max-w-md">
-           <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12]">
+        <div className="text-center space-y-6 max-w-md p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800">
+           <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
              <AlertTriangle className="w-8 h-8" />
            </div>
-           <h2 className="text-2xl font-bold">Data Synchronization Error</h2>
-           <p className="text-muted-foreground">{error}</p>
-           <Button onClick={() => loadTrades()} className="w-full">
+           <div>
+             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Connection Issue</h2>
+             <p className="text-muted-foreground text-sm leading-relaxed">{error}</p>
+           </div>
+           <Button onClick={() => loadTrades()} className="w-full rounded-xl h-11">
              <RefreshCw className="mr-2 h-4 w-4" /> Retry Connection
            </Button>
         </div>
@@ -836,24 +701,26 @@ export default function DashboardPage() {
       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
         
         {/* --- Top Bar: Header & Controls --- */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 animate-fade-in-up">
-          <div className="space-y-2 relative">
-             <div className="flex items-center space-x-2 text-sm font-medium text-muted-foreground mb-1">
-               <span className="flex items-center text-orange-500"><Flame className="w-3 h-3 mr-1" /> {getGreeting()}, Trader</span>
-               <Separator orientation="vertical" className="h-3" />
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
+          <div className="space-y-1 relative">
+             <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+               <span className="flex items-center text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                 <Flame className="w-3 h-3 mr-1" /> {getGreeting()}
+               </span>
+               <span>•</span>
                <span>{format(new Date(), "MMMM dd, yyyy")}</span>
              </div>
              
-             <AnimatedTitle className="text-4xl">Dashboard Overview</AnimatedTitle>
+             <AnimatedTitle className="text-3xl sm:text-4xl">Dashboard Overview</AnimatedTitle>
              
-             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl">
-               <BrainCircuit className="w-4 h-4 text-primary" />
-               <span className="italic">"{MOTIVATIONAL_QUOTES[quoteIndex]}"</span>
+             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
+               <BrainCircuit className="w-4 h-4 text-indigo-500" />
+               <span className="italic text-gray-500 dark:text-gray-400">"{MOTIVATIONAL_QUOTES[quoteIndex]}"</span>
              </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-             <div className="bg-white dark:bg-gray-900 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center gap-1">
+             <div className="bg-white dark:bg-gray-900/60 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center gap-1 backdrop-blur-sm">
                 {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
                   <Button
                     key={period}
@@ -861,9 +728,9 @@ export default function DashboardPage() {
                     size="sm"
                     onClick={() => setSelectedPeriod(period)}
                     className={cn(
-                      "rounded-lg px-3 py-1 text-xs font-semibold transition-all",
+                      "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
                       selectedPeriod === period 
-                        ? "bg-primary text-primary-foreground shadow-md" 
+                        ? "bg-primary text-primary-foreground shadow-sm" 
                         : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800"
                     )}
                   >
@@ -872,6 +739,8 @@ export default function DashboardPage() {
                 ))}
              </div>
              
+             <Separator orientation="vertical" className="h-8 hidden xl:block mx-1 bg-gray-200 dark:bg-gray-800" />
+
              <div className="flex items-center gap-2">
                <PnLDisplaySelector currentFormat={displayFormat} onFormatChange={setDisplayFormat} />
                
@@ -879,7 +748,7 @@ export default function DashboardPage() {
                  variant="outline"
                  size="icon"
                  onClick={() => loadTrades(false)}
-                 className={cn("rounded-xl border-gray-200 dark:border-gray-800", isRefreshing && "animate-spin")}
+                 className={cn("rounded-xl h-10 w-10 border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800", isRefreshing && "animate-spin text-primary")}
                  title="Refresh Data"
                >
                  <RefreshCw className="h-4 w-4" />
@@ -887,7 +756,7 @@ export default function DashboardPage() {
 
                <Button 
                  data-tutorial="add-trade-btn"
-                 className="rounded-xl shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-700 transition-all hover:scale-105" 
+                 className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.02]" 
                  asChild
                >
                  <Link href="/add-trade">
@@ -898,21 +767,20 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* --- Key Metrics Grid with Sparklines --- */}
+        {/* --- Key Metrics Grid --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tutorial="key-metrics">
-          
           <MetricCard
-            title="Total Net P&L"
+            title="Net P&L"
             value={displayFormat === 'dollars' 
-              ? `$${stats.totalPnL.toFixed(2)}` 
+              ? `$${stats.totalPnL.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
               : displayFormat === 'percentage' 
-                ? `${((stats.totalPnL / 10000) * 100).toFixed(2)}%` // Assuming 10k start
+                ? `${((stats.totalPnL / 10000) * 100).toFixed(2)}%`
                 : `${stats.totalPnL.toFixed(2)} R`
             }
-            change={`${stats.totalTrades} Trades`}
+            change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
             icon={Wallet}
-            iconColor="bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
+            iconColor="text-blue-600 dark:text-blue-400"
             trendData={chartData.map(d => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
           />
@@ -923,12 +791,12 @@ export default function DashboardPage() {
             change={`${stats.winningTrades}W - ${stats.losingTrades}L`}
             changeType={stats.winRate > 50 ? "positive" : stats.winRate > 40 ? "neutral" : "negative"}
             icon={Target}
-            iconColor="bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400"
-            // Mock trend data for win rate stability
+            iconColor="text-purple-600 dark:text-purple-400"
+            // Smooth trend data for win rate
             trendData={[
-              { value: 45 }, { value: 48 }, { value: 47 }, { value: 52 }, { value: stats.winRate }
+               {value: 45}, {value: 47}, {value: 50}, {value: 48}, {value: 52}, {value: stats.winRate}
             ]}
-            subtitle={`Streak: ${stats.consecutiveWins} Wins`}
+            subtitle={`Current Streak: ${stats.consecutiveWins} Wins`}
           />
 
           <MetricCard
@@ -937,7 +805,7 @@ export default function DashboardPage() {
             change={`Exp: $${stats.expectancy.toFixed(2)}`}
             changeType={stats.profitFactor >= 1.5 ? "positive" : stats.profitFactor >= 1 ? "neutral" : "negative"}
             icon={Award}
-            iconColor="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
+            iconColor="text-emerald-600 dark:text-emerald-400"
             subtitle="Gross Profit / Gross Loss"
           />
 
@@ -947,113 +815,109 @@ export default function DashboardPage() {
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
             icon={BarChart3}
-            iconColor="bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400"
+            iconColor="text-amber-600 dark:text-amber-400"
             trendData={chartData.map(d => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"
           />
         </div>
 
-        {/* --- Main Content Area: Charts & Distribution --- */}
+        {/* --- Main Content Area --- */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           
-          {/* Main Chart Section (Takes 2/3 width on large screens) */}
+          {/* Main Chart Section (Takes 2/3 width) */}
           <Card 
-            className="xl:col-span-2 border-0 shadow-xl dark:bg-gray-900/50 backdrop-blur-sm overflow-hidden flex flex-col"
+            className="xl:col-span-2 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
             data-tutorial="performance-chart"
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
               <div className="space-y-1">
-                <CardTitle className="text-xl flex items-center gap-2">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <Activity className="w-5 h-5 text-primary" />
-                  Performance Analytics
+                  Equity Curve
                 </CardTitle>
                 <CardDescription>
-                  Cumulative P&L growth over {selectedPeriod.toUpperCase()} period
+                  Performance analysis over selected period
                 </CardDescription>
               </div>
               
               <Tabs value={chartViewMode} onValueChange={(v: any) => setChartViewMode(v)} className="w-auto">
-                <TabsList className="bg-muted/50">
-                  <TabsTrigger value="cumulative" className="text-xs">Growth</TabsTrigger>
-                  <TabsTrigger value="daily" className="text-xs">Daily P&L</TabsTrigger>
+                <TabsList className="h-9 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <TabsTrigger value="cumulative" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">Growth</TabsTrigger>
+                  <TabsTrigger value="daily" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">Daily P&L</TabsTrigger>
                 </TabsList>
               </Tabs>
             </CardHeader>
             
-            <CardContent className="flex-1 min-h-[400px] pt-4">
+            <CardContent className="flex-1 min-h-[420px] pt-6 pl-0">
               <ResponsiveContainer width="100%" height="100%">
                 {chartViewMode === 'cumulative' ? (
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorPnLMain" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.3} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.2} />
                     <XAxis 
                       dataKey="date" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      minTickGap={30}
+                      tick={{ fontSize: 11, fill: "#6b7280" }}
+                      minTickGap={40}
+                      dy={10}
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
+                      tick={{ fontSize: 11, fill: "#6b7280" }}
                       tickFormatter={(value) => `$${value}`}
                       width={60}
                     />
-                    <Tooltip content={<CustomChartTooltip currency />} />
-                    <Legend 
-                      verticalAlign="top" 
-                      height={36} 
-                      iconType="circle"
-                      formatter={(value) => <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{value}</span>}
-                    />
+                    <Tooltip content={<CustomChartTooltip currency />} cursor={{ stroke: "#3b82f6", strokeWidth: 1, strokeDasharray: "4 4" }} />
                     <ReferenceLine y={0} stroke="#9ca3af" strokeDasharray="3 3" opacity={0.5} />
                     <Area 
                       name="Cumulative P&L"
                       type="monotone" 
                       dataKey="cumulativePnl" 
                       stroke="#3b82f6" 
-                      strokeWidth={3}
+                      strokeWidth={2.5}
                       fillOpacity={1} 
                       fill="url(#colorPnLMain)" 
                       animationDuration={1500}
                     />
                   </AreaChart>
                 ) : (
-                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.3} />
+                  <BarChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.2} />
                     <XAxis 
                       dataKey="date" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      minTickGap={30}
+                      tick={{ fontSize: 11, fill: "#6b7280" }}
+                      minTickGap={40}
+                      dy={10}
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
+                      tick={{ fontSize: 11, fill: "#6b7280" }}
                       tickFormatter={(value) => `$${value}`}
                       width={60}
                     />
-                    <Tooltip content={<CustomChartTooltip currency />} />
+                    <Tooltip content={<CustomChartTooltip currency />} cursor={{ fill: 'transparent' }} />
                     <ReferenceLine y={0} stroke="#9ca3af" opacity={0.5} />
                     <Bar 
                       name="Daily P&L"
                       dataKey="tradePnl" 
                       radius={[4, 4, 0, 0]}
-                      maxBarSize={50}
+                      maxBarSize={60}
                     >
                       {chartData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={entry.tradePnl >= 0 ? "#10b981" : "#ef4444"} 
-                          fillOpacity={0.8}
+                          fill={entry.tradePnl >= 0 ? "#10b981" : "#f43f5e"} 
+                          fillOpacity={0.9}
                         />
                       ))}
                     </Bar>
@@ -1067,14 +931,14 @@ export default function DashboardPage() {
           <div className="space-y-6 flex flex-col">
             
             {/* Strategy Donut */}
-            <Card className="flex-1 border-0 shadow-lg dark:bg-gray-900/50 backdrop-blur-sm">
-               <CardHeader className="pb-2">
-                 <CardTitle className="text-lg flex items-center gap-2">
-                   <PieChart className="w-4 h-4 text-purple-500" />
-                   Strategy Distribution
+            <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">
+               <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+                 <CardTitle className="text-lg font-bold flex items-center gap-2">
+                   <PieChart className="w-5 h-5 text-purple-500" />
+                   Strategy Edge
                  </CardTitle>
                </CardHeader>
-               <CardContent className="flex flex-col items-center justify-center min-h-[250px]">
+               <CardContent className="flex flex-col items-center justify-center min-h-[250px] p-6">
                  <div className="relative w-full h-[200px]">
                    <ResponsiveContainer width="100%" height="100%">
                      <RechartsPieChart>
@@ -1082,38 +946,39 @@ export default function DashboardPage() {
                          data={strategyData}
                          cx="50%"
                          cy="50%"
-                         innerRadius={60}
-                         outerRadius={80}
-                         paddingAngle={5}
+                         innerRadius={65}
+                         outerRadius={85}
+                         paddingAngle={4}
                          dataKey="pnl"
+                         cornerRadius={4}
                        >
                          {strategyData.map((entry, index) => (
-                           <Cell key={`cell-${index}`} fill={STRATEGY_COLORS[index % STRATEGY_COLORS.length].stroke} />
+                           <Cell key={`cell-${index}`} fill={STRATEGY_COLORS[index % STRATEGY_COLORS.length].stroke} strokeWidth={0} />
                          ))}
                        </Pie>
                        <Tooltip content={<CustomChartTooltip currency />} />
                      </RechartsPieChart>
                    </ResponsiveContainer>
                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                     <span className="text-2xl font-bold">{strategyData.length}</span>
-                     <span className="text-xs text-muted-foreground">Active Strategies</span>
+                     <span className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-white">{strategyData.length}</span>
+                     <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">Setups</span>
                    </div>
                  </div>
                  
-                 <div className="w-full mt-4 space-y-2 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
-                   {strategyData.map((strategy, idx) => {
+                 <div className="w-full mt-6 space-y-3">
+                   {strategyData.slice(0, 4).map((strategy, idx) => {
                      const color = STRATEGY_COLORS[idx % STRATEGY_COLORS.length]
                      return (
-                       <div key={strategy.name} className="flex items-center justify-between text-sm group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors">
-                         <div className="flex items-center gap-2">
-                           <div className={`w-2 h-2 rounded-full ${color.bg}`} />
+                       <div key={strategy.name} className="flex items-center justify-between text-sm group p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                         <div className="flex items-center gap-3">
+                           <div className={`w-2.5 h-2.5 rounded-full ${color.bg}`} />
                            <span className="font-medium text-gray-700 dark:text-gray-300">{strategy.name}</span>
                          </div>
-                         <div className="text-right">
-                           <span className={strategy.pnl >= 0 ? "text-green-600 font-mono" : "text-red-600 font-mono"}>
+                         <div className="text-right flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground font-medium">{strategy.winRate.toFixed(0)}% WR</span>
+                           <span className={cn("font-mono font-bold", strategy.pnl >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500")}>
                              ${strategy.pnl.toFixed(0)}
                            </span>
-                           <span className="text-xs text-muted-foreground ml-2">({strategy.winRate.toFixed(0)}% WR)</span>
                          </div>
                        </div>
                      )
@@ -1123,17 +988,14 @@ export default function DashboardPage() {
             </Card>
 
             {/* Calendar Heatmap Preview */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800/80">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-indigo-500" />
-                    <span>Monthly Activity</span>
-                  </div>
-                  <span className="text-xs font-normal text-muted-foreground">{format(new Date(), "MMMM yyyy")}</span>
+            <Card className="border-0 shadow-lg dark:shadow-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
+              <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                  <span>Consistency Map</span>
+                  <span className="text-xs font-normal bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-foreground">{format(new Date(), "MMMM")}</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <CalendarHeatmap trades={filteredTrades} currentDate={new Date()} />
               </CardContent>
             </Card>
@@ -1144,73 +1006,79 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
           
           {/* Recent Trades List */}
-          <Card className="lg:col-span-2 border-0 shadow-xl overflow-hidden bg-white dark:bg-gray-900" data-tutorial="recent-trades">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
+          <Card className="lg:col-span-2 border-0 shadow-lg dark:shadow-2xl overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800" data-tutorial="recent-trades">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10 py-5">
               <div className="space-y-1">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-500" />
-                  Recent Trades
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-blue-500" />
+                  Recent Execution Log
                 </CardTitle>
-                <CardDescription>
-                  Your last execution activity
-                </CardDescription>
               </div>
-              <Button variant="ghost" size="sm" asChild className="group">
-                <Link href="/trades">
-                  View All <ArrowUpRight className="ml-1 w-3 h-3 transition-transform group-hover:rotate-45" />
+              <Button variant="outline" size="sm" asChild className="group border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800">
+                <Link href="/trades" className="text-xs font-semibold">
+                  View All <ArrowRight className="ml-2 w-3 h-3 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
             </CardHeader>
             <CardContent className="p-0">
-               {filteredTrades.slice(0, 5).map((trade, idx) => {
+               {filteredTrades.slice(0, 5).map((trade) => {
                  const isWin = trade.outcome === 'win';
                  const isLong = trade.direction === 'long';
-                 const pnlColor = trade.pnl >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400";
                  const StrategyIcon = getStrategyIcon(trade.setup_name || "");
 
                  return (
-                   <div key={trade.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors border-b last:border-0 border-gray-100 dark:border-gray-800/50 group cursor-pointer">
-                     <div className="flex items-center gap-4">
+                   <div key={trade.id} className="flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-all border-b last:border-0 border-gray-100 dark:border-gray-800/50 group cursor-pointer">
+                     <div className="flex items-center gap-5">
                        <div className={cn(
-                         "w-10 h-10 rounded-full flex items-center justify-center shadow-sm",
-                         isWin ? "bg-green-100 text-green-600 dark:bg-green-900/30" : "bg-red-100 text-red-600 dark:bg-red-900/30"
+                         "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm border transition-colors",
+                         isWin 
+                           ? "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400" 
+                           : "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400"
                        )}>
-                         {isLong ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
+                         {isLong ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownRight className="w-6 h-6" />}
                        </div>
                        
-                       <div>
-                         <div className="flex items-center gap-2">
-                           <span className="font-bold text-gray-900 dark:text-gray-100">{trade.instrument}</span>
-                           <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 font-normal">
-                             {trade.direction.toUpperCase()}
+                       <div className="space-y-1">
+                         <div className="flex items-center gap-2.5">
+                           <span className="font-bold text-gray-900 dark:text-gray-100 text-base">{trade.instrument}</span>
+                           <Badge variant={isLong ? "default" : "destructive"} className={cn("text-[10px] px-1.5 py-0 h-5 font-bold uppercase tracking-wide opacity-80", isLong ? "bg-blue-600" : "bg-orange-600")}>
+                             {trade.direction}
                            </Badge>
                          </div>
-                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                           <span>{format(new Date(trade.date), "MMM dd • HH:mm")}</span>
-                           <span className="flex items-center gap-1">
+                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                           <span className="flex items-center gap-1.5">
+                             <Calendar className="w-3 h-3" />
+                             {format(new Date(trade.date), "MMM dd • HH:mm")}
+                           </span>
+                           <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
+                           <span className="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-400">
                              <StrategyIcon className="w-3 h-3" />
-                             {trade.setup_name || "Unknown"}
+                             {trade.setup_name || "Discretionary"}
                            </span>
                          </div>
                        </div>
                      </div>
 
-                     <div className="flex items-center gap-6">
-                        <div className="hidden sm:block text-right">
-                          <p className="text-xs text-muted-foreground">Entry / Exit</p>
-                          <p className="text-xs font-medium">{trade.entry_price} → {trade.exit_price}</p>
+                     <div className="flex items-center gap-8">
+                        <div className="hidden md:block text-right space-y-1">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Prices</p>
+                          <p className="text-xs font-mono font-medium text-gray-700 dark:text-gray-300">
+                            <span className="opacity-60">{trade.entry_price}</span> <span className="mx-1">→</span> <span>{trade.exit_price}</span>
+                          </p>
                         </div>
                         
-                        <div className="text-right min-w-[80px]">
-                          <p className={cn("font-bold text-sm", pnlColor)}>
+                        <div className="text-right min-w-[90px] space-y-1">
+                          <p className={cn("font-bold text-base font-mono", isWin ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                             {trade.pnl > 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                           </p>
-                          <p className="text-[10px] text-muted-foreground">{trade.outcome.toUpperCase()}</p>
+                          <Badge variant="outline" className={cn("text-[9px] h-4 px-1.5 border-0 uppercase font-bold", isWin ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20" : "bg-rose-100 text-rose-700 dark:bg-rose-500/20")}>
+                            {trade.outcome}
+                          </Badge>
                         </div>
 
-                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" asChild>
+                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-muted-foreground" asChild>
                            <Link href={`/trade-details/${trade.id}`}>
-                             <ChevronRight className="w-4 h-4" />
+                             <ChevronRight className="w-5 h-5" />
                            </Link>
                         </Button>
                      </div>
@@ -1219,80 +1087,86 @@ export default function DashboardPage() {
                })}
                
                {filteredTrades.length === 0 && (
-                 <div className="p-8 text-center text-muted-foreground">
-                   <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                   <p>No trading data available for this period.</p>
+                 <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                   <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                      <Filter className="w-8 h-8 opacity-20" />
+                   </div>
+                   <p className="font-medium">No trading data found for this period</p>
+                   <p className="text-sm opacity-60 mt-1">Try adjusting your filters or add a new trade</p>
                  </div>
                )}
             </CardContent>
           </Card>
 
-          {/* Quick Actions & AI Insight Teaser */}
+          {/* Quick Actions & AI Insight */}
           <div className="space-y-6">
             
             {/* Quick Actions Grid */}
             <div className="grid grid-cols-2 gap-4">
                {[
-                 { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log manual" },
-                 { label: "Import", icon: Download, href: "/import", color: "bg-indigo-600", desc: "CSV/Broker" },
+                 { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
+                 { label: "Import", icon: Download, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
                  { label: "Playbook", icon: BookOpen, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
-                 { label: "Insights", icon: Zap, href: "/insights", color: "bg-rose-600", desc: "AI Analysis" },
+                 { label: "AI Insights", icon: Zap, href: "/insights", color: "bg-rose-600", desc: "Analysis" },
                ].map((action) => (
-                 <Link key={action.label} href={action.href} className="group relative overflow-hidden rounded-xl bg-white dark:bg-gray-900 shadow-md border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300">
-                    <div className="p-4 flex flex-col items-center text-center space-y-2 relative z-10">
-                      <div className={cn("p-2.5 rounded-lg shadow-lg text-white transition-transform group-hover:scale-110 group-hover:rotate-3", action.color)}>
+                 <Link key={action.label} href={action.href} className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                    <div className="p-5 flex flex-col items-center text-center space-y-3 relative z-10">
+                      <div className={cn("p-3 rounded-xl shadow-lg text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6", action.color)}>
                         <action.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm">{action.label}</h4>
-                        <p className="text-[10px] text-muted-foreground">{action.desc}</p>
+                        <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100">{action.label}</h4>
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">{action.desc}</p>
                       </div>
                     </div>
                     {/* Hover Effect */}
-                    <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity", action.color)} />
+                    <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity", action.color.replace('bg-', 'bg-text-'))} />
                  </Link>
                ))}
             </div>
 
             {/* AI Insight Card */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-900 to-purple-900 text-white relative overflow-hidden">
-               {/* Background Effects */}
-               <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mt-10" />
-               <div className="absolute bottom-0 left-0 w-24 h-24 bg-pink-500 opacity-10 rounded-full blur-2xl -ml-10 -mb-10" />
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative overflow-hidden rounded-2xl">
+               {/* Decorative Background */}
+               <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-[0.08] rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+               <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-500 opacity-20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
                
-               <CardHeader className="relative z-10">
-                 <div className="flex items-center gap-2 mb-1">
-                   <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md">
-                     <Sparkles className="w-3 h-3 mr-1 text-yellow-300" /> AI Insight
+               <CardHeader className="relative z-10 pb-2">
+                 <div className="flex items-center justify-between mb-1">
+                   <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md px-3 py-1">
+                     <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" /> AI Insight
                    </Badge>
+                   <span className="text-[10px] font-medium opacity-70">Just now</span>
                  </div>
-                 <CardTitle className="text-lg">Pattern Detected</CardTitle>
+                 <CardTitle className="text-lg font-bold tracking-tight">Pattern Detected</CardTitle>
                </CardHeader>
-               <CardContent className="relative z-10">
-                 <p className="text-sm text-indigo-100 mb-4 leading-relaxed">
-                   Your win rate on <span className="font-bold text-white">Long</span> trades in the <span className="font-bold text-white">Morning Session</span> is 15% higher than afternoon sessions. Consider sizing up before 11:00 AM.
+               <CardContent className="relative z-10 space-y-4">
+                 <p className="text-sm text-indigo-50 font-medium leading-relaxed opacity-90">
+                   Your win rate on <span className="text-white font-bold bg-white/10 px-1 rounded">Long</span> trades in the morning session is <span className="text-green-300 font-bold">15% higher</span>. Consider increasing size before 11:00 AM.
                  </p>
-                 <Button variant="secondary" className="w-full bg-white text-indigo-900 hover:bg-indigo-50 shadow-lg font-semibold" asChild>
+                 <Button variant="secondary" className="w-full bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg font-bold border-0" asChild>
                    <Link href="/insights">
-                     View Full Analysis
+                     View Analysis <ArrowRight className="ml-2 w-4 h-4" />
                    </Link>
                  </Button>
                </CardContent>
             </Card>
 
-            {/* Market Status (Mock) */}
-            <div className="bg-gray-900 dark:bg-black rounded-xl p-4 flex items-center justify-between text-white shadow-lg">
-               <div className="flex items-center gap-3">
-                 <div className="relative">
-                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                   <div className="w-3 h-3 bg-green-500 rounded-full absolute top-0 left-0 animate-ping opacity-75" />
+            {/* Market Status (Visual Only) */}
+            <div className="bg-gray-900 dark:bg-black rounded-2xl p-5 flex items-center justify-between text-white shadow-lg ring-1 ring-white/10">
+               <div className="flex items-center gap-4">
+                 <div className="relative flex h-3 w-3">
+                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                   <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                  </div>
                  <div>
-                   <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Market Status</p>
-                   <p className="text-sm font-bold">NY Session Open</p>
+                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Market Status</p>
+                   <p className="text-sm font-bold tracking-tight">NY Session Open</p>
                  </div>
                </div>
-               <Timer className="w-5 h-5 text-gray-500" />
+               <div className="h-10 w-10 bg-gray-800 rounded-full flex items-center justify-center">
+                 <Timer className="w-5 h-5 text-gray-400" />
+               </div>
             </div>
 
           </div>

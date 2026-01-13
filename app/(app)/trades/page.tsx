@@ -8,7 +8,7 @@ import { SimpleTradeTable } from "./SimpleTradeTable"
 import type { Trade, NewTradeInput } from "@/types"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import {
   RefreshCw,
   Upload,
@@ -22,13 +22,11 @@ import {
   Target,
   DollarSign,
   BarChart3,
-  Settings,
   Filter,
   Trash2,
   Maximize2,
   Minimize2,
   Search,
-  ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
   Briefcase
@@ -52,10 +50,6 @@ import {
 
 // --- Types & Interfaces ---
 
-interface ParsedTradeRow {
-  [key: string]: string
-}
-
 interface ClientOnlyProps {
   children: ReactNode
 }
@@ -69,9 +63,59 @@ interface MetricProps {
   icon?: React.ElementType
 }
 
+// --- Helper Functions for CSV Parsing ---
+
+const CLEAN_PATTERNS = {
+  currency: /[^0-9.-]/g,
+  dateSeparators: /[./]/g,
+}
+
+// Synonyms for CSV Column Mapping
+const COLUMN_ALIASES = {
+  date: ['date', 'time', 'entry time', 'trade date', 'open time', 'timestamp', 'filled time', 'execution time', 'date/time'],
+  timeOnly: ['time', 'execution time', 'fill time', 'timestamp'], // Used if Date is date-only
+  instrument: ['symbol', 'instrument', 'contract', 'ticker', 'asset', 'market', 'product'],
+  direction: ['side', 'direction', 'type', 'buy/sell', 'action', 'b/s'],
+  size: ['qty', 'quantity', 'size', 'volume', 'amount', 'contracts', 'lots', 'shares'],
+  entryPrice: ['entry price', 'price', 'open price', 'avg price', 'fill price', 'trade price', 'avg. price', 'entry'],
+  exitPrice: ['exit price', 'close price', 'closing price', 'sold price', 'cover price', 'exit'],
+  pnl: ['pnl', 'profit', 'loss', 'realized pnl', 'net pnl', 'p/l', 'profit/loss', 'realized', 'pl'],
+  fee: ['fee', 'commission', 'comm', 'fees', 'brokerage'],
+  notes: ['notes', 'comments', 'description', 'strategy', 'setup']
+};
+
+const cleanNum = (val: any) => {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  let str = String(val).trim();
+  // Handle accounting format (123.45) -> -123.45
+  if (str.startsWith('(') && str.endsWith(')')) {
+    str = '-' + str.slice(1, -1);
+  }
+  // Remove currency symbols and commas
+  str = str.replace(/[^0-9.-]/g, '');
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
+}
+
+const findColumnHeader = (row: any, aliases: string[]): string | undefined => {
+  const keys = Object.keys(row);
+  // 1. Exact match (case insensitive)
+  for (const alias of aliases) {
+    const match = keys.find(k => k.trim().toLowerCase() === alias.toLowerCase());
+    if (match) return match;
+  }
+  // 2. Partial match (e.g. "Net PnL" matches "pnl")
+  for (const alias of aliases) {
+    const match = keys.find(k => k.trim().toLowerCase().includes(alias.toLowerCase()));
+    if (match) return match;
+  }
+  return undefined;
+}
+
 // --- Sub-Components ---
 
-// 1. Clean Data Header (Redesigned)
+// 1. Clean Data Header
 const ProfessionalHeader = React.memo<{ count: number; totalPnL: number; winRate: number }>(({ count, totalPnL, winRate }) => {
   return (
     <div className="mb-8">
@@ -100,7 +144,7 @@ const ProfessionalHeader = React.memo<{ count: number; totalPnL: number; winRate
   )
 })
 
-// 2. Compact Metric Item (Refined)
+// 2. Compact Metric Item
 const CompactMetric = ({ label, value, trend, subValue, color = "text-slate-900", icon: Icon }: MetricProps) => (
   <div className="flex flex-col p-4 relative group hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors cursor-default border-r border-slate-100 dark:border-slate-800 last:border-r-0">
     <div className="flex items-center justify-between mb-3">
@@ -181,7 +225,7 @@ export default function TradesPage() {
         (t.notes && t.notes.toLowerCase().includes(lower))
       )
     }
-    // ... existing filters logic ...
+    // Filters logic
     if (Object.keys(filters).length > 0) {
       result = result.filter((trade) => {
         let passes = true
@@ -227,7 +271,7 @@ export default function TradesPage() {
     }
   }, [filteredTrades])
 
-  // --- Handlers (Enhanced CSV Import) ---
+  // --- CSV IMPORT LOGIC ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0])
   }
@@ -240,7 +284,6 @@ export default function TradesPage() {
     
     setIsProcessingImport(true);
 
-    // 1. Read file as text to determine the real header line
     const reader = new FileReader();
     reader.onload = async (e) => {
       const text = e.target?.result as string;
@@ -250,17 +293,22 @@ export default function TradesPage() {
         return;
       }
 
-      // 2. Scan first 20 lines for keywords to find the real header
+      // 1. Pre-process text to find header line (often CSVs have garbage at the top)
       const lines = text.split(/\r\n|\n|\r/);
       let headerRowIndex = 0;
-      const potentialHeaders = ['symbol', 'instrument', 'ticker', 'date', 'time', 'entry', 'price', 'profit', 'pnl', 'net pnl', 'realized'];
+      let maxMatches = 0;
       
-      for (let i = 0; i < Math.min(lines.length, 20); i++) {
+      // Look for a line that contains multiple key trading terms
+      const keyTerms = [...COLUMN_ALIASES.date, ...COLUMN_ALIASES.instrument, ...COLUMN_ALIASES.pnl, ...COLUMN_ALIASES.entryPrice];
+      
+      for (let i = 0; i < Math.min(lines.length, 30); i++) {
         const lineLower = lines[i].toLowerCase();
-        const matches = potentialHeaders.filter(h => lineLower.includes(h));
-        if (matches.length >= 2) {
+        let matches = 0;
+        keyTerms.forEach(term => { if (lineLower.includes(term)) matches++; });
+        
+        if (matches > maxMatches && matches >= 2) {
+          maxMatches = matches;
           headerRowIndex = i;
-          break;
         }
       }
 
@@ -269,85 +317,114 @@ export default function TradesPage() {
       Papa.parse(cleanCsvContent, {
         header: true,
         skipEmptyLines: true,
-        dynamicTyping: false,
+        dynamicTyping: false, // We handle types manually for better control
         complete: async (results) => {
           try {
             const rawData = results.data as any[];
-            if (!rawData || rawData.length === 0) {
-               throw new Error("No trade data found after parsing.");
-            }
+            if (!rawData || rawData.length === 0) throw new Error("No data parsed");
 
-            const processedTrades: NewTradeInput[] = rawData.map(row => {
-               const findVal = (possibleKeys: string[]) => {
-                 for (const key of possibleKeys) {
-                   const found = Object.keys(row).find(k => k.toLowerCase().trim() === key.toLowerCase())
-                   if (found && row[found]) return row[found]
+            const processedTrades: NewTradeInput[] = rawData.map((row, index) => {
+               // 1. Identify Columns
+               const dateKey = findColumnHeader(row, COLUMN_ALIASES.date);
+               const timeKey = findColumnHeader(row, COLUMN_ALIASES.timeOnly);
+               const instrumentKey = findColumnHeader(row, COLUMN_ALIASES.instrument);
+               const entryKey = findColumnHeader(row, COLUMN_ALIASES.entryPrice);
+               const exitKey = findColumnHeader(row, COLUMN_ALIASES.exitPrice);
+               const pnlKey = findColumnHeader(row, COLUMN_ALIASES.pnl);
+               const sizeKey = findColumnHeader(row, COLUMN_ALIASES.size);
+               const directionKey = findColumnHeader(row, COLUMN_ALIASES.direction);
+               const feeKey = findColumnHeader(row, COLUMN_ALIASES.fee);
+               const notesKey = findColumnHeader(row, COLUMN_ALIASES.notes);
+
+               if (!dateKey || !instrumentKey) return null; // Skip invalid rows
+
+               // 2. Parse Date & Time
+               let finalDate = new Date().toISOString();
+               try {
+                 let dateStr = row[dateKey];
+                 // If separate time column exists, append it
+                 if (timeKey && row[timeKey]) {
+                   const t = row[timeKey];
+                   // Check if dateStr already includes time
+                   if (!dateStr.includes(':')) {
+                     dateStr = `${dateStr} ${t}`;
+                   }
                  }
-                 return null
+                 const parsed = new Date(dateStr);
+                 if (!isNaN(parsed.getTime())) finalDate = parsed.toISOString();
+               } catch (e) {
+                 console.warn("Date parse fail", row[dateKey]);
                }
 
-               const cleanNum = (val: any) => {
-                 if (typeof val === 'number') return val;
-                 if (!val) return 0;
-                 if (typeof val === 'string') {
-                     return parseFloat(val.replace(/[^0-9.-]/g, ''));
+               // 3. Parse Numbers
+               const size = Math.abs(cleanNum(row[sizeKey])) || 1;
+               const entryPrice = cleanNum(row[entryKey]);
+               let exitPrice = cleanNum(row[exitKey]);
+               let pnl = cleanNum(row[pnlKey]);
+               const fees = feeKey ? Math.abs(cleanNum(row[feeKey])) : 0;
+
+               // 4. Parse Direction
+               let direction: 'long' | 'short' = 'long';
+               if (directionKey && row[directionKey]) {
+                 const dirStr = String(row[directionKey]).toLowerCase();
+                 if (dirStr.includes('sell') || dirStr.includes('short') || dirStr === 's') direction = 'short';
+               } else if (sizeKey && cleanNum(row[sizeKey]) < 0) {
+                  // Sometimes negative size implies short
+                  direction = 'short';
+               }
+
+               // 5. Advanced Calculations (Auto-fill missing data)
+               // Determine Net PnL if we only have Gross and Fees, or calculate from prices
+               if (pnl === 0 && entryPrice > 0 && exitPrice > 0) {
+                  const rawPnl = direction === 'long' 
+                    ? (exitPrice - entryPrice) * size 
+                    : (entryPrice - exitPrice) * size;
+                  pnl = rawPnl - fees;
+               }
+
+               // If Exit Price missing but PnL exists, back-calculate it
+               if (exitPrice === 0 && pnl !== 0 && entryPrice > 0) {
+                 const effectivePnl = pnl + fees; // Add back fees to get gross price movement
+                 if (direction === 'long') {
+                   exitPrice = entryPrice + (effectivePnl / size);
+                 } else {
+                   exitPrice = entryPrice - (effectivePnl / size);
                  }
-                 return 0;
                }
 
-               const dateStr = findVal(['Date', 'Time', 'Entry Time', 'Trade Date', 'Open Time', 'Timestamp'])
-               let finalDate = new Date().toISOString()
-               if (dateStr) {
-                 const parsed = new Date(dateStr)
-                 if (!isNaN(parsed.getTime())) finalDate = parsed.toISOString()
-               }
+               // 6. Determine Outcome
+               let outcome: 'win' | 'loss' | 'breakeven' = 'breakeven';
+               if (pnl > 0) outcome = 'win';
+               if (pnl < 0) outcome = 'loss';
 
-               const instrument = findVal(['Symbol', 'Instrument', 'Contract', 'Ticker']) || 'UNKNOWN'
-               const sideVal = findVal(['Side', 'Direction', 'Type', 'Buy/Sell'])
-               let direction: 'long' | 'short' = 'long'
-               if (sideVal && (sideVal.toLowerCase().includes('sell') || sideVal.toLowerCase().includes('short'))) {
-                 direction = 'short'
-               }
-
-               const size = Math.abs(cleanNum(findVal(['Qty', 'Quantity', 'Size', 'Volume', 'Amount']))) || 1
-               const entryPrice = cleanNum(findVal(['Entry Price', 'Price', 'Open Price', 'Avg Price']))
-               let exitPrice = cleanNum(findVal(['Exit Price', 'Close Price', 'Fill Price']))
-               let pnl = cleanNum(findVal(['PnL', 'Profit', 'Loss', 'Realized PnL', 'Net PnL', 'P/L', 'Profit/Loss']))
-
-               if (exitPrice === 0 && pnl !== 0 && entryPrice !== 0) {
-                  exitPrice = entryPrice 
-               }
-
-               if (pnl === 0 && exitPrice !== 0 && entryPrice !== 0) {
-                  if (direction === 'long') pnl = (exitPrice - entryPrice) * size
-                  else pnl = (entryPrice - exitPrice) * size
-               }
-
-               let outcome: 'win' | 'loss' | 'breakeven' = 'breakeven'
-               if (pnl > 0) outcome = 'win'
-               if (pnl < 0) outcome = 'loss'
+               // Skip total/summary rows which often have empty instruments or huge numbers
+               if (String(row[instrumentKey]).toLowerCase().includes('total')) return null;
 
                return {
                  date: finalDate,
-                 instrument,
+                 instrument: String(row[instrumentKey]).toUpperCase(),
                  direction,
                  entry_price: entryPrice,
-                 exit_price: exitPrice || entryPrice, 
+                 exit_price: exitPrice || entryPrice, // Fallback to avoid 0
                  size,
                  pnl,
                  outcome,
-                 notes: 'Imported via CSV'
-               }
-             }).filter(t => t.instrument !== 'UNKNOWN' && t.entry_price > 0)
+                 notes: notesKey ? row[notesKey] : 'Imported trade',
+               };
+             }).filter((t): t is NewTradeInput => t !== null && t.entry_price > 0);
 
              if(processedTrades.length > 0) {
-               await addMultipleTrades(processedTrades)
-               toast({ title: "Import Successful", description: `Added ${processedTrades.length} records.` })
-               fetchTradesAndSetState(true)
-               setIsImportDialogOpen(false)
-               setFile(null)
+               const result = await addMultipleTrades(processedTrades);
+               if(result.error) {
+                  toast({ title: "Import Error", description: result.error, variant: "destructive" });
+               } else {
+                  toast({ title: "Import Successful", description: `Successfully added ${processedTrades.length} trades.` });
+                  fetchTradesAndSetState(true);
+                  setIsImportDialogOpen(false);
+                  setFile(null);
+               }
              } else {
-               toast({ title: "Import Warning", description: "No valid trade rows found.", variant: "destructive" })
+               toast({ title: "Import Warning", description: "No valid trade rows found. Check your column headers.", variant: "destructive" })
              }
           } catch(e: any) { 
               toast({ title: "Import Failed", description: e.message, variant: "destructive" })
@@ -356,7 +433,7 @@ export default function TradesPage() {
           }
         },
         error: (err) => {
-            toast({ title: "File Read Error", description: err.message, variant: "destructive" });
+            toast({ title: "CSV Error", description: err.message, variant: "destructive" });
             setIsProcessingImport(false);
         }
       })
@@ -378,7 +455,7 @@ export default function TradesPage() {
     <ClientOnly>
       <div className="min-h-screen bg-slate-50/50 dark:bg-[#09090b] text-slate-900 dark:text-slate-50 font-sans selection:bg-slate-200 dark:selection:bg-slate-800">
         
-        {/* Top Navigation - Minimal & Professional */}
+        {/* Top Navigation */}
         <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-[#09090b]/90 backdrop-blur-md">
           <div className="container mx-auto px-4 h-14 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -430,10 +507,9 @@ export default function TradesPage() {
 
         <main className="container mx-auto px-4 py-8 max-w-[1920px]">
           
-          {/* 1. Professional Data Header */}
           <ProfessionalHeader count={stats.totalTrades} totalPnL={stats.totalPnL} winRate={stats.winRate} />
 
-          {/* 2. Collapsible HUD (Stats Strip) */}
+          {/* Stats Strip */}
           <div className="mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
               <div className="flex items-center justify-between mb-2 px-1">
                  <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -495,7 +571,7 @@ export default function TradesPage() {
               </div>
           </div>
 
-          {/* 3. Main Database Toolbar & Table */}
+          {/* Database Toolbar & Table */}
           <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
               
               {/* Toolbar */}
@@ -537,7 +613,6 @@ export default function TradesPage() {
 
                  {/* Filter Trigger */}
                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    {/* Mobile View Toggle */}
                     <div className="flex sm:hidden items-center bg-slate-100 dark:bg-slate-950 rounded-lg p-1 border border-slate-200 dark:border-slate-800">
                        <Button variant="ghost" size="sm" className={cn("h-7 w-7 p-0", viewMode === 'list' && "bg-white shadow-sm")} onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
                        <Button variant="ghost" size="sm" className={cn("h-7 w-7 p-0", viewMode === 'grid' && "bg-white shadow-sm")} onClick={() => setViewMode('grid')}><Grid3X3 className="h-4 w-4"/></Button>
@@ -571,7 +646,7 @@ export default function TradesPage() {
                  </div>
               </div>
 
-              {/* The Database (Table) */}
+              {/* The Database */}
               <Card className="border-0 shadow-md bg-white dark:bg-slate-900 rounded-lg overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800 min-h-[600px] flex flex-col">
                  {isLoading ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-12">
@@ -603,12 +678,14 @@ export default function TradesPage() {
           </div>
         </main>
 
-        {/* Modals */}
+        {/* Import Modal */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Quick Import</DialogTitle>
-              <DialogDescription>Select a CSV file to bulk import trades.</DialogDescription>
+              <DialogDescription>
+                  Supports CSV files from most brokers (NinjaTrader, Tradovate, MetaTrader, Excel).
+              </DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center w-full my-4">
                 <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-700 transition-colors group">
@@ -630,6 +707,7 @@ export default function TradesPage() {
           </DialogContent>
         </Dialog>
         
+        {/* Connection Modal */}
         <Dialog open={isConnectionDialogOpen} onOpenChange={setIsConnectionDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -639,6 +717,7 @@ export default function TradesPage() {
           </DialogContent>
         </Dialog>
 
+        {/* Delete All Modal */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
            <DialogContent>
              <DialogHeader>

@@ -66,26 +66,3 @@ export function clearRateLimit(key: string): void {
 export function clearAllRateLimits(): void {
   rateLimitStore.clear()
 }
-
-/**
- * Helper function for quick rate limiting checks
- * @param identifier - Unique identifier (IP, user ID, etc.)
- * @param limit - Maximum number of requests
- * @param windowMs - Time window in milliseconds
- */
-export function checkRateLimit(
-  identifier: string,
-  limit: number,
-  windowMs: number,
-): { success: boolean; remaining: number } {
-  const result = rateLimiter({
-    key: identifier,
-    limit,
-    window: windowMs / 1000, // Convert ms to seconds
-  })
-
-  return {
-    success: result.allowed,
-    remaining: result.remaining,
-  }
-}

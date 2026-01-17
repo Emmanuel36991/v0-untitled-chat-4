@@ -8,30 +8,27 @@ import { SimpleTradeTable } from "./SimpleTradeTable"
 import type { Trade, NewTradeInput } from "@/types"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import {
   RefreshCw,
   Upload,
   AlertTriangle,
   Grid3X3,
   List,
-  PlusCircle,
+  Plus,
   Building2,
   TrendingUp,
   TrendingDown,
-  Target,
-  DollarSign,
-  BarChart3,
-  Settings,
   Filter,
   Trash2,
-  Maximize2,
-  Minimize2,
   Search,
-  ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
-  Briefcase
+  BookOpen,
+  Calendar,
+  Layers,
+  Settings2,
+  Target
 } from "lucide-react"
 import NextLink from "next/link"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
@@ -49,77 +46,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { format } from "date-fns"
 
 // --- Types & Interfaces ---
-
-interface ParsedTradeRow {
-  [key: string]: string
-}
 
 interface ClientOnlyProps {
   children: ReactNode
 }
 
-interface MetricProps {
-  label: string
-  value: string
-  trend?: "up" | "down" | "neutral"
-  subValue?: string
-  color?: string
-  icon?: React.ElementType
-}
-
 // --- Sub-Components ---
 
-// 1. Clean Data Header (Redesigned)
-const ProfessionalHeader = React.memo<{ count: number; totalPnL: number; winRate: number }>(({ count, totalPnL, winRate }) => {
-  return (
-    <div className="mb-8">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
-        <div>
-           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Portfolio Overview</h1>
-           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Track executions, P&L, and performance metrics.</p>
+// 1. Journal Stat Card (Clean, Reflective Style)
+const JournalStat = ({ label, value, trend, subValue, icon: Icon }: { label: string, value: string, trend?: 'up' | 'down' | 'neutral', subValue?: string, icon: any }) => (
+  <div className="flex flex-col p-4 rounded-xl border border-border/50 bg-card/50 shadow-sm hover:bg-card/80 transition-colors group">
+     <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide group-hover:text-primary transition-colors">{label}</span>
+        <div className="p-1.5 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors">
+            <Icon className="w-4 h-4 text-muted-foreground/70 group-hover:text-primary" />
         </div>
-
-        <div className="flex items-center gap-8">
-           <div className="text-right">
-              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-0.5">Trades</p>
-              <p className="text-xl font-mono font-medium text-slate-900 dark:text-white">{count}</p>
-           </div>
-           <div className="h-8 w-px bg-slate-200 dark:bg-slate-800" />
-           <div className="text-right">
-              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-0.5">Net P&L</p>
-              <div className={cn("text-xl font-mono font-bold flex items-center justify-end gap-1.5", totalPnL >= 0 ? "text-emerald-600 dark:text-emerald-500" : "text-rose-600 dark:text-rose-500")}>
-                 {totalPnL >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                 ${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-           </div>
+     </div>
+     <div className="flex items-baseline gap-2 mt-auto">
+        <span className="text-2xl font-bold tracking-tight text-foreground font-mono">{value}</span>
+     </div>
+     {subValue && (
+        <div className="flex items-center gap-1.5 mt-1.5">
+           {trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500" />}
+           {trend === 'down' && <TrendingDown className="w-3 h-3 text-rose-500" />}
+           <span className={cn("text-xs font-medium", 
+              trend === 'up' ? "text-emerald-600" : 
+              trend === 'down' ? "text-rose-600" : "text-muted-foreground"
+           )}>
+              {subValue}
+           </span>
         </div>
-      </div>
-    </div>
-  )
-})
-
-// 2. Compact Metric Item (Refined)
-const CompactMetric = ({ label, value, trend, subValue, color = "text-slate-900", icon: Icon }: MetricProps) => (
-  <div className="flex flex-col p-4 relative group hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors cursor-default border-r border-slate-100 dark:border-slate-800 last:border-r-0">
-    <div className="flex items-center justify-between mb-3">
-       <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">{label}</span>
-       {Icon && <Icon className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors" />}
-    </div>
-    <div className="flex items-baseline gap-2 mt-auto">
-      <span className={cn("text-xl font-bold font-mono tracking-tight", color)}>{value}</span>
-      {trend && (
-        <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-sm", 
-          trend === "up" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : 
-          trend === "down" ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400" : 
-          "bg-slate-100 text-slate-600"
-        )}>
-          {trend === "up" ? "↑" : trend === "down" ? "↓" : "−"}
-        </span>
-      )}
-    </div>
-    {subValue && <span className="text-xs text-slate-400 mt-1">{subValue}</span>}
+     )}
   </div>
 )
 
@@ -138,7 +98,6 @@ export default function TradesPage() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isStatsCollapsed, setIsStatsCollapsed] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -181,7 +140,6 @@ export default function TradesPage() {
         (t.notes && t.notes.toLowerCase().includes(lower))
       )
     }
-    // ... existing filters logic ...
     if (Object.keys(filters).length > 0) {
       result = result.filter((trade) => {
         let passes = true
@@ -202,14 +160,11 @@ export default function TradesPage() {
   }, [trades, filters, searchTerm])
 
   const stats = useMemo(() => {
-    if (!filteredTrades.length) return { 
-      totalTrades: 0, winRate: 0, totalPnL: 0, avgPnL: 0, profitFactor: 0, bestTrade: 0, worstTrade: 0, volume: 0
-    }
+    if (!filteredTrades.length) return { totalTrades: 0, winRate: 0, totalPnL: 0, profitFactor: 0 }
     const count = filteredTrades.length
     const wins = filteredTrades.filter(t => t.outcome === "win")
     const losses = filteredTrades.filter(t => t.outcome === "loss")
     const totalPnL = filteredTrades.reduce((acc, t) => acc + (t.pnl || 0), 0)
-    const avgPnL = count > 0 ? totalPnL / count : 0
     const grossProfit = wins.reduce((acc, t) => acc + (t.pnl || 0), 0)
     const grossLoss = Math.abs(losses.reduce((acc, t) => acc + (t.pnl || 0), 0))
     const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit
@@ -219,15 +174,11 @@ export default function TradesPage() {
       totalTrades: count, 
       winRate, 
       totalPnL, 
-      avgPnL, 
-      profitFactor,
-      bestTrade: Math.max(...filteredTrades.map(t => t.pnl)),
-      worstTrade: Math.min(...filteredTrades.map(t => t.pnl)),
-      volume: filteredTrades.reduce((acc, t) => acc + (t.size || 0), 0)
+      profitFactor
     }
   }, [filteredTrades])
 
-  // --- Handlers (Enhanced CSV Import) ---
+  // --- Handlers (Preserved CSV Logic) ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0])
   }
@@ -240,7 +191,6 @@ export default function TradesPage() {
     
     setIsProcessingImport(true);
 
-    // 1. Read file as text to determine the real header line
     const reader = new FileReader();
     reader.onload = async (e) => {
       const text = e.target?.result as string;
@@ -250,7 +200,6 @@ export default function TradesPage() {
         return;
       }
 
-      // 2. Scan first 20 lines for keywords to find the real header
       const lines = text.split(/\r\n|\n|\r/);
       let headerRowIndex = 0;
       const potentialHeaders = ['symbol', 'instrument', 'ticker', 'date', 'time', 'entry', 'price', 'profit', 'pnl', 'net pnl', 'realized'];
@@ -376,255 +325,194 @@ export default function TradesPage() {
 
   return (
     <ClientOnly>
-      <div className="min-h-screen bg-slate-50/50 dark:bg-[#09090b] text-slate-900 dark:text-slate-50 font-sans selection:bg-slate-200 dark:selection:bg-slate-800">
+      <div className="min-h-screen bg-background text-foreground font-sans">
         
-        {/* Top Navigation - Minimal & Professional */}
-        <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-[#09090b]/90 backdrop-blur-md">
-          <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-               <Briefcase className="w-5 h-5 text-slate-900 dark:text-white" />
-               <span className="font-bold text-base tracking-tight text-slate-900 dark:text-white">Trades</span>
-            </div>
+        {/* --- JOURNAL HEADER (Clean, Spacious, Reflective) --- */}
+        <div className="bg-background border-b border-border sticky top-0 z-30">
+           <div className="container mx-auto px-4 py-6 max-w-7xl">
+              
+              {/* Top Row: Title & Primary Actions */}
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+                 <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                       <BookOpen className="w-8 h-8 text-primary" />
+                       Trade Journal
+                    </h1>
+                    <p className="text-muted-foreground text-sm pl-11">
+                       Your historical execution record and performance ledger.
+                    </p>
+                 </div>
 
-            <div className="flex items-center gap-2">
-               <Button variant="ghost" size="sm" onClick={() => setIsImportDialogOpen(true)} className="hidden sm:flex text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-                  <Upload className="mr-2 h-4 w-4" /> Import
-               </Button>
-               <Button variant="ghost" size="sm" onClick={() => setIsConnectionDialogOpen(true)} className="hidden sm:flex text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
-                  <Building2 className="mr-2 h-4 w-4" /> Connect
-               </Button>
-               
-               <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block" />
+                 <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="gap-2 border-border/60">
+                       <Upload className="w-4 h-4 text-muted-foreground" /> Import CSV
+                    </Button>
+                    <Button onClick={() => setIsConnectionDialogOpen(true)} variant="outline" className="gap-2 border-border/60">
+                       <Building2 className="w-4 h-4 text-muted-foreground" /> Connect Broker
+                    </Button>
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm gap-2 px-6" asChild>
+                       <NextLink href="/add-trade">
+                          <Plus className="w-4 h-4" /> Log New Trade
+                       </NextLink>
+                    </Button>
+                 </div>
+              </div>
 
-               <Button size="sm" className="h-8 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 shadow-sm transition-all" asChild>
-                 <NextLink href="/add-trade">
-                   <PlusCircle className="mr-2 h-4 w-4" />
-                   New Trade
-                 </NextLink>
-               </Button>
-               
-               {/* Mobile Menu */}
-               <DropdownMenu>
-                 <DropdownMenuTrigger asChild>
-                   <Button variant="ghost" size="icon" className="h-8 w-8 sm:hidden">
-                     <Settings className="h-4 w-4 text-slate-600 dark:text-slate-300" />
-                   </Button>
-                 </DropdownMenuTrigger>
-                 <DropdownMenuContent align="end">
-                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                   <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
-                     <Upload className="mr-2 h-4 w-4" /> Import CSV
-                   </DropdownMenuItem>
-                   <DropdownMenuItem onClick={() => setIsConnectionDialogOpen(true)}>
-                     <Building2 className="mr-2 h-4 w-4" /> Connect Broker
-                   </DropdownMenuItem>
-                   <DropdownMenuSeparator />
-                   <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-red-600 focus:text-red-600">
-                     <Trash2 className="mr-2 h-4 w-4" /> Clear Database
-                   </DropdownMenuItem>
-                 </DropdownMenuContent>
-               </DropdownMenu>
-            </div>
-          </div>
-        </header>
+              {/* Middle Row: The "Journal Stats" Context Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 <JournalStat 
+                    label="Net Profit" 
+                    value={`$${stats.totalPnL.toLocaleString('en-US', {minimumFractionDigits: 2})}`} 
+                    trend={stats.totalPnL >= 0 ? 'up' : 'down'}
+                    subValue={stats.totalPnL >= 0 ? "Profitable" : "In Drawdown"}
+                    icon={ArrowUpRight}
+                 />
+                 <JournalStat 
+                    label="Win Rate" 
+                    value={`${stats.winRate.toFixed(1)}%`} 
+                    trend={stats.winRate > 50 ? 'up' : 'neutral'}
+                    subValue="Consistency"
+                    icon={Target}
+                 />
+                 <JournalStat 
+                    label="Profit Factor" 
+                    value={stats.profitFactor.toFixed(2)} 
+                    subValue="Efficiency"
+                    icon={TrendingUp}
+                 />
+                 <JournalStat 
+                    label="Total Logs" 
+                    value={stats.totalTrades.toString()} 
+                    subValue="Experience"
+                    icon={Layers}
+                 />
+              </div>
+           </div>
+        </div>
 
-        <main className="container mx-auto px-4 py-8 max-w-[1920px]">
+        {/* --- MAIN CONTENT (Toolbar & Table) --- */}
+        <main className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
           
-          {/* 1. Professional Data Header */}
-          <ProfessionalHeader count={stats.totalTrades} totalPnL={stats.totalPnL} winRate={stats.winRate} />
+          {/* Toolbar: Search, View, Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card/50 p-1 rounded-xl">
+             
+             {/* Search */}
+             <div className="relative w-full sm:w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                   placeholder="Search by symbol, narrative, or notes..." 
+                   className="pl-10 bg-background border-border/60 focus-visible:ring-primary h-10"
+                   value={searchTerm}
+                   onChange={(e) => setSearchTerm(e.target.value)}
+                />
+             </div>
 
-          {/* 2. Collapsible HUD (Stats Strip) */}
-          <div className="mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-              <div className="flex items-center justify-between mb-2 px-1">
-                 <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                    Performance Snapshot
-                 </h2>
-                 <Button 
-                   variant="ghost" 
-                   size="sm" 
-                   className="h-6 text-xs text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-transparent"
-                   onClick={() => setIsStatsCollapsed(!isStatsCollapsed)}
-                 >
-                   {isStatsCollapsed ? <Maximize2 className="h-3 w-3 mr-1" /> : <Minimize2 className="h-3 w-3 mr-1" />}
-                   {isStatsCollapsed ? "Expand" : "Collapse"}
-                 </Button>
-              </div>
-              
-              <div className={cn(
-                "transition-all duration-500 ease-in-out overflow-hidden",
-                isStatsCollapsed ? "max-h-0 opacity-0" : "max-h-[200px] opacity-100"
-              )}>
-                <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 rounded-lg overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800">
-                  <div className="grid grid-cols-2 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
-                     <CompactMetric 
-                       label="Avg P&L" 
-                       value={`$${stats.avgPnL.toFixed(2)}`} 
-                       color={stats.avgPnL >= 0 ? "text-slate-900 dark:text-white" : "text-rose-600"} 
-                       subValue="Per Trade"
-                       icon={DollarSign}
-                     />
-                     <CompactMetric 
-                       label="Win Rate" 
-                       value={`${stats.winRate.toFixed(1)}%`} 
-                       color="text-slate-900 dark:text-white"
-                       subValue={`${stats.totalTrades} Trades`}
-                       icon={Target}
-                     />
-                     <CompactMetric 
-                       label="Profit Factor" 
-                       value={stats.profitFactor.toFixed(2)} 
-                       subValue="Gross Win/Loss"
-                       icon={BarChart3}
-                     />
-                     <CompactMetric 
-                       label="Best Trade" 
-                       value={`$${stats.bestTrade.toFixed(2)}`} 
-                       color="text-emerald-600"
-                       trend="up"
-                       icon={TrendingUp}
-                     />
-                     <CompactMetric 
-                       label="Max Drawdown" 
-                       value={`$${Math.abs(stats.worstTrade).toFixed(2)}`} 
-                       color="text-rose-600"
-                       trend="down"
-                       icon={TrendingDown}
-                     />
-                  </div>
-                </Card>
-              </div>
+             {/* Right Controls */}
+             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <div className="flex items-center bg-background border border-border/60 rounded-md p-1">
+                   <button onClick={() => setViewMode('list')} className={cn("p-2 rounded-sm transition-all", viewMode === 'list' ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                      <List className="h-4 w-4" />
+                   </button>
+                   <button onClick={() => setViewMode('grid')} className={cn("p-2 rounded-sm transition-all", viewMode === 'grid' ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                      <Grid3X3 className="h-4 w-4" />
+                   </button>
+                </div>
+                
+                <Sheet>
+                   <SheetTrigger asChild>
+                      <Button variant="outline" className={cn("gap-2 border-border/60 h-10", Object.keys(filters).length > 0 && "border-primary text-primary bg-primary/5")}>
+                         <Filter className="h-4 w-4" /> Filters
+                         {Object.keys(filters).length > 0 && (
+                            <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
+                               {Object.keys(filters).length}
+                            </Badge>
+                         )}
+                      </Button>
+                   </SheetTrigger>
+                   <SheetContent side="right">
+                      <SheetHeader>
+                         <SheetTitle>Filter Journal</SheetTitle>
+                         <SheetDescription>Narrow down your trade history.</SheetDescription>
+                      </SheetHeader>
+                      <div className="mt-6">
+                         <AdvancedTradeFilters setFilters={setFilters} initialFilters={filters} />
+                      </div>
+                   </SheetContent>
+                </Sheet>
+                
+                <DropdownMenu>
+                   <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-10 w-10">
+                         <Settings2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                   </DropdownMenuTrigger>
+                   <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Database Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive">
+                         <Trash2 className="mr-2 h-4 w-4" /> Clear All Data
+                      </DropdownMenuItem>
+                   </DropdownMenuContent>
+                </DropdownMenu>
+             </div>
           </div>
 
-          {/* 3. Main Database Toolbar & Table */}
-          <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-              
-              {/* Toolbar */}
-              <div className="sticky top-16 z-30 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-2 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                 
-                 {/* Search & View Toggles */}
-                 <div className="flex items-center flex-1 gap-2 w-full sm:w-auto">
-                    <div className="relative w-full sm:w-72 group">
-                       <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
-                       <Input 
-                         placeholder="Search symbols..." 
-                         className="pl-9 h-9 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-slate-300 transition-all"
-                         value={searchTerm}
-                         onChange={(e) => setSearchTerm(e.target.value)}
-                       />
-                    </div>
-                    
-                    <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-950 rounded-md p-1 border border-slate-200 dark:border-slate-800">
-                       <Button 
-                         variant="ghost" 
-                         size="sm" 
-                         className={cn("h-7 px-2.5 rounded-sm text-slate-500 hover:text-slate-900", viewMode === 'list' && "bg-white dark:bg-slate-800 shadow-sm text-slate-900 font-medium")}
-                         onClick={() => setViewMode('list')}
-                         title="List View"
-                       >
-                         <List className="h-4 w-4" />
-                       </Button>
-                       <Button 
-                         variant="ghost" 
-                         size="sm" 
-                         className={cn("h-7 px-2.5 rounded-sm text-slate-500 hover:text-slate-900", viewMode === 'grid' && "bg-white dark:bg-slate-800 shadow-sm text-slate-900 font-medium")}
-                         onClick={() => setViewMode('grid')}
-                         title="Grid View"
-                       >
-                         <Grid3X3 className="h-4 w-4" />
-                       </Button>
-                    </div>
-                 </div>
+          {/* Data Table Area */}
+          <Card className="border border-border/60 shadow-sm bg-card rounded-xl overflow-hidden min-h-[500px] flex flex-col">
+             {isLoading ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-4">
+                   <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                   <p className="text-sm text-muted-foreground">Loading journal entries...</p>
+                </div>
+             ) : filteredTrades.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
+                   <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                      <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+                   </div>
+                   <h3 className="text-lg font-semibold text-foreground">Your journal is empty</h3>
+                   <p className="text-sm text-muted-foreground mt-2 mb-6">
+                      No trades found matching your criteria. Start by logging a trade or importing data.
+                   </p>
+                   <div className="flex gap-4">
+                      <Button variant="outline" onClick={() => { setSearchTerm(""); setFilters({}); }}>Clear Filters</Button>
+                      <Button asChild><NextLink href="/add-trade">Log Trade</NextLink></Button>
+                   </div>
+                </div>
+             ) : (
+                <SimpleTradeTable trades={filteredTrades} onRefresh={() => fetchTradesAndSetState(true)} />
+             )}
+          </Card>
 
-                 {/* Filter Trigger */}
-                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    {/* Mobile View Toggle */}
-                    <div className="flex sm:hidden items-center bg-slate-100 dark:bg-slate-950 rounded-lg p-1 border border-slate-200 dark:border-slate-800">
-                       <Button variant="ghost" size="sm" className={cn("h-7 w-7 p-0", viewMode === 'list' && "bg-white shadow-sm")} onClick={() => setViewMode('list')}><List className="h-4 w-4"/></Button>
-                       <Button variant="ghost" size="sm" className={cn("h-7 w-7 p-0", viewMode === 'grid' && "bg-white shadow-sm")} onClick={() => setViewMode('grid')}><Grid3X3 className="h-4 w-4"/></Button>
-                    </div>
-
-                    <Sheet>
-                     <SheetTrigger asChild>
-                        <Button variant="outline" size="sm" className={cn(
-                          "h-9 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800",
-                          Object.keys(filters).length > 0 && "border-slate-900 text-slate-900 bg-slate-50 dark:bg-slate-900"
-                        )}>
-                          <Filter className="mr-2 h-3.5 w-3.5" />
-                          Filters
-                          {Object.keys(filters).length > 0 && (
-                            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px] bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                              {Object.keys(filters).length}
-                            </Badge>
-                          )}
-                        </Button>
-                     </SheetTrigger>
-                     <SheetContent side="right">
-                       <SheetHeader>
-                         <SheetTitle>Advanced Filters</SheetTitle>
-                         <SheetDescription>Refine your database view</SheetDescription>
-                       </SheetHeader>
-                       <div className="mt-6">
-                         <AdvancedTradeFilters setFilters={setFilters} initialFilters={filters} />
-                       </div>
-                     </SheetContent>
-                   </Sheet>
-                 </div>
-              </div>
-
-              {/* The Database (Table) */}
-              <Card className="border-0 shadow-md bg-white dark:bg-slate-900 rounded-lg overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800 min-h-[600px] flex flex-col">
-                 {isLoading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12">
-                       <div className="w-16 h-16 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin mb-6" />
-                       <p className="text-slate-500 font-medium">Synchronizing database...</p>
-                    </div>
-                 ) : filteredTrades.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
-                       <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-6 ring-1 ring-slate-100 dark:ring-slate-700">
-                         <Search className="h-10 w-10 text-slate-300" />
-                       </div>
-                       <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">No trades found</h3>
-                       <p className="text-slate-500 max-w-sm mx-auto mb-8">
-                         Your search or filters didn't return any results. Try adjusting your parameters.
-                       </p>
-                       <Button variant="outline" onClick={() => { setSearchTerm(""); setFilters({}); }} className="border-dashed">
-                         Clear All Filters
-                       </Button>
-                    </div>
-                 ) : (
-                    <SimpleTradeTable trades={filteredTrades} onRefresh={() => fetchTradesAndSetState(true)} />
-                 )}
-              </Card>
-
-              <div className="flex justify-between items-center text-xs text-slate-400 px-4 pb-8">
-                <span>Showing {filteredTrades.length} of {trades.length} trades</span>
-                <span>Database v2.5 • Synced</span>
-              </div>
+          <div className="flex justify-between items-center px-2 py-4 text-xs text-muted-foreground">
+             <span>Viewing {filteredTrades.length} of {trades.length} entries</span>
+             <span className="font-mono opacity-50">SYNCED</span>
           </div>
         </main>
 
-        {/* Modals */}
+        {/* Modals - (Kept unchanged) */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Quick Import</DialogTitle>
-              <DialogDescription>Select a CSV file to bulk import trades.</DialogDescription>
+              <DialogTitle>CSV Import</DialogTitle>
+              <DialogDescription>Upload your trade history from Broker or Excel.</DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center w-full my-4">
-                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:border-slate-700 transition-colors group">
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20 hover:border-primary/50 transition-all group">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                           <Upload className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                        <div className="p-3 bg-background rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                           <Upload className="w-5 h-5 text-primary" />
                         </div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Click to upload CSV</p>
+                        <p className="text-sm font-medium text-muted-foreground">Click to browse file</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Supports .csv, .xls</p>
                     </div>
                     <input type="file" className="hidden" accept=".csv" onChange={handleFileChange} />
                 </label>
             </div>
-            {file && <p className="text-sm text-center text-slate-900 font-semibold bg-slate-100 p-2 rounded-md mb-4">{file.name}</p>}
+            {file && <div className="p-3 bg-muted rounded text-sm text-center font-mono">{file.name}</div>}
             <DialogFooter>
-              <Button onClick={handleImport} disabled={!file || isProcessingImport} className="w-full bg-slate-900 hover:bg-slate-800 text-white">
-                {isProcessingImport && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />} Import Data
+              <Button onClick={handleImport} disabled={!file || isProcessingImport} className="w-full">
+                {isProcessingImport && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />} 
+                {isProcessingImport ? "Processing..." : "Start Import"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -632,9 +520,7 @@ export default function TradesPage() {
         
         <Dialog open={isConnectionDialogOpen} onOpenChange={setIsConnectionDialogOpen}>
           <DialogContent className="max-w-2xl">
-            <DialogHeader>
-               <DialogTitle>Connect Broker</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>Connect Broker</DialogTitle></DialogHeader>
             <SimpleConnectionModal onClose={() => setIsConnectionDialogOpen(false)} onConnectionCreated={() => fetchTradesAndSetState(true)} />
           </DialogContent>
         </Dialog>
@@ -642,14 +528,12 @@ export default function TradesPage() {
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
            <DialogContent>
              <DialogHeader>
-               <DialogTitle className="text-red-600 flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Danger Zone</DialogTitle>
-               <DialogDescription>
-                 Are you sure you want to delete ALL trades? This action cannot be undone.
-               </DialogDescription>
+               <DialogTitle className="text-destructive flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Delete All Data?</DialogTitle>
+               <DialogDescription>This will permanently remove all trade entries from your journal. This action cannot be undone.</DialogDescription>
              </DialogHeader>
              <DialogFooter>
                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
-               <Button variant="destructive" onClick={handleDeleteAll}>Delete All</Button>
+               <Button variant="destructive" onClick={handleDeleteAll}>Confirm Delete</Button>
              </DialogFooter>
            </DialogContent>
         </Dialog>

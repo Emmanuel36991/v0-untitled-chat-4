@@ -17,7 +17,6 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  Calendar,
   BarChart3,
   Plus,
   ArrowUpRight,
@@ -45,6 +44,7 @@ import {
   Wallet,
   ArrowRight,
   Filter,
+  Calendar, // <--- Added missing import
 } from "lucide-react"
 import {
   Area,
@@ -1101,7 +1101,7 @@ export default function DashboardPage() {
           {/* Quick Actions & AI Insight */}
           <div className="space-y-6">
             
-            {/* Quick Actions Grid */}
+            {/* Quick Actions Grid - UPDATED: LEFT ALIGNED & START JUSTIFIED */}
             <div className="grid grid-cols-2 gap-4">
                {[
                  { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
@@ -1110,12 +1110,12 @@ export default function DashboardPage() {
                  { label: "AI Insights", icon: Zap, href: "/insights", color: "bg-rose-600", desc: "Analysis" },
                ].map((action) => (
                  <Link key={action.label} href={action.href} className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
-                    <div className="p-5 flex flex-col items-center text-center space-y-3 relative z-10">
-                      <div className={cn("p-3 rounded-xl shadow-lg text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6", action.color)}>
+                    <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
+                      <div className={cn("p-2.5 rounded-xl shadow-lg text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0", action.color)}>
                         <action.icon className="w-5 h-5" />
                       </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100">{action.label}</h4>
+                      <div className="flex-1 text-left">
+                        <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">{action.label}</h4>
                         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">{action.desc}</p>
                       </div>
                     </div>

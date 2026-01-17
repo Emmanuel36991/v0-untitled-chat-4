@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr"
 import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
 
 export async function middleware(request: NextRequest) {
+  // 1. Rate Limiting for API routes
   if (request.nextUrl.pathname.startsWith("/api/")) {
     const rateLimitKey = getRateLimitKey("api")
     const limit = rateLimiter({
@@ -25,7 +26,7 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // In Edge Runtime, we need to use NEXT_PUBLIC_ prefixed variables
+  // 2. Supabase Setup
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -54,13 +55,14 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // Refresh session if expired
+  // 3. Refresh Session
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
+  // 4. Define Public Routes
   const isPublicRoute =
-    request.nextUrl.pathname === "/" || // Allow root page to redirect to marketing
+    request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname.startsWith("/marketing") ||
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/signup") ||
@@ -68,17 +70,15 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/forgot-password") ||
     request.nextUrl.pathname.startsWith("/reset-password")
 
-  // Block unauthenticated access to protected routes
+  // 5. Block unauthenticated access to protected routes
   if (!session && !isPublicRoute) {
     const redirectUrl = new URL("/login", request.url)
     redirectUrl.searchParams.set("redirectTo", request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Redirect authenticated users away from auth pages
-  if (session && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup"))) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
-  }
+  // --- REMOVED: Redirect authenticated users away from auth pages ---
+  // The block that forced logged-in users to /dashboard has been deleted.
 
   return response
 }

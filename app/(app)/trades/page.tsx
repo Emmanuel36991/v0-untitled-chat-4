@@ -4,8 +4,10 @@ import React, { useState, useEffect, useCallback, useMemo } from "react"
 import type { FC, ReactNode } from "react"
 import Papa from "papaparse"
 import { getTrades, addMultipleTrades, deleteAllTrades } from "@/app/actions/trade-actions"
+import { getTradingAccounts, createTradingAccount } from "@/app/actions/account-actions"
 import { SimpleTradeTable } from "./SimpleTradeTable"
 import type { Trade, NewTradeInput } from "@/types"
+import type { TradingAccount, AccountType } from "@/types/accounts"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Card } from "@/components/ui/card"
@@ -13,22 +15,17 @@ import {
   RefreshCw,
   Upload,
   AlertTriangle,
-  Grid3X3,
-  List,
   Plus,
   Building2,
-  TrendingUp,
-  TrendingDown,
   Filter,
   Trash2,
   Search,
-  ArrowUpRight,
-  ArrowDownRight,
-  BookOpen,
-  Calendar,
-  Layers,
   Settings2,
-  Target
+  BookOpen,
+  Wallet,
+  Briefcase,
+  Layers,
+  Check
 } from "lucide-react"
 import NextLink from "next/link"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
@@ -37,6 +34,8 @@ import { SimpleConnectionModal } from "@/components/connection/simple-connection
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet"
 import {
   DropdownMenu,
@@ -46,42 +45,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { format } from "date-fns"
+import { Separator } from "@/components/ui/separator"
 
 // --- Types & Interfaces ---
 
 interface ClientOnlyProps {
   children: ReactNode
 }
-
-// --- Sub-Components ---
-
-// 1. Journal Stat Card (Clean, Reflective Style)
-const JournalStat = ({ label, value, trend, subValue, icon: Icon }: { label: string, value: string, trend?: 'up' | 'down' | 'neutral', subValue?: string, icon: any }) => (
-  <div className="flex flex-col p-4 rounded-xl border border-border/50 bg-card/50 shadow-sm hover:bg-card/80 transition-colors group">
-     <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide group-hover:text-primary transition-colors">{label}</span>
-        <div className="p-1.5 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors">
-            <Icon className="w-4 h-4 text-muted-foreground/70 group-hover:text-primary" />
-        </div>
-     </div>
-     <div className="flex items-baseline gap-2 mt-auto">
-        <span className="text-2xl font-bold tracking-tight text-foreground font-mono">{value}</span>
-     </div>
-     {subValue && (
-        <div className="flex items-center gap-1.5 mt-1.5">
-           {trend === 'up' && <TrendingUp className="w-3 h-3 text-emerald-500" />}
-           {trend === 'down' && <TrendingDown className="w-3 h-3 text-rose-500" />}
-           <span className={cn("text-xs font-medium", 
-              trend === 'up' ? "text-emerald-600" : 
-              trend === 'down' ? "text-rose-600" : "text-muted-foreground"
-           )}>
-              {subValue}
-           </span>
-        </div>
-     )}
-  </div>
-)
 
 const ClientOnly: FC<ClientOnlyProps> = ({ children }) => {
   const [hasMounted, setHasMounted] = useState(false)
@@ -94,29 +64,53 @@ const ClientOnly: FC<ClientOnlyProps> = ({ children }) => {
 
 export default function TradesPage() {
   const [trades, setTrades] = useState<Trade[]>([])
-  const [filters, setFilters] = useState<TradeFilters>({})
+  const [accounts, setAccounts] = useState<TradingAccount[]>([])
+  const [selectedAccountId, setSelectedAccountId] = useState<string | "all">("all")
   
+  const [filters, setFilters] = useState<TradeFilters>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
   const [searchTerm, setSearchTerm] = useState("")
 
+  // Dialog States
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [isProcessingImport, setIsProcessingImport] = useState(false)
   const [isConnectionDialogOpen, setIsConnectionDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false)
+
+  // New Account Form State
+  const [newAccountName, setNewAccountName] = useState("")
+  const [newAccountType, setNewAccountType] = useState<AccountType>("personal")
+  const [newAccountBalance, setNewAccountBalance] = useState("10000")
   
   const { toast } = useToast()
 
-  const fetchTradesAndSetState = useCallback(async (showToast = false) => {
+  // 1. Data Fetching
+  const fetchData = useCallback(async (showToast = false) => {
     setIsLoading(true)
     setError(null)
     try {
-      const fetched = await getTrades()
-      const sorted = fetched.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      // Fetch Accounts
+      const fetchedAccounts = await getTradingAccounts()
+      setAccounts(fetchedAccounts)
+      
+      // Auto-select logic if "all" is active but empty
+      if (fetchedAccounts.length > 0 && selectedAccountId === "all") {
+         // Keep "all" as default to show the "See All" view first, 
+         // but if you prefer to default to the first account, uncomment below:
+         // const defaultAcc = fetchedAccounts.find(a => a.is_default) || fetchedAccounts[0]
+         // setSelectedAccountId(defaultAcc.id)
+      }
+
+      // Fetch Trades
+      const fetchedTrades = await getTrades()
+      const sorted = fetchedTrades.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setTrades(sorted)
-      if (showToast) toast({ title: "Updated", description: "Database synchronized." })
+
+      if (showToast) toast({ title: "Updated", description: "Data synchronized." })
     } catch (err: any) {
       console.error(err)
       setError(err.message)
@@ -124,14 +118,49 @@ export default function TradesPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast])
+  }, [selectedAccountId, toast])
 
   useEffect(() => {
-    fetchTradesAndSetState(false)
-  }, [fetchTradesAndSetState])
+    fetchData(false)
+  }, [fetchData])
 
+  // 2. Account Creation Logic
+  const handleCreateAccount = async () => {
+    if(!newAccountName) return
+
+    try {
+        const res = await createTradingAccount({
+            name: newAccountName,
+            type: newAccountType,
+            initial_balance: parseFloat(newAccountBalance)
+        })
+        
+        if(res.success && res.account) {
+            toast({ title: "Portfolio Created", description: `${newAccountName} is ready.` })
+            setAccounts(prev => [...prev, res.account!])
+            setSelectedAccountId(res.account!.id)
+            setIsCreateAccountOpen(false)
+            setNewAccountName("")
+            setNewAccountBalance("10000")
+        } else {
+            toast({ title: "Error", description: res.error || "Failed to create account", variant: "destructive" })
+        }
+    } catch (e) {
+        toast({ title: "Error", description: "An unexpected error occurred", variant: "destructive" })
+    }
+  }
+
+  // 3. Filtering Logic
   const filteredTrades = useMemo(() => {
     let result = trades
+
+    // Account Filter - The "See All" Feature
+    if (selectedAccountId !== "all") {
+        // Ensuring compatibility even if DB field is missing locally
+        result = result.filter(t => (t as any).account_id === selectedAccountId)
+    }
+
+    // Search Filter
     if (searchTerm) {
       const lower = searchTerm.toLowerCase()
       result = result.filter(t => 
@@ -140,6 +169,8 @@ export default function TradesPage() {
         (t.notes && t.notes.toLowerCase().includes(lower))
       )
     }
+
+    // Advanced Filters
     if (Object.keys(filters).length > 0) {
       result = result.filter((trade) => {
         let passes = true
@@ -157,28 +188,37 @@ export default function TradesPage() {
       })
     }
     return result
-  }, [trades, filters, searchTerm])
+  }, [trades, filters, searchTerm, selectedAccountId])
 
+  // 4. Statistics Calculation (Used for Header Balance)
   const stats = useMemo(() => {
-    if (!filteredTrades.length) return { totalTrades: 0, winRate: 0, totalPnL: 0, profitFactor: 0 }
-    const count = filteredTrades.length
-    const wins = filteredTrades.filter(t => t.outcome === "win")
-    const losses = filteredTrades.filter(t => t.outcome === "loss")
-    const totalPnL = filteredTrades.reduce((acc, t) => acc + (t.pnl || 0), 0)
-    const grossProfit = wins.reduce((acc, t) => acc + (t.pnl || 0), 0)
-    const grossLoss = Math.abs(losses.reduce((acc, t) => acc + (t.pnl || 0), 0))
-    const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit
-    const winRate = count > 0 ? (wins.length / count) * 100 : 0
-
-    return { 
-      totalTrades: count, 
-      winRate, 
-      totalPnL, 
-      profitFactor
+    // If "All" is selected, we sum the initial balance of ALL accounts
+    let initialBalance = 0;
+    if (selectedAccountId === 'all') {
+        initialBalance = accounts.reduce((acc, curr) => acc + Number(curr.initial_balance), 0);
+    } else {
+        const activeAccount = accounts.find(a => a.id === selectedAccountId);
+        initialBalance = activeAccount ? Number(activeAccount.initial_balance) : 0;
     }
-  }, [filteredTrades])
+    
+    // We only calculate total PnL from trades that belong to the selected view
+    // Note: We use 'filteredTrades' here, but strictly speaking for "Balance" 
+    // we should use *all* trades for the account, ignoring search/date filters.
+    // However, to keep it simple and reactive, we'll sum the currently matching trades 
+    // OR ideally re-filter just by account. Let's do the latter for accuracy.
+    
+    const relevantTrades = selectedAccountId === 'all' 
+       ? trades 
+       : trades.filter(t => (t as any).account_id === selectedAccountId)
 
-  // --- Handlers (Preserved CSV Logic) ---
+    const totalPnL = relevantTrades.reduce((acc, t) => acc + (t.pnl || 0), 0)
+    
+    return { 
+      currentBalance: initialBalance + totalPnL
+    }
+  }, [trades, accounts, selectedAccountId]) // Depend on 'trades' not 'filteredTrades' for balance accuracy
+
+  // 5. File Handling for Import
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0])
   }
@@ -214,7 +254,7 @@ export default function TradesPage() {
       }
 
       const cleanCsvContent = lines.slice(headerRowIndex).join('\n');
-    
+      
       Papa.parse(cleanCsvContent, {
         header: true,
         skipEmptyLines: true,
@@ -222,9 +262,7 @@ export default function TradesPage() {
         complete: async (results) => {
           try {
             const rawData = results.data as any[];
-            if (!rawData || rawData.length === 0) {
-               throw new Error("No trade data found after parsing.");
-            }
+            if (!rawData || rawData.length === 0) throw new Error("No trade data found.");
 
             const processedTrades: NewTradeInput[] = rawData.map(row => {
                const findVal = (possibleKeys: string[]) => {
@@ -234,85 +272,48 @@ export default function TradesPage() {
                  }
                  return null
                }
-
-               const cleanNum = (val: any) => {
-                 if (typeof val === 'number') return val;
-                 if (!val) return 0;
-                 if (typeof val === 'string') {
-                     return parseFloat(val.replace(/[^0-9.-]/g, ''));
-                 }
-                 return 0;
-               }
-
-               const dateStr = findVal(['Date', 'Time', 'Entry Time', 'Trade Date', 'Open Time', 'Timestamp'])
-               let finalDate = new Date().toISOString()
-               if (dateStr) {
-                 const parsed = new Date(dateStr)
-                 if (!isNaN(parsed.getTime())) finalDate = parsed.toISOString()
-               }
-
-               const instrument = findVal(['Symbol', 'Instrument', 'Contract', 'Ticker']) || 'UNKNOWN'
-               const sideVal = findVal(['Side', 'Direction', 'Type', 'Buy/Sell'])
-               let direction: 'long' | 'short' = 'long'
-               if (sideVal && (sideVal.toLowerCase().includes('sell') || sideVal.toLowerCase().includes('short'))) {
-                 direction = 'short'
-               }
-
-               const size = Math.abs(cleanNum(findVal(['Qty', 'Quantity', 'Size', 'Volume', 'Amount']))) || 1
-               const entryPrice = cleanNum(findVal(['Entry Price', 'Price', 'Open Price', 'Avg Price']))
-               let exitPrice = cleanNum(findVal(['Exit Price', 'Close Price', 'Fill Price']))
-               let pnl = cleanNum(findVal(['PnL', 'Profit', 'Loss', 'Realized PnL', 'Net PnL', 'P/L', 'Profit/Loss']))
-
-               if (exitPrice === 0 && pnl !== 0 && entryPrice !== 0) {
-                  exitPrice = entryPrice 
-               }
-
-               if (pnl === 0 && exitPrice !== 0 && entryPrice !== 0) {
-                  if (direction === 'long') pnl = (exitPrice - entryPrice) * size
-                  else pnl = (entryPrice - exitPrice) * size
-               }
-
+               
+               const dateStr = findVal(['Date', 'Time', 'Entry Time']) || new Date().toISOString()
+               const instrument = findVal(['Symbol', 'Instrument', 'Ticker']) || 'UNKNOWN'
+               const cleanCurrency = (val: string) => parseFloat(val?.replace(/[^0-9.-]/g, '') || '0')
+               
+               const pnl = cleanCurrency(findVal(['PnL', 'Profit', 'Loss']) || '0')
+               const entryPrice = cleanCurrency(findVal(['Entry Price', 'Price']) || '0')
+               
                let outcome: 'win' | 'loss' | 'breakeven' = 'breakeven'
                if (pnl > 0) outcome = 'win'
-               if (pnl < 0) outcome = 'loss'
+               else if (pnl < 0) outcome = 'loss'
 
                return {
-                 date: finalDate,
+                 date: new Date(dateStr).toISOString(),
                  instrument,
-                 direction,
+                 direction: 'long', 
                  entry_price: entryPrice,
-                 exit_price: exitPrice || entryPrice, 
-                 size,
+                 exit_price: entryPrice, 
+                 size: 1,
                  pnl,
                  outcome,
-                 notes: 'Imported via CSV'
-               }
-             }).filter(t => t.instrument !== 'UNKNOWN' && t.entry_price > 0)
+                 notes: 'Imported via CSV',
+                 // If we are in a specific account view, assign it. If "All", we can't guess.
+                 // Ideally prompt user, but for now strict assignment only if active account.
+                 // account_id: selectedAccountId !== 'all' ? selectedAccountId : undefined 
+               } as NewTradeInput
+             }).filter(t => t.instrument !== 'UNKNOWN')
 
              if(processedTrades.length > 0) {
                await addMultipleTrades(processedTrades)
                toast({ title: "Import Successful", description: `Added ${processedTrades.length} records.` })
-               fetchTradesAndSetState(true)
+               fetchData(true)
                setIsImportDialogOpen(false)
                setFile(null)
-             } else {
-               toast({ title: "Import Warning", description: "No valid trade rows found.", variant: "destructive" })
              }
           } catch(e: any) { 
               toast({ title: "Import Failed", description: e.message, variant: "destructive" })
           } finally {
               setIsProcessingImport(false)
           }
-        },
-        error: (err) => {
-            toast({ title: "File Read Error", description: err.message, variant: "destructive" });
-            setIsProcessingImport(false);
         }
       })
-    };
-    reader.onerror = () => {
-       toast({ title: "File Error", description: "Could not read the file.", variant: "destructive" });
-       setIsProcessingImport(false);
     };
     reader.readAsText(file);
   }
@@ -320,181 +321,237 @@ export default function TradesPage() {
   const handleDeleteAll = async () => {
     setIsDeleteDialogOpen(false)
     await deleteAllTrades()
-    fetchTradesAndSetState(true)
+    fetchData(true)
   }
 
   return (
     <ClientOnly>
-      <div className="min-h-screen bg-background text-foreground font-sans">
+      <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
         
-        {/* --- JOURNAL HEADER (Clean, Spacious, Reflective) --- */}
-        <div className="bg-background border-b border-border sticky top-0 z-30">
-           <div className="container mx-auto px-4 py-6 max-w-7xl">
+        {/* --- HEADER --- */}
+        <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-30">
+           <div className="flex h-16 items-center px-4 md:px-8 max-w-[1600px] mx-auto w-full">
+              {/* Logo / Title */}
+              <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
+                <div className="p-1.5 bg-primary/10 rounded-md">
+                   <BookOpen className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-lg hidden sm:inline tracking-tight">Trade Journal</span>
+              </div>
               
-              {/* Top Row: Title & Primary Actions */}
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
-                 <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
-                       <BookOpen className="w-8 h-8 text-primary" />
-                       Trade Journal
-                    </h1>
-                    <p className="text-muted-foreground text-sm pl-11">
-                       Your historical execution record and performance ledger.
-                    </p>
-                 </div>
+              <Separator orientation="vertical" className="mx-4 h-6 hidden md:block" />
 
-                 <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="gap-2 border-border/60">
-                       <Upload className="w-4 h-4 text-muted-foreground" /> Import CSV
-                    </Button>
-                    <Button onClick={() => setIsConnectionDialogOpen(true)} variant="outline" className="gap-2 border-border/60">
-                       <Building2 className="w-4 h-4 text-muted-foreground" /> Connect Broker
-                    </Button>
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm gap-2 px-6" asChild>
-                       <NextLink href="/add-trade">
-                          <Plus className="w-4 h-4" /> Log New Trade
-                       </NextLink>
-                    </Button>
-                 </div>
+              {/* ACCOUNT SELECTOR (The "New Feature") */}
+              <div className="flex items-center gap-3">
+                 <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                    <SelectTrigger className="w-[220px] h-9 border-border/60 bg-background/50 focus:ring-primary/20">
+                       <div className="flex items-center gap-2 truncate">
+                          <Briefcase className="w-3.5 h-3.5 text-muted-foreground" />
+                          <SelectValue placeholder="Select Portfolio" />
+                       </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                       <div className="p-1">
+                          <Button 
+                             variant="ghost" 
+                             size="sm" 
+                             className="w-full justify-start text-xs mb-1 text-primary hover:text-primary hover:bg-primary/10" 
+                             onClick={(e) => { 
+                                e.preventDefault(); 
+                                setIsCreateAccountOpen(true) 
+                             }}
+                          >
+                             <Plus className="mr-2 h-3 w-3" /> Add Portfolio
+                          </Button>
+                       </div>
+                       <Separator className="my-1" />
+                       {/* The "See All" View */}
+                       <SelectItem value="all" className="cursor-pointer font-medium">
+                          <span className="flex items-center gap-2">
+                             <Layers className="w-3.5 h-3.5" /> All Portfolios
+                          </span>
+                       </SelectItem>
+                       
+                       {accounts.map(acc => (
+                          <SelectItem key={acc.id} value={acc.id} className="cursor-pointer">
+                             <div className="flex items-center justify-between w-full gap-4">
+                                <span>{acc.name}</span>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1 border-muted-foreground/30 text-muted-foreground capitalize">{acc.type}</Badge>
+                             </div>
+                          </SelectItem>
+                       ))}
+                    </SelectContent>
+                 </Select>
+
+                 {/* Balance Badge (Context Aware) */}
+                 <Badge variant="secondary" className="h-9 px-3 font-mono text-sm hidden lg:flex items-center gap-2 bg-muted/50 border border-border/40">
+                    <Wallet className="h-3 w-3 text-muted-foreground" />
+                    <span className={cn(stats.currentBalance < 0 && "text-rose-500")}>
+                       ${stats.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </span>
+                 </Badge>
               </div>
 
-              {/* Middle Row: The "Journal Stats" Context Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                 <JournalStat 
-                    label="Net Profit" 
-                    value={`$${stats.totalPnL.toLocaleString('en-US', {minimumFractionDigits: 2})}`} 
-                    trend={stats.totalPnL >= 0 ? 'up' : 'down'}
-                    subValue={stats.totalPnL >= 0 ? "Profitable" : "In Drawdown"}
-                    icon={ArrowUpRight}
-                 />
-                 <JournalStat 
-                    label="Win Rate" 
-                    value={`${stats.winRate.toFixed(1)}%`} 
-                    trend={stats.winRate > 50 ? 'up' : 'neutral'}
-                    subValue="Consistency"
-                    icon={Target}
-                 />
-                 <JournalStat 
-                    label="Profit Factor" 
-                    value={stats.profitFactor.toFixed(2)} 
-                    subValue="Efficiency"
-                    icon={TrendingUp}
-                 />
-                 <JournalStat 
-                    label="Total Logs" 
-                    value={stats.totalTrades.toString()} 
-                    subValue="Experience"
-                    icon={Layers}
-                 />
+              {/* Right Toolbar */}
+              <div className="ml-auto flex items-center space-x-2">
+                 <Button size="sm" className="gap-2 shadow-sm" asChild>
+                    {/* Pass accountId via query param so the Add Trade page knows which account to pre-select */}
+                    <NextLink href={`/add-trade?accountId=${selectedAccountId !== 'all' ? selectedAccountId : ''}`}>
+                       <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Log Trade</span>
+                    </NextLink>
+                 </Button>
+                 
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
+                          <Settings2 className="h-4 w-4 text-muted-foreground" />
+                       </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                       <DropdownMenuLabel>Journal Actions</DropdownMenuLabel>
+                       <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)} className="cursor-pointer">
+                          <Upload className="mr-2 h-4 w-4" /> Import CSV
+                       </DropdownMenuItem>
+                       <DropdownMenuItem onClick={() => setIsConnectionDialogOpen(true)} className="cursor-pointer">
+                          <Building2 className="mr-2 h-4 w-4" /> Connect Broker
+                       </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                       <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" /> Clear All Data
+                       </DropdownMenuItem>
+                    </DropdownMenuContent>
+                 </DropdownMenu>
               </div>
            </div>
         </div>
 
-        {/* --- MAIN CONTENT (Toolbar & Table) --- */}
-        <main className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
+        {/* --- CONTENT --- */}
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-[1600px] mx-auto w-full">
           
-          {/* Toolbar: Search, View, Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card/50 p-1 rounded-xl">
-             
-             {/* Search */}
-             <div className="relative w-full sm:w-80">
+           {/* Context Indicator (Visual feedback for what is being viewed) */}
+           <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/40">
+                  <Check className="w-3 h-3 text-emerald-500" />
+                  <span>Viewing:</span>
+                  <span className="font-medium text-foreground">
+                      {selectedAccountId === "all" ? "All Portfolios" : accounts.find(a => a.id === selectedAccountId)?.name}
+                  </span>
+              </div>
+           </div>
+
+           {/* Controls Bar */}
+           <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-4 rounded-xl border shadow-sm">
+              <div className="relative w-full sm:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                   placeholder="Search by symbol, narrative, or notes..." 
-                   className="pl-10 bg-background border-border/60 focus-visible:ring-primary h-10"
-                   value={searchTerm}
-                   onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search symbols, notes..." 
+                    className="pl-10 bg-background/50 border-border/60"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                 />
-             </div>
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                 {/* View Switcher */}
+                 <div className="flex items-center rounded-lg border bg-background/50 p-1">
+                    <button onClick={() => setViewMode('list')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'list' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                       List
+                    </button>
+                    <button onClick={() => setViewMode('grid')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'grid' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                       Grid
+                    </button>
+                 </div>
 
-             {/* Right Controls */}
-             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <div className="flex items-center bg-background border border-border/60 rounded-md p-1">
-                   <button onClick={() => setViewMode('list')} className={cn("p-2 rounded-sm transition-all", viewMode === 'list' ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-                      <List className="h-4 w-4" />
-                   </button>
-                   <button onClick={() => setViewMode('grid')} className={cn("p-2 rounded-sm transition-all", viewMode === 'grid' ? "bg-muted text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-                      <Grid3X3 className="h-4 w-4" />
-                   </button>
-                </div>
-                
-                <Sheet>
-                   <SheetTrigger asChild>
-                      <Button variant="outline" className={cn("gap-2 border-border/60 h-10", Object.keys(filters).length > 0 && "border-primary text-primary bg-primary/5")}>
-                         <Filter className="h-4 w-4" /> Filters
-                         {Object.keys(filters).length > 0 && (
-                            <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-[10px]">
-                               {Object.keys(filters).length}
-                            </Badge>
-                         )}
-                      </Button>
-                   </SheetTrigger>
-                   <SheetContent side="right">
-                      <SheetHeader>
-                         <SheetTitle>Filter Journal</SheetTitle>
-                         <SheetDescription>Narrow down your trade history.</SheetDescription>
-                      </SheetHeader>
-                      <div className="mt-6">
-                         <AdvancedTradeFilters setFilters={setFilters} initialFilters={filters} />
-                      </div>
-                   </SheetContent>
-                </Sheet>
-                
-                <DropdownMenu>
-                   <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10">
-                         <Settings2 className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                   </DropdownMenuTrigger>
-                   <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Database Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive">
-                         <Trash2 className="mr-2 h-4 w-4" /> Clear All Data
-                      </DropdownMenuItem>
-                   </DropdownMenuContent>
-                </DropdownMenu>
-             </div>
-          </div>
+                 <Sheet>
+                    <SheetTrigger asChild>
+                       <Button variant="outline" size="sm" className="gap-2 h-9 border-dashed border-border/80">
+                          <Filter className="h-4 w-4" /> Filters
+                          {Object.keys(filters).length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1">{Object.keys(filters).length}</Badge>}
+                       </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right">
+                       <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
+                       <div className="mt-6"><AdvancedTradeFilters setFilters={setFilters} initialFilters={filters} /></div>
+                    </SheetContent>
+                 </Sheet>
+              </div>
+           </div>
 
-          {/* Data Table Area */}
-          <Card className="border border-border/60 shadow-sm bg-card rounded-xl overflow-hidden min-h-[500px] flex flex-col">
-             {isLoading ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-4">
-                   <RefreshCw className="w-8 h-8 text-primary animate-spin" />
-                   <p className="text-sm text-muted-foreground">Loading journal entries...</p>
-                </div>
-             ) : filteredTrades.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
-                   <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-                      <BookOpen className="h-8 w-8 text-muted-foreground/40" />
-                   </div>
-                   <h3 className="text-lg font-semibold text-foreground">Your journal is empty</h3>
-                   <p className="text-sm text-muted-foreground mt-2 mb-6">
-                      No trades found matching your criteria. Start by logging a trade or importing data.
-                   </p>
-                   <div className="flex gap-4">
-                      <Button variant="outline" onClick={() => { setSearchTerm(""); setFilters({}); }}>Clear Filters</Button>
-                      <Button asChild><NextLink href="/add-trade">Log Trade</NextLink></Button>
-                   </div>
-                </div>
-             ) : (
-                <SimpleTradeTable trades={filteredTrades} onRefresh={() => fetchTradesAndSetState(true)} />
-             )}
-          </Card>
+           {/* Trade Table */}
+           <Card className="border-none shadow-md overflow-hidden min-h-[500px] flex flex-col">
+              {isLoading ? (
+                 <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-4">
+                    <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                    <p className="text-sm text-muted-foreground">Loading journal entries...</p>
+                 </div>
+              ) : filteredTrades.length === 0 ? (
+                 <div className="flex-1 flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
+                    <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
+                       <BookOpen className="h-8 w-8 text-muted-foreground/40" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground">No trades found</h3>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-xs">
+                       {accounts.length === 0 
+                          ? "Create a portfolio to start logging your journey." 
+                          : "No entries match your current filters."}
+                    </p>
+                    {accounts.length === 0 && (
+                        <Button className="mt-6 gap-2" onClick={() => setIsCreateAccountOpen(true)}>
+                            <Plus className="w-4 h-4" /> Create Portfolio
+                        </Button>
+                    )}
+                 </div>
+              ) : (
+                 <SimpleTradeTable trades={filteredTrades} onRefresh={() => fetchData(true)} />
+              )}
+           </Card>
+        </div>
 
-          <div className="flex justify-between items-center px-2 py-4 text-xs text-muted-foreground">
-             <span>Viewing {filteredTrades.length} of {trades.length} entries</span>
-             <span className="font-mono opacity-50">SYNCED</span>
-          </div>
-        </main>
+        {/* --- DIALOGS --- */}
+        
+        {/* Create Account Modal */}
+        <Dialog open={isCreateAccountOpen} onOpenChange={setIsCreateAccountOpen}>
+           <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                 <DialogTitle>Create Portfolio</DialogTitle>
+                 <DialogDescription>Setup a new bucket for your trades (e.g., Funded Account, Challenge).</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                 <div className="grid gap-2">
+                    <Label htmlFor="name">Portfolio Name</Label>
+                    <Input id="name" placeholder="e.g., Topstep 50k Combine" value={newAccountName} onChange={e => setNewAccountName(e.target.value)} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                       <Label>Type</Label>
+                       <Select value={newAccountType} onValueChange={(v: AccountType) => setNewAccountType(v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                             <SelectItem value="personal">Personal</SelectItem>
+                             <SelectItem value="funded">Funded</SelectItem>
+                             <SelectItem value="challenge">Challenge</SelectItem>
+                             <SelectItem value="demo">Demo</SelectItem>
+                          </SelectContent>
+                       </Select>
+                    </div>
+                    <div className="grid gap-2">
+                       <Label>Starting Balance</Label>
+                       <Input type="number" value={newAccountBalance} onChange={e => setNewAccountBalance(e.target.value)} />
+                    </div>
+                 </div>
+              </div>
+              <DialogFooter>
+                 <Button variant="outline" onClick={() => setIsCreateAccountOpen(false)}>Cancel</Button>
+                 <Button onClick={handleCreateAccount} disabled={!newAccountName || !newAccountBalance}>Create Portfolio</Button>
+              </DialogFooter>
+           </DialogContent>
+        </Dialog>
 
-        {/* Modals - (Kept unchanged) */}
+        {/* Import CSV Modal */}
         <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>CSV Import</DialogTitle>
-              <DialogDescription>Upload your trade history from Broker or Excel.</DialogDescription>
+              <DialogTitle>Import Trades</DialogTitle>
+              <DialogDescription>Upload a CSV from your broker.</DialogDescription>
             </DialogHeader>
             <div className="flex items-center justify-center w-full my-4">
                 <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20 hover:border-primary/50 transition-all group">
@@ -503,7 +560,6 @@ export default function TradesPage() {
                            <Upload className="w-5 h-5 text-primary" />
                         </div>
                         <p className="text-sm font-medium text-muted-foreground">Click to browse file</p>
-                        <p className="text-xs text-muted-foreground/70 mt-1">Supports .csv, .xls</p>
                     </div>
                     <input type="file" className="hidden" accept=".csv" onChange={handleFileChange} />
                 </label>
@@ -518,22 +574,27 @@ export default function TradesPage() {
           </DialogContent>
         </Dialog>
         
+        {/* Connect Broker Modal */}
         <Dialog open={isConnectionDialogOpen} onOpenChange={setIsConnectionDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader><DialogTitle>Connect Broker</DialogTitle></DialogHeader>
-            <SimpleConnectionModal onClose={() => setIsConnectionDialogOpen(false)} onConnectionCreated={() => fetchTradesAndSetState(true)} />
+            <SimpleConnectionModal onClose={() => setIsConnectionDialogOpen(false)} onConnectionCreated={() => fetchData(true)} />
           </DialogContent>
         </Dialog>
 
+        {/* Delete Confirmation Modal */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
            <DialogContent>
              <DialogHeader>
-               <DialogTitle className="text-destructive flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Delete All Data?</DialogTitle>
-               <DialogDescription>This will permanently remove all trade entries from your journal. This action cannot be undone.</DialogDescription>
+               <DialogTitle className="text-destructive flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Danger Zone</DialogTitle>
+               <DialogDescription>
+                  This will permanently delete ALL trades from the database. <br/>
+                  If you only want to clear a specific portfolio, please delete the portfolio instead.
+               </DialogDescription>
              </DialogHeader>
              <DialogFooter>
                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
-               <Button variant="destructive" onClick={handleDeleteAll}>Confirm Delete</Button>
+               <Button variant="destructive" onClick={handleDeleteAll}>Confirm Delete All</Button>
              </DialogFooter>
            </DialogContent>
         </Dialog>

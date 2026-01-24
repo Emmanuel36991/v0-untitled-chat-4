@@ -301,15 +301,20 @@ export default function DashboardPage() {
   const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily">("cumulative")
   const [quoteIndex, setQuoteIndex] = useState(0)
   
-  const { isLoaded } = useUserConfig()
+  // FIX: Destructure isLoading alias here
+  const { isLoaded, isLoading: isConfigLoading } = useUserConfig()
   const { displayFormat, setDisplayFormat } = usePnLDisplay()
 
   const loadTrades = useCallback(async (showLoadingState = true) => {
+    // FIX: Using isConfigLoading correctly now
     if (isConfigLoading) return
+    
     if (showLoadingState) setIsLoading(true)
     else setIsRefreshing(true)
     setError(null)
+    
     try {
+      // Simulate network delay for polished feel
       await new Promise(resolve => setTimeout(resolve, 600)) 
       const fetchedTrades = await getTrades()
       setTrades(fetchedTrades || [])
@@ -321,7 +326,7 @@ export default function DashboardPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [isConfigLoading])
+  }, [isConfigLoading]) // Add dependency
 
   useEffect(() => { loadTrades() }, [loadTrades])
 

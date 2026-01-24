@@ -9,6 +9,9 @@ function mapRowToTrade(row: any): Trade {
   return {
     id: row.id,
     user_id: row.user_id,
+    // --- FIX: Map the account_id so the frontend can see it ---
+    account_id: row.account_id, 
+    // ---------------------------------------------------------
     date: typeof row.date === "string" ? row.date : new Date(row.date).toISOString().split("T")[0],
     instrument: row.instrument,
     direction: row.direction,
@@ -27,7 +30,7 @@ function mapRowToTrade(row: any): Trade {
     screenshot_before_url: row.screenshot_before_url,
     screenshot_after_url: row.screenshot_after_url,
 
-    // *** PLAYBOOK FIELDS ***
+    // Playbook
     playbook_strategy_id: row.playbook_strategy_id,
     executed_rules: row.executed_rules || [],
 
@@ -38,7 +41,7 @@ function mapRowToTrade(row: any): Trade {
     trade_end_time: row.trade_end_time,
     precise_duration_minutes: row.precise_duration_minutes ? Number(row.precise_duration_minutes) : null,
 
-    // Arrays
+    // Arrays (Ensure defaults to avoid null errors)
     smc_market_structure: row.smc_market_structure || [],
     smc_order_blocks: row.smc_order_blocks || [],
     smc_fvg: row.smc_fvg || [],
@@ -106,6 +109,9 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
     // Handle direct mappings
     if (key === 'playbook_strategy_id') {
        payload['playbook_strategy_id'] = value
+    } else if (key === 'account_id') {
+       // --- FIX: Explicitly handle account_id mapping ---
+       payload['account_id'] = value
     } else if (key === 'executed_rules') {
        payload['executed_rules'] = value
     } else if (key === 'setupName') {
@@ -114,13 +120,16 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
        payload['screenshot_before_url'] = value
     } else if (key === 'screenshotAfterUrl') {
        payload['screenshot_after_url'] = value
+    } else if (key === 'entry_time') {
+       payload['trade_start_time'] = value 
+    } else if (key === 'exit_time') {
+       payload['trade_end_time'] = value   
     } else {
-       // Snake Case Conversion
+       // Snake Case Conversion for standard fields
        const snakeKey = key
         .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
         .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2") 
         .toLowerCase()
-        // Fix specific edge cases if needed
         .replace(/fvg_classic/, "fvg_classic") 
        
        payload[snakeKey] = value
@@ -145,6 +154,7 @@ export async function getTrades(): Promise<Trade[]> {
 
     if (!user) return []
 
+    // Select ALL columns to ensure account_id is retrieved
     const { data, error } = await supabase
       .from("trades")
       .select("*")
@@ -171,7 +181,6 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
 
     if (!user) return { success: false, error: "User not authenticated" }
 
-    // Auto-calculate outcome based on PnL if not explicitly provided
     const calculatedOutcome = (trade.pnl || 0) > 0 ? 'win' : (trade.pnl || 0) < 0 ? 'loss' : 'breakeven'
 
     const dbPayload = {
@@ -188,10 +197,9 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
       return { success: false, error: `Failed to add trade: ${error.message}` }
     }
 
-    // Refresh all relevant paths
     revalidatePath("/trades")
     revalidatePath("/dashboard")
-    revalidatePath("/playbook") // Update strategy stats
+    revalidatePath("/playbook")
 
     return { 
       success: true, 
@@ -337,15 +345,14 @@ export async function getTradeById(id: string): Promise<Trade | null> {
   }
 }
 
-// 8. CREATE PSYCHOLOGY ENTRY
-export async function createPsychologyEntry(data: {
-  trade_id: string
-  mood?: string
-  triggers?: string[]
-  patterns?: string[]
-  tags?: string[]
-  pre_thoughts?: string
-  post_thoughts?: string
+// 8. LOG TRADE PSYCHOLOGY
+export async function logTradePsychology(tradeId: string, data: {
+  mood: string
+  triggers: string[]
+  patterns: string[]
+  tags: string[]
+  pre_thoughts: string
+  post_thoughts: string
   lessons?: string
 }) {
   try {
@@ -354,26 +361,26 @@ export async function createPsychologyEntry(data: {
 
     if (!user) return { success: false, error: "User not authenticated" }
 
-    const { error } = await supabase.from("psychology_journal").insert({
-      trade_id: data.trade_id,
+    const { error } = await supabase.from("trade_psychology").insert({
+      trade_id: tradeId,
       user_id: user.id,
       mood: data.mood,
-      emotional_triggers: data.triggers,
-      behavioral_patterns: data.patterns,
-      custom_tags: data.tags,
-      pre_trade_thoughts: data.pre_thoughts,
-      post_trade_thoughts: data.post_thoughts,
+      triggers: data.triggers,
+      patterns: data.patterns,
+      tags: data.tags,
+      pre_thoughts: data.pre_thoughts,
+      post_thoughts: data.post_thoughts,
       lessons_learned: data.lessons
     })
 
     if (error) {
-      console.error("Error creating psychology entry:", error)
+      console.error("Error logging trade psychology:", error)
       return { success: false, error: error.message }
     }
 
     return { success: true }
   } catch (error: any) {
-    console.error("Exception in createPsychologyEntry:", error)
+    console.error("Exception in logTradePsychology:", error)
     return { success: false, error: error.message }
   }
 }

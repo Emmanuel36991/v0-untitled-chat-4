@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetClose
+  Sheet, SheetContent, SheetHeader, SheetTitle
 } from "@/components/ui/sheet"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -36,6 +36,7 @@ import {
   type StrategyRule,
   type StrategySetup,
 } from "@/app/actions/playbook-actions"
+import { VisualMap } from "@/components/playbook/visual-map"
 
 // --- CONSTANTS ---
 const CONFLUENCE_CATEGORIES = [
@@ -232,7 +233,7 @@ function StrategyEngine({
 
         {/* WORKSPACE - SPLIT VIEW */}
         <div className="flex-1 flex overflow-hidden">
-           
+            
            {/* LEFT PANEL: CONFLUENCE POOL (THE LIBRARY) */}
            <div className="w-[450px] border-r border-border/40 bg-card/20 flex flex-col">
               <div className="p-6 border-b border-border/40 bg-muted/10">
@@ -247,10 +248,10 @@ function StrategyEngine({
                        />
                     </div>
                     <Textarea 
-                        value={description}
-                        onChange={e => setDescription(e.target.value)}
-                        placeholder="Core philosophy (e.g. Algo delivery based on time & price)"
-                        className="bg-background min-h-[60px] resize-none text-xs"
+                       value={description}
+                       onChange={e => setDescription(e.target.value)}
+                       placeholder="Core philosophy (e.g. Algo delivery based on time & price)"
+                       className="bg-background min-h-[60px] resize-none text-xs"
                     />
                  </div>
               </div>
@@ -508,143 +509,163 @@ export default function PlaybookPage() {
     : null
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-background border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Playbook</h1>
-                <p className="text-muted-foreground mt-1 text-sm">Architect your trading systems.</p>
-              </div>
-              <div className="flex gap-3">
-                 <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Search strategies..." 
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-9 w-64 bg-background border-input hover:border-primary/50 transition-colors" 
-                    />
-                 </div>
-                 <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md font-bold">
-                    <Plus className="w-5 h-5 mr-2" /> New Strategy
-                 </Button>
-              </div>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Sticky Header with Glassmorphism */}
+      <div className="bg-background/80 backdrop-blur-xl border-b border-border sticky top-0 z-30 transition-all">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div className="flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-primary hidden md:block" />
+                <div>
+                   <h1 className="text-2xl font-bold tracking-tight text-foreground">Playbook</h1>
+                   <p className="text-muted-foreground text-xs md:text-sm hidden md:block">Architect your trading systems.</p>
+                </div>
+             </div>
+             <div className="flex gap-3">
+                <div className="relative hidden md:block">
+                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                   <Input 
+                     placeholder="Search strategies..." 
+                     value={searchQuery}
+                     onChange={e => setSearchQuery(e.target.value)}
+                     className="pl-9 w-64 bg-background/50 border-input hover:border-primary/50 transition-colors" 
+                   />
+                </div>
+                <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md font-bold">
+                   <Plus className="w-5 h-5 mr-2" /> New Strategy
+                </Button>
+             </div>
            </div>
+        </div>
+      </div>
 
-           {/* Metrics */}
+      <div className="max-w-7xl mx-auto px-6 space-y-8 mt-8">
+           
+           {/* SECTION 1: METRICS GRID */}
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center gap-4 p-4 rounded-xl border bg-card/50">
-                 <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-500"><Layers className="w-6 h-6"/></div>
+              <div className="flex items-center gap-4 p-5 rounded-xl border bg-card/40 hover:bg-card/60 transition-colors shadow-sm">
+                 <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-500 ring-1 ring-indigo-500/20"><Layers className="w-6 h-6"/></div>
                  <div>
-                    <div className="text-xs font-bold uppercase text-muted-foreground">Active Systems</div>
+                    <div className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Active Systems</div>
                     <div className="text-2xl font-bold text-foreground">{strategies.length}</div>
                  </div>
               </div>
-              <div className="flex items-center gap-4 p-4 rounded-xl border bg-card/50">
-                 <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-500"><TrendingUp className="w-6 h-6"/></div>
+              <div className="flex items-center gap-4 p-5 rounded-xl border bg-card/40 hover:bg-card/60 transition-colors shadow-sm">
+                 <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-500 ring-1 ring-emerald-500/20"><TrendingUp className="w-6 h-6"/></div>
                  <div>
-                    <div className="text-xs font-bold uppercase text-muted-foreground">Total PnL</div>
+                    <div className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Total PnL</div>
                     <div className={cn("text-2xl font-bold font-mono", totalPnL >= 0 ? "text-emerald-500" : "text-rose-500")}>
                        ${totalPnL.toLocaleString()}
                     </div>
                  </div>
               </div>
-              <div className="flex items-center gap-4 p-4 rounded-xl border bg-card/50">
-                 <div className="p-3 bg-amber-500/10 rounded-lg text-amber-500"><Trophy className="w-6 h-6"/></div>
+              <div className="flex items-center gap-4 p-5 rounded-xl border bg-card/40 hover:bg-card/60 transition-colors shadow-sm">
+                 <div className="p-3 bg-amber-500/10 rounded-lg text-amber-500 ring-1 ring-amber-500/20"><Trophy className="w-6 h-6"/></div>
                  <div>
-                    <div className="text-xs font-bold uppercase text-muted-foreground">Top Performer</div>
+                    <div className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Top Performer</div>
                     <div className="text-lg font-bold text-foreground truncate max-w-[150px]">{bestStrategy?.name || "N/A"}</div>
                     {bestStrategy && <div className="text-xs text-muted-foreground">{bestStrategy.win_rate}% Win Rate</div>}
                  </div>
               </div>
            </div>
-        </div>
-      </div>
 
-      {/* Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-10">
-         {isLoading ? (
-            <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-indigo-500" /></div>
-         ) : filtered.length === 0 ? (
-            <div className="text-center py-32 border-2 border-dashed rounded-3xl bg-card/30">
-               <BookOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-               <h3 className="text-xl font-bold text-foreground">Playbook Empty</h3>
-               <p className="text-muted-foreground mt-2 mb-8">Define your first system to start tracking data.</p>
-               <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }}>Create Strategy</Button>
-            </div>
-         ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               <AnimatePresence>
-                  {filtered.map(strat => {
-                     const isProfitable = (strat.pnl || 0) >= 0
-                     return (
-                       <motion.div 
-                          key={strat.id} 
-                          layout
-                          initial={{ opacity: 0, scale: 0.98 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          whileHover={{ y: -4 }}
-                          className="group h-full"
-                       >
-                          <Card className="h-full border-border/60 bg-card overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300">
-                             <div className="h-32 relative p-6 flex flex-col justify-between border-b border-border/40 bg-gradient-to-b from-background to-card">
-                                <Sparkline data={strat.equity_curve || []} color={isProfitable ? "#10b981" : "#ef4444"} />
-                                <div className="relative z-10 flex justify-between items-start">
-                                   <div className="flex gap-2">
-                                      <Badge variant="outline" className="bg-background/80 backdrop-blur text-[10px] uppercase font-bold text-muted-foreground border-border/80">Strategy</Badge>
-                                   </div>
-                                   <DropdownMenu>
-                                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background/80 -mr-2 -mt-2"><MoreHorizontal className="w-4 h-4 text-muted-foreground"/></Button></DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                         <DropdownMenuItem onClick={() => { setEditingStrategy(strat); setIsBuilderOpen(true) }}><Edit2 className="w-4 h-4 mr-2"/> Edit</DropdownMenuItem>
-                                         <DropdownMenuSeparator />
-                                         <DropdownMenuItem className="text-rose-600" onClick={() => handleDelete(strat.id)}><Trash2 className="w-4 h-4 mr-2"/> Delete</DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                   </DropdownMenu>
-                                </div>
-                                <div className="relative z-10 mt-auto">
-                                   <h3 className="text-lg font-bold tracking-tight text-foreground truncate">{strat.name}</h3>
-                                </div>
-                             </div>
+           {/* SECTION 2: VISUAL MAP */}
+           <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                 <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-indigo-500" />
+                    Ecosystem Map
+                 </h2>
+              </div>
+              <VisualMap className="w-full shadow-lg border-border/60" />
+           </div>
 
-                             <CardContent className="p-6 space-y-6">
-                                <div className="grid grid-cols-3 gap-2 py-2 border-y border-border/40">
-                                   <div className="text-center py-2">
-                                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Win Rate</div>
-                                      <div className={cn("text-lg font-bold", (strat.win_rate || 0) > 50 ? "text-emerald-500" : "text-muted-foreground")}>{strat.win_rate || 0}%</div>
+           {/* SECTION 3: STRATEGY CARDS */}
+           <div className="space-y-4 pt-4">
+              <h2 className="text-lg font-bold tracking-tight">Active Strategies</h2>
+              
+              {isLoading ? (
+                 <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-indigo-500" /></div>
+              ) : filtered.length === 0 ? (
+                 <div className="text-center py-32 border-2 border-dashed rounded-3xl bg-card/30">
+                    <BookOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
+                    <h3 className="text-xl font-bold text-foreground">Playbook Empty</h3>
+                    <p className="text-muted-foreground mt-2 mb-8">Define your first system to start tracking data.</p>
+                    <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }}>Create Strategy</Button>
+                 </div>
+              ) : (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <AnimatePresence>
+                       {filtered.map(strat => {
+                          const isProfitable = (strat.pnl || 0) >= 0
+                          return (
+                             <motion.div 
+                                key={strat.id} 
+                                layout
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                whileHover={{ y: -4 }}
+                                className="group h-full"
+                             >
+                                <Card className="h-full border-border/60 bg-card overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col">
+                                   <div className="h-32 relative p-6 flex flex-col justify-between border-b border-border/40 bg-gradient-to-b from-background to-card/50">
+                                      <Sparkline data={strat.equity_curve || []} color={isProfitable ? "#10b981" : "#ef4444"} />
+                                      <div className="relative z-10 flex justify-between items-start">
+                                         <div className="flex gap-2">
+                                            <Badge variant="outline" className="bg-background/50 backdrop-blur text-[10px] uppercase font-bold text-muted-foreground border-border/50">Strategy</Badge>
+                                         </div>
+                                         <DropdownMenu>
+                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background/80 -mr-2 -mt-2"><MoreHorizontal className="w-4 h-4 text-muted-foreground"/></Button></DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                               <DropdownMenuItem onClick={() => { setEditingStrategy(strat); setIsBuilderOpen(true) }}><Edit2 className="w-4 h-4 mr-2"/> Edit</DropdownMenuItem>
+                                               <DropdownMenuSeparator />
+                                               <DropdownMenuItem className="text-rose-600" onClick={() => handleDelete(strat.id)}><Trash2 className="w-4 h-4 mr-2"/> Delete</DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                         </DropdownMenu>
+                                      </div>
+                                      <div className="relative z-10 mt-auto">
+                                         <h3 className="text-lg font-bold tracking-tight text-foreground truncate">{strat.name}</h3>
+                                      </div>
                                    </div>
-                                   <div className="text-center py-2 border-l border-border/40">
-                                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Trades</div>
-                                      <div className="text-lg font-bold text-foreground">{strat.trades_count || 0}</div>
-                                   </div>
-                                   <div className="text-center py-2 border-l border-border/40">
-                                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net PnL</div>
-                                      <div className={cn("text-lg font-bold font-mono", isProfitable ? "text-emerald-500" : "text-rose-500")}>${(strat.pnl || 0).toLocaleString()}</div>
-                                   </div>
-                                </div>
 
-                                <div className="space-y-3">
-                                   <div className="flex justify-between items-end">
-                                      <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Active Setups</span>
-                                      <span className="text-[10px] text-muted-foreground">{strat.setups?.length || 0}</span>
-                                   </div>
-                                   {/* Visualize Setup Counts */}
-                                   <div className="flex gap-1">
-                                      {(strat.setups || []).slice(0,8).map((s,i) => {
-                                         return <div key={i} className="h-1.5 w-6 rounded-full bg-primary/30" />
-                                      })}
-                                   </div>
-                                </div>
-                             </CardContent>
-                          </Card>
-                       </motion.div>
-                     )
-                  })}
-               </AnimatePresence>
-            </div>
-         )}
+                                   <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
+                                      <div className="grid grid-cols-3 gap-2 py-2 border-y border-border/40">
+                                         <div className="text-center py-2">
+                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Win Rate</div>
+                                            <div className={cn("text-lg font-bold", (strat.win_rate || 0) > 50 ? "text-emerald-500" : "text-muted-foreground")}>{strat.win_rate || 0}%</div>
+                                         </div>
+                                         <div className="text-center py-2 border-l border-border/40">
+                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Trades</div>
+                                            <div className="text-lg font-bold text-foreground">{strat.trades_count || 0}</div>
+                                         </div>
+                                         <div className="text-center py-2 border-l border-border/40">
+                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net PnL</div>
+                                            <div className={cn("text-lg font-bold font-mono", isProfitable ? "text-emerald-500" : "text-rose-500")}>${(strat.pnl || 0).toLocaleString()}</div>
+                                         </div>
+                                      </div>
+
+                                      <div className="space-y-3 mt-auto">
+                                         <div className="flex justify-between items-end">
+                                            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Active Setups</span>
+                                            <span className="text-[10px] text-muted-foreground">{strat.setups?.length || 0}</span>
+                                         </div>
+                                         {/* Visualize Setup Counts */}
+                                         <div className="flex gap-1 h-2 overflow-hidden rounded-full bg-secondary/50">
+                                            {(strat.setups || []).slice(0,8).map((s,i) => {
+                                               return <div key={i} className="h-full flex-1 bg-primary/40 first:bg-primary/60" />
+                                            })}
+                                            {(strat.setups || []).length === 0 && <div className="h-full w-full bg-muted" />}
+                                         </div>
+                                      </div>
+                                   </CardContent>
+                                </Card>
+                             </motion.div>
+                          )
+                       })}
+                    </AnimatePresence>
+                 </div>
+              )}
+           </div>
       </div>
 
       <StrategyEngine 

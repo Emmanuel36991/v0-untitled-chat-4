@@ -1,8 +1,11 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import React, { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
-interface EnhancedHexagramProps {
+interface HexagramProps {
   winPercentage: number
   consistency: number
   maxDrawdown: number
@@ -10,9 +13,10 @@ interface EnhancedHexagramProps {
   profitFactor: number
   avgWinLoss: number
   totalScore: number
+  className?: string
 }
 
-const EnhancedHexagram = ({
+export function EnhancedHexagram({
   winPercentage,
   consistency,
   maxDrawdown,
@@ -20,238 +24,205 @@ const EnhancedHexagram = ({
   profitFactor,
   avgWinLoss,
   totalScore,
-}: EnhancedHexagramProps) => {
-  const [hoveredMetric, setHoveredMetric] = useState<number | null>(null)
-  const [selectedMetric, setSelectedMetric] = useState<number | null>(null)
+  className,
+}: HexagramProps) {
+  const [hoveredMetric, setHoveredMetric] = useState<string | null>(null)
 
-  const metrics = useMemo(
-    () => [
-      {
-        label: "Win Rate",
-        value: Math.max(0, Math.min(100, winPercentage)),
-        angle: 0,
-        description: `${winPercentage.toFixed(1)}% successful trades`,
-        category: "Performance",
-      },
-      {
-        label: "Profit Factor",
-        value: Math.max(0, Math.min(100, profitFactor)),
-        angle: 60,
-        description: `${(profitFactor / 20).toFixed(2)}x profit multiplier`,
-        category: "Returns",
-      },
-      {
-        label: "Risk/Reward",
-        value: Math.max(0, Math.min(100, avgWinLoss)),
-        angle: 120,
-        description: `${avgWinLoss.toFixed(1)}% risk-adjusted ratio`,
-        category: "Risk",
-      },
-      {
-        label: "Consistency",
-        value: Math.max(0, Math.min(100, consistency)),
-        angle: 180,
-        description: `${consistency.toFixed(1)}% outcome regularity`,
-        category: "Stability",
-      },
-      {
-        label: "Adaptability",
-        value: Math.max(0, Math.min(100, recoveryFactor)),
-        angle: 240,
-        description: `${recoveryFactor.toFixed(1)}% market response`,
-        category: "Flexibility",
-      },
-      {
-        label: "Risk Control",
-        value: Math.max(0, Math.min(100, 100 - maxDrawdown)),
-        angle: 300,
-        description: `${(100 - maxDrawdown).toFixed(1)}% drawdown protection`,
-        category: "Protection",
-      },
-    ],
-    [winPercentage, consistency, maxDrawdown, recoveryFactor, profitFactor, avgWinLoss],
-  )
-
-  const getMetricColor = (value: number) => {
-    // Professional Gradient Theme (Violet/Indigo/Blue)
-    if (value >= 80) return { fill: "#8b5cf6", stroke: "#7c3aed", label: "text-violet-600" }
-    if (value >= 65) return { fill: "#6366f1", stroke: "#4f46e5", label: "text-indigo-600" }
-    if (value >= 50) return { fill: "#3b82f6", stroke: "#2563eb", label: "text-blue-600" }
-    return { fill: "#94a3b8", stroke: "#64748b", label: "text-slate-500" }
+  // Normalize data to 0-100 scale for the chart
+  const data = {
+    "Win Rate": Math.min(Math.max(winPercentage, 0), 100),
+    "Consistency": Math.min(Math.max(consistency, 0), 100),
+    "Risk Mgmt": Math.min(Math.max(maxDrawdown, 0), 100),
+    "Recovery": Math.min(Math.max(recoveryFactor, 0), 100),
+    "Profit Factor": Math.min(Math.max(profitFactor * 20, 0), 100), // Scale PF: 5.0 = 100
+    "Efficiency": Math.min(Math.max(avgWinLoss, 0), 100),
   }
 
-  const center = 200
-  const maxRadius = 110
-  const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0]
+  const metrics = Object.keys(data)
+  const values = Object.values(data)
+  const numMetrics = metrics.length
+  const radius = 120
+  const center = { x: 180, y: 180 } // Center of a 360x360 SVG
 
-  const dataPath = useMemo(() => {
-    return (
-      metrics
-        .map((metric, i) => {
-          const angle = (metric.angle - 90) * (Math.PI / 180)
-          const baseRadius = (metric.value / 100) * maxRadius
-          // We slightly expand the visual path on hover for effect, 
-          // but we DO NOT move the hit targets to prevent glitches.
-          const radius = hoveredMetric === i ? baseRadius * 1.05 : baseRadius
-          const x = center + radius * Math.cos(angle)
-          const y = center + radius * Math.sin(angle)
-          return `${i === 0 ? "M" : "L"} ${x} ${y}`
-        })
-        .join(" ") + " Z"
-    )
-  }, [metrics, hoveredMetric, center, maxRadius])
-
-  const getOverallColor = () => {
-    if (totalScore >= 80) return "from-violet-500/20 via-indigo-500/10 to-blue-500/15 border-violet-200 shadow-violet-500/20"
-    if (totalScore >= 65) return "from-indigo-500/20 via-blue-500/10 to-cyan-500/15 border-indigo-200 shadow-indigo-500/20"
-    if (totalScore >= 50) return "from-blue-500/20 via-sky-500/10 to-teal-500/15 border-blue-200 shadow-blue-500/20"
-    return "from-slate-200/20 via-gray-200/10 to-slate-200/15 border-slate-200 shadow-slate-200/20"
+  // Helper to calculate polygon points
+  const getPoint = (index: number, value: number) => {
+    const angle = (Math.PI * 2 * index) / numMetrics - Math.PI / 2
+    const r = (value / 100) * radius
+    return {
+      x: center.x + Math.cos(angle) * r,
+      y: center.y + Math.sin(angle) * r,
+    }
   }
+
+  const polygonPoints = values
+    .map((v, i) => {
+      const p = getPoint(i, v)
+      return `${p.x},${p.y}`
+    })
+    .join(" ")
+
+  const fullPolygonPoints = values
+    .map((_, i) => {
+      const p = getPoint(i, 100)
+      return `${p.x},${p.y}`
+    })
+    .join(" ")
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center">
-      <div className={`relative transition-all duration-500 w-full max-w-[360px]`}>
-        
-        {/* Chart SVG */}
-        <div className="relative">
-          <svg
-            width="400"
-            height="420"
-            viewBox="0 0 400 420"
-            className="w-full h-auto drop-shadow-xl"
-            style={{ overflow: 'visible' }}
-          >
-            <defs>
-              <linearGradient id="hexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.4" />
-              </linearGradient>
-              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-            </defs>
+    <div className={cn("relative w-full h-full flex flex-col items-center justify-center", className)}>
+      <div className="relative w-full aspect-square max-w-[400px]">
+        {/* Tooltip Portal - Positioned absolutely within the container but z-indexed above */}
+        <AnimatePresence>
+          {hoveredMetric && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute top-0 left-1/2 -translate-x-1/2 z-20 bg-slate-900/90 text-white text-xs px-3 py-1.5 rounded-full shadow-xl backdrop-blur-md border border-slate-700 pointer-events-none"
+            >
+              <span className="font-bold text-indigo-400">{hoveredMetric}: </span>
+              <span className="font-mono">
+                {data[hoveredMetric as keyof typeof data].toFixed(1)}/100
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-            {/* Background Spider Grid */}
-            {gridLevels.map((level, i) => {
-              const gridPath = Array.from({ length: 6 }, (_, j) => {
-                  const angle = (j * 60 - 90) * (Math.PI / 180)
-                  const x = center + maxRadius * level * Math.cos(angle)
-                  const y = center + maxRadius * level * Math.sin(angle)
-                  return `${j === 0 ? "M" : "L"} ${x} ${y}`
-                }).join(" ") + " Z"
+        <svg
+          viewBox="0 0 360 360"
+          className="w-full h-full overflow-visible"
+          style={{ filter: "drop-shadow(0px 4px 10px rgba(0,0,0,0.1))" }}
+        >
+          {/* Defs for Gradients */}
+          <defs>
+            <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(99, 102, 241, 0.1)" />
+              <stop offset="100%" stopColor="rgba(99, 102, 241, 0.05)" />
+            </linearGradient>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#818cf8" />
+              <stop offset="100%" stopColor="#4f46e5" />
+            </linearGradient>
+            <radialGradient id="pulseGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(99, 102, 241, 0.2)" />
+              <stop offset="100%" stopColor="rgba(99, 102, 241, 0)" />
+            </radialGradient>
+          </defs>
 
-              return (
-                <path
-                  key={i}
-                  d={gridPath}
-                  fill="none"
-                  stroke={i === 4 ? "#cbd5e1" : "#e2e8f0"} // Darker outer ring
-                  strokeWidth={i === 4 ? "1.5" : "1"}
-                  strokeDasharray={i === 4 ? "0" : "4 4"}
-                />
-              )
-            })}
-
-            {/* Axis Lines */}
-            {metrics.map((metric, i) => {
-              const angle = (metric.angle - 90) * (Math.PI / 180)
-              const x = center + maxRadius * Math.cos(angle)
-              const y = center + maxRadius * Math.sin(angle)
-              return (
-                <line
-                  key={`axis-${i}`}
-                  x1={center}
-                  y1={center}
-                  x2={x}
-                  y2={y}
-                  stroke="#e2e8f0"
-                  strokeWidth="1"
-                />
-              )
-            })}
-
-            {/* Data Polygon */}
-            <path
-              d={dataPath}
-              fill="url(#hexGradient)"
-              stroke="#6366f1"
-              strokeWidth="2.5"
-              className="transition-all duration-300 ease-out"
-              filter="url(#glow)"
+          {/* Background Grid Rings - Pulsing */}
+          <motion.circle
+            cx={center.x}
+            cy={center.y}
+            r={radius}
+            fill="none"
+            stroke="currentColor"
+            strokeOpacity="0.05"
+            strokeWidth="1"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+          />
+          {[0.25, 0.5, 0.75, 1].map((scale, i) => (
+            <polygon
+              key={i}
+              points={values
+                .map((_, idx) => {
+                  const p = getPoint(idx, scale * 100)
+                  return `${p.x},${p.y}`
+                })
+                .join(" ")}
+              fill="none"
+              stroke="currentColor"
+              strokeOpacity="0.1"
+              strokeDasharray="4 4"
+              className="text-slate-400 dark:text-slate-600"
             />
+          ))}
 
-            {/* Interactive Points & Labels */}
-            {metrics.map((metric, i) => {
-              const angle = (metric.angle - 90) * (Math.PI / 180)
-              const radius = (metric.value / 100) * maxRadius
-              const x = center + radius * Math.cos(angle)
-              const y = center + radius * Math.sin(angle)
-              
-              const labelRadius = maxRadius + 35
-              const lx = center + labelRadius * Math.cos(angle)
-              const ly = center + labelRadius * Math.sin(angle)
-              
-              const color = getMetricColor(metric.value)
-              const isHovered = hoveredMetric === i
+          {/* Radar Background Area */}
+          <polygon points={fullPolygonPoints} fill="url(#gridGradient)" />
 
-              return (
-                <g key={`group-${i}`}>
-                  {/* Label Text */}
-                  <text
-                    x={lx}
-                    y={ly}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className={`text-[11px] font-bold uppercase tracking-wider transition-all duration-200 select-none ${isHovered ? 'fill-indigo-600 font-extrabold' : 'fill-slate-400'}`}
-                  >
-                    {metric.label}
-                  </text>
+          {/* Connecting Lines from Center */}
+          {metrics.map((_, i) => {
+            const p = getPoint(i, 100)
+            return (
+              <line
+                key={i}
+                x1={center.x}
+                y1={center.y}
+                x2={p.x}
+                y2={p.y}
+                stroke="currentColor"
+                strokeOpacity="0.1"
+                className="text-slate-300 dark:text-slate-700"
+              />
+            )
+          })}
 
-                  {/* Visible Dot */}
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r={isHovered ? 6 : 4}
-                    fill="white"
-                    stroke={color.stroke}
-                    strokeWidth="2"
-                    className="transition-all duration-200 pointer-events-none" 
-                  />
+          {/* The Data Polygon */}
+          <motion.polygon
+            points={polygonPoints}
+            fill="rgba(99, 102, 241, 0.45)" // Increased opacity
+            stroke="#6366f1"
+            strokeWidth="2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
 
-                  {/* INVISIBLE HIT TARGET (Large radius for stability) */}
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r="24" 
-                    fill="transparent"
-                    className="cursor-pointer z-50"
-                    onMouseEnter={() => setHoveredMetric(i)}
-                    onMouseLeave={() => setHoveredMetric(null)}
-                    onClick={() => setSelectedMetric(selectedMetric === i ? null : i)}
-                  />
-                </g>
-              )
-            })}
-          </svg>
+          {/* Data Points & Labels */}
+          {metrics.map((metric, i) => {
+            const p = getPoint(i, values[i])
+            const labelP = getPoint(i, 125) // Push labels out further
 
-          {/* Central Score Detail (appears on hover) */}
-          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-300 ${hoveredMetric !== null ? 'opacity-100' : 'opacity-0'}`}>
-             <div className="bg-slate-900/90 backdrop-blur text-white px-4 py-2 rounded-xl shadow-xl text-center min-w-[140px]">
-                {hoveredMetric !== null && (
-                  <>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-semibold">{metrics[hoveredMetric].category}</p>
-                    <p className="text-2xl font-bold text-white">{metrics[hoveredMetric].value.toFixed(0)}%</p>
-                    <p className="text-[10px] text-slate-300 mt-1">{metrics[hoveredMetric].description}</p>
-                  </>
-                )}
-             </div>
+            return (
+              <g key={i} onMouseEnter={() => setHoveredMetric(metric)} onMouseLeave={() => setHoveredMetric(null)}>
+                {/* Data Point Dot */}
+                <motion.circle
+                  cx={p.x}
+                  cy={p.y}
+                  r="4"
+                  fill="#fff"
+                  stroke="#4f46e5"
+                  strokeWidth="2"
+                  whileHover={{ scale: 1.5 }}
+                  className="cursor-pointer"
+                />
+
+                {/* Metric Label */}
+                <text
+                  x={labelP.x}
+                  y={labelP.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className={cn(
+                    "text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase tracking-widest pointer-events-none",
+                    hoveredMetric === metric && "fill-indigo-600 dark:fill-indigo-400 font-extrabold scale-110 transition-all"
+                  )}
+                  style={{ textShadow: "0px 2px 4px rgba(0,0,0,0.1)" }}
+                >
+                  {metric}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+
+        {/* Center Score */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <div className="relative">
+            <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 drop-shadow-sm">
+              {totalScore}
+            </span>
+            <motion.div
+              className="absolute -inset-4 bg-indigo-500/10 rounded-full -z-10"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
           </div>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Score</span>
         </div>
       </div>
     </div>
   )
 }
-
-export { EnhancedHexagram }
-export default EnhancedHexagram

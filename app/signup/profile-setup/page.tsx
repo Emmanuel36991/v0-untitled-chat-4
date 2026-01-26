@@ -42,7 +42,7 @@ const stepConfig = [
     subtitle: "Asset Classes",
     description: "Initialize market data feeds for your active environments.",
     icon: Globe,
-    color: "text-purple-400",
+    color: "text-indigo-500",
   },
   {
     id: 2,
@@ -50,7 +50,7 @@ const stepConfig = [
     subtitle: "Instruments",
     description: "Select specific tickers to track in your terminal.",
     icon: TrendingUp,
-    color: "text-emerald-400",
+    color: "text-emerald-500",
   },
   {
     id: 3,
@@ -58,7 +58,7 @@ const stepConfig = [
     subtitle: "Identity",
     description: "Establish your professional trading profile.",
     icon: UserIcon,
-    color: "text-cyan-400",
+    color: "text-blue-500",
   },
   {
     id: 4,
@@ -66,7 +66,7 @@ const stepConfig = [
     subtitle: "Visibility",
     description: "Configure which instruments appear in your trade entry dropdowns.",
     icon: Eye,
-    color: "text-indigo-400",
+    color: "text-violet-500",
   },
   {
     id: 5,
@@ -74,7 +74,7 @@ const stepConfig = [
     subtitle: "Notifications",
     description: "Set protocols for system alerts and updates.",
     icon: Bell,
-    color: "text-amber-400",
+    color: "text-amber-500",
   },
   {
     id: 6,
@@ -90,7 +90,7 @@ const stepConfig = [
     subtitle: "Review",
     description: "Final system integrity check before deployment.",
     icon: List,
-    color: "text-teal-400",
+    color: "text-teal-500",
   },
   {
     id: 8,
@@ -98,7 +98,7 @@ const stepConfig = [
     subtitle: "Launch",
     description: "Finalize setup and enter the terminal.",
     icon: Zap,
-    color: "text-violet-400",
+    color: "text-purple-500",
   },
 ]
 
@@ -119,26 +119,26 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
 
   return (
     <div className={cn(
-      "relative flex items-center group py-3 px-3 mb-1.5 rounded-lg transition-all duration-300",
-      isActive ? "bg-white/10 border-l-2 border-indigo-400 pl-[10px] shadow-[0_0_15px_rgba(99,102,241,0.2)]" : "hover:bg-white/5 border-l-2 border-transparent"
+      "relative flex items-center group py-3 px-3 mb-1.5 rounded-md transition-all duration-200 border border-transparent",
+      isActive ? "bg-zinc-800 border-zinc-700" : "hover:bg-zinc-900"
     )}>
       <div className="flex items-center gap-3 w-full">
         <div
           className={cn(
-            "w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+            "w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold transition-all duration-200",
             isActive
-              ? "bg-indigo-500 text-white shadow-sm"
+              ? "bg-indigo-600 text-white"
               : isPast
-                ? "bg-indigo-500/20 text-indigo-300"
-                : "bg-white/5 text-slate-500",
+                ? "bg-emerald-900/30 text-emerald-500"
+                : "bg-zinc-800 text-zinc-500",
           )}
         >
-          {isPast ? <Check className="w-3 h-3" /> : step.id}
+          {isPast ? <Check className="w-3.5 h-3.5" /> : step.id}
         </div>
         <div className="flex flex-col min-w-0">
           <span className={cn(
-            "text-xs font-bold uppercase tracking-wider transition-colors",
-            isActive ? "text-white" : "text-slate-400 group-hover:text-slate-300"
+            "text-xs font-semibold uppercase tracking-wider transition-colors",
+            isActive ? "text-zinc-100" : "text-zinc-500 group-hover:text-zinc-400"
           )}>
             {step.title}
           </span>
@@ -152,20 +152,17 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
   <div
     onClick={onClick}
     className={cn(
-      "relative overflow-hidden group flex flex-col items-center justify-center p-6 rounded-2xl border cursor-pointer transition-all duration-300",
+      "relative flex flex-col items-center justify-center p-6 rounded-lg border cursor-pointer transition-all duration-200",
       isSelected
-        ? "border-indigo-500/50 bg-indigo-500/10 shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)]"
-        : "border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/10"
+        ? "bg-zinc-900 border-indigo-500 ring-1 ring-indigo-500"
+        : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800"
     )}
   >
-    {isSelected && (
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent" />
-    )}
-    <div className={cn("mb-4 transition-all duration-300 z-10", isSelected ? "text-indigo-400 scale-110 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" : "text-slate-400 grayscale group-hover:grayscale-0 group-hover:text-slate-300")}>
+    <div className={cn("mb-4 transition-all duration-200", isSelected ? "text-indigo-400 scale-110" : "text-zinc-600 grayscale group-hover:grayscale-0 group-hover:text-zinc-400")}>
       {category.icon}
     </div>
-    <div className={cn("font-bold text-sm text-center uppercase tracking-wider z-10 transition-colors", isSelected ? "text-white" : "text-slate-300")}>{category.label}</div>
-    <div className="text-[10px] text-slate-500 text-center mt-1 font-mono z-10">{category.description}</div>
+    <div className={cn("font-bold text-sm text-center uppercase tracking-wide", isSelected ? "text-zinc-100" : "text-zinc-400")}>{category.label}</div>
+    <div className="text-[11px] text-zinc-500 text-center mt-1 font-medium">{category.description}</div>
   </div>
 )
 
@@ -174,23 +171,23 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
     <div
       onClick={() => onSelect(instrument.symbol)}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-200",
+        "flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-all duration-200",
         isSelected
-          ? "border-indigo-500/40 bg-indigo-500/10 shadow-[inset_0_0_20px_rgba(99,102,241,0.1)]"
-          : "border-white/5 bg-white/5 hover:bg-white/10"
+          ? "bg-indigo-950/20 border-indigo-500/50"
+          : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800"
       )}
     >
       <div className={cn(
-        "w-9 h-9 rounded-lg flex items-center justify-center font-mono text-[10px] font-bold border transition-colors",
-        isSelected ? "bg-indigo-600 text-white border-indigo-500" : "bg-black/40 border-white/10 text-slate-400"
+        "w-10 h-10 rounded flex items-center justify-center font-mono text-[11px] font-bold border transition-colors",
+        isSelected ? "bg-indigo-600 text-white border-indigo-500" : "bg-zinc-950 border-zinc-800 text-zinc-500"
       )}>
         {instrument.symbol.substring(0, 2)}
       </div>
       <div className="overflow-hidden">
-        <div className={cn("text-sm font-bold truncate tracking-tight", isSelected ? "text-white" : "text-slate-200")}>{instrument.symbol}</div>
-        <div className="text-[10px] text-slate-500 truncate">{instrument.name}</div>
+        <div className={cn("text-sm font-bold truncate", isSelected ? "text-indigo-200" : "text-zinc-300")}>{instrument.symbol}</div>
+        <div className="text-[11px] text-zinc-500 truncate">{instrument.name}</div>
       </div>
-      {isSelected && <CheckCircle2 className="w-4 h-4 text-indigo-400 ml-auto flex-shrink-0 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" />}
+      {isSelected && <CheckCircle2 className="w-4 h-4 text-indigo-500 ml-auto flex-shrink-0" />}
     </div>
   )
 }
@@ -244,12 +241,12 @@ function ProfileSetupContent() {
     setIsTransitioning(true)
     if (currentStep < TOTAL_STEPS) {
       router.push(`/signup/profile-setup?step=${currentStep + 1}`)
-      if (scrollContainerRef.current) scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" })
+      if (scrollContainerRef.current) scrollContainerRef.current.scrollTo({ top: 0, behavior: "instant" })
       setIsTransitioning(false)
     } else {
       const success = await markSetupComplete()
       if (success) {
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 300))
         router.push("/dashboard")
       } else {
         setSaveError("Failed to save profile.")
@@ -326,23 +323,25 @@ function ProfileSetupContent() {
 
   return (
     <TooltipProvider>
-      {/* Updated Main Container: 
-        Using a rich radial gradient from deep indigo to slate-950 for that "modish" dark look.
+      {/* CRITICAL FIX: 
+        1. Solid dark background (zinc-950) instead of gradients.
+        2. Subtle grid pattern for texture.
+        3. Removed blur filters.
       */}
-      <div className="flex h-screen bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-[#1e1b4b] via-[#0f172a] to-[#020617] text-slate-200 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+      <div className="flex h-screen bg-[#09090b] text-zinc-200 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
 
         {/* MISSION CONTROL SIDEBAR */}
-        <aside className="hidden lg:flex w-72 flex-col border-r border-white/5 bg-black/20 backdrop-blur-xl h-full z-20 shadow-[5px_0_30px_rgba(0,0,0,0.3)]">
-          <div className="p-8 border-b border-white/5">
+        <aside className="hidden lg:flex w-72 flex-col border-r border-zinc-800 bg-[#0c0c0e] h-full z-20">
+          <div className="p-8 border-b border-zinc-800">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                <ConcentradeLogo size={24} variant="icon" />
+              <div className="p-2 bg-zinc-900 rounded-md border border-zinc-800">
+                <ConcentradeLogo size={20} variant="icon" />
               </div>
               <div>
-                <h1 className="font-bold text-sm tracking-widest text-white uppercase">System Config</h1>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-[pulse_2s_infinite]" />
-                  <span className="text-[10px] text-emerald-500/80 font-mono uppercase tracking-wider">Secure Connection</span>
+                <h1 className="font-bold text-sm tracking-widest text-zinc-100 uppercase">System Config</h1>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Connected</span>
                 </div>
               </div>
             </div>
@@ -354,62 +353,59 @@ function ProfileSetupContent() {
             ))}
           </div>
 
-          <div className="p-8 border-t border-white/5 bg-black/20">
-            <div className="flex justify-between text-[10px] uppercase font-bold text-slate-500 mb-3 tracking-widest">
-              <span>Initialization Sequence</span>
-              <span className="text-indigo-400 font-mono">{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
+          <div className="p-8 border-t border-zinc-800 bg-zinc-900/30">
+            <div className="flex justify-between text-[10px] uppercase font-bold text-zinc-500 mb-3 tracking-widest">
+              <span>Progress</span>
+              <span className="text-zinc-300 font-mono">{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
             </div>
-            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.6)]"
-                initial={{ width: 0 }}
-                animate={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }}
-                transition={{ duration: 0.5, ease: "circOut" }}
+            <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-600 transition-all duration-300 ease-out"
+                style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }}
               />
             </div>
           </div>
         </aside>
 
         {/* MAIN TERMINAL AREA */}
-        <main className="flex-1 flex flex-col h-full relative overflow-hidden">
-          {/* Subtle Grid Overlay */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+        <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#09090b]">
+          {/* Subtle Grid - Sharp, not blurry */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-50" />
           
-          {/* Ambient Glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none mix-blend-screen" />
-
           {/* Mobile Header */}
-          <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 lg:hidden bg-black/20 backdrop-blur-xl sticky top-0 z-50">
-            <div className="flex items-center gap-2 font-bold text-white"><ConcentradeLogo size={24} variant="icon" /> Setup</div>
-            <Badge variant="outline" className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20">Step {currentStep}</Badge>
+          <header className="h-16 border-b border-zinc-800 flex items-center justify-between px-6 lg:hidden bg-zinc-950 sticky top-0 z-50">
+            <div className="flex items-center gap-2 font-bold text-white"><ConcentradeLogo size={20} variant="icon" /> Setup</div>
+            <Badge variant="outline" className="bg-zinc-900 text-zinc-400 border-zinc-800">Step {currentStep}</Badge>
           </header>
 
-          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative z-10">
             <div className="max-w-5xl mx-auto px-6 py-16 lg:py-20">
 
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`step-wrapper-${currentStep}`}
-                  initial={{ opacity: 0, y: 15, filter: "blur(5px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -15, filter: "blur(5px)" }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  initial={{ opacity: 0, y: 10 }} // Removed blur
+                  animate={{ opacity: 1, y: 0 }}   // Removed blur
+                  exit={{ opacity: 0, y: -10 }}    // Removed blur
+                  transition={{ duration: 0.2 }}
                 >
                   {/* Step Header */}
                   <div className="mb-12">
-                    <div className={cn("flex items-center gap-2 mb-4", currentStepConfig.color)}>
-                      <currentStepConfig.icon className="w-5 h-5" />
-                      <span className="text-xs font-bold uppercase tracking-[0.3em] opacity-80">{currentStepConfig.subtitle}</span>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className={cn("p-1.5 rounded bg-zinc-900 border border-zinc-800", currentStepConfig.color)}>
+                        <currentStepConfig.icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{currentStepConfig.subtitle}</span>
                     </div>
-                    <h1 className="text-5xl font-bold tracking-tight mb-4 text-white drop-shadow-lg">{currentStepConfig.title}</h1>
-                    <p className="text-slate-400 text-lg max-w-2xl font-light leading-relaxed">{currentStepConfig.description}</p>
+                    <h1 className="text-4xl font-bold tracking-tight mb-4 text-white">{currentStepConfig.title}</h1>
+                    <p className="text-zinc-400 text-lg max-w-2xl font-normal leading-relaxed">{currentStepConfig.description}</p>
                   </div>
 
                   {/* Step Content Area */}
                   <div className="min-h-[400px]">
                     {/* STEP 1: MARKETS */}
                     {currentStep === 1 && (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {premiumInstrumentCategories.map(cat => (
                           <MarketCard
                             key={cat.id}
@@ -423,33 +419,31 @@ function ProfileSetupContent() {
 
                     {/* STEP 2: WATCHLIST */}
                     {currentStep === 2 && (
-                      <div className="space-y-8">
+                      <div className="space-y-6">
                         <div className="relative flex gap-4">
                           <div className="relative flex-1 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
                             <Input
-                              placeholder="Search tickers (e.g., BTC, AAPL)..."
+                              placeholder="Search tickers..."
                               value={searchQuery}
                               onChange={e => setSearchQuery(e.target.value)}
-                              className="pl-11 bg-white/5 border-white/5 h-12 rounded-xl focus:border-indigo-500/50 focus:bg-white/10 focus:ring-indigo-500/20 text-white placeholder:text-slate-600 transition-all"
+                              className="pl-10 bg-zinc-900 border-zinc-800 h-11 rounded-md focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white placeholder:text-zinc-600 transition-all"
                             />
                           </div>
-                          <div className="flex border border-white/5 rounded-xl overflow-hidden bg-white/5 p-1">
-                            <Button variant={instrumentLayout === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-lg w-10 h-10 transition-all", instrumentLayout === 'grid' ? "bg-indigo-600 text-white hover:bg-indigo-500" : "text-slate-400 hover:text-white")}><LayoutGrid className="w-4 h-4" /></Button>
-                            <Button variant={instrumentLayout === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-lg w-10 h-10 transition-all", instrumentLayout === 'list' ? "bg-indigo-600 text-white hover:bg-indigo-500" : "text-slate-400 hover:text-white")}><List className="w-4 h-4" /></Button>
+                          <div className="flex border border-zinc-800 rounded-md overflow-hidden bg-zinc-900">
+                            <Button variant={instrumentLayout === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none w-11 h-11", instrumentLayout === 'grid' ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-zinc-300")}><LayoutGrid className="w-4 h-4" /></Button>
+                            <Button variant={instrumentLayout === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none w-11 h-11", instrumentLayout === 'list' ? "bg-zinc-800 text-white" : "text-zinc-500 hover:text-zinc-300")}><List className="w-4 h-4" /></Button>
                           </div>
                         </div>
                         {selectedPrimaryInstruments.length === 0 ? (
-                          <div className="text-center py-24 border border-dashed border-white/10 rounded-2xl bg-white/5">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                              <AlertCircle className="w-8 h-8 text-slate-500" />
-                            </div>
-                            <h3 className="text-xl font-medium text-white mb-2">Feed Offline</h3>
-                            <p className="text-slate-500 mb-8 max-w-sm mx-auto">Market data streams are currently inactive. Please select an asset class to initialize the feed.</p>
-                            <Button variant="outline" onClick={handleBack} className="border-white/10 text-white hover:bg-white/5">Return to Markets</Button>
+                          <div className="text-center py-20 border border-dashed border-zinc-800 rounded-lg bg-zinc-900/50">
+                            <AlertCircle className="w-10 h-10 text-zinc-600 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-white mb-2">Feed Offline</h3>
+                            <p className="text-zinc-500 mb-6 max-w-sm mx-auto">Market data streams are currently inactive.</p>
+                            <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Return to Markets</Button>
                           </div>
                         ) : (
-                          <div className={cn("grid gap-4", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
+                          <div className={cn("grid gap-3", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
                             {filteredInstruments.map(inst => (
                               <TickerCard
                                 key={inst.symbol}
@@ -465,7 +459,7 @@ function ProfileSetupContent() {
 
                     {/* STEP 3: IDENTITY */}
                     {currentStep === 3 && (
-                      <div className="max-w-2xl bg-black/20 border border-white/10 rounded-2xl p-8 backdrop-blur-md shadow-2xl">
+                      <div className="max-w-2xl bg-zinc-900 border border-zinc-800 rounded-lg p-8 shadow-sm">
                         <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
                       </div>
                     )}
@@ -474,19 +468,19 @@ function ProfileSetupContent() {
                     {currentStep === 4 && (
                       <div className="space-y-8">
                         {/* Control Bar */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-white/5">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-zinc-800">
                           {/* Tabs */}
                           <div className="flex flex-wrap gap-2">
-                            {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-slate-500 italic">No markets configured.</span>}
+                            {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-zinc-500 italic">No markets configured.</span>}
                             {selectedPrimaryInstruments.map(catId => (
                               <button
                                 key={catId}
                                 onClick={() => setActiveLayoutTab(catId)}
                                 className={cn(
-                                  "px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider border transition-all duration-300",
+                                  "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all duration-200",
                                   activeLayoutTab === catId
-                                    ? "bg-indigo-500 text-white border-indigo-400 shadow-[0_0_15px_-3px_rgba(99,102,241,0.5)]"
-                                    : "bg-white/5 text-slate-400 border-transparent hover:bg-white/10 hover:border-white/10 hover:text-slate-200"
+                                    ? "bg-indigo-600 text-white border-indigo-500"
+                                    : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700 hover:text-zinc-300"
                                 )}
                               >
                                 {catId}
@@ -500,7 +494,7 @@ function ProfileSetupContent() {
                               size="sm"
                               variant="outline"
                               onClick={() => toggleAllVisibility(activeLayoutTab, !isAllVisibleInTab)}
-                              className="h-9 text-xs border-white/10 bg-white/5 hover:bg-indigo-500/10 hover:text-indigo-400 hover:border-indigo-500/30 text-slate-300 transition-all"
+                              className="h-8 text-xs border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
                             >
                               {isAllVisibleInTab ? <Square className="w-3.5 h-3.5 mr-2" /> : <CheckSquare className="w-3.5 h-3.5 mr-2" />}
                               {isAllVisibleInTab ? "Disable All" : "Enable All"}
@@ -510,42 +504,39 @@ function ProfileSetupContent() {
 
                         {/* Instrument Grid */}
                         {activeLayoutTab ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             {activeCategoryInstruments.map((inst) => {
                               const isVisible = visibleInstruments.includes(inst.symbol)
                               return (
-                                <motion.div
-                                  layout
-                                  initial={{ opacity: 0, scale: 0.95 }}
-                                  animate={{ opacity: 1, scale: 1 }}
+                                <div
                                   key={inst.symbol}
                                   onClick={() => toggleVisibility(inst.symbol)}
                                   className={cn(
-                                    "relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between group",
+                                    "relative p-4 rounded-md border cursor-pointer transition-all duration-200 flex items-center justify-between group",
                                     isVisible
-                                      ? "bg-indigo-900/20 border-indigo-500/30 shadow-[0_0_15px_-5px_rgba(99,102,241,0.2)]"
-                                      : "bg-white/5 border-white/5 hover:bg-white/10 opacity-70 hover:opacity-100"
+                                      ? "bg-indigo-950/10 border-indigo-500/40"
+                                      : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
                                   )}
                                 >
                                   <div className="flex items-center gap-3">
-                                    <div className={cn("w-1.5 h-8 rounded-full transition-colors", isVisible ? "bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" : "bg-slate-700")} />
+                                    <div className={cn("w-1 h-8 rounded-full transition-colors", isVisible ? "bg-indigo-500" : "bg-zinc-800")} />
                                     <div>
-                                      <div className={cn("font-bold text-sm tracking-tight", isVisible ? "text-white" : "text-slate-300")}>{inst.symbol}</div>
-                                      <div className="text-[10px] text-slate-500 truncate max-w-[120px]">{inst.name}</div>
+                                      <div className={cn("font-bold text-sm tracking-tight", isVisible ? "text-indigo-200" : "text-zinc-300")}>{inst.symbol}</div>
+                                      <div className="text-[11px] text-zinc-500 truncate max-w-[120px]">{inst.name}</div>
                                     </div>
                                   </div>
                                   <div className={cn(
-                                    "w-5 h-5 rounded border flex items-center justify-center transition-all duration-300",
-                                    isVisible ? "bg-indigo-500 border-indigo-500 scale-110" : "border-slate-700 group-hover:border-slate-500"
+                                    "w-5 h-5 rounded border flex items-center justify-center transition-all duration-200",
+                                    isVisible ? "bg-indigo-600 border-indigo-500" : "border-zinc-700 bg-zinc-950"
                                   )}>
                                     {isVisible && <Check className="w-3 h-3 text-white" />}
                                   </div>
-                                </motion.div>
+                                </div>
                               )
                             })}
                           </div>
                         ) : (
-                          <div className="py-24 text-center text-slate-500 font-light text-lg">Select a market category above to configure visibility.</div>
+                          <div className="py-24 text-center text-zinc-500 font-normal text-sm">Select a market category above to configure visibility.</div>
                         )}
                       </div>
                     )}
@@ -554,11 +545,11 @@ function ProfileSetupContent() {
                     {currentStep === 5 && (
                       <div className="space-y-6">
                         <div className="flex justify-end">
-                          <Button variant="ghost" size="sm" onClick={enableAllNotifications} className="gap-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10">
+                          <Button variant="ghost" size="sm" onClick={enableAllNotifications} className="gap-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20">
                             <CheckSquare className="w-4 h-4" /> Activate All Protocols
                           </Button>
                         </div>
-                        <div className="bg-black/20 border border-white/10 rounded-2xl p-8 backdrop-blur-md">
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8">
                           <NotificationsStep notificationPreferences={config.notificationPreferences} onUpdate={updateNotificationPreferences} />
                         </div>
                       </div>
@@ -566,14 +557,14 @@ function ProfileSetupContent() {
 
                     {/* STEP 6: LEGAL */}
                     {currentStep === 6 && (
-                      <div className="bg-black/20 border border-white/10 rounded-2xl p-8 backdrop-blur-md">
+                      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8">
                         <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
                       </div>
                     )}
 
                     {/* STEP 7: REVIEW */}
                     {currentStep === 7 && (
-                      <div className="bg-black/20 border border-white/10 rounded-2xl p-8 backdrop-blur-md">
+                      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8">
                         <ReviewConfirmationStep config={config} />
                       </div>
                     )}
@@ -582,15 +573,13 @@ function ProfileSetupContent() {
                     {currentStep === 8 && (
                       <div className="flex flex-col items-center justify-center py-32 text-center">
                         <div className="relative mb-10 group cursor-default">
-                          <div className="w-32 h-32 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-400 transition-all duration-700 group-hover:bg-indigo-500/20 group-hover:text-indigo-300">
-                            <Terminal className="w-12 h-12" />
+                          <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center text-indigo-500 border border-zinc-800">
+                            <Terminal className="w-10 h-10" />
                           </div>
-                          <div className="absolute inset-0 border-2 border-indigo-500/30 rounded-full animate-[spin_10s_linear_infinite]" />
-                          <div className="absolute inset-3 border border-indigo-400/20 rounded-full animate-[spin_5s_linear_infinite_reverse]" />
-                          <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-[40px] animate-pulse" />
+                          <div className="absolute inset-0 border-2 border-indigo-500/20 rounded-full animate-[spin_10s_linear_infinite]" />
                         </div>
-                        <h2 className="text-4xl font-bold mb-4 tracking-tight text-white">System Initialized</h2>
-                        <p className="text-slate-400 max-w-md mb-10 leading-relaxed text-lg font-light">
+                        <h2 className="text-3xl font-bold mb-4 tracking-tight text-white">System Initialized</h2>
+                        <p className="text-zinc-400 max-w-md mb-10 leading-relaxed text-base">
                           Your environment has been successfully configured.
                           <br />Prepare for deployment.
                         </p>
@@ -603,12 +592,12 @@ function ProfileSetupContent() {
           </div>
 
           {/* Footer Controls */}
-          <div className="h-24 border-t border-white/5 bg-black/40 backdrop-blur-xl flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
+          <div className="h-20 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
             <Button
               variant="ghost"
               onClick={handleBack}
               disabled={isTransitioning}
-              className="text-slate-400 hover:text-white hover:bg-white/5 font-medium transition-colors"
+              className="text-zinc-400 hover:text-white hover:bg-zinc-800 font-medium transition-colors"
             >
               <ChevronLeft className="w-4 h-4 mr-2" /> Back
             </Button>
@@ -618,9 +607,9 @@ function ProfileSetupContent() {
                 size="lg"
                 onClick={handleNext}
                 disabled={isTransitioning}
-                className="min-w-[180px] h-12 rounded-lg shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)] bg-indigo-600 hover:bg-indigo-500 text-white font-bold tracking-wide uppercase text-sm transition-all duration-300 hover:scale-105 active:scale-95"
+                className="min-w-[160px] h-11 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-bold tracking-wide uppercase text-xs transition-all"
               >
-                {isTransitioning ? <Loader2 className="w-5 h-5 animate-spin" /> : currentStep === TOTAL_STEPS ? "Enter Terminal" : "Continue"}
+                {isTransitioning ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === TOTAL_STEPS ? "Enter Terminal" : "Continue"}
                 {currentStep !== TOTAL_STEPS && !isTransitioning && <ChevronRight className="w-4 h-4 ml-2" />}
               </Button>
             </div>

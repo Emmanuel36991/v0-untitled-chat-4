@@ -234,6 +234,23 @@ function ProfileSetupContent() {
     }
   }, [currentStep, config.tradingPreferences.primaryInstruments, activeLayoutTab])
 
+  // --- REAL-TIME ERROR CLEARING ---
+  // This effect clears the error message automatically when the user satisfies the condition
+  useEffect(() => {
+    if (!saveError) return
+
+    if (currentStep === 1) {
+      if (config.tradingPreferences.primaryInstruments?.length > 0) setSaveError(null)
+    }
+    if (currentStep === 3) {
+      if (config.userProfile?.firstName && config.userProfile.firstName.length > 1) setSaveError(null)
+    }
+    if (currentStep === 6) {
+      const { termsAccepted, privacyPolicyAccepted, dataCollectionConsent } = config.privacyPreferences
+      if (termsAccepted && privacyPolicyAccepted && dataCollectionConsent) setSaveError(null)
+    }
+  }, [config, currentStep, saveError])
+
   // --- STRICT VALIDATION LOGIC ---
   const validateStep = (step: number): boolean => {
     setSaveError(null)
@@ -246,11 +263,11 @@ function ProfileSetupContent() {
       }
     }
 
-    // Step 3: Identity (Must have a username)
+    // Step 3: Identity (Must have a First Name)
+    // FIX: Changed from 'username' to 'firstName' as the profile component likely collects names
     if (step === 3) {
-      // Check if userProfile exists and has a username
-      if (!config.userProfile?.username || config.userProfile.username.trim().length < 2) {
-        setSaveError("Please enter a valid username (at least 2 characters).")
+      if (!config.userProfile?.firstName || config.userProfile.firstName.trim().length < 2) {
+        setSaveError("Please enter your first name.")
         return false
       }
     }
@@ -268,9 +285,7 @@ function ProfileSetupContent() {
   }
 
   const handleNext = async () => {
-    // RUN VALIDATION
     if (!validateStep(currentStep)) {
-      // Shake animation trigger could go here if using framer motion variants on the button
       return
     }
 
@@ -302,7 +317,6 @@ function ProfileSetupContent() {
     const currentValues = (config.tradingPreferences[field] as string[] | undefined) || []
     const newValues = currentValues.includes(value) ? currentValues.filter((item) => item !== value) : [...currentValues, value]
     updateTradingPreferences({ [field]: newValues })
-    setSaveError(null) // Clear error when user takes action
   }
 
   // --- FILTER LOGIC ---
@@ -361,7 +375,7 @@ function ProfileSetupContent() {
 
   return (
     <TooltipProvider>
-      {/* Forced Dark Background with zinc-950 */}
+      {/* Forced Dark Background with zinc-950 and White Text */}
       <div className="flex h-screen bg-zinc-950 text-white font-sans selection:bg-primary/20">
         
         {/* SIDEBAR */}

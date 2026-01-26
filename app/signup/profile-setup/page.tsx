@@ -55,7 +55,7 @@ const stepConfig = [
   },
   {
     id: 3,
-    title: "Profile", // Was "Operator"
+    title: "Profile",
     subtitle: "Personal Info",
     description: "Set up your trader identity and details.",
     icon: UserIcon,
@@ -63,7 +63,7 @@ const stepConfig = [
   },
   {
     id: 4,
-    title: "Display", // Was "Layout"
+    title: "Display",
     subtitle: "Visibility",
     description: "Customize which assets appear in your menus.",
     icon: Eye,
@@ -71,7 +71,7 @@ const stepConfig = [
   },
   {
     id: 5,
-    title: "Alerts", // Was "Comms"
+    title: "Alerts",
     subtitle: "Notifications",
     description: "Choose how and when we should contact you.",
     icon: Bell,
@@ -79,7 +79,7 @@ const stepConfig = [
   },
   {
     id: 6,
-    title: "Legal", // Was "Protocol"
+    title: "Legal",
     subtitle: "Terms",
     description: "Review and accept the service agreements.",
     icon: Shield,
@@ -87,7 +87,7 @@ const stepConfig = [
   },
   {
     id: 7,
-    title: "Review", // Was "Verify"
+    title: "Review",
     subtitle: "Summary",
     description: "Double-check your settings before finishing.",
     icon: List,
@@ -95,7 +95,7 @@ const stepConfig = [
   },
   {
     id: 8,
-    title: "Finish", // Was "Deploy"
+    title: "Finish",
     subtitle: "Complete",
     description: "Finalize your setup and enter the platform.",
     icon: Zap,
@@ -121,7 +121,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
   return (
     <div className={cn(
       "relative flex items-center group py-3 px-3 mb-1 rounded-md transition-all duration-300", 
-      isActive ? "bg-zinc-800/60 border-l-2 border-primary pl-[10px]" : "hover:bg-zinc-800/30 border-l-2 border-transparent"
+      isActive ? "bg-zinc-800/80 border-l-2 border-primary pl-[10px]" : "hover:bg-zinc-800/40 border-l-2 border-transparent"
     )}>
       <div className="flex items-center gap-3 w-full">
         <div
@@ -139,7 +139,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
         <div className="flex flex-col min-w-0">
           <span className={cn(
             "text-xs font-bold uppercase tracking-wider transition-colors", 
-            isActive ? "text-zinc-100" : "text-zinc-500"
+            isActive ? "text-white" : "text-zinc-500"
           )}>
             {step.title}
           </span>
@@ -155,15 +155,15 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
     className={cn(
       "flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200",
       isSelected 
-        ? "border-primary bg-primary/10 shadow-lg shadow-primary/10" 
-        : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/50 hover:border-zinc-700"
+        ? "border-primary bg-primary/20 shadow-lg shadow-primary/10" 
+        : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60 hover:border-zinc-700"
     )}
   >
     <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-zinc-600 grayscale")}>
       {category.icon}
     </div>
-    <div className="font-bold text-sm text-center uppercase tracking-wide text-zinc-200">{category.label}</div>
-    <div className="text-[10px] text-zinc-500 text-center mt-1 font-mono">{category.description}</div>
+    <div className="font-bold text-sm text-center uppercase tracking-wide text-white">{category.label}</div>
+    <div className="text-[10px] text-zinc-400 text-center mt-1 font-mono">{category.description}</div>
   </div>
 )
 
@@ -174,8 +174,8 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
       className={cn(
         "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all backdrop-blur-sm",
         isSelected 
-          ? "border-primary/60 bg-primary/10" 
-          : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/50"
+          ? "border-primary/60 bg-primary/20" 
+          : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60"
       )}
     >
        <div className={cn(
@@ -185,8 +185,8 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
           {instrument.symbol.substring(0,2)}
        </div>
        <div className="overflow-hidden">
-         <div className="text-sm font-bold truncate text-zinc-200">{instrument.symbol}</div>
-         <div className="text-[10px] text-zinc-500 truncate">{instrument.name}</div>
+         <div className="text-sm font-bold truncate text-white">{instrument.symbol}</div>
+         <div className="text-[10px] text-zinc-400 truncate">{instrument.name}</div>
        </div>
        {isSelected && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
     </div>
@@ -234,7 +234,7 @@ function ProfileSetupContent() {
     }
   }, [currentStep, config.tradingPreferences.primaryInstruments, activeLayoutTab])
 
-  // --- VALIDATION LOGIC ---
+  // --- STRICT VALIDATION LOGIC ---
   const validateStep = (step: number): boolean => {
     setSaveError(null)
 
@@ -248,8 +248,9 @@ function ProfileSetupContent() {
 
     // Step 3: Identity (Must have a username)
     if (step === 3) {
+      // Check if userProfile exists and has a username
       if (!config.userProfile?.username || config.userProfile.username.trim().length < 2) {
-        setSaveError("Please enter a valid username.")
+        setSaveError("Please enter a valid username (at least 2 characters).")
         return false
       }
     }
@@ -267,8 +268,9 @@ function ProfileSetupContent() {
   }
 
   const handleNext = async () => {
-    // Run Validation Before Proceeding
+    // RUN VALIDATION
     if (!validateStep(currentStep)) {
+      // Shake animation trigger could go here if using framer motion variants on the button
       return
     }
 
@@ -291,7 +293,7 @@ function ProfileSetupContent() {
   }
 
   const handleBack = () => {
-    setSaveError(null) // Clear errors on back
+    setSaveError(null)
     if (currentStep > 1) router.push(`/signup/profile-setup?step=${currentStep - 1}`)
     else router.push("/signup")
   }
@@ -300,7 +302,7 @@ function ProfileSetupContent() {
     const currentValues = (config.tradingPreferences[field] as string[] | undefined) || []
     const newValues = currentValues.includes(value) ? currentValues.filter((item) => item !== value) : [...currentValues, value]
     updateTradingPreferences({ [field]: newValues })
-    setSaveError(null) // Clear error if they make a selection
+    setSaveError(null) // Clear error when user takes action
   }
 
   // --- FILTER LOGIC ---
@@ -360,7 +362,7 @@ function ProfileSetupContent() {
   return (
     <TooltipProvider>
       {/* Forced Dark Background with zinc-950 */}
-      <div className="flex h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-primary/20">
+      <div className="flex h-screen bg-zinc-950 text-white font-sans selection:bg-primary/20">
         
         {/* SIDEBAR */}
         <aside className="hidden lg:flex w-64 flex-col border-r border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full z-20">
@@ -368,10 +370,10 @@ function ProfileSetupContent() {
             <div className="flex items-center gap-3">
               <ConcentradeLogo size={28} variant="icon" />
               <div>
-                <h1 className="font-bold text-sm tracking-tight uppercase text-zinc-100">System Config</h1>
+                <h1 className="font-bold text-sm tracking-tight uppercase text-white">System Config</h1>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Online</span>
+                  <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Online</span>
                 </div>
               </div>
             </div>
@@ -401,7 +403,7 @@ function ProfileSetupContent() {
           
           {/* Header Mobile */}
           <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-6 lg:hidden bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50">
-             <div className="flex items-center gap-2 font-bold text-zinc-100"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
+             <div className="flex items-center gap-2 font-bold text-white"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
              <Badge variant="outline" className="bg-zinc-800 border-zinc-700 text-zinc-300">Step {currentStep}</Badge>
           </header>
 
@@ -419,8 +421,8 @@ function ProfileSetupContent() {
                       <currentStepConfig.icon className="w-5 h-5" />
                       <span className="text-xs font-bold uppercase tracking-[0.2em]">{currentStepConfig.subtitle}</span>
                    </div>
-                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-zinc-100">{currentStepConfig.title}</h1>
-                   <p className="text-zinc-400 text-lg max-w-2xl">{currentStepConfig.description}</p>
+                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">{currentStepConfig.title}</h1>
+                   <p className="text-zinc-300 text-lg max-w-2xl">{currentStepConfig.description}</p>
                 </motion.div>
 
                 {/* Step Content */}
@@ -455,19 +457,19 @@ function ProfileSetupContent() {
                                 placeholder="Search tickers..." 
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-zinc-900 border-zinc-800 h-11 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-primary/50"
+                                className="pl-10 bg-zinc-900 border-zinc-800 h-11 text-white placeholder:text-zinc-600 focus-visible:ring-primary/50"
                              />
                            </div>
                            <div className="flex border border-zinc-800 rounded-md overflow-hidden bg-zinc-900">
-                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-zinc-200", instrumentLayout === 'grid' && "bg-zinc-800 text-white")}><LayoutGrid className="w-4 h-4"/></Button>
-                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-zinc-200", instrumentLayout === 'list' && "bg-zinc-800 text-white")}><List className="w-4 h-4"/></Button>
+                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-white", instrumentLayout === 'grid' && "bg-zinc-800 text-white")}><LayoutGrid className="w-4 h-4"/></Button>
+                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-white", instrumentLayout === 'list' && "bg-zinc-800 text-white")}><List className="w-4 h-4"/></Button>
                            </div>
                         </div>
                         {selectedPrimaryInstruments.length === 0 ? (
                            <div className="text-center py-16 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-                              <AlertCircle className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                              <h3 className="text-lg font-semibold text-zinc-300">Feed Offline</h3>
-                              <p className="text-zinc-500 mb-6">Select a market class to initialize the feed.</p>
+                              <AlertCircle className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                              <h3 className="text-lg font-semibold text-white">Feed Offline</h3>
+                              <p className="text-zinc-400 mb-6">Select a market class to initialize the feed.</p>
                               <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Return to Markets</Button>
                            </div>
                         ) : (
@@ -543,7 +545,7 @@ function ProfileSetupContent() {
                                         )}
                                      >
                                         <div>
-                                           <div className={cn("font-bold text-sm", isVisible ? "text-indigo-400" : "text-zinc-300")}>{inst.symbol}</div>
+                                           <div className={cn("font-bold text-sm", isVisible ? "text-indigo-400" : "text-zinc-200")}>{inst.symbol}</div>
                                            <div className="text-[10px] text-zinc-500 truncate max-w-[120px]">{inst.name}</div>
                                         </div>
                                         <div className={cn(
@@ -600,7 +602,7 @@ function ProfileSetupContent() {
                             <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-[spin_8s_linear_infinite]" />
                             <div className="absolute inset-2 border border-primary/10 rounded-full animate-[spin_4s_linear_infinite_reverse]" />
                          </div>
-                         <h2 className="text-3xl font-bold mb-3 tracking-tight text-zinc-100">System Initialized</h2>
+                         <h2 className="text-3xl font-bold mb-3 tracking-tight text-white">System Initialized</h2>
                          <p className="text-zinc-400 max-w-md mb-8 leading-relaxed">
                             Your environment is ready for deployment.
                          </p>
@@ -619,7 +621,7 @@ function ProfileSetupContent() {
                   variant="ghost" 
                   onClick={handleBack} 
                   disabled={isTransitioning}
-                  className="text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900"
+                  className="text-zinc-500 hover:text-white hover:bg-zinc-900"
                >
                   <ChevronLeft className="w-4 h-4 mr-2" /> Back
                </Button>

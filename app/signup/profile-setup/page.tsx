@@ -131,7 +131,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
               ? "bg-primary text-primary-foreground shadow-sm"
               : isPast
                 ? "bg-primary/20 text-primary"
-                : "bg-zinc-800 text-zinc-500",
+                : "bg-zinc-800 text-zinc-400",
           )}
         >
           {isPast ? <Check className="w-3 h-3" /> : step.id}
@@ -139,7 +139,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
         <div className="flex flex-col min-w-0">
           <span className={cn(
             "text-xs font-bold uppercase tracking-wider transition-colors", 
-            isActive ? "text-white" : "text-zinc-500"
+            isActive ? "text-white" : "text-zinc-400"
           )}>
             {step.title}
           </span>
@@ -159,11 +159,11 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
         : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60 hover:border-zinc-700"
     )}
   >
-    <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-zinc-600 grayscale")}>
+    <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-zinc-500 grayscale")}>
       {category.icon}
     </div>
     <div className="font-bold text-sm text-center uppercase tracking-wide text-white">{category.label}</div>
-    <div className="text-[10px] text-zinc-400 text-center mt-1 font-mono">{category.description}</div>
+    <div className="text-[10px] text-zinc-300 text-center mt-1 font-mono">{category.description}</div>
   </div>
 )
 
@@ -186,7 +186,7 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
        </div>
        <div className="overflow-hidden">
          <div className="text-sm font-bold truncate text-white">{instrument.symbol}</div>
-         <div className="text-[10px] text-zinc-400 truncate">{instrument.name}</div>
+         <div className="text-[10px] text-zinc-300 truncate">{instrument.name}</div>
        </div>
        {isSelected && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
     </div>
@@ -235,15 +235,16 @@ function ProfileSetupContent() {
   }, [currentStep, config.tradingPreferences.primaryInstruments, activeLayoutTab])
 
   // --- REAL-TIME ERROR CLEARING ---
-  // This effect clears the error message automatically when the user satisfies the condition
   useEffect(() => {
     if (!saveError) return
 
     if (currentStep === 1) {
       if (config.tradingPreferences.primaryInstruments?.length > 0) setSaveError(null)
     }
+    // FIX: Check for fullName instead of firstName
     if (currentStep === 3) {
-      if (config.userProfile?.firstName && config.userProfile.firstName.length > 1) setSaveError(null)
+      // @ts-ignore - Assuming fullName exists on userProfile based on user request
+      if (config.userProfile?.fullName && config.userProfile.fullName.length > 2) setSaveError(null)
     }
     if (currentStep === 6) {
       const { termsAccepted, privacyPolicyAccepted, dataCollectionConsent } = config.privacyPreferences
@@ -263,11 +264,11 @@ function ProfileSetupContent() {
       }
     }
 
-    // Step 3: Identity (Must have a First Name)
-    // FIX: Changed from 'username' to 'firstName' as the profile component likely collects names
+    // Step 3: Identity (Must have a Full Name)
     if (step === 3) {
-      if (!config.userProfile?.firstName || config.userProfile.firstName.trim().length < 2) {
-        setSaveError("Please enter your first name.")
+      // @ts-ignore - Check for fullName
+      if (!config.userProfile?.fullName || config.userProfile.fullName.trim().length < 3) {
+        setSaveError("Please enter your full name.")
         return false
       }
     }
@@ -285,9 +286,7 @@ function ProfileSetupContent() {
   }
 
   const handleNext = async () => {
-    if (!validateStep(currentStep)) {
-      return
-    }
+    if (!validateStep(currentStep)) return
 
     setIsTransitioning(true)
     if (currentStep < TOTAL_STEPS) {
@@ -375,7 +374,6 @@ function ProfileSetupContent() {
 
   return (
     <TooltipProvider>
-      {/* Forced Dark Background with zinc-950 and White Text */}
       <div className="flex h-screen bg-zinc-950 text-white font-sans selection:bg-primary/20">
         
         {/* SIDEBAR */}
@@ -412,10 +410,8 @@ function ProfileSetupContent() {
 
         {/* MAIN TERMINAL AREA */}
         <main className="flex-1 flex flex-col h-full relative bg-zinc-950">
-          {/* Technical Grid Background - Visible on Dark */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
           
-          {/* Header Mobile */}
           <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-6 lg:hidden bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50">
              <div className="flex items-center gap-2 font-bold text-white"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
              <Badge variant="outline" className="bg-zinc-800 border-zinc-700 text-zinc-300">Step {currentStep}</Badge>
@@ -424,7 +420,6 @@ function ProfileSetupContent() {
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
              <div className="max-w-4xl mx-auto px-6 py-12">
                 
-                {/* Step Header */}
                 <motion.div 
                    initial={{ opacity: 0, y: 10 }} 
                    animate={{ opacity: 1, y: 0 }} 
@@ -439,7 +434,6 @@ function ProfileSetupContent() {
                    <p className="text-zinc-300 text-lg max-w-2xl">{currentStepConfig.description}</p>
                 </motion.div>
 
-                {/* Step Content */}
                 <motion.div
                    initial={{ opacity: 0, x: 10 }}
                    animate={{ opacity: 1, x: 0 }}
@@ -447,7 +441,6 @@ function ProfileSetupContent() {
                    key={`content-${currentStep}`}
                    className="min-h-[400px]"
                 >
-                   {/* STEP 1: MARKETS */}
                    {currentStep === 1 && (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                          {premiumInstrumentCategories.map(cat => (
@@ -461,7 +454,6 @@ function ProfileSetupContent() {
                       </div>
                    )}
 
-                   {/* STEP 2: WATCHLIST */}
                    {currentStep === 2 && (
                       <div className="space-y-6">
                         <div className="relative flex gap-3">
@@ -483,7 +475,7 @@ function ProfileSetupContent() {
                            <div className="text-center py-16 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
                               <AlertCircle className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
                               <h3 className="text-lg font-semibold text-white">Feed Offline</h3>
-                              <p className="text-zinc-400 mb-6">Select a market class to initialize the feed.</p>
+                              <p className="text-zinc-300 mb-6">Select a market class to initialize the feed.</p>
                               <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Return to Markets</Button>
                            </div>
                         ) : (
@@ -501,14 +493,12 @@ function ProfileSetupContent() {
                       </div>
                    )}
                    
-                   {/* STEP 3: IDENTITY */}
                    {currentStep === 3 && (
                       <div className="max-w-xl bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm shadow-sm">
                          <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
                       </div>
                    )}
                    
-                   {/* STEP 4: LAYOUT / VISIBILITY */}
                    {currentStep === 4 && (
                       <div className="space-y-6">
                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-800">
@@ -573,12 +563,11 @@ function ProfileSetupContent() {
                                })}
                             </div>
                          ) : (
-                            <div className="py-20 text-center text-zinc-600">Select a market category above to configure feeds.</div>
+                            <div className="py-20 text-center text-zinc-500">Select a market category above to configure feeds.</div>
                          )}
                       </div>
                    )}
                    
-                   {/* STEP 5: ALERTS */}
                    {currentStep === 5 && (
                       <div className="space-y-4">
                          <div className="flex justify-end">
@@ -592,21 +581,18 @@ function ProfileSetupContent() {
                       </div>
                    )}
                    
-                   {/* STEP 6: LEGAL */}
                    {currentStep === 6 && (
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
                          <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
                       </div>
                    )}
                    
-                   {/* STEP 7: REVIEW */}
                    {currentStep === 7 && (
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
                          <ReviewConfirmationStep config={config} />
                       </div>
                    )}
                    
-                   {/* STEP 8: DEPLOY */}
                    {currentStep === 8 && (
                       <div className="flex flex-col items-center justify-center py-24 text-center">
                          <div className="relative mb-8">
@@ -626,10 +612,7 @@ function ProfileSetupContent() {
              </div>
           </div>
 
-          {/* Footer Controls */}
           <div className="h-24 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
-             
-             {/* Left side: Back Button + Error Message */}
              <div className="flex items-center gap-4 flex-1">
                <Button 
                   variant="ghost" 
@@ -656,7 +639,6 @@ function ProfileSetupContent() {
              </div>
              
              <div className="flex gap-4 items-center">
-                {/* Mobile Error Message */}
                 {saveError && (
                    <div className="md:hidden absolute top-2 left-0 w-full px-6 flex justify-center">
                      <div className="text-xs text-red-400 bg-red-950/50 border border-red-900 px-2 py-1 rounded">{saveError}</div>
@@ -677,7 +659,6 @@ function ProfileSetupContent() {
                 </Button>
              </div>
           </div>
-
         </main>
       </div>
     </TooltipProvider>

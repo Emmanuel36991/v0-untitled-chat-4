@@ -65,6 +65,7 @@
     "react-chartjs-2": "latest",
     "react-day-picker": "latest",
     "react-dom": "^19",
+    "react-force-graph-2d": "latest",
     "react-hook-form": "latest",
     "react-native": "latest",
     "react-native-reanimated": "latest",

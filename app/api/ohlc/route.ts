@@ -1,299 +1,157 @@
 import { NextResponse } from "next/server"
 
-// Real market data fetcher using multiple sources
-async function fetchRealMarketData(symbol: string): Promise<any[]> {
-  try {
-    // Try multiple data sources for reliability
-    const sources = [
-      () => fetchFromYahooFinance(symbol),
-      () => fetchFromAlphaVantage(symbol),
-      () => fetchFromFinnhub(symbol),
-    ]
-
-    for (const fetchSource of sources) {
-      try {
-        const data = await fetchSource()
-        if (data && data.length > 0) {
-          console.log(`Successfully fetched real data for ${symbol}`)
-          return data
-        }
-      } catch (err) {
-        console.warn(`Data source failed for ${symbol}:`, err)
-        continue
-      }
-    }
-
-    throw new Error("All data sources failed")
-  } catch (error) {
-    console.error(`Failed to fetch real market data for ${symbol}:`, error)
-    throw error
+// --- Helper: Map UI intervals to Yahoo Finance API intervals ---
+function mapIntervalToYahoo(interval: string): string {
+  const map: Record<string, string> = {
+    "1m": "1m",
+    "5m": "5m",
+    "15m": "15m",
+    "30m": "30m",
+    "1h": "1h",
+    "4h": "1h", // Yahoo free tier limits (manually aggregated or limited)
+    "1d": "1d",
+    "1w": "1wk",
   }
+  return map[interval.toLowerCase()] || "1d"
 }
 
-// Yahoo Finance API (free, no API key required)
-async function fetchFromYahooFinance(symbol: string): Promise<any[]> {
-  try {
-    // Convert our symbol format to Yahoo Finance format
-    const yahooSymbol = convertToYahooSymbol(symbol)
+// --- Helper: Calculate Safe Start Period ---
+// Yahoo has strict limits: 1m (7 days), 5m-30m (60 days), 1h (730 days)
+function getPeriod1(interval: string): number {
+  const now = Math.floor(Date.now() / 1000)
+  const daysInSeconds = 24 * 60 * 60
 
-    const period1 = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000) // 30 days ago
-    const period2 = Math.floor(Date.now() / 1000) // now
-
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?period1=${period1}&period2=${period2}&interval=1h&includePrePost=true`
-
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Yahoo Finance API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-
-    if (!data.chart?.result?.[0]?.indicators?.quote?.[0]) {
-      throw new Error("Invalid Yahoo Finance response format")
-    }
-
-    const result = data.chart.result[0]
-    const timestamps = result.timestamp
-    const quotes = result.indicators.quote[0]
-
-    const ohlcData = timestamps
-      .map((timestamp: number, index: number) => ({
-        time: new Date(timestamp * 1000).toISOString(),
-        open: quotes.open[index] || 0,
-        high: quotes.high[index] || 0,
-        low: quotes.low[index] || 0,
-        close: quotes.close[index] || 0,
-        volume: quotes.volume[index] || 0,
-      }))
-      .filter((item: any) => item.open > 0 && item.high > 0 && item.low > 0 && item.close > 0)
-
-    return ohlcData
-  } catch (error) {
-    console.error("Yahoo Finance fetch error:", error)
-    throw error
+  const map: Record<string, number> = {
+    "1m": 4 * daysInSeconds,       // Fetch last 4 days for 1m (Safe buffer vs 7 day limit)
+    "5m": 30 * daysInSeconds,      // Last 30 days
+    "15m": 30 * daysInSeconds,
+    "30m": 55 * daysInSeconds,
+    "1h": 365 * daysInSeconds,     // Last 1 year
+    "1d": 2 * 365 * daysInSeconds, // Last 2 years
+    "1wk": 5 * 365 * daysInSeconds // Last 5 years
   }
+  return now - (map[interval] || map["1d"])
 }
 
-// Alpha Vantage API (requires API key)
-async function fetchFromAlphaVantage(symbol: string): Promise<any[]> {
-  const apiKey = process.env.ALPHA_VANTAGE_API_KEY
-  if (!apiKey) {
-    throw new Error("Alpha Vantage API key not configured")
-  }
-
-  try {
-    const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=60min&apikey=${apiKey}&outputsize=compact`
-
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Alpha Vantage API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-    const timeSeries = data["Time Series (60min)"]
-
-    if (!timeSeries) {
-      throw new Error("No time series data from Alpha Vantage")
-    }
-
-    const ohlcData = Object.entries(timeSeries)
-      .map(([timestamp, values]: [string, any]) => ({
-        time: new Date(timestamp).toISOString(),
-        open: Number.parseFloat(values["1. open"]),
-        high: Number.parseFloat(values["2. high"]),
-        low: Number.parseFloat(values["3. low"]),
-        close: Number.parseFloat(values["4. close"]),
-        volume: Number.parseInt(values["5. volume"]),
-      }))
-      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
-
-    return ohlcData
-  } catch (error) {
-    console.error("Alpha Vantage fetch error:", error)
-    throw error
-  }
-}
-
-// Finnhub API (requires API key)
-async function fetchFromFinnhub(symbol: string): Promise<any[]> {
-  const apiKey = process.env.FINNHUB_API_KEY
-  if (!apiKey) {
-    throw new Error("Finnhub API key not configured")
-  }
-
-  try {
-    const to = Math.floor(Date.now() / 1000)
-    const from = to - 30 * 24 * 60 * 60 // 30 days ago
-
-    const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=60&from=${from}&to=${to}&token=${apiKey}`
-
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Finnhub API error: ${response.status}`)
-    }
-
-    const data = await response.json()
-
-    if (data.s !== "ok" || !data.t) {
-      throw new Error("No data from Finnhub")
-    }
-
-    const ohlcData = data.t.map((timestamp: number, index: number) => ({
-      time: new Date(timestamp * 1000).toISOString(),
-      open: data.o[index],
-      high: data.h[index],
-      low: data.l[index],
-      close: data.c[index],
-      volume: data.v[index],
-    }))
-
-    return ohlcData
-  } catch (error) {
-    console.error("Finnhub fetch error:", error)
-    throw error
-  }
-}
-
-// Convert our internal symbol format to Yahoo Finance format
-function convertToYahooSymbol(symbol: string): string {
-  const symbolMap: Record<string, string> = {
-    // Futures - Yahoo Finance uses different symbols
-    NQ: "NQ=F",
-    ES: "ES=F",
-    YM: "YM=F",
-    RTY: "RTY=F",
-
-    // Stocks - direct mapping
-    AAPL: "AAPL",
-    TSLA: "TSLA",
-    MSFT: "MSFT",
-    GOOGL: "GOOGL",
-    NVDA: "NVDA",
-    META: "META",
-
-    // Forex - Yahoo Finance format
-    EURUSD: "EURUSD=X",
-    GBPUSD: "GBPUSD=X",
-    USDJPY: "USDJPY=X",
-    AUDUSD: "AUDUSD=X",
-
-    // Crypto
-    BTCUSD: "BTC-USD",
-    ETHUSD: "ETH-USD",
-
-    // Commodities
-    GC: "GC=F",
-    SI: "SI=F",
-    CL: "CL=F",
-    NG: "NG=F",
-  }
-
-  return symbolMap[symbol] || symbol
-}
-
-// Fallback to generate realistic data if all APIs fail
-function generateFallbackData(symbol: string): any[] {
-  console.warn(`Using fallback data for ${symbol} - real APIs unavailable`)
-
-  // Base prices for different instruments (more realistic)
-  const basePrices: Record<string, number> = {
-    NQ: 15800,
-    ES: 4450,
-    YM: 35000,
-    RTY: 2100,
-    AAPL: 175,
-    TSLA: 240,
-    MSFT: 380,
-    GOOGL: 140,
-    NVDA: 480,
-    META: 320,
-    EURUSD: 1.08,
-    GBPUSD: 1.27,
-    USDJPY: 148,
-    AUDUSD: 0.67,
-    BTCUSD: 43000,
-    ETHUSD: 2600,
-    GC: 2000,
-    SI: 25,
-    CL: 78,
-    NG: 2.8,
-  }
-
-  const basePrice = basePrices[symbol] || 100
+// --- Helper: Generate Realistic Mock Data (Fallback) ---
+function generateMockData(symbol: string, interval: string): any[] {
+  const now = Date.now()
   const data = []
-  let currentPrice = basePrice
+  
+  // Set base price based on instrument type
+  let price = 100
+  if (symbol.includes("NQ") || symbol.includes("MNQ")) price = 18200
+  else if (symbol.includes("ES") || symbol.includes("MES")) price = 5250
+  else if (symbol.includes("BTC")) price = 64000
+  else if (symbol.includes("ETH")) price = 3400
+  else if (symbol.includes("EUR")) price = 1.08
+  
+  // Determine number of candles based on interval
+  // For 1m/5m we want a lot of data points to look "real"
+  let count = 200
+  let intervalMs = 24 * 60 * 60 * 1000
 
-  // Generate 100 realistic candles
-  for (let i = 0; i < 100; i++) {
-    const volatility = basePrice * 0.002 // 0.2% volatility
-    const change = (Math.random() - 0.5) * volatility
-
-    const open = currentPrice
-    const close = open + change
-    const high = Math.max(open, close) + Math.random() * volatility * 0.3
-    const low = Math.min(open, close) - Math.random() * volatility * 0.3
-
-    const time = new Date(Date.now() - (100 - i) * 60 * 60 * 1000) // Hourly intervals
-
+  if (interval === '1m') { intervalMs = 60 * 1000; count = 1000; }
+  else if (interval === '5m') { intervalMs = 5 * 60 * 1000; count = 500; }
+  else if (interval === '15m') { intervalMs = 15 * 60 * 1000; count = 200; }
+  else if (interval === '1h') { intervalMs = 60 * 60 * 1000; count = 200; }
+  
+  // Generate random walk
+  for (let i = count; i >= 0; i--) {
+    const time = now - (i * intervalMs)
+    // Volatility depends on interval (smaller interval = smaller moves)
+    const volMult = interval.includes('m') ? 0.0002 : 0.002
+    const volatility = price * volMult
+    
+    const change = (Math.random() - 0.5) * volatility * 3
+    let open = price
+    let close = price + change
+    
+    // Ensure high/low contain open/close
+    let high = Math.max(open, close) + Math.random() * volatility
+    let low = Math.min(open, close) - Math.random() * volatility
+    
+    // Fix precision
+    const decimals = price > 1000 ? 2 : price > 1 ? 2 : 5
+    
     data.push({
-      time: time.toISOString(),
-      open: Number(open.toFixed(getDecimalPlaces(basePrice))),
-      high: Number(high.toFixed(getDecimalPlaces(basePrice))),
-      low: Number(low.toFixed(getDecimalPlaces(basePrice))),
-      close: Number(close.toFixed(getDecimalPlaces(basePrice))),
-      volume: Math.floor(1000 + Math.random() * 5000),
+      time,
+      date: new Date(time).toISOString(),
+      open: Number(open.toFixed(decimals)),
+      high: Number(high.toFixed(decimals)),
+      low: Number(low.toFixed(decimals)),
+      close: Number(close.toFixed(decimals)),
+      volume: Math.floor(Math.random() * 1000 + 100)
     })
-
-    currentPrice = close
+    
+    price = close
   }
-
   return data
 }
 
-function getDecimalPlaces(price: number): number {
-  if (price < 1) return 5
-  if (price < 100) return 2
-  return 2
+async function fetchFromYahooFinance(symbol: string, interval: string): Promise<any[]> {
+  try {
+    // Better Symbol Mapping for Futures
+    const symbolMap: Record<string, string> = {
+      "MNQ": "MNQ=F", "MES": "MES=F", "NQ": "NQ=F", "ES": "ES=F",
+      "YM": "YM=F", "RTY": "RTY=F", "GC": "GC=F", "CL": "CL=F",
+      "BTC": "BTC-USD", "ETH": "ETH-USD"
+    }
+    
+    const yahooSymbol = symbolMap[symbol.toUpperCase()] || symbol.toUpperCase()
+    const yahooInterval = mapIntervalToYahoo(interval)
+    const period1 = getPeriod1(yahooInterval)
+    const period2 = Math.floor(Date.now() / 1000)
+
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?period1=${period1}&period2=${period2}&interval=${yahooInterval}&includePrePost=true`
+
+    // console.log(`Fetching Yahoo: ${url}`)
+
+    const response = await fetch(url)
+    
+    if (!response.ok) {
+      // console.warn(`Yahoo API returned ${response.status} for ${symbol}`)
+      return []
+    }
+
+    const data = await response.json()
+    const result = data.chart?.result?.[0]
+
+    if (!result || !result.timestamp || !result.indicators?.quote?.[0]) {
+        return []
+    }
+
+    const timestamps = result.timestamp
+    const quote = result.indicators.quote[0]
+
+    return timestamps.map((time: number, i: number) => ({
+      time: time * 1000, // Convert to MS for frontend
+      date: new Date(time * 1000).toISOString(),
+      open: quote.open[i] || 0,
+      high: quote.high[i] || 0,
+      low: quote.low[i] || 0,
+      close: quote.close[i] || 0,
+      volume: quote.volume[i] || 0,
+    })).filter((d: any) => d.open !== null && d.open !== 0)
+
+  } catch (error) {
+    console.error("Yahoo Fetch Error:", error)
+    return []
+  }
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
-  const instrument = searchParams.get("instrument") || searchParams.get("symbol") || "ES"
+  const symbol = searchParams.get("symbol") || "SPY"
+  const interval = searchParams.get("interval") || "1d"
 
-  try {
-    console.log(`Fetching real market data for ${instrument}`)
+  // 1. Try Fetching Real Data
+  let data = await fetchFromYahooFinance(symbol, interval)
 
-    let ohlcData
-    try {
-      ohlcData = await fetchRealMarketData(instrument)
-    } catch (error) {
-      console.warn(`Real data fetch failed for ${instrument}, using fallback`)
-      ohlcData = generateFallbackData(instrument)
-    }
-
-    // Ensure we have valid data
-    if (!ohlcData || ohlcData.length === 0) {
-      throw new Error("No market data available")
-    }
-
-    // Sort by time to ensure proper order
-    ohlcData.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
-
-    console.log(`Returning ${ohlcData.length} data points for ${instrument}`)
-
-    return NextResponse.json(ohlcData, {
-      headers: {
-        "Cache-Control": "public, max-age=300", // Cache for 5 minutes
-      },
-    })
-  } catch (error) {
-    console.error(`Error fetching OHLC data for ${instrument}`)
-
-    return NextResponse.json({ error: "Failed to fetch market data" }, { status: 500 })
+  // 2. Fallback to Mock Data if API fails
+  if (!data || data.length === 0) {
+    data = generateMockData(symbol, interval)
   }
+
+  return NextResponse.json(data)
 }

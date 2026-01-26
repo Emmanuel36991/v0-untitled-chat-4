@@ -97,14 +97,6 @@ export default function TradesPage() {
       const fetchedAccounts = await getTradingAccounts()
       setAccounts(fetchedAccounts)
       
-      // Auto-select logic if "all" is active but empty
-      if (fetchedAccounts.length > 0 && selectedAccountId === "all") {
-         // Keep "all" as default to show the "See All" view first, 
-         // but if you prefer to default to the first account, uncomment below:
-         // const defaultAcc = fetchedAccounts.find(a => a.is_default) || fetchedAccounts[0]
-         // setSelectedAccountId(defaultAcc.id)
-      }
-
       // Fetch Trades
       const fetchedTrades = await getTrades()
       const sorted = fetchedTrades.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -118,7 +110,7 @@ export default function TradesPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedAccountId, toast])
+  }, [toast])
 
   useEffect(() => {
     fetchData(false)
@@ -138,10 +130,11 @@ export default function TradesPage() {
         if(res.success && res.account) {
             toast({ title: "Portfolio Created", description: `${newAccountName} is ready.` })
             setAccounts(prev => [...prev, res.account!])
-            setSelectedAccountId(res.account!.id)
+            setSelectedAccountId(res.account!.id) // Auto-switch to new account
             setIsCreateAccountOpen(false)
             setNewAccountName("")
             setNewAccountBalance("10000")
+            fetchData(true)
         } else {
             toast({ title: "Error", description: res.error || "Failed to create account", variant: "destructive" })
         }
@@ -154,9 +147,8 @@ export default function TradesPage() {
   const filteredTrades = useMemo(() => {
     let result = trades
 
-    // Account Filter - The "See All" Feature
+    // Account Filter
     if (selectedAccountId !== "all") {
-        // Ensuring compatibility even if DB field is missing locally
         result = result.filter(t => (t as any).account_id === selectedAccountId)
     }
 
@@ -190,9 +182,8 @@ export default function TradesPage() {
     return result
   }, [trades, filters, searchTerm, selectedAccountId])
 
-  // 4. Statistics Calculation (Used for Header Balance)
+  // 4. Statistics Calculation
   const stats = useMemo(() => {
-    // If "All" is selected, we sum the initial balance of ALL accounts
     let initialBalance = 0;
     if (selectedAccountId === 'all') {
         initialBalance = accounts.reduce((acc, curr) => acc + Number(curr.initial_balance), 0);
@@ -201,22 +192,12 @@ export default function TradesPage() {
         initialBalance = activeAccount ? Number(activeAccount.initial_balance) : 0;
     }
     
-    // We only calculate total PnL from trades that belong to the selected view
-    // Note: We use 'filteredTrades' here, but strictly speaking for "Balance" 
-    // we should use *all* trades for the account, ignoring search/date filters.
-    // However, to keep it simple and reactive, we'll sum the currently matching trades 
-    // OR ideally re-filter just by account. Let's do the latter for accuracy.
-    
-    const relevantTrades = selectedAccountId === 'all' 
-       ? trades 
-       : trades.filter(t => (t as any).account_id === selectedAccountId)
-
-    const totalPnL = relevantTrades.reduce((acc, t) => acc + (t.pnl || 0), 0)
+    const totalPnL = filteredTrades.reduce((acc, t) => acc + (t.pnl || 0), 0)
     
     return { 
       currentBalance: initialBalance + totalPnL
     }
-  }, [trades, accounts, selectedAccountId]) // Depend on 'trades' not 'filteredTrades' for balance accuracy
+  }, [filteredTrades, accounts, selectedAccountId])
 
   // 5. File Handling for Import
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,8 +222,9 @@ export default function TradesPage() {
       }
 
       const lines = text.split(/\r\n|\n|\r/);
+      // Attempt to find the header row
       let headerRowIndex = 0;
-      const potentialHeaders = ['symbol', 'instrument', 'ticker', 'date', 'time', 'entry', 'price', 'profit', 'pnl', 'net pnl', 'realized'];
+      const potentialHeaders = ['symbol', 'instrument', 'ticker', 'date', 'time', 'entry', 'price', 'profit', 'pnl', 'net pnl', 'realized', 'fill price', 'side'];
       
       for (let i = 0; i < Math.min(lines.length, 20); i++) {
         const lineLower = lines[i].toLowerCase();
@@ -265,6 +247,7 @@ export default function TradesPage() {
             if (!rawData || rawData.length === 0) throw new Error("No trade data found.");
 
             const processedTrades: NewTradeInput[] = rawData.map(row => {
+               // Helper to find value from multiple potential column names
                const findVal = (possibleKeys: string[]) => {
                  for (const key of possibleKeys) {
                    const found = Object.keys(row).find(k => k.toLowerCase().trim() === key.toLowerCase())
@@ -273,13 +256,20 @@ export default function TradesPage() {
                  return null
                }
                
-               const dateStr = findVal(['Date', 'Time', 'Entry Time']) || new Date().toISOString()
+               const dateStr = findVal(['Date', 'Time', 'Entry Time', 'Placing Time']) || new Date().toISOString()
                const instrument = findVal(['Symbol', 'Instrument', 'Ticker']) || 'UNKNOWN'
                const cleanCurrency = (val: string) => parseFloat(val?.replace(/[^0-9.-]/g, '') || '0')
                
+               // Mapping logic for your specific file
                const pnl = cleanCurrency(findVal(['PnL', 'Profit', 'Loss']) || '0')
-               const entryPrice = cleanCurrency(findVal(['Entry Price', 'Price']) || '0')
+               const entryPrice = cleanCurrency(findVal(['Entry Price', 'Price', 'Fill Price', 'Avg Price']) || '0')
+               const stopLoss = cleanCurrency(findVal(['Stop Price', 'Stop Loss']) || '0') // Default to 0 to fix DB error
+               const size = cleanCurrency(findVal(['Qty', 'Size', 'Amount']) || '1')
                
+               // Handle Direction
+               const sideRaw = findVal(['Side', 'Direction', 'Type']) || 'Buy';
+               const direction = sideRaw.toLowerCase().includes('sell') ? 'short' : 'long';
+
                let outcome: 'win' | 'loss' | 'breakeven' = 'breakeven'
                if (pnl > 0) outcome = 'win'
                else if (pnl < 0) outcome = 'loss'
@@ -287,16 +277,15 @@ export default function TradesPage() {
                return {
                  date: new Date(dateStr).toISOString(),
                  instrument,
-                 direction: 'long', 
+                 direction, 
                  entry_price: entryPrice,
-                 exit_price: entryPrice, 
-                 size: 1,
+                 exit_price: entryPrice, // Default exit to entry if unknown
+                 stop_loss: stopLoss,    // <--- FIX: Ensure stop_loss is passed
+                 size: size || 1,
                  pnl,
                  outcome,
                  notes: 'Imported via CSV',
-                 // If we are in a specific account view, assign it. If "All", we can't guess.
-                 // Ideally prompt user, but for now strict assignment only if active account.
-                 // account_id: selectedAccountId !== 'all' ? selectedAccountId : undefined 
+                 account_id: selectedAccountId !== 'all' ? selectedAccountId : undefined 
                } as NewTradeInput
              }).filter(t => t.instrument !== 'UNKNOWN')
 
@@ -331,18 +320,18 @@ export default function TradesPage() {
         {/* --- HEADER --- */}
         <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-30">
            <div className="flex h-16 items-center px-4 md:px-8 max-w-[1600px] mx-auto w-full">
-              {/* Logo / Title */}
-              <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
-                <div className="p-1.5 bg-primary/10 rounded-md">
-                   <BookOpen className="h-5 w-5 text-primary" />
-                </div>
-                <span className="text-lg hidden sm:inline tracking-tight">Trade Journal</span>
-              </div>
-              
-              <Separator orientation="vertical" className="mx-4 h-6 hidden md:block" />
+             {/* Logo / Title */}
+             <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
+               <div className="p-1.5 bg-primary/10 rounded-md">
+                  <BookOpen className="h-5 w-5 text-primary" />
+               </div>
+               <span className="text-lg hidden sm:inline tracking-tight">Trade Journal</span>
+             </div>
+             
+             <Separator orientation="vertical" className="mx-4 h-6 hidden md:block" />
 
-              {/* ACCOUNT SELECTOR (The "New Feature") */}
-              <div className="flex items-center gap-3">
+             {/* ACCOUNT SELECTOR */}
+             <div className="flex items-center gap-3">
                  <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
                     <SelectTrigger className="w-[220px] h-9 border-border/60 bg-background/50 focus:ring-primary/20">
                        <div className="flex items-center gap-2 truncate">
@@ -365,7 +354,6 @@ export default function TradesPage() {
                           </Button>
                        </div>
                        <Separator className="my-1" />
-                       {/* The "See All" View */}
                        <SelectItem value="all" className="cursor-pointer font-medium">
                           <span className="flex items-center gap-2">
                              <Layers className="w-3.5 h-3.5" /> All Portfolios
@@ -383,19 +371,18 @@ export default function TradesPage() {
                     </SelectContent>
                  </Select>
 
-                 {/* Balance Badge (Context Aware) */}
+                 {/* Balance Badge */}
                  <Badge variant="secondary" className="h-9 px-3 font-mono text-sm hidden lg:flex items-center gap-2 bg-muted/50 border border-border/40">
                     <Wallet className="h-3 w-3 text-muted-foreground" />
                     <span className={cn(stats.currentBalance < 0 && "text-rose-500")}>
                        ${stats.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}
                     </span>
                  </Badge>
-              </div>
+             </div>
 
-              {/* Right Toolbar */}
-              <div className="ml-auto flex items-center space-x-2">
+             {/* Right Toolbar */}
+             <div className="ml-auto flex items-center space-x-2">
                  <Button size="sm" className="gap-2 shadow-sm" asChild>
-                    {/* Pass accountId via query param so the Add Trade page knows which account to pre-select */}
                     <NextLink href={`/add-trade?accountId=${selectedAccountId !== 'all' ? selectedAccountId : ''}`}>
                        <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Log Trade</span>
                     </NextLink>
@@ -421,14 +408,14 @@ export default function TradesPage() {
                        </DropdownMenuItem>
                     </DropdownMenuContent>
                  </DropdownMenu>
-              </div>
+             </div>
            </div>
         </div>
 
         {/* --- CONTENT --- */}
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-[1600px] mx-auto w-full">
           
-           {/* Context Indicator (Visual feedback for what is being viewed) */}
+           {/* Context Indicator */}
            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/40">
                   <Check className="w-3 h-3 text-emerald-500" />
@@ -451,7 +438,6 @@ export default function TradesPage() {
                 />
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                 {/* View Switcher */}
                  <div className="flex items-center rounded-lg border bg-background/50 p-1">
                     <button onClick={() => setViewMode('list')} className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'list' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
                        List

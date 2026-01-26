@@ -7,7 +7,7 @@ import {
   Shield, CheckCircle, ChevronRight, ChevronLeft, Search, Save,
   Loader2, Brain, BarChart3, Globe, Zap, Crosshair, MousePointer,
   ImageIcon, Calculator, Info, Plus, Layers, BookOpen, ListChecks,
-  CandlestickChart, Activity, Ban, GitBranch, Database
+  CandlestickChart, Activity, Ban, GitBranch, Database, Wallet
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { useUserConfig } from "@/hooks/use-user-config"
 import {
@@ -27,27 +28,27 @@ import {
   type CustomInstrument,
   getAllAvailableInstruments,
 } from "@/types/instrument-calculations"
-import { CustomInstrumentDialog } from "@/components/trades/custom-instrument-dialog"
-import { createBrowserClient } from "@supabase/ssr"
 import {
   type Trade,
   type NewTradeInput,
   type StrategyRule,
 } from "@/types"
+import type { TradingAccount } from "@/types/accounts"
 
+// Actions
 import { getStrategies, type PlaybookStrategy, type StrategySetup } from "@/app/actions/playbook-actions"
+import { logTradePsychology } from "@/app/actions/trade-actions"
+import { getTradingAccounts } from "@/app/actions/account-actions"
 
 // --- CONSTANTS ---
 const FORM_STORAGE_KEY = "trade_form_draft"
 
-// Visual Styles for Confluence Categories
 const FACTOR_STYLES = {
   price: { label: "Price Action", icon: CandlestickChart, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
   time: { label: "Time/Session", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
   indicator: { label: "Indicator", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
   structure: { label: "Structure", icon: Layers, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
   execution: { label: "Invalidation", icon: Ban, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20" },
-  // Fallback
   default: { label: "Rule", icon: ListChecks, color: "text-slate-500", bg: "bg-slate-500/10", border: "border-slate-500/20" }
 }
 
@@ -88,11 +89,17 @@ const BEHAVIORAL_PATTERNS = [
 
 // --- HELPER FUNCTIONS ---
 
-const getInitialFormState = (initialTrade?: Trade): NewTradeInput => {
-  const baseState: NewTradeInput = {
+interface ExtendedTradeInput extends NewTradeInput {
+  entry_time?: string;
+  exit_time?: string;
+}
+
+const getInitialFormState = (initialTrade?: Trade): ExtendedTradeInput => {
+  const baseState: ExtendedTradeInput = {
     date: new Date().toISOString().split("T")[0],
     instrument: "",
-    direction: "long" as "long" | "short",
+    account_id: "", // Initial empty account
+    direction: "long",
     entry_price: 0,
     exit_price: 0,
     stop_loss: 0,
@@ -111,19 +118,79 @@ const getInitialFormState = (initialTrade?: Trade): NewTradeInput => {
     psychologyFactors: [],
     screenshotBeforeUrl: "",
     screenshotAfterUrl: "",
+    entry_time: "",
+    exit_time: "",
   }
 
   if (initialTrade) {
     return {
       ...baseState,
-      ...(initialTrade as unknown as NewTradeInput),
+      ...(initialTrade as unknown as ExtendedTradeInput),
       date: typeof initialTrade.date === "string" ? initialTrade.date : new Date(initialTrade.date).toISOString().split("T")[0],
+      account_id: initialTrade.account_id || "",
     }
   }
   return baseState
 }
 
-// --- COMPONENT: Strategy Item Card ---
+// --- COMPONENTS ---
+
+const PriceInput = ({ id, label, value, onChange, icon: Icon, color = "text-foreground", placeholder = "0.00" }: any) => (
+  <div className="space-y-1.5 relative group">
+    <Label htmlFor={id} className={cn("text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", color)}>
+      <Icon className="w-3.5 h-3.5" /> {label}
+    </Label>
+    <div className="relative transition-all duration-300 group-focus-within:scale-[1.01]">
+      <Input
+        type="number"
+        step="any"
+        id={id}
+        name={id}
+        value={value || ""}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="h-12 pl-3 pr-12 bg-background border-2 border-input group-hover:border-primary/30 focus:border-primary font-mono text-lg shadow-sm"
+      />
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium pointer-events-none">
+        USD
+      </div>
+    </div>
+  </div>
+)
+
+const SessionCard = ({ session, isSelected, onSelect }: any) => (
+  <button
+    type="button"
+    onClick={onSelect}
+    className={cn(
+      "flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-200 w-full",
+      isSelected
+        ? cn("bg-background shadow-md ring-1 ring-offset-0", session.borderColor)
+        : "border-border bg-card/50 hover:bg-accent/50",
+    )}
+  >
+    <div className="flex items-center justify-between w-full mb-3">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{session.emoji}</span>
+        <div>
+          <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
+            {session.label}
+          </h4>
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
+            {session.time}
+          </span>
+        </div>
+      </div>
+      {isSelected && (
+        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", session.textColor.split(" ")[0].replace("text-", "bg-"))}>
+          <CheckCircle className="w-3 h-3 text-white" />
+        </div>
+      )}
+    </div>
+    <p className="text-xs text-muted-foreground leading-relaxed">{session.description}</p>
+  </button>
+)
+
 const StrategyItemCard = ({ 
   title, 
   description, 
@@ -188,7 +255,6 @@ const StrategyItemCard = ({
   )
 }
 
-// --- COMPONENT: Dynamic Rule Item ---
 const RuleItem = ({ rule, isChecked, onToggle }: { rule: StrategyRule, isChecked: boolean, onToggle: () => void }) => {
   const category = (rule as any).category || 'default'
   const style = FACTOR_STYLES[category as keyof typeof FACTOR_STYLES] || FACTOR_STYLES.default
@@ -226,63 +292,6 @@ const RuleItem = ({ rule, isChecked, onToggle }: { rule: StrategyRule, isChecked
   )
 }
 
-// --- SHARED COMPONENTS ---
-const PriceInput = ({ id, label, value, onChange, icon: Icon, color = "text-foreground", placeholder = "0.00" }: any) => (
-  <div className="space-y-1.5 relative group">
-    <Label htmlFor={id} className={cn("text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", color)}>
-      <Icon className="w-3.5 h-3.5" /> {label}
-    </Label>
-    <div className="relative transition-all duration-300 group-focus-within:scale-[1.01]">
-      <Input
-        type="number"
-        step="any"
-        id={id}
-        name={id}
-        value={value || ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="h-12 pl-3 pr-12 bg-background border-2 border-input group-hover:border-primary/30 focus:border-primary font-mono text-lg shadow-sm"
-      />
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium pointer-events-none">
-        USD
-      </div>
-    </div>
-  </div>
-)
-
-const SessionCard = ({ session, isSelected, onSelect }: any) => (
-  <button
-    type="button"
-    onClick={onSelect}
-    className={cn(
-      "flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-200 w-full",
-      isSelected
-        ? cn("bg-background shadow-md ring-1 ring-offset-0", session.borderColor)
-        : "border-border bg-card/50 hover:bg-accent/50",
-    )}
-  >
-    <div className="flex items-center justify-between w-full mb-3">
-      <div className="flex items-center gap-3">
-        <span className="text-2xl">{session.emoji}</span>
-        <div>
-          <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
-            {session.label}
-          </h4>
-          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
-            {session.time}
-          </span>
-        </div>
-      </div>
-      {isSelected && (
-        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", session.textColor.split(" ")[0].replace("text-", "bg-"))}>
-          <CheckCircle className="w-3 h-3 text-white" />
-        </div>
-      )}
-    </div>
-    <p className="text-xs text-muted-foreground leading-relaxed">{session.description}</p>
-  </button>
-)
-
 const renderSection = (title: string, Icon: React.ElementType, children: React.ReactNode, colorClass: string, bgClass: string, borderClass: string) => (
   <div className={cn("border rounded-xl overflow-hidden mb-6", borderClass)}>
     <div className={cn("p-3 border-b flex items-center gap-2", bgClass, borderClass)}>
@@ -315,7 +324,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const { config, isLoaded } = useUserConfig()
 
   // --- STATE ---
-  const [formData, setFormData] = useState<NewTradeInput>(getInitialFormState(initialTradeData))
+  const [formData, setFormData] = useState<ExtendedTradeInput>(getInitialFormState(initialTradeData))
   const [activeTab, setActiveTab] = useState("setup")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -323,10 +332,13 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   // Search/Filter State
   const [searchQuery, setSearchQuery] = useState("")
   const [customInstruments, setCustomInstruments] = useState<CustomInstrument[]>([])
+  
+  // *** TRADING ACCOUNTS STATE ***
+  const [tradingAccounts, setTradingAccounts] = useState<TradingAccount[]>([])
 
   // *** STRATEGIES STATE ***
   const [strategies, setStrategies] = useState<PlaybookStrategy[]>([])
-  const [selectedSetupId, setSelectedSetupId] = useState<string | null>(null) // Track active setup
+  const [selectedSetupId, setSelectedSetupId] = useState<string | null>(null)
 
   // Psychology specific
   const [psychologyMood, setPsychologyMood] = useState("")
@@ -340,17 +352,29 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
   // --- EFFECTS ---
 
-  // 1. Fetch Strategies
+  // 1. Fetch Strategies and Accounts
   useEffect(() => {
     let mounted = true
-    async function load() {
+    async function loadData() {
       try {
-        const data = await getStrategies()
+        const [loadedStrategies, loadedAccounts] = await Promise.all([
+          getStrategies(),
+          getTradingAccounts()
+        ])
+        
         if (mounted) {
-          setStrategies(data)
+          setStrategies(loadedStrategies)
+          setTradingAccounts(loadedAccounts)
+
+          // Set default account if one exists and none is selected
+          if (loadedAccounts.length > 0 && !formData.account_id) {
+            const defaultAcc = loadedAccounts.find(a => a.is_default) || loadedAccounts[0]
+            setFormData(prev => ({ ...prev, account_id: defaultAcc.id }))
+          }
+
           // Handle Pre-selection from URL
           if (strategyIdFromUrl && !formData.playbook_strategy_id) {
-             const strat = data.find((s: PlaybookStrategy) => s.id === strategyIdFromUrl)
+             const strat = loadedStrategies.find((s: PlaybookStrategy) => s.id === strategyIdFromUrl)
              if (strat) {
                setFormData(prev => ({ 
                  ...prev, 
@@ -362,10 +386,10 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
           }
         }
       } catch (error) {
-        console.error("Failed to load strategies", error)
+        console.error("Failed to load data", error)
       }
     }
-    load()
+    loadData()
     return () => { mounted = false }
   }, [strategyIdFromUrl])
 
@@ -394,6 +418,20 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
       return () => clearTimeout(timer)
     }
   }, [formData, activeTab, mode])
+
+  // *** TIME DURATION CALCULATION ***
+  useEffect(() => {
+    if (formData.entry_time && formData.exit_time) {
+      const start = new Date(formData.entry_time)
+      const end = new Date(formData.exit_time)
+      
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        const diffMs = end.getTime() - start.getTime()
+        const diffMins = Math.max(0, Math.floor(diffMs / 60000))
+        setFormData(prev => ({ ...prev, durationMinutes: diffMins, preciseDurationMinutes: diffMins }))
+      }
+    }
+  }, [formData.entry_time, formData.exit_time])
 
   // --- CALCULATIONS ---
   const pnlResult = useMemo(() => {
@@ -427,14 +465,11 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     setSelectedSetupId(null) // Reset setup
   }
 
-  // --- NEW: SETUP SELECTOR LOGIC ---
   const handleSetupSelect = (setup: StrategySetup, strategyName: string) => {
     if (selectedSetupId === setup.id) {
-       // Deselect
        setSelectedSetupId(null)
        setFormData(prev => ({ ...prev, executed_rules: [], setupName: strategyName }))
     } else {
-       // Select & Auto-Populate
        setSelectedSetupId(setup.id)
        setFormData(prev => ({
           ...prev,
@@ -473,6 +508,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     if (!formData.entry_price) newErrors.entry_price = "Required"
     if (!formData.exit_price) newErrors.exit_price = "Required"
     if (!formData.size) newErrors.size = "Required"
+    // Account validation
+    if (!formData.account_id && tradingAccounts.length > 0) newErrors.account_id = "Please select an account"
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
@@ -485,13 +522,21 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
       const submissionData = { ...formData, pnl: formData.pnl || pnlResult || 0 }
       const result = await onSubmitTrade(submissionData)
 
-      if (result.success) {
-        if (psychologyMood && result.tradeId) {
-          await createPsychologyEntry(result.tradeId)
+      if (result.success && result.tradeId) {
+        if (psychologyMood || psychologyTriggers.length > 0 || psychologyPatterns.length > 0) {
+          await logTradePsychology(result.tradeId, {
+            mood: psychologyMood,
+            triggers: psychologyTriggers,
+            patterns: psychologyPatterns,
+            tags: psychologyCustomTags,
+            pre_thoughts: psychologyPreThoughts,
+            post_thoughts: psychologyPostThoughts + (psychologyLessons ? `\n\nLessons: ${psychologyLessons}` : "")
+          })
           toast({ title: "Success", description: "Trade & Psychology Journal saved." })
         } else {
           toast({ title: "Success", description: "Trade logged successfully" })
         }
+        
         localStorage.removeItem(FORM_STORAGE_KEY)
         router.push("/dashboard")
       } else {
@@ -539,13 +584,40 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
             {/* TAB 1: SETUP */}
             <TabsContent value="setup" className="space-y-8">
                <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
-                  <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Globe className="w-5 h-5 text-primary"/> Instrument Selection</CardTitle></CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Globe className="w-5 h-5 text-primary"/> Instrument & Account</CardTitle></CardHeader>
+                  <CardContent className="space-y-6">
+                     
+                     {/* --- ACCOUNT SELECTOR --- */}
+                     {tradingAccounts.length > 0 && (
+                        <div className="space-y-2">
+                           <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                              <Wallet className="w-3 h-3" /> Select Account
+                           </Label>
+                           <Select 
+                              value={formData.account_id || ""} 
+                              onValueChange={(val) => setFormData(prev => ({...prev, account_id: val}))}
+                           >
+                              <SelectTrigger className={cn("w-full h-11 bg-background border-input", errors.account_id && "border-red-500 ring-1 ring-red-500")}>
+                                 <SelectValue placeholder="Select Trading Account (e.g. Topstep, Funded)" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                 {tradingAccounts.map(account => (
+                                    <SelectItem key={account.id} value={account.id}>
+                                       <span className="font-medium">{account.name}</span>
+                                       <span className="ml-2 text-muted-foreground text-xs">({account.type})</span>
+                                    </SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                           {errors.account_id && <p className="text-xs text-red-500">{errors.account_id}</p>}
+                        </div>
+                     )}
+
                      <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input placeholder="Search (e.g. ES, BTC)..." className="pl-10 h-12 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                        <Input placeholder="Search Instrument (e.g. ES, BTC)..." className="pl-10 h-12 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                      </div>
-                     <ScrollArea className="h-[220px] w-full rounded-xl border bg-muted/10 p-4">
+                     <ScrollArea className="h-[200px] w-full rounded-xl border bg-muted/10 p-4">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                            {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
                               <button key={inst.symbol} type="button" onClick={() => setFormData(prev => ({ ...prev, instrument: inst.symbol }))} className={cn("flex flex-col items-start p-3 rounded-xl border transition-all text-left", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background")}>
@@ -565,6 +637,18 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                         <button type="button" onClick={() => setFormData(prev => ({...prev, direction: 'long'}))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-emerald-500 text-white shadow-lg" : "text-muted-foreground hover:bg-emerald-500/10")}>Long</button>
                         <button type="button" onClick={() => setFormData(prev => ({...prev, direction: 'short'}))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-rose-500 text-white shadow-lg" : "text-muted-foreground hover:bg-rose-500/10")}>Short</button>
                      </div>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/20 rounded-xl border border-border/50">
+                        <div className="space-y-2">
+                           <Label className="text-xs font-bold uppercase text-muted-foreground">Entry Time</Label>
+                           <Input type="datetime-local" name="entry_time" value={formData.entry_time || ""} onChange={handleChange} className="bg-background h-10" />
+                        </div>
+                        <div className="space-y-2">
+                           <Label className="text-xs font-bold uppercase text-muted-foreground">Exit Time</Label>
+                           <Input type="datetime-local" name="exit_time" value={formData.exit_time || ""} onChange={handleChange} className="bg-background h-10" />
+                        </div>
+                     </div>
+
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} icon={MousePointer} color="text-primary" />
                         <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-rose-500" />
@@ -587,7 +671,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                </Card>
             </TabsContent>
 
-            {/* TAB 2: STRATEGY (UPDATED) */}
+            {/* TAB 2: STRATEGY (Unchanged Logic, just visual) */}
             <TabsContent value="strategy" className="space-y-8">
                <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold">Strategy & Confluences</h2>
@@ -609,11 +693,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                                  onToggle={() => handleStrategySelect(strat)}
                               />
                               
-                              {/* NESTED SETUPS PANEL */}
                               {isSelected && (
                                  <div className="ml-4 pl-4 border-l-2 border-primary/20 space-y-4 animate-in slide-in-from-top-2">
-                                    
-                                    {/* 1. SETUP SELECTOR */}
                                     {strat.setups && strat.setups.length > 0 && (
                                        <div className="space-y-2">
                                           <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-primary tracking-wider">
@@ -635,7 +716,6 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                                        </div>
                                     )}
 
-                                    {/* 2. CONFLUENCE CHECKLIST */}
                                     {strat.rules && strat.rules.length > 0 && (
                                        <div className="space-y-2 pt-2">
                                           <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
@@ -671,7 +751,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                </Card>
             </TabsContent>
 
-            {/* TAB 3: PSYCHOLOGY */}
+            {/* TAB 3: PSYCHOLOGY (Unchanged Logic) */}
             <TabsContent value="psychology" className="space-y-8">
                <div className="flex items-center justify-between"><h2 className="text-2xl font-bold">Psychology</h2><Button variant="outline" size="sm" onClick={() => setActiveTab("strategy")}><ChevronLeft className="w-4 h-4 mr-2"/> Back</Button></div>
                
@@ -707,6 +787,15 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                     <div className={cn("text-5xl font-black tracking-tighter my-2", (pnlResult || 0) > 0 ? "text-emerald-500" : (pnlResult || 0) < 0 ? "text-rose-500" : "text-foreground")}>{(pnlResult || 0) > 0 ? "+" : ""}${(pnlResult || 0).toFixed(2)}</div>
                     {formData.size && formData.size > 0 && (<Badge variant="secondary" className="mt-2">{formData.size} Contracts</Badge>)}
                  </div>
+                 
+                 {/* DURATION DISPLAY */}
+                 {formData.durationMinutes !== undefined && (
+                    <div className="flex justify-between text-sm px-2">
+                        <span className="font-medium text-muted-foreground">Duration</span>
+                        <span className="font-bold font-mono">{formData.durationMinutes} min</span>
+                    </div>
+                 )}
+
                  <div className="space-y-2">
                     <div className="flex justify-between text-sm"><span className="font-medium text-muted-foreground">R:R Ratio</span><span className="font-bold font-mono">{riskRewardRatio ? `1:${riskRewardRatio.toFixed(2)}` : "-"}</span></div>
                     <div className="h-4 w-full bg-muted rounded-full flex overflow-hidden relative"><div className="absolute inset-0 flex"><div className="bg-rose-500 transition-all duration-500" style={{ width: "30%" }} /><div className="bg-emerald-500 transition-all duration-500 flex-1" /></div><div className="absolute left-[30%] top-0 bottom-0 w-0.5 bg-white z-10" /></div>

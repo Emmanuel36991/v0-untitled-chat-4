@@ -59,10 +59,13 @@ import {
   ArrowLeft,
   Search,
   Check,
-  Layers
+  Layers,
+  Filter,
+  Lightbulb,
+  Maximize2
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
-import { getAnalyticsData } from "@/app/actions/analytics-actions" // New Import
+import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"
 import { DateRange } from "react-day-picker"
 import { format, subDays, endOfDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay } from "date-fns"
@@ -75,7 +78,7 @@ import { AnalyticsLogoSelector } from "@/components/analytics-logos"
 import { TimingAnalyticsDashboard } from "@/components/charts/timing-analytics-dashboard"
 import { SetupScatterChart } from "@/components/insights/setup-scatter-chart"
 import { AiSummaryCard } from "@/components/analytics/ai-summary-card"
-import { ConfluencePerformance } from "@/components/analytics/confluence-performance" // New Component
+import { ConfluencePerformance } from "@/components/analytics/confluence-performance"
 
 // Import Insight Analyzers
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
@@ -129,7 +132,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-slate-950/20 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -147,13 +150,13 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 gap-4 bg-white dark:bg-slate-950 shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 dark:border-slate-800 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0", 
+        "fixed z-50 gap-4 bg-white dark:bg-[#0B0D12] shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 dark:border-slate-800 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0",
         className
       )}
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-full p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors z-50 border border-slate-200 dark:border-slate-700">
+      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-md p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors z-50">
         <X className="h-4 w-4 text-slate-500" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
@@ -162,7 +165,7 @@ const SheetContent = React.forwardRef<
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
-// --- 4. FIXED DATE PICKER (No Wrapper Div) ---
+// --- 4. FIXED DATE PICKER ---
 function DatePickerWithRange({ className, date, setDate }: any) {
   const [open, setOpen] = useState(false)
   const presets = [
@@ -178,28 +181,24 @@ function DatePickerWithRange({ className, date, setDate }: any) {
     return isSameDay(date.from, presetValue.from) && isSameDay(date.to, presetValue.to)
   }
 
-  // NOTE: Removed the <div className="grid gap-2"> wrapper to fix alignment
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           id="date"
-          variant={"outline"}
+          variant={"ghost"}
           size="sm"
           className={cn(
-            "w-[260px] justify-start text-left font-medium h-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm",
+            "h-9 w-full justify-start text-left font-normal text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 px-3",
             !date && "text-muted-foreground",
-            open && "border-indigo-500 ring-1 ring-indigo-500 bg-slate-50",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 text-indigo-500" />
+          <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
           {date?.from ? (
             date.to ? (
-              <span className="flex items-center gap-1">
-                <span className="font-semibold text-slate-700 dark:text-slate-200">{format(date.from, "MMM dd")}</span>
-                <span className="text-slate-400">-</span>
-                <span className="font-semibold text-slate-700 dark:text-slate-200">{format(date.to, "MMM dd, yyyy")}</span>
+              <span className="text-xs font-mono">
+                {format(date.from, "MMM dd")} - {format(date.to, "MMM dd")}
               </span>
             ) : (
               format(date.from, "MMM dd, yyyy")
@@ -209,8 +208,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-0 shadow-2xl rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800" align="start">
-        <div className="flex flex-col sm:flex-row bg-white dark:bg-slate-950">
+      <PopoverContent className="w-auto p-0 border-0 shadow-xl rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800" align="start">
+        <div className="flex flex-col sm:flex-row bg-white dark:bg-[#0B0D12]">
           <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 sm:w-[160px]">
              <div className="px-2 py-1.5 mb-1">
                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Select</span>
@@ -222,17 +221,17 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                    key={preset.label}
                    onClick={() => {
                      setDate(preset.getValue())
-                     setOpen(false) 
+                     setOpen(false)
                    }}
                    className={cn(
-                     "flex items-center justify-between text-left text-sm px-3 py-2 rounded-lg transition-all",
-                     isActive 
-                       ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-medium" 
+                     "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
+                     isActive
+                       ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
                        : "hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
                    )}
                  >
                    {preset.label}
-                   {isActive && <Check className="w-3.5 h-3.5" />}
+                   {isActive && <Check className="w-3 h-3" />}
                  </button>
                )
              })}
@@ -247,18 +246,15 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               onSelect={setDate}
               numberOfMonths={2}
               className="rounded-md border-0"
+              classNames={{
+                day_selected: "bg-indigo-600 text-white hover:bg-indigo-600 focus:bg-indigo-600",
+                day_today: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100",
+                day_range_middle: "aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-900/20 aria-selected:text-indigo-900 dark:aria-selected:text-indigo-100",
+              }}
             />
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-2">
-               <p className="text-xs text-slate-400">
-                 {date?.from && date?.to ? 
-                   `${Math.ceil((date.to.getTime() - date.from.getTime()) / (1000 * 60 * 60 * 24))} days selected` : 
-                   "Select range"
-                 }
-               </p>
-               <div className="flex gap-2">
-                 <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-8 text-xs">Cancel</Button>
-                 <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-8 text-xs shadow-md" onClick={() => setOpen(false)}>Apply Range</Button>
-               </div>
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-2 gap-2">
+               <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
+               <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
             </div>
           </div>
         </div>
@@ -283,97 +279,94 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
   if (trades.length === 0) {
     return (
       <div className="h-[60vh] flex flex-col items-center justify-center text-slate-400">
-        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-3xl flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-800">
-          <CalendarIcon className="w-10 h-10 opacity-20 text-slate-500" />
+        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-800">
+          <Layers className="w-8 h-8 opacity-20 text-slate-500" />
         </div>
-        <p className="text-lg font-medium text-slate-600 dark:text-slate-300">No trading activity</p>
-        <p className="text-sm opacity-60">This day is empty.</p>
+        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No trading activity</p>
+        <p className="text-xs opacity-60">This day is empty.</p>
       </div>
     )
   }
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className={cn(
-          "p-6 rounded-2xl border flex flex-col justify-between h-32 shadow-sm transition-all",
-          stats.pnl >= 0 
-            ? "bg-emerald-50/50 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-800" 
-            : "bg-rose-50/50 border-rose-100 dark:bg-rose-900/10 dark:border-rose-800"
+          "p-6 rounded-xl border flex flex-col justify-between h-28 shadow-sm transition-all",
+          stats.pnl >= 0
+            ? "bg-emerald-50/50 border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-900/50"
+            : "bg-rose-50/50 border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/50"
         )}>
-           <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Net PnL</span>
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Net PnL</span>
            <span className={cn(
-             "text-4xl font-mono font-bold tracking-tighter",
-             stats.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+             "text-3xl font-mono font-medium tracking-tight",
+             stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
            )}>
              {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
            </span>
         </div>
 
-        <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between h-32">
-           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
-           <div className="flex items-end gap-2">
-             <span className="text-4xl font-mono font-bold text-slate-900 dark:text-white">{stats.winRate.toFixed(0)}%</span>
-             <span className="text-sm text-slate-400 mb-1.5 font-medium">{stats.count} Trades</span>
+        <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] shadow-sm flex flex-col justify-between h-28">
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
+           <div className="flex items-baseline gap-2">
+             <span className="text-3xl font-mono font-medium text-slate-900 dark:text-white">{stats.winRate.toFixed(0)}%</span>
+             <span className="text-xs text-slate-400 font-medium">{stats.count} Trades</span>
            </div>
         </div>
 
-        <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col justify-between h-32">
-           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
+        <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] shadow-sm flex flex-col justify-between h-28">
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
            <div className="flex items-center gap-2 mt-auto">
-             <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-               <Target className="w-5 h-5 text-indigo-500" />
-             </div>
-             <span className="text-lg font-bold text-slate-700 dark:text-slate-200">
-               {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
-             </span>
+             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-900">
+                {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
+             </Badge>
            </div>
         </div>
       </div>
 
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-8 w-8 rounded-full bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600">
-            <Clock className="w-4 h-4" />
+          <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+            <Clock className="w-3.5 h-3.5" />
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Session Log</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Session Log</h3>
         </div>
 
-        <div className="space-y-4 relative before:absolute before:left-4 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200 dark:before:bg-slate-800">
           {trades.map((trade) => (
-            <div key={trade.id} className="relative pl-12">
+            <div key={trade.id} className="relative pl-12 group">
               <div className={cn(
-                "absolute left-[11px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-950 z-10",
+                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white dark:border-[#0B0D12] z-10 box-content shadow-sm",
                 trade.pnl >= 0 ? "bg-emerald-500" : "bg-rose-500"
               )} />
-              
-              <div className="group flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800 transition-all cursor-pointer">
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className={cn(
-                    "w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg border",
-                    trade.direction === "long" 
-                      ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-900" 
-                      : "bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:border-rose-900"
+                    "w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs border shadow-sm",
+                    trade.direction === "long"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/50"
+                      : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/50"
                   )}>
                     {trade.direction === "long" ? "L" : "S"}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 dark:text-white">{trade.instrument}</span>
-                      <Badge variant="secondary" className="text-[10px] h-5 px-1.5 font-normal bg-slate-100 dark:bg-slate-800 text-slate-500">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-bold text-sm text-slate-900 dark:text-slate-200">{trade.instrument}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium border border-slate-200 dark:border-slate-700">
                         {trade.setup_name || "No Setup"}
-                      </Badge>
+                      </span>
                     </div>
-                    <span className="text-xs text-slate-500 font-mono">{format(new Date(trade.date), "HH:mm:ss")}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{format(new Date(trade.date), "HH:mm:ss")}</span>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
-                  <p className={cn("font-mono font-bold text-base", trade.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                     {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                   </p>
-                  <p className="text-xs text-slate-400 font-mono mt-0.5">
-                    {trade.entry_price} <span className="text-slate-300">→</span> {trade.exit_price}
+                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                    {trade.entry_price} → {trade.exit_price}
                   </p>
                 </div>
               </div>
@@ -418,39 +411,34 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
   return (
     <div className="flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12] relative overflow-hidden">
       <AnimatePresence mode="wait">
-        
+
         {view === "month" && (
-          <motion.div 
+          <motion.div
             key="month-view"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col h-full"
           >
-            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-                    <ChevronLeft className="w-4 h-4" />
+                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                    <ChevronLeft className="w-4 h-4 text-slate-500" />
                   </Button>
-                  <span className="text-sm font-bold w-24 text-center text-slate-700 dark:text-slate-200">{format(currentMonth, "MMMM")}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-all" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-                    <ChevronRight className="w-4 h-4" />
+                  <span className="text-sm font-bold w-28 text-center text-slate-800 dark:text-slate-200 font-mono">{format(currentMonth, "MMMM yyyy")}</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                    <ChevronRight className="w-4 h-4 text-slate-500" />
                   </Button>
                 </div>
-                <div className="text-sm font-mono text-slate-400 font-medium">{format(currentMonth, "yyyy")}</div>
               </div>
-              
+
               <div className="flex gap-6 text-right">
                 <div>
                   <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Net PnL</p>
-                  <p className={cn("text-sm font-mono font-bold", monthStats.totalPnL >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                  <p className={cn("text-sm font-mono font-bold", monthStats.totalPnL >= 0 ? "text-emerald-600" : "text-rose-600")}>
                     {monthStats.totalPnL >= 0 ? "+" : ""}${monthStats.totalPnL.toLocaleString()}
                   </p>
-                </div>
-                <div className="hidden sm:block">
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Win Rate</p>
-                  <p className="text-sm font-mono font-bold text-slate-700 dark:text-slate-300">{monthStats.winRate.toFixed(0)}%</p>
                 </div>
               </div>
             </div>
@@ -460,14 +448,14 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
                   <div key={day} className="text-center text-[10px] uppercase font-bold text-slate-400 pb-2 tracking-wider">{day}</div>
                 ))}
-                
+
                 {calendarGrid.padding.map((_, i) => <div key={`pad-${i}`} className="aspect-square" />)}
-                
+
                 {calendarGrid.days.map((day) => {
                   const dateStr = format(day, "yyyy-MM-dd")
                   const data = dailyData.find(d => d.date === dateStr)
                   const isToday = isSameDay(day, new Date())
-                  
+
                   return (
                     <motion.button
                       key={day.toISOString()}
@@ -475,32 +463,32 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
                       whileTap={{ scale: 0.98 }}
                       onClick={() => handleDaySelect(day)}
                       className={cn(
-                        "relative aspect-square rounded-xl border flex flex-col items-center justify-center gap-1 transition-all shadow-sm group",
-                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-950 z-10" : "hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md",
-                        !data ? "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800" :
-                        data.pnl > 0 ? "bg-emerald-50/40 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30" :
-                        "bg-rose-50/40 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30"
+                        "relative aspect-square rounded-lg border flex flex-col items-center justify-center gap-1 transition-all shadow-sm group",
+                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-[#0B0D12] z-10" : "hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-md",
+                        !data ? "bg-white dark:bg-[#0B0D12] border-slate-100 dark:border-slate-800" :
+                        data.pnl > 0 ? "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/30" :
+                        "bg-rose-50/30 dark:bg-rose-950/10 border-rose-100 dark:border-rose-900/30"
                       )}
                     >
                       <span className={cn(
-                        "text-xs font-bold absolute top-2 left-2",
+                        "text-[10px] font-bold absolute top-2 left-2",
                         !data ? "text-slate-300" : "text-slate-500 dark:text-slate-400"
                       )}>{format(day, "d")}</span>
 
                       {data ? (
                         <>
                           <span className={cn(
-                            "text-sm font-mono font-bold tracking-tight",
-                            data.pnl > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                            "text-xs font-mono font-medium tracking-tight",
+                            data.pnl > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
                           )}>
                             {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl/1000).toFixed(1)}k` : data.pnl.toFixed(0)}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-medium px-2 py-0.5 bg-white/60 dark:bg-black/20 rounded-full backdrop-blur-sm">
-                            {data.trades} trades
+                          <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50">
+                            {data.trades}
                           </span>
                         </>
                       ) : (
-                        <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-800 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900 transition-colors" />
+                        <div className="w-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-200 transition-colors" />
                       )}
                     </motion.button>
                   )
@@ -511,28 +499,28 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
         )}
 
         {view === "day" && selectedDay && (
-          <motion.div 
+          <motion.div
             key="day-view"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="flex flex-col h-full bg-white dark:bg-slate-950"
+            className="flex flex-col h-full bg-white dark:bg-[#0B0D12]"
           >
-            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md z-10">
-              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform text-slate-500" />
-                Back to Calendar
+            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md z-10">
+              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform text-slate-400" />
+                Back
               </Button>
-              <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {format(selectedDay, "EEEE, MMMM do, yyyy")}
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                {format(selectedDay, "MMMM do, yyyy")}
               </h2>
             </div>
 
             <ScrollArea className="flex-1">
-              <DailyDossier 
-                date={selectedDay} 
-                trades={trades.filter(t => isSameDay(new Date(t.date), selectedDay))} 
+              <DailyDossier
+                date={selectedDay}
+                trades={trades.filter(t => isSameDay(new Date(t.date), selectedDay))}
               />
             </ScrollArea>
           </motion.div>
@@ -544,68 +532,55 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
 
 // --- 6. METRIC CARDS ---
 const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => (
-  <div className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-slate-200 dark:border-slate-800 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-    <div className="flex items-center justify-between">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors border border-slate-100 dark:border-slate-700">
-         <Icon className="h-6 w-6 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+  <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-[#0B0D12] p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all duration-300">
+    <div className="flex items-start justify-between mb-4">
+      <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/10 transition-colors">
+         <Icon className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
       </div>
       {change && (
            <div className={cn(
-             "flex items-center text-xs font-bold px-2.5 py-1 rounded-full border",
-             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800" : "",
-             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800" : "text-slate-600 bg-slate-100 border-slate-200 dark:bg-slate-800 dark:text-slate-300",
+             "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border",
+             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30" : "",
+             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30" : "text-slate-600 bg-slate-100 border-slate-200 dark:bg-slate-800 dark:text-slate-300",
            )}>
-           {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3 stroke-[3]" />}
-           {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3 stroke-[3]" />}
+           {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
+           {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
            {change}
          </div>
       )}
     </div>
-    <div className="mt-5">
-       <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">{title}</p>
-       <h3 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1 font-feature-settings-zero">{value}</h3>
+    <div>
+       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 dark:text-white font-feature-settings-zero">{value}</h3>
+       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">{title}</p>
     </div>
-    <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-gradient-to-br from-slate-100/50 dark:from-slate-800/20 to-transparent rounded-full blur-3xl pointer-events-none" />
   </div>
 ))
 
 const ChartCard = ({ title, subtitle, children, action, className, logoType }: any) => (
-  <Card className={cn("flex flex-col overflow-hidden border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900", className)}>
-    <CardHeader className="flex flex-row items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/50">
-      <div className="flex items-center gap-4">
+  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-[#0B0D12] rounded-xl", className)}>
+    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
+      <div className="flex items-center gap-3">
         {logoType && (
-          <div className="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-             <AnalyticsLogoSelector type={logoType} className="w-6 h-6" />
+          <div className="p-1.5 bg-slate-50 dark:bg-slate-900 rounded-md border border-slate-100 dark:border-slate-800">
+             <AnalyticsLogoSelector type={logoType} className="w-4 h-4 text-slate-500" />
           </div>
         )}
-        <div>
-          <CardTitle className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{title}</CardTitle>
-          {subtitle && <CardDescription className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</CardDescription>}
+        <div className="space-y-0.5">
+          <CardTitle className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase">{title}</CardTitle>
+          {subtitle && <CardDescription className="text-xs text-slate-400">{subtitle}</CardDescription>}
         </div>
       </div>
       {action}
     </CardHeader>
-    <CardContent className="flex-1 p-6 bg-white dark:bg-slate-900">{children}</CardContent>
+    <CardContent className="flex-1 p-6 relative">{children}</CardContent>
   </Card>
 )
 
 const DashboardSkeleton = () => (
-  <div className="w-full min-h-screen bg-slate-50 p-8 space-y-8 animate-pulse">
-    <div className="h-12 w-64 bg-slate-200 rounded-lg mb-8" />
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-4">
-       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 rounded-2xl" />)}
-    </div>
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-       <div className="lg:col-span-2 space-y-6">
-         <div className="h-[400px] bg-slate-200 rounded-2xl" />
-         <div className="grid grid-cols-2 gap-6">
-           <div className="h-[250px] bg-slate-200 rounded-2xl" />
-           <div className="h-[250px] bg-slate-200 rounded-2xl" />
-         </div>
-       </div>
-       <div className="space-y-6">
-         <div className="h-[500px] bg-slate-200 rounded-2xl" />
-       </div>
+  <div className="w-full min-h-screen bg-slate-50 dark:bg-[#0B0D12] p-8 space-y-8 animate-pulse">
+    <div className="h-16 w-full border-b border-slate-200 dark:border-slate-800" />
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
+       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-xl" />)}
     </div>
   </div>
 )
@@ -618,10 +593,9 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [mainTab, setMainTab] = useState("overview")
-  const [insightsTab, setInsightsTab] = useState("setups")
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [aiReport, setAiReport] = useState<string | null>(null)
-   
+
   const [filters, setFilters] = useState<AnalyticsFilters>({
     dateRange: {
       from: subDays(new Date(), 90),
@@ -653,9 +627,9 @@ export default function AnalyticsPage() {
           getTrades(),
           getAnalyticsData()
         ])
-        
+
         setTrades(tradesData || [])
-        
+
         if (analyticsData?.confluenceStats) {
           setConfluenceStats(analyticsData.confluenceStats)
         }
@@ -680,7 +654,7 @@ export default function AnalyticsPage() {
     if (!trades.length) return emptyStats
 
     let filteredTrades = trades.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    
+
     // Filtering
     if (filters.dateRange?.from) {
       const from = filters.dateRange.from.getTime()
@@ -707,7 +681,7 @@ export default function AnalyticsPage() {
 
     const dailyMap = new Map<string, { pnl: number; trades: number }>()
     const monthlyMap = new Map<string, { profit: number; trades: number }>()
-    
+
     filteredTrades.forEach((t) => {
         const dateStr = format(new Date(t.date), "yyyy-MM-dd")
         const dCurr = dailyMap.get(dateStr) || { pnl: 0, trades: 0 }
@@ -725,7 +699,7 @@ export default function AnalyticsPage() {
             cumulative += data.pnl
             return { date, ...data, cumulative }
         })
-        
+
     const monthlyData = Array.from(monthlyMap.entries())
         .map(([month, data]) => ({ month, ...data }))
         .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
@@ -745,9 +719,9 @@ export default function AnalyticsPage() {
         const dd = peak - day.cumulative
         if (dd > maxDD) maxDD = dd
     })
-    const totalEquity = Math.abs(totalPnL) + 1000 
+    const totalEquity = Math.abs(totalPnL) + 1000
     const ddPercentage = maxDD / totalEquity
-    const riskManagementScore = Math.max(0, Math.min(100, 100 - (ddPercentage * 400))) 
+    const riskManagementScore = Math.max(0, Math.min(100, 100 - (ddPercentage * 400)))
 
     const recentTrades = filteredTrades.filter(t => new Date(t.date) >= subDays(new Date(), 30))
     const recentWinRate = recentTrades.length ? (recentTrades.filter(t => t.pnl > 0).length / recentTrades.length) * 100 : 0
@@ -797,9 +771,9 @@ export default function AnalyticsPage() {
       avgPnL: filteredTrades.length ? totalPnL / filteredTrades.length : 0,
       winRate, profitFactor, maxDrawdown: maxDD,
       consistencyScore, adaptabilityScore, executionScore, riskManagementScore, efficiencyScore, overallScore,
-      monthlyData, dailyData, 
-      setupDistribution: setupDist, 
-      instrumentDistribution: instrumentDist, 
+      monthlyData, dailyData,
+      setupDistribution: setupDist,
+      instrumentDistribution: instrumentDist,
       outcomeDistribution: { wins, losses, breakeven },
       metricsList
     }
@@ -814,13 +788,13 @@ export default function AnalyticsPage() {
   const scatterData = useMemo(() => {
     const top = setupAnalysis.topSetups || []
     const bottom = setupAnalysis.bottomSetups || []
-    
+
     return [
-      ...top.map(s => ({ 
-        name: s.setupName, x: s.winRate * 100, y: 2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 2 
+      ...top.map(s => ({
+        name: s.setupName, x: s.winRate * 100, y: 2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 2
       })),
-      ...bottom.map(s => ({ 
-        name: s.setupName, x: s.winRate * 100, y: 1.2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 1.2 
+      ...bottom.map(s => ({
+        name: s.setupName, x: s.winRate * 100, y: 1.2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 1.2
       }))
     ]
   }, [setupAnalysis])
@@ -830,29 +804,32 @@ export default function AnalyticsPage() {
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
-    plugins: { 
-        legend: { display: false }, 
-        tooltip: { 
-            backgroundColor: "#1e293b", 
-            padding: 12, 
-            cornerRadius: 8, 
-            titleFont: { weight: 'bold' },
+    plugins: {
+        legend: { display: false },
+        tooltip: {
+            backgroundColor: "#0F172A",
+            padding: 12,
+            cornerRadius: 4,
+            titleFont: { family: "monospace", size: 12 },
+            bodyFont: { family: "monospace", size: 12 },
             displayColors: false,
             callbacks: {
                 label: (ctx) => `${ctx.dataset.label}: ${typeof ctx.raw === 'number' ? ctx.raw.toFixed(2) : ctx.raw}`
-            } 
-        } 
+            }
+        }
     },
-    scales: { 
-        x: { grid: { display: false }, ticks: { color: "#94a3b8", font: { size: 10 } } }, 
-        y: { border: { display: false }, grid: { color: "rgba(148, 163, 184, 0.1)" }, ticks: { color: "#94a3b8", font: { size: 10 }, callback: (v) => `$${Number(v).toFixed(0)}` } } 
+    scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#94a3b8", font: { family: "monospace", size: 10 } }
+        },
+        y: {
+          border: { display: false, dash: [4, 4] },
+          grid: { color: "rgba(148, 163, 184, 0.05)" },
+          ticks: { color: "#94a3b8", font: { family: "monospace", size: 10 }, callback: (v) => `$${Number(v).toFixed(0)}` }
+        }
     },
   }
-
-  const sortedMetrics = [...analytics.metricsList].sort((a, b) => b.value - a.value)
-  const strongestMetric = sortedMetrics[0] || { name: "N/A", value: 0 }
-  const weakestMetric = sortedMetrics[sortedMetrics.length - 1] || { name: "N/A", value: 0 }
-  const avgMetricScore = Math.round(analytics.metricsList.reduce((a, b) => a + b.value, 0) / (analytics.metricsList.length || 1))
 
   const topSetup = setupAnalysis.topSetups?.[0]
   const bottomSetup = setupAnalysis.bottomSetups?.[0]
@@ -861,100 +838,118 @@ export default function AnalyticsPage() {
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0D12] font-sans pb-20 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0D12] pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-500">
       
-      {/* Background Mesh Gradient */}
-      <div className="fixed inset-0 z-0 opacity-40 pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 10%, rgba(16, 185, 129, 0.05) 0%, transparent 30%)' }}>
-      </div>
-
-      <header className="sticky top-0 z-40 border-b border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      {/* --- HEADER: STICKY TOOLBAR --- */}
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
-              <LayoutDashboard className="h-5 w-5" />
+          <div className="flex items-center gap-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
+              <LayoutDashboard className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-none">Analytics</h1>
-              <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">Performance Overview</p>
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white leading-none">ANALYTICS</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-[10px] text-slate-400 font-medium">Performance & Insights</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2">
-              <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-0.5 shadow-sm">
+              <div className="w-[200px] border-r border-slate-100 dark:border-slate-800">
+                <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
+              </div>
               <Button 
-                variant={showFilters ? "secondary" : "outline"} 
+                variant="ghost" 
                 size="sm" 
                 onClick={() => setShowFilters(!showFilters)} 
-                className={cn("h-9 border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-800 transition-all", showFilters && "bg-slate-100 dark:bg-slate-800")}
+                className={cn(
+                  "h-9 rounded-md px-3 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800",
+                  showFilters && "bg-slate-100 dark:bg-slate-800 text-indigo-600"
+                )}
               >
-                <SlidersHorizontal className="mr-2 h-4 w-4" /> Filters
+                <Filter className="h-4 w-4" />
               </Button>
             </div>
 
             <Sheet>
                <SheetTrigger asChild>
-                 <Button variant="ghost" size="icon" className="text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-full">
-                    <CalendarIcon className="h-5 w-5" />
+                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded-lg shadow-sm">
+                    <CalendarIcon className="h-4 w-4" />
                  </Button>
                </SheetTrigger>
-               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-slate-950/50">
+               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12]/50">
                   <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
                </SheetContent>
             </Sheet>
           </div>
         </div>
 
-        {showFilters && (
-          <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 px-4 py-4 animate-in slide-in-from-top-2 duration-200">
-            <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-3 sm:px-6 lg:px-8">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Instrument</Label>
-                <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
-                  <SelectTrigger className="bg-white h-9"><SelectValue placeholder="All Instruments" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Instruments</SelectItem>
-                    {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+        {/* Filter Drawer */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0B0D12]/50"
+            >
+              <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Instrument</Label>
+                    <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
+                      <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Instruments</SelectItem>
+                        {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Setup</Label>
+                      <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
+                      <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Setups</SelectItem>
+                        {Array.from(new Set(trades.map(t => t.setup_name).filter(Boolean))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Setup</Label>
-                  <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
-                  <SelectTrigger className="bg-white h-9"><SelectValue placeholder="All Setups" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Setups</SelectItem>
-                    {Array.from(new Set(trades.map(t => t.setup_name).filter(Boolean))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-
-        {/* --- NEW: AI Summary Card added here --- */}
-        <AiSummaryCard />
+      <main className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 space-y-8">
         
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
-          <div className="flex justify-center">
-            <TabsList className="grid w-full max-w-md grid-cols-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-              <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium transition-all">
-                <Activity className="w-4 h-4 mr-2" /> Overview
+          
+          <div className="flex border-b border-slate-200 dark:border-slate-800">
+            <TabsList className="bg-transparent p-0 gap-6 h-auto">
+              <TabsTrigger 
+                value="overview" 
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium text-slate-500 transition-all hover:text-slate-700"
+              >
+                Overview
               </TabsTrigger>
-              <TabsTrigger value="intelligence" className="rounded-lg data-[state=active]:bg-purple-600 data-[state=active]:text-white font-medium transition-all">
-                <Brain className="w-4 h-4 mr-2" /> Intelligence
+              <TabsTrigger 
+                value="intelligence" 
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-purple-600 data-[state=active]:bg-transparent data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 font-medium text-slate-500 transition-all hover:text-slate-700"
+              >
+                <Sparkles className="w-3 h-3 mr-2" />
+                Intelligence
               </TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="overview" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            {/* --- 1. TOP METRIC CARDS --- */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {/* --- 1. KPI CARDS --- */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard 
                 title="Net P&L" 
                 value={`$${analytics.totalPnL.toLocaleString()}`} 
@@ -965,7 +960,7 @@ export default function AnalyticsPage() {
               <MetricCard 
                 title="Win Rate" 
                 value={`${analytics.winRate.toFixed(1)}%`} 
-                change={analytics.winRate > 50 ? "Strong" : "Weak"} 
+                change={analytics.winRate > 50 ? "Healthy" : "Weak"} 
                 trend={analytics.winRate > 50 ? "up" : "down"} 
                 icon={Target} 
               />
@@ -984,21 +979,19 @@ export default function AnalyticsPage() {
               />
             </div>
 
-            {/* --- 2. MAIN CHARTS (Better Spacing) --- */}
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              {/* EQUITY CURVE - Takes 2/3 width */}
+            {/* --- 2. MAIN CHARTS --- */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {/* EQUITY CURVE */}
               <ChartCard 
                 title="Equity Curve" 
-                subtitle="Cumulative profit performance" 
-                className="lg:col-span-2 border-t-4 border-t-indigo-500 shadow-md" 
+                subtitle="Cumulative Performance" 
+                className="lg:col-span-2 h-[350px]" 
                 logoType="MonthlyProfits"
                 action={
-                   <div className="flex gap-2">
-                       <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400"><Download className="h-4 w-4" /></Button>
-                   </div>
+                   <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600"><Download className="h-4 w-4" /></Button>
                 }
               >
-                <div className="h-[300px] w-full">
+                <div className="h-full w-full">
                   <Line 
                     data={{
                       labels: analytics.dailyData.map((d) => format(new Date(d.date), "MMM dd")),
@@ -1006,21 +999,21 @@ export default function AnalyticsPage() {
                           label: "Cumulative P&L",
                           data: analytics.dailyData.map(d => d.cumulative),
                           borderColor: "#6366f1",
-                          borderWidth: 3,
+                          borderWidth: 2,
                           pointBackgroundColor: "#fff",
                           pointBorderColor: "#6366f1",
                           pointBorderWidth: 2,
                           backgroundColor: (context: ScriptableContext<"line">) => {
                             const ctx = context.chart.ctx
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 350)
-                            gradient.addColorStop(0, "rgba(99, 102, 241, 0.2)")
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300)
+                            gradient.addColorStop(0, "rgba(99, 102, 241, 0.1)")
                             gradient.addColorStop(1, "rgba(99, 102, 241, 0)")
                             return gradient
                           },
                           fill: true,
-                          tension: 0.4,
+                          tension: 0.3,
                           pointRadius: 0,
-                          pointHoverRadius: 6,
+                          pointHoverRadius: 4,
                       }],
                     }} 
                     options={commonOptions} 
@@ -1028,59 +1021,99 @@ export default function AnalyticsPage() {
                 </div>
               </ChartCard>
 
-              {/* WIN/LOSS - Takes 1/3 width */}
-              <ChartCard title="Win/Loss Ratio" subtitle="Trade Outcomes" className="h-full" logoType="WinLoss">
-                  <div className="h-[250px] flex justify-center items-center relative">
-                      <Pie 
-                          data={{
-                              labels: ["Win", "Loss", "BE"],
-                              datasets: [{
-                                  data: [analytics.wins, analytics.losses, analytics.breakeven],
-                                  backgroundColor: ["#10b981", "#ef4444", "#fbbf24"],
-                                  borderWidth: 0,
-                                  hoverOffset: 15,
-                                  offset: 5
-                              }]
-                          }}
-                          options={{ 
-                              cutout: '70%',
-                              plugins: { 
-                                  legend: { 
-                                      position: 'bottom', 
-                                      labels: { font: { size: 11, weight: 'bold' }, usePointStyle: true, padding: 20 } 
-                                  } 
-                              } 
-                          }}
-                      />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
-                           <span className="text-4xl font-bold text-slate-800 dark:text-white">{analytics.totalTrades}</span>
-                           <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Trades</span>
+              {/* WIN/LOSS PIE */}
+              <ChartCard title="Outcomes" subtitle="Win / Loss Ratio" className="h-[350px]" logoType="WinLoss">
+                  <div className="h-full flex flex-col justify-center items-center relative pb-2">
+                      <div className="relative w-full h-[200px] flex justify-center items-center">
+                        <Pie 
+                            data={{
+                                labels: ["Win", "Loss", "BE"],
+                                datasets: [{
+                                    data: [analytics.wins, analytics.losses, analytics.breakeven],
+                                    backgroundColor: ["#10b981", "#ef4444", "#94a3b8"],
+                                    borderWidth: 2,
+                                    borderColor: "#fff",
+                                    hoverOffset: 4,
+                                }]
+                            }}
+                            options={{ 
+                                maintainAspectRatio: false,
+                                cutout: '70%',
+                                plugins: { 
+                                    legend: { 
+                                        position: 'bottom', 
+                                        labels: { 
+                                          font: { size: 10, family: 'monospace' }, 
+                                          usePointStyle: true, 
+                                          padding: 15,
+                                          color: '#94a3b8' 
+                                        } 
+                                    } 
+                                } 
+                            }}
+                        />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
+                             <span className="text-3xl font-mono font-bold text-slate-900 dark:text-white">{analytics.totalTrades}</span>
+                             <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Total</span>
+                        </div>
                       </div>
                   </div>
               </ChartCard>
             </div>
 
-            {/* --- 3. INTELLIGENCE & HEXAGRAM (New Bottom Section) --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            {/* --- 3. BREAKDOWNS & TIMING --- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <ChartCard title="By Instrument" subtitle="P&L Distribution" logoType="InstrumentDistribution">
+                <div className="h-[200px]">
+                    <Bar
+                    data={{
+                        labels: Object.keys(analytics.instrumentDistribution),
+                        datasets: [{
+                        label: "P&L",
+                        data: Object.values(analytics.instrumentDistribution).map((d) => d.pnl),
+                        backgroundColor: Object.values(analytics.instrumentDistribution).map((d) => d.pnl >= 0 ? "#10b981" : "#ef4444"),
+                        borderRadius: 4,
+                        barThickness: 24
+                        }],
+                    }}
+                    options={commonOptions}
+                    />
+                </div>
+                </ChartCard>
                 
-                {/* Enhanced Hexagram */}
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 overflow-hidden rounded-3xl relative h-full">
-                  <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] opacity-50 pointer-events-none z-0" />
-                  <div className="relative z-10 p-6 flex flex-col h-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                          <Brain className="w-5 h-5 text-indigo-500" />
-                          Trading DNA
-                        </h2>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Comprehensive score analysis</p>
-                      </div>
-                      <div className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 px-3 py-1 rounded-full text-sm font-bold border border-indigo-100 dark:border-indigo-800">
-                        Score: {analytics.overallScore}/100
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 flex items-center justify-center">
+                <ChartCard title="By Strategy" subtitle="Setup Frequency" logoType="SetupDistribution">
+                <div className="h-[200px]">
+                    <Bar
+                    data={{
+                        labels: Object.keys(analytics.setupDistribution),
+                        datasets: [{
+                        label: "Count",
+                        data: Object.values(analytics.setupDistribution).map((d) => d.count),
+                        backgroundColor: "#818cf8",
+                        borderRadius: 4,
+                        barThickness: 24
+                        }],
+                    }}
+                    options={commonOptions}
+                    />
+                </div>
+                </ChartCard>
+            </div>
+
+            {/* --- 4. INTELLIGENCE MODULES (Bottom of Overview) --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Hexagram Score */}
+                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-[#0B0D12] overflow-hidden rounded-xl h-full">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-indigo-500" />
+                      Trader DNA
+                    </CardTitle>
+                    <Badge variant="outline" className="font-mono text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900">
+                      {analytics.overallScore}/100
+                    </Badge>
+                  </CardHeader>
+                  <CardContent className="h-[300px] flex items-center justify-center">
                       <EnhancedHexagram
                         winPercentage={analytics.winRate}
                         consistency={analytics.consistencyScore}
@@ -1090,477 +1123,253 @@ export default function AnalyticsPage() {
                         avgWinLoss={analytics.efficiencyScore}
                         totalScore={analytics.overallScore}
                       />
-                    </div>
-                  </div>
+                  </CardContent>
                 </Card>
 
-                {/* AI Observations Feed */}
-                <div className="space-y-6">
-                    {/* Quick Observations */}
-                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm overflow-hidden flex flex-col h-full">
-                      <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-900 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-md">
-                            <Zap className="h-4 w-4 fill-amber-600 dark:fill-amber-400" />
-                          </div>
-                          <span className="font-bold text-sm text-slate-800 dark:text-slate-200">Quick Observations</span>
-                        </div>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">Live Analysis</span>
-                      </div>
-                      <div className="p-0">
-                        <InsightsWindows trades={trades} />
-                      </div>
-                    </div>
-                </div>
+                {/* Timing Dashboard */}
+                <TimingAnalyticsDashboard
+                  trades={trades}
+                  className="rounded-xl bg-white dark:bg-[#0B0D12] border border-slate-200 dark:border-slate-800 shadow-sm h-full"
+                />
             </div>
-
-            {/* --- 4. DETAILED BREAKDOWNS --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <ChartCard title="Instrument Performance" subtitle="P&L by Asset Class" logoType="InstrumentDistribution">
-                <div className="h-[220px]">
-                    <Bar
-                    data={{
-                        labels: Object.keys(analytics.instrumentDistribution),
-                        datasets: [{
-                        label: "P&L",
-                        data: Object.values(analytics.instrumentDistribution).map((d) => d.pnl),
-                        backgroundColor: Object.values(analytics.instrumentDistribution).map((d) => d.pnl >= 0 ? "#10b981" : "#ef4444"),
-                        borderRadius: 6,
-                        barThickness: 30
-                        }],
-                    }}
-                    options={commonOptions}
-                    />
-                </div>
-                </ChartCard>
-                
-                <ChartCard title="Strategy Performance" subtitle="Setup Frequency" logoType="SetupDistribution">
-                <div className="h-[220px]">
-                    <Bar
-                    data={{
-                        labels: Object.keys(analytics.setupDistribution),
-                        datasets: [{
-                        label: "Count",
-                        data: Object.values(analytics.setupDistribution).map((d) => d.count),
-                        backgroundColor: "#6366f1",
-                        borderRadius: 6,
-                        barThickness: 30
-                        }],
-                    }}
-                    options={commonOptions}
-                    />
-                </div>
-                </ChartCard>
-            </div>
-
-            {/* --- 5. TIMING ANALYSIS --- */}
-            <TimingAnalyticsDashboard
-              trades={trades}
-              className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 shadow-sm overflow-hidden"
-            />
 
           </TabsContent>
 
-          {/* --- INTELLIGENCE TAB (Deep Dive with Original Insights Look) --- */}
+          {/* --- INTELLIGENCE TAB: COMMAND CENTER DASHBOARD --- */}
           <TabsContent value="intelligence" className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Deep Insights</h2>
-                <p className="text-slate-500 dark:text-slate-400">Advanced pattern recognition and risk analysis</p>
+            
+            {/* 1. Header & AI Summary */}
+            <div className="space-y-6">
+              {/* Action Bar */}
+              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-indigo-50 via-white to-white dark:from-indigo-950/20 dark:via-[#0B0D12] dark:to-[#0B0D12] rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-indigo-500" />
+                    Trading Intelligence
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    AI-powered insights and behavioral pattern recognition
+                  </p>
+                </div>
+                <div className="flex gap-3 mt-4 md:mt-0 w-full md:w-auto">
+                  <Button 
+                    onClick={handleGenerateAIReport} 
+                    disabled={isGeneratingAI || !!aiReport}
+                    className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white shadow-md font-medium"
+                  >
+                    {isGeneratingAI ? (
+                      <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
+                    ) : aiReport ? (
+                      <><CheckCircle2 className="mr-2 h-4 w-4" /> Report Ready</>
+                    ) : (
+                      <><Brain className="mr-2 h-4 w-4" /> Generate Report</>
+                    )}
+                  </Button>
+                </div>
               </div>
-              <Button 
-                onClick={handleGenerateAIReport} 
-                disabled={isGeneratingAI || !!aiReport}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all"
-              >
-                {isGeneratingAI ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Analyzing...
-                  </>
-                ) : aiReport ? (
-                  <>
-                    <CheckCircle2 className="mr-2 h-4 w-4" /> Report Ready
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" /> Generate AI Report
-                  </>
-                )}
-              </Button>
-            </div>
 
-            {aiReport && (
+              {/* AI Summary Card (Moved here) */}
+              <div className="animate-in slide-in-from-top-2 fade-in duration-500 delay-100">
+                <AiSummaryCard />
+              </div>
+              
+              {/* Executive AI Report Text (If Generated) */}
+              {aiReport && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mb-8 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-2xl border border-indigo-100 dark:border-indigo-800/50 relative overflow-hidden"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="p-6 bg-white dark:bg-[#0B0D12] rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm relative overflow-hidden"
                 >
                   <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800">
-                       <Brain className="w-6 h-6 text-indigo-600" />
+                    <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg shrink-0">
+                       <Brain className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     </div>
-                    <div className="space-y-2">
-                      <h3 className="font-bold text-slate-900 dark:text-white">AI Executive Summary</h3>
-                      <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm md:text-base">
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">Executive Summary</h3>
+                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
                         {aiReport}
                       </p>
                     </div>
                   </div>
                 </motion.div>
-            )}
+              )}
+            </div>
 
-            <Tabs value={insightsTab} onValueChange={setInsightsTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm rounded-xl p-1 border border-slate-200">
-                <TabsTrigger value="setups" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
-                  <Target className="h-4 w-4 mr-2" />
-                  Setup Patterns
-                </TabsTrigger>
-                <TabsTrigger value="psychology" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
-                  <Brain className="h-4 w-4 mr-2" />
-                  Psychology
-                </TabsTrigger>
-                <TabsTrigger value="risk" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
-                  <Shield className="h-4 w-4 mr-2" />
-                  Risk Calculator
-                </TabsTrigger>
-                <TabsTrigger value="playbook" className="rounded-lg data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-700 data-[state=active]:border-indigo-200 font-medium">
-                  <Layers className="h-4 w-4 mr-2" />
-                  Playbook Stats
-                </TabsTrigger>
-              </TabsList>
+            {/* 2. BENTO GRID DASHBOARD */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* COL 1 & 2: PERSONAL EDGE (Featured) */}
+              <motion.div 
+                className="lg:col-span-2 space-y-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <Target className="w-4 h-4" /> Trading DNA
+                  </h3>
+                </div>
 
-              {/* Setup Patterns Sub-Tab */}
-              <TabsContent value="setups" className="space-y-6 mt-6">
-                
-                {/* --- 1. SETUP SCATTER CHART --- */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <Card className="lg:col-span-2 border-0 shadow-xl bg-white dark:bg-slate-900">
-                    <CardHeader>
-                      <CardTitle>Setup Performance Matrix</CardTitle>
-                      <CardDescription>Win Rate vs. Reward-to-Risk Ratio</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <SetupScatterChart data={scatterData} />
-                      <div className="flex justify-center gap-6 mt-4 text-xs text-slate-500">
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-500 opacity-70" /> Profitable</div>
-                          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-rose-500 opacity-70" /> Unprofitable</div>
+                {/* Personal Edge Card */}
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 dark:from-[#0F172A] dark:to-[#0B0D12] border border-slate-200 dark:border-slate-800 overflow-hidden relative">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                  
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-xl">Your Personal Edge</CardTitle>
+                        <CardDescription>Highest probability configurations based on historical performance</CardDescription>
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Top/Bottom Performer Cards */}
-                  <div className="space-y-6">
-                    {/* SAFE GUARD: Check if personalEdge exists */}
-                    {personalEdge && (
-                      <Card className="border-l-4 border-l-emerald-500 shadow-md bg-white dark:bg-slate-900">
-                        <CardHeader className="pb-2">
-                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Top Performer</p>
-                            <CardTitle className="text-xl">{personalEdge.setupName}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex justify-between items-end">
-                              <div>
-                                  <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                                    {(personalEdge.winRate * 100).toFixed(1)}%
-                                  </p>
-                                  <p className="text-xs text-slate-500">Win Rate</p>
-                              </div>
-                              <div className="text-right">
-                                  <p className="text-lg font-mono font-medium text-emerald-600">
-                                    +${(topSetup?.totalPnL ?? 0).toFixed(0)}
-                                  </p>
-                              </div>
-                            </div>
-                        </CardContent>
-                      </Card>
+                      {personalEdge && (
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900">
+                          {personalEdge.winRate > 0.6 ? "High Probability" : "Moderate Probability"}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-8">
+                    {personalEdge ? (
+                      <>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <p className="text-xs text-slate-500 mb-1">Top Setup</p>
+                            <p className="text-lg font-bold text-slate-900 dark:text-white truncate" title={personalEdge.setupName}>{personalEdge.setupName}</p>
+                          </div>
+                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <p className="text-xs text-slate-500 mb-1">Win Rate</p>
+                            <p className="text-lg font-bold text-emerald-600">{(personalEdge.winRate * 100).toFixed(1)}%</p>
+                          </div>
+                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                            <p className="text-xs text-slate-500 mb-1">Optimal R:R</p>
+                            <p className="text-lg font-bold text-indigo-600">1:{personalEdge.optimalRRR.toFixed(1)}</p>
+                          </div>
+                        </div>
+                        
+                        {/* Integrated Scatter Chart */}
+                        <div className="h-[250px] w-full mt-4 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-slate-100 dark:border-slate-800/50">
+                           <SetupScatterChart data={scatterData} />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="h-[200px] flex items-center justify-center text-slate-400 text-sm">
+                        Not enough data to determine edge
+                      </div>
                     )}
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-                    {bottomSetup && (
-                      <Card className="border-l-4 border-l-rose-500 shadow-md bg-white dark:bg-slate-900">
-                        <CardHeader className="pb-2">
-                            <p className="text-xs font-bold text-rose-600 uppercase tracking-wider">Needs Improvement</p>
-                            <CardTitle className="text-xl">{bottomSetup.setupName}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex justify-between items-end">
-                              <div>
-                                  <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                                    {(bottomSetup.winRate * 100).toFixed(1)}%
-                                  </p>
-                                  <p className="text-xs text-slate-500">Win Rate</p>
-                              </div>
-                              <div className="text-right">
-                                  <p className="text-lg font-mono font-medium text-rose-600">
-                                    ${(bottomSetup.totalPnL).toFixed(0)}
-                                  </p>
-                              </div>
+              {/* COL 3: PSYCHOLOGY & RISK (Stacked) */}
+              <motion.div 
+                className="space-y-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                {/* Psychology Section */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2">
+                    <Brain className="w-4 h-4" /> Psychology
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {/* Enablers */}
+                    <Card className="border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/10 dark:bg-emerald-950/5">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase">Edge Enablers</span>
+                          <CheckCircle className="w-3 h-3 text-emerald-500" />
+                        </div>
+                        <div className="space-y-2">
+                          {psychologyAnalysis.topEnablers.slice(0, 2).map((factor, i) => (
+                            <div key={i} className="flex justify-between items-center text-sm">
+                              <span className="text-slate-700 dark:text-slate-300">{factor.factor}</span>
+                              <span className="font-mono font-bold text-emerald-600">+{factor.impact.toFixed(0)}%</span>
                             </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                          ))}
+                          {psychologyAnalysis.topEnablers.length === 0 && (
+                            <span className="text-xs text-slate-400 italic">No positive patterns yet</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Killers */}
+                    <Card className="border border-rose-100 dark:border-rose-900/30 bg-rose-50/10 dark:bg-rose-950/5">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase">Edge Killers</span>
+                          <AlertTriangle className="w-3 h-3 text-rose-500" />
+                        </div>
+                        <div className="space-y-2">
+                          {psychologyAnalysis.topKillers.slice(0, 2).map((factor, i) => (
+                            <div key={i} className="flex justify-between items-center text-sm">
+                              <span className="text-slate-700 dark:text-slate-300">{factor.factor}</span>
+                              <span className="font-mono font-bold text-rose-600">{factor.impact.toFixed(0)}%</span>
+                            </div>
+                          ))}
+                          {psychologyAnalysis.topKillers.length === 0 && (
+                            <span className="text-xs text-slate-400 italic">No negative patterns yet</span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
 
-                {setupAnalysis.personalEdge && (
-                  <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-indigo-950/20">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Award className="h-5 w-5 text-indigo-600" />
-                        <span>Your Personal Edge</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2 p-4 bg-white/60 rounded-xl">
-                          <p className="text-sm text-slate-500">Best Performing Setup</p>
-                          <p className="text-2xl font-bold text-slate-900">{setupAnalysis.personalEdge.setupName}</p>
-                        </div>
-                        <div className="space-y-2 p-4 bg-white/60 rounded-xl">
-                          <p className="text-sm text-slate-500">Win Rate</p>
-                          <p className="text-2xl font-bold text-emerald-600">{(setupAnalysis.personalEdge.winRate * 100).toFixed(1)}%</p>
-                        </div>
-                        <div className="space-y-2 p-4 bg-white/60 rounded-xl">
-                          <p className="text-sm text-slate-500">Optimal RRR</p>
-                          <p className="text-2xl font-bold text-indigo-600">1:{setupAnalysis.personalEdge.optimalRRR.toFixed(1)}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* Psychology Sub-Tab - Styled like original Insights page */}
-              <TabsContent value="psychology" className="space-y-6 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Top Enablers */}
-                  <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-                    <div className="h-1.5 w-full bg-emerald-500" />
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center space-x-2">
-                          <CheckCircle className="h-5 w-5 text-emerald-600" />
-                          <span>Edge-Enablers</span>
-                        </CardTitle>
-                        <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">Positive Impact</Badge>
-                      </div>
-                      <CardDescription>Emotions correlated with higher profitability</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {psychologyAnalysis.topEnablers.length === 0 ? (
-                        <p className="text-gray-500 italic">No psychology factors recorded</p>
-                      ) : (
-                        psychologyAnalysis.topEnablers.map((factor, idx) => (
-                          <div key={idx} className="p-4 bg-green-50 rounded-xl border border-green-100">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-semibold text-gray-900">{factor.factor}</p>
-                                <p className="text-sm text-gray-600">{factor.tradeCount} trades</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-green-600">+{factor.impact.toFixed(1)}%</p>
-                                <p className="text-sm text-gray-600">{(factor.winRate * 100).toFixed(0)}% WR</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Edge Killers */}
-                  <Card className="border-0 shadow-lg bg-white dark:bg-slate-900 overflow-hidden">
-                    <div className="h-1.5 w-full bg-rose-500" />
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center space-x-2">
-                          <AlertTriangle className="h-5 w-5 text-rose-600" />
-                          <span>Edge-Killers</span>
-                        </CardTitle>
-                        <Badge variant="outline" className="border-rose-200 text-rose-700 bg-rose-50">Negative Impact</Badge>
-                      </div>
-                      <CardDescription>Emotions correlated with losses</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {psychologyAnalysis.topKillers.length === 0 ? (
-                        <p className="text-gray-500 italic">No psychology factors recorded</p>
-                      ) : (
-                        psychologyAnalysis.topKillers.map((factor, idx) => (
-                          <div key={idx} className="p-4 bg-red-50 rounded-xl border border-red-100">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="font-semibold text-gray-900">{factor.factor}</p>
-                                <p className="text-sm text-gray-600">{factor.tradeCount} trades</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-red-600">{factor.impact.toFixed(1)}%</p>
-                                <p className="text-sm text-gray-600">{(factor.winRate * 100).toFixed(0)}% WR</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Insights Footer */}
-                {psychologyAnalysis.insights.length > 0 && (
-                  <Card className="border-0 shadow-lg bg-purple-50">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Brain className="h-5 w-5 text-purple-600" />
-                        <span>Psychological Insights</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {psychologyAnalysis.insights.map((insight, idx) => (
-                        <div key={idx} className="flex items-start space-x-3">
-                          <Activity className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-gray-700">{insight}</p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* Risk Calculator Sub-Tab - Styled like original Insights page */}
-              <TabsContent value="risk" className="space-y-6 mt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600">Current Win Rate</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-green-600">{(riskAnalysis.currentWinRate * 100).toFixed(1)}%</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600">Profit Factor</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-blue-600">{riskAnalysis.profitFactor.toFixed(2)}x</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600">Avg Win / Loss</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-purple-600">
-                        {riskAnalysis.avgLoss > 0 ? (riskAnalysis.avgWin / riskAnalysis.avgLoss).toFixed(2) : "—"}x
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-0 shadow-lg">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-600">Max Drawdown</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-3xl font-bold text-orange-600">{riskAnalysis.drawdownMetrics.maxDrawdown.toFixed(1)}%</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Kelly Criterion */}
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <BarChart3 className="h-5 w-5 text-indigo-600" />
-                      <span>Kelly Criterion & Position Sizing</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 bg-white/60 rounded-xl shadow-sm">
-                        <p className="text-sm text-gray-600 mb-2">Kelly %</p>
-                        <p className="text-2xl font-bold text-indigo-600">{riskAnalysis.kellyCriterion.kellyPercent.toFixed(2)}%</p>
-                      </div>
-                      <div className="p-4 bg-white/60 rounded-xl shadow-sm">
-                        <p className="text-sm text-gray-600 mb-2">Recommended Risk</p>
-                        <p className="text-2xl font-bold text-green-600">{riskAnalysis.kellyCriterion.recommendedRiskPercent.toFixed(2)}%</p>
-                      </div>
-                      <div className="p-4 bg-white/60 rounded-xl shadow-sm">
-                        <p className="text-sm text-gray-600 mb-2">Half Kelly</p>
-                        <p className="text-2xl font-bold text-purple-600">{riskAnalysis.kellyCriterion.halfKellyPercent.toFixed(2)}%</p>
-                      </div>
-                    </div>
-
-                    <div className="p-4 bg-white/60 rounded-xl italic text-gray-700 border-l-4 border-indigo-600">
-                      {riskAnalysis.kellyCriterion.advice}
-                    </div>
-
-                    {/* Position Size Guide */}
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-3">Position Size Guide</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {riskAnalysis.kellyCriterion.positionSizeGuide.map((guide, idx) => (
-                          <div key={idx} className="p-3 bg-white/60 rounded-lg text-sm shadow-sm">
-                            <div className="flex justify-between mb-1">
-                              <span className="text-gray-600">Account:</span>
-                              <span className="font-bold text-gray-900">${guide.accountSize.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between mb-1">
-                              <span className="text-gray-600">Risk:</span>
-                              <span className="text-gray-900">${guide.riskAmount.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
-                              <span className="text-indigo-600 font-medium">Position:</span>
-                              <span className="text-indigo-600 font-bold">${guide.suggestedPositionSize.toFixed(2)}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Risk Recommendations */}
-                {riskAnalysis.recommendations.length > 0 && (
-                  <Card className="border-0 shadow-lg bg-orange-50">
-                    <CardHeader>
-                      <CardTitle className="flex items-center space-x-2">
-                        <Shield className="h-5 w-5 text-orange-600" />
-                        <span>Risk Management Recommendations</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {riskAnalysis.recommendations.map((rec, idx) => (
-                        <div key={idx} className="flex items-start space-x-3">
-                          <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-gray-700">{rec}</p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              {/* NEW SUB-TAB: PLAYBOOK STATS */}
-              <TabsContent value="playbook" className="space-y-6 mt-6">
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* The new Confluence Component */}
-                    <ConfluencePerformance data={confluenceStats || []} />
-
-                    {/* We can re-use the Setup Scatter Chart here or specific Setup list if needed */}
-                    <Card className="border-0 shadow-lg bg-white dark:bg-slate-900">
-                       <CardHeader>
-                          <CardTitle>Strategy Efficiency</CardTitle>
-                          <CardDescription>Setup Win Rate vs. Frequency</CardDescription>
-                       </CardHeader>
-                       <CardContent>
-                          <SetupScatterChart data={scatterData} />
-                       </CardContent>
+                {/* Risk Section */}
+                <div>
+                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2">
+                    <Shield className="w-4 h-4" /> Risk Assessment
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                      <CardContent className="p-3">
+                        <p className="text-[10px] text-slate-500 uppercase">Max Drawdown</p>
+                        <p className="text-lg font-mono font-bold text-rose-600">
+                          {riskAnalysis.drawdownMetrics.maxDrawdown.toFixed(1)}%
+                        </p>
+                      </CardContent>
                     </Card>
-                 </div>
-              </TabsContent>
+                    <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                      <CardContent className="p-3">
+                        <p className="text-[10px] text-slate-500 uppercase">Kelly Criterion</p>
+                        <p className="text-lg font-mono font-bold text-indigo-600">
+                          {riskAnalysis.kellyCriterion.kellyPercent.toFixed(1)}%
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
 
-            </Tabs>
+              </motion.div>
+            </div>
+
+            {/* 3. METRICS STRIP (Bottom) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }} 
+              className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
+            >
+               {analytics.metricsList.map((metric, i) => (
+                 <Card key={i} className="border-0 shadow-sm bg-slate-50 dark:bg-slate-900/50">
+                   <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{metric.name}</span>
+                      <span className={cn(
+                        "text-xl font-mono font-bold",
+                        metric.value >= 70 ? "text-emerald-600" : metric.value >= 40 ? "text-amber-500" : "text-rose-500"
+                      )}>
+                        {metric.value.toFixed(0)}
+                      </span>
+                   </CardContent>
+                 </Card>
+               ))}
+            </motion.div>
+
           </TabsContent>
         </Tabs>
       </main>
@@ -1569,13 +1378,13 @@ export default function AnalyticsPage() {
       <div className="fixed bottom-6 right-6 md:hidden z-50">
           <Sheet>
             <SheetTrigger asChild>
-                <Button size="icon" className="h-14 w-14 rounded-full bg-indigo-600 text-white shadow-2xl shadow-indigo-600/40 hover:bg-indigo-700 transition-transform hover:scale-110">
+                <Button size="icon" className="h-14 w-14 rounded-full bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transition-transform hover:scale-105">
                     <CalendarIcon className="h-6 w-6" />
                 </Button>
             </SheetTrigger>
-            <SheetContent className="w-full h-full p-0 bg-slate-50/50">
-                <div className="px-6 py-6 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-                    <h2 className="text-2xl font-bold text-slate-900">Trading Journal</h2>
+            <SheetContent className="w-full h-full p-0 bg-white">
+                <div className="px-6 py-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+                    <h2 className="text-lg font-bold text-slate-900">Trading Journal</h2>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6">
                     <JournalCalendar trades={trades} dailyData={analytics.dailyData} />

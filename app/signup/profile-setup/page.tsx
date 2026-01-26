@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   CheckCircle2, TrendingUp, UserIcon, Eye, ChevronRight, ChevronLeft, Search,
   List, Check, AlertCircle, Terminal, Zap, Globe, Shield, Bell,
-  LayoutGrid, Loader2, CheckSquare, Square
+  LayoutGrid, Loader2, CheckSquare, Square, FileText
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,70 +35,71 @@ import {
 // --- CONFIGURATION ---
 const TOTAL_STEPS = 8
 
+// REWRITTEN: More human, friendly language
 const stepConfig = [
   {
     id: 1,
     title: "Markets",
-    subtitle: "Asset Classes",
-    description: "Initialize market data feeds for your active environments.",
+    subtitle: "What do you trade?",
+    description: "Let's start by picking the markets you're interested in.",
     icon: Globe,
-    color: "text-indigo-500",
+    color: "text-indigo-400",
   },
   {
     id: 2,
     title: "Watchlist",
-    subtitle: "Instruments",
-    description: "Select specific tickers to track in your terminal.",
+    subtitle: "Your Favorites",
+    description: "Choose the specific assets you want to see on your dashboard.",
     icon: TrendingUp,
-    color: "text-emerald-500",
+    color: "text-emerald-400",
   },
   {
     id: 3,
-    title: "Operator",
-    subtitle: "Identity",
-    description: "Establish your professional trading profile.",
+    title: "Profile", // Was "Operator"
+    subtitle: "About You",
+    description: "Tell us a bit about yourself so we can personalize your experience.",
     icon: UserIcon,
-    color: "text-blue-500",
+    color: "text-blue-400",
   },
   {
     id: 4,
     title: "Layout",
-    subtitle: "Visibility",
-    description: "Configure which instruments appear in your trade entry dropdowns.",
+    subtitle: "Customize View",
+    description: "Which instruments should appear in your quick-trade menus?",
     icon: Eye,
-    color: "text-violet-500",
+    color: "text-violet-400",
   },
   {
     id: 5,
-    title: "Comms",
-    subtitle: "Notifications",
-    description: "Set protocols for system alerts and updates.",
+    title: "Alerts", // Was "Comms"
+    subtitle: "Stay Updated",
+    description: "How should we notify you about trade setups and system updates?",
     icon: Bell,
-    color: "text-amber-500",
+    color: "text-amber-400",
   },
   {
     id: 6,
-    title: "Protocol",
-    subtitle: "Legal",
-    description: "Review and accept compliance terms.",
+    title: "Legal", // Was "Protocol"
+    subtitle: "Terms of Service",
+    description: "Please review and accept our terms to continue.",
     icon: Shield,
-    color: "text-slate-400",
+    color: "text-slate-300",
   },
   {
     id: 7,
-    title: "Verify",
-    subtitle: "Review",
-    description: "Final system integrity check before deployment.",
+    title: "Review", // Was "Verify"
+    subtitle: "Final Check",
+    description: "Double-check your settings before we finish up.",
     icon: List,
-    color: "text-teal-500",
+    color: "text-teal-400",
   },
   {
     id: 8,
-    title: "Deploy",
-    subtitle: "Launch",
-    description: "Finalize setup and enter the terminal.",
+    title: "Complete", // Was "Deploy"
+    subtitle: "Ready to Start",
+    description: "You're all set! Let's launch your terminal.",
     icon: Zap,
-    color: "text-purple-500",
+    color: "text-purple-400",
   },
 ]
 
@@ -120,7 +121,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
   return (
     <div className={cn(
       "relative flex items-center group py-3 px-3 mb-1.5 rounded-md transition-all duration-200 border border-transparent",
-      isActive ? "bg-zinc-800 border-zinc-700" : "hover:bg-zinc-900"
+      isActive ? "bg-zinc-800 border-zinc-700" : "hover:bg-zinc-800/50"
     )}>
       <div className="flex items-center gap-3 w-full">
         <div
@@ -129,7 +130,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
             isActive
               ? "bg-indigo-600 text-white"
               : isPast
-                ? "bg-emerald-900/30 text-emerald-500"
+                ? "bg-emerald-900/40 text-emerald-400"
                 : "bg-zinc-800 text-zinc-500",
           )}
         >
@@ -152,17 +153,17 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
   <div
     onClick={onClick}
     className={cn(
-      "relative flex flex-col items-center justify-center p-6 rounded-lg border cursor-pointer transition-all duration-200",
+      "relative flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200",
       isSelected
         ? "bg-zinc-900 border-indigo-500 ring-1 ring-indigo-500"
-        : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800"
+        : "bg-zinc-900 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800"
     )}
   >
-    <div className={cn("mb-4 transition-all duration-200", isSelected ? "text-indigo-400 scale-110" : "text-zinc-600 grayscale group-hover:grayscale-0 group-hover:text-zinc-400")}>
+    <div className={cn("mb-4 transition-all duration-200", isSelected ? "text-indigo-400 scale-110" : "text-zinc-500 grayscale group-hover:grayscale-0 group-hover:text-zinc-300")}>
       {category.icon}
     </div>
     <div className={cn("font-bold text-sm text-center uppercase tracking-wide", isSelected ? "text-zinc-100" : "text-zinc-400")}>{category.label}</div>
-    <div className="text-[11px] text-zinc-500 text-center mt-1 font-medium">{category.description}</div>
+    <div className="text-[12px] text-zinc-500 text-center mt-1 font-medium">{category.description}</div>
   </div>
 )
 
@@ -171,10 +172,10 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
     <div
       onClick={() => onSelect(instrument.symbol)}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-all duration-200",
+        "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200",
         isSelected
           ? "bg-indigo-950/20 border-indigo-500/50"
-          : "bg-zinc-900 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800"
+          : "bg-zinc-900 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800"
       )}
     >
       <div className={cn(
@@ -184,7 +185,7 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
         {instrument.symbol.substring(0, 2)}
       </div>
       <div className="overflow-hidden">
-        <div className={cn("text-sm font-bold truncate", isSelected ? "text-indigo-200" : "text-zinc-300")}>{instrument.symbol}</div>
+        <div className={cn("text-sm font-bold truncate", isSelected ? "text-indigo-200" : "text-zinc-200")}>{instrument.symbol}</div>
         <div className="text-[11px] text-zinc-500 truncate">{instrument.name}</div>
       </div>
       {isSelected && <CheckCircle2 className="w-4 h-4 text-indigo-500 ml-auto flex-shrink-0" />}
@@ -318,15 +319,26 @@ function ProfileSetupContent() {
     })
   }
 
+  // --- STEP 6 LOGIC (LEGAL) ---
+  const acceptAllTerms = () => {
+    // Assuming standard keys for a legal step. 
+    // If your LegalPrivacyStep uses different keys, ensure these match the PrivacyPreferences type.
+    updatePrivacyPreferences({ 
+      termsAccepted: true, 
+      privacyPolicy: true, 
+      riskDisclosure: true,
+      dataProcessing: true
+    } as any)
+  }
+
   if (isAuthenticated === null || !isLoaded) return <LoadingScreen />
   if (!isAuthenticated) return null
 
   return (
     <TooltipProvider>
-      {/* CRITICAL FIX: 
-        1. Solid dark background (zinc-950) instead of gradients.
-        2. Subtle grid pattern for texture.
-        3. Removed blur filters.
+      {/* VISUAL FIX: 
+        Solid dark background #09090b (zinc-950) for high contrast.
+        Text colors bumped from zinc-500 to zinc-400 for better readability.
       */}
       <div className="flex h-screen bg-[#09090b] text-zinc-200 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
 
@@ -334,14 +346,14 @@ function ProfileSetupContent() {
         <aside className="hidden lg:flex w-72 flex-col border-r border-zinc-800 bg-[#0c0c0e] h-full z-20">
           <div className="p-8 border-b border-zinc-800">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-zinc-900 rounded-md border border-zinc-800">
+              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800">
                 <ConcentradeLogo size={20} variant="icon" />
               </div>
               <div>
                 <h1 className="font-bold text-sm tracking-widest text-zinc-100 uppercase">System Config</h1>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">Connected</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                  <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Connected</span>
                 </div>
               </div>
             </div>
@@ -360,7 +372,7 @@ function ProfileSetupContent() {
             </div>
             <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-indigo-600 transition-all duration-300 ease-out"
+                className="h-full bg-indigo-600 transition-all duration-300 ease-out shadow-[0_0_10px_rgba(79,70,229,0.5)]"
                 style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }}
               />
             </div>
@@ -369,8 +381,8 @@ function ProfileSetupContent() {
 
         {/* MAIN TERMINAL AREA */}
         <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-[#09090b]">
-          {/* Subtle Grid - Sharp, not blurry */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-50" />
+          {/* Subtle Grid - Sharper opacity for visibility */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-40" />
           
           {/* Mobile Header */}
           <header className="h-16 border-b border-zinc-800 flex items-center justify-between px-6 lg:hidden bg-zinc-950 sticky top-0 z-50">
@@ -384,9 +396,9 @@ function ProfileSetupContent() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`step-wrapper-${currentStep}`}
-                  initial={{ opacity: 0, y: 10 }} // Removed blur
-                  animate={{ opacity: 1, y: 0 }}   // Removed blur
-                  exit={{ opacity: 0, y: -10 }}    // Removed blur
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
                   {/* Step Header */}
@@ -395,7 +407,7 @@ function ProfileSetupContent() {
                       <div className={cn("p-1.5 rounded bg-zinc-900 border border-zinc-800", currentStepConfig.color)}>
                         <currentStepConfig.icon className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">{currentStepConfig.subtitle}</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">{currentStepConfig.subtitle}</span>
                     </div>
                     <h1 className="text-4xl font-bold tracking-tight mb-4 text-white">{currentStepConfig.title}</h1>
                     <p className="text-zinc-400 text-lg max-w-2xl font-normal leading-relaxed">{currentStepConfig.description}</p>
@@ -424,10 +436,10 @@ function ProfileSetupContent() {
                           <div className="relative flex-1 group">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
                             <Input
-                              placeholder="Search tickers..."
+                              placeholder="Search for symbols (e.g. BTC, ES, AAPL)..."
                               value={searchQuery}
                               onChange={e => setSearchQuery(e.target.value)}
-                              className="pl-10 bg-zinc-900 border-zinc-800 h-11 rounded-md focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white placeholder:text-zinc-600 transition-all"
+                              className="pl-10 bg-zinc-900 border-zinc-800 h-11 rounded-md focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-white placeholder:text-zinc-500 transition-all"
                             />
                           </div>
                           <div className="flex border border-zinc-800 rounded-md overflow-hidden bg-zinc-900">
@@ -438,9 +450,9 @@ function ProfileSetupContent() {
                         {selectedPrimaryInstruments.length === 0 ? (
                           <div className="text-center py-20 border border-dashed border-zinc-800 rounded-lg bg-zinc-900/50">
                             <AlertCircle className="w-10 h-10 text-zinc-600 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-white mb-2">Feed Offline</h3>
-                            <p className="text-zinc-500 mb-6 max-w-sm mx-auto">Market data streams are currently inactive.</p>
-                            <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Return to Markets</Button>
+                            <h3 className="text-lg font-medium text-white mb-2">No Markets Selected</h3>
+                            <p className="text-zinc-500 mb-6 max-w-sm mx-auto">Please go back and select at least one market to see available instruments.</p>
+                            <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Go Back to Markets</Button>
                           </div>
                         ) : (
                           <div className={cn("grid gap-3", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
@@ -480,7 +492,7 @@ function ProfileSetupContent() {
                                   "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all duration-200",
                                   activeLayoutTab === catId
                                     ? "bg-indigo-600 text-white border-indigo-500"
-                                    : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700 hover:text-zinc-300"
+                                    : "bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300"
                                 )}
                               >
                                 {catId}
@@ -494,10 +506,10 @@ function ProfileSetupContent() {
                               size="sm"
                               variant="outline"
                               onClick={() => toggleAllVisibility(activeLayoutTab, !isAllVisibleInTab)}
-                              className="h-8 text-xs border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-300"
+                              className="h-8 text-xs border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white"
                             >
                               {isAllVisibleInTab ? <Square className="w-3.5 h-3.5 mr-2" /> : <CheckSquare className="w-3.5 h-3.5 mr-2" />}
-                              {isAllVisibleInTab ? "Disable All" : "Enable All"}
+                              {isAllVisibleInTab ? "Deselect All" : "Select All"}
                             </Button>
                           )}
                         </div>
@@ -515,7 +527,7 @@ function ProfileSetupContent() {
                                     "relative p-4 rounded-md border cursor-pointer transition-all duration-200 flex items-center justify-between group",
                                     isVisible
                                       ? "bg-indigo-950/10 border-indigo-500/40"
-                                      : "bg-zinc-900 border-zinc-800 hover:border-zinc-700"
+                                      : "bg-zinc-900 border-zinc-800 hover:border-zinc-600"
                                   )}
                                 >
                                   <div className="flex items-center gap-3">
@@ -536,7 +548,7 @@ function ProfileSetupContent() {
                             })}
                           </div>
                         ) : (
-                          <div className="py-24 text-center text-zinc-500 font-normal text-sm">Select a market category above to configure visibility.</div>
+                          <div className="py-24 text-center text-zinc-500 font-normal text-sm">Select a market category above to configure what you see.</div>
                         )}
                       </div>
                     )}
@@ -546,7 +558,7 @@ function ProfileSetupContent() {
                       <div className="space-y-6">
                         <div className="flex justify-end">
                           <Button variant="ghost" size="sm" onClick={enableAllNotifications} className="gap-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20">
-                            <CheckSquare className="w-4 h-4" /> Activate All Protocols
+                            <CheckSquare className="w-4 h-4" /> Enable All Notifications
                           </Button>
                         </div>
                         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8">
@@ -555,10 +567,22 @@ function ProfileSetupContent() {
                       </div>
                     )}
 
-                    {/* STEP 6: LEGAL */}
+                    {/* STEP 6: LEGAL - UPDATED WITH ACCEPT ALL */}
                     {currentStep === 6 && (
-                      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8">
-                        <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
+                      <div className="space-y-6">
+                        <div className="flex justify-end">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={acceptAllTerms} 
+                            className="gap-2 border-indigo-500/20 bg-indigo-500/5 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all"
+                          >
+                            <FileText className="w-4 h-4" /> Accept All Terms & Conditions
+                          </Button>
+                        </div>
+                        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-8">
+                          <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
+                        </div>
                       </div>
                     )}
 
@@ -573,15 +597,15 @@ function ProfileSetupContent() {
                     {currentStep === 8 && (
                       <div className="flex flex-col items-center justify-center py-32 text-center">
                         <div className="relative mb-10 group cursor-default">
-                          <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center text-indigo-500 border border-zinc-800">
+                          <div className="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center text-indigo-500 border border-zinc-800 shadow-[0_0_20px_rgba(99,102,241,0.1)]">
                             <Terminal className="w-10 h-10" />
                           </div>
                           <div className="absolute inset-0 border-2 border-indigo-500/20 rounded-full animate-[spin_10s_linear_infinite]" />
                         </div>
-                        <h2 className="text-3xl font-bold mb-4 tracking-tight text-white">System Initialized</h2>
+                        <h2 className="text-3xl font-bold mb-4 tracking-tight text-white">All Systems Go</h2>
                         <p className="text-zinc-400 max-w-md mb-10 leading-relaxed text-base">
-                          Your environment has been successfully configured.
-                          <br />Prepare for deployment.
+                          Your trading environment is configured and ready.
+                          <br />Click below to enter the terminal.
                         </p>
                       </div>
                     )}
@@ -607,7 +631,7 @@ function ProfileSetupContent() {
                 size="lg"
                 onClick={handleNext}
                 disabled={isTransitioning}
-                className="min-w-[160px] h-11 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-bold tracking-wide uppercase text-xs transition-all"
+                className="min-w-[160px] h-11 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-bold tracking-wide uppercase text-xs transition-all shadow-[0_4px_12px_rgba(79,70,229,0.3)] hover:shadow-[0_4px_16px_rgba(79,70,229,0.5)]"
               >
                 {isTransitioning ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === TOTAL_STEPS ? "Enter Terminal" : "Continue"}
                 {currentStep !== TOTAL_STEPS && !isTransitioning && <ChevronRight className="w-4 h-4 ml-2" />}

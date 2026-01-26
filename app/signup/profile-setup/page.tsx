@@ -111,7 +111,7 @@ const premiumInstrumentCategories = [
   { id: "options", label: "Options", description: "Derivatives", icon: <SPYIcon className="w-8 h-8" /> },
 ]
 
-// --- UI COMPONENTS (Enhanced for Visibility) ---
+// --- UI COMPONENTS ---
 
 const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) => {
   const isActive = step.id === currentStep
@@ -324,6 +324,7 @@ function ProfileSetupContent() {
 
   // --- STEP 6 LOGIC (LEGAL) ---
   const acceptAllTerms = () => {
+    // Explicitly set ALL required fields to true
     const allAccepted: PrivacyPreferences = {
       termsAccepted: true,
       privacyPolicy: true,
@@ -467,9 +468,9 @@ function ProfileSetupContent() {
                       </div>
                     )}
 
-                    {/* STEP 3: IDENTITY */}
+                    {/* STEP 3: IDENTITY (High Contrast Wrapper) */}
                     {currentStep === 3 && (
-                      <div className="max-w-2xl bg-zinc-900/80 border border-zinc-800 rounded-lg p-8 shadow-sm backdrop-blur-sm">
+                      <div className="max-w-2xl bg-zinc-900 border border-zinc-700 rounded-lg p-8 shadow-2xl backdrop-blur-sm">
                         <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
                       </div>
                     )}
@@ -559,13 +560,13 @@ function ProfileSetupContent() {
                             <CheckSquare className="w-4 h-4" /> Enable All Notifications
                           </Button>
                         </div>
-                        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-8 backdrop-blur-sm">
+                        <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-8 shadow-xl backdrop-blur-sm">
                           <NotificationsStep notificationPreferences={config.notificationPreferences} onUpdate={updateNotificationPreferences} />
                         </div>
                       </div>
                     )}
 
-                    {/* STEP 6: LEGAL - UPDATED WITH ACCEPT ALL */}
+                    {/* STEP 6: LEGAL - UPDATED WITH ACCEPT ALL & VISIBILITY */}
                     {currentStep === 6 && (
                       <div className="space-y-6">
                         <div className="flex justify-end">
@@ -578,7 +579,7 @@ function ProfileSetupContent() {
                             <FileText className="w-4 h-4" /> Accept All Terms & Conditions
                           </Button>
                         </div>
-                        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-8 backdrop-blur-sm">
+                        <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-8 shadow-2xl backdrop-blur-sm">
                           <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
                         </div>
                       </div>
@@ -586,7 +587,7 @@ function ProfileSetupContent() {
 
                     {/* STEP 7: REVIEW */}
                     {currentStep === 7 && (
-                      <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-8 backdrop-blur-sm">
+                      <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-8 shadow-2xl backdrop-blur-sm">
                         <ReviewConfirmationStep config={config} />
                       </div>
                     )}

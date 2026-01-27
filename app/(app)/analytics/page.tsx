@@ -150,13 +150,13 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 gap-4 bg-white dark:bg-[#0B0D12] shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 dark:border-slate-800 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0",
+        "fixed z-50 gap-4 bg-white shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0",
         className
       )}
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-md p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors z-50">
+      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-md p-2 bg-transparent hover:bg-slate-100 transition-colors z-50">
         <X className="h-4 w-4 text-slate-500" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
@@ -165,7 +165,7 @@ const SheetContent = React.forwardRef<
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
-// --- 4. FIXED DATE PICKER ---
+// --- 4. FIXED DATE PICKER (Institutional Light Mode) ---
 function DatePickerWithRange({ className, date, setDate }: any) {
   const [open, setOpen] = useState(false)
   const presets = [
@@ -186,18 +186,18 @@ function DatePickerWithRange({ className, date, setDate }: any) {
       <PopoverTrigger asChild>
         <Button
           id="date"
-          variant={"ghost"}
+          variant={"outline"}
           size="sm"
           className={cn(
-            "h-9 w-full justify-start text-left font-normal text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 px-3",
-            !date && "text-muted-foreground",
+            "h-9 w-full justify-start text-left font-normal text-slate-700 bg-white border-slate-200 hover:bg-slate-50 px-3 shadow-sm",
+            !date && "text-slate-400",
             className
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
           {date?.from ? (
             date.to ? (
-              <span className="text-xs font-mono">
+              <span className="text-xs font-medium">
                 {format(date.from, "MMM dd")} - {format(date.to, "MMM dd")}
               </span>
             ) : (
@@ -208,9 +208,9 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-0 shadow-xl rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800" align="start">
-        <div className="flex flex-col sm:flex-row bg-white dark:bg-[#0B0D12]">
-          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 sm:w-[160px]">
+      <PopoverContent className="w-auto p-0 border border-slate-200 shadow-xl rounded-lg overflow-hidden bg-white" align="start">
+        <div className="flex flex-col sm:flex-row bg-white">
+          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50 sm:w-[160px]">
              <div className="px-2 py-1.5 mb-1">
                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Select</span>
              </div>
@@ -226,8 +226,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                    className={cn(
                      "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
                      isActive
-                       ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                       : "hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                       ? "bg-indigo-50 text-indigo-700"
+                       : "hover:bg-white text-slate-600"
                    )}
                  >
                    {preset.label}
@@ -248,13 +248,13 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               className="rounded-md border-0"
               classNames={{
                 day_selected: "bg-indigo-600 text-white hover:bg-indigo-600 focus:bg-indigo-600",
-                day_today: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100",
-                day_range_middle: "aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-900/20 aria-selected:text-indigo-900 dark:aria-selected:text-indigo-100",
+                day_today: "bg-slate-100 text-slate-900",
+                day_range_middle: "aria-selected:bg-indigo-50 aria-selected:text-indigo-900",
               }}
             />
-            <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-2 gap-2">
-               <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
-               <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100 mt-2 gap-2">
+               <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs text-slate-500 hover:text-slate-900">Cancel</Button>
+               <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply Range</Button>
             </div>
           </div>
         </div>
@@ -279,10 +279,10 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
   if (trades.length === 0) {
     return (
       <div className="h-[60vh] flex flex-col items-center justify-center text-slate-400">
-        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-800">
+        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
           <Layers className="w-8 h-8 opacity-20 text-slate-500" />
         </div>
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No trading activity</p>
+        <p className="text-sm font-medium text-slate-600">No trading activity</p>
         <p className="text-xs opacity-60">This day is empty.</p>
       </div>
     )
@@ -292,32 +292,30 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
     <div className="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className={cn(
-          "p-6 rounded-xl border flex flex-col justify-between h-28 shadow-sm transition-all",
-          stats.pnl >= 0
-            ? "bg-emerald-50/50 border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-900/50"
-            : "bg-rose-50/50 border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/50"
+          "p-6 rounded-xl border flex flex-col justify-between h-28 shadow-sm transition-all bg-white",
+          stats.pnl >= 0 ? "border-emerald-100 bg-emerald-50/30" : "border-rose-100 bg-rose-50/30"
         )}>
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Net PnL</span>
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Net PnL</span>
            <span className={cn(
              "text-3xl font-mono font-medium tracking-tight",
-             stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+             stats.pnl >= 0 ? "text-emerald-700" : "text-rose-700"
            )}>
              {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
            </span>
         </div>
 
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] shadow-sm flex flex-col justify-between h-28">
+        <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
            <div className="flex items-baseline gap-2">
-             <span className="text-3xl font-mono font-medium text-slate-900 dark:text-white">{stats.winRate.toFixed(0)}%</span>
+             <span className="text-3xl font-mono font-medium text-slate-900">{stats.winRate.toFixed(0)}%</span>
              <span className="text-xs text-slate-400 font-medium">{stats.count} Trades</span>
            </div>
         </div>
 
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] shadow-sm flex flex-col justify-between h-28">
+        <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
            <div className="flex items-center gap-2 mt-auto">
-             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-900">
+             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100">
                 {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
              </Badge>
            </div>
@@ -326,34 +324,34 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
 
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+          <div className="h-6 w-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
             <Clock className="w-3.5 h-3.5" />
           </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Session Log</h3>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Session Log</h3>
         </div>
 
-        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200 dark:before:bg-slate-800">
+        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
           {trades.map((trade) => (
             <div key={trade.id} className="relative pl-12 group">
               <div className={cn(
-                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white dark:border-[#0B0D12] z-10 box-content shadow-sm",
+                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white z-10 box-content shadow-sm",
                 trade.pnl >= 0 ? "bg-emerald-500" : "bg-rose-500"
               )} />
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-white hover:shadow-md hover:border-slate-300 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs border shadow-sm",
                     trade.direction === "long"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/50"
-                      : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/50"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                      : "bg-rose-50 text-rose-700 border-rose-100"
                   )}>
                     {trade.direction === "long" ? "L" : "S"}
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-sm text-slate-900 dark:text-slate-200">{trade.instrument}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium border border-slate-200 dark:border-slate-700">
+                      <span className="font-bold text-sm text-slate-900">{trade.instrument}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium border border-slate-200">
                         {trade.setup_name || "No Setup"}
                       </span>
                     </div>
@@ -362,7 +360,7 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
                 </div>
 
                 <div className="text-right">
-                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600" : "text-rose-600")}>
                     {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                   </p>
                   <p className="text-[10px] text-slate-400 font-mono mt-0.5">
@@ -409,7 +407,7 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12] relative overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-50 relative overflow-hidden">
       <AnimatePresence mode="wait">
 
         {view === "month" && (
@@ -420,15 +418,15 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col h-full"
           >
-            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-                    <ChevronLeft className="w-4 h-4 text-slate-500" />
+                <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 text-slate-500" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                    <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm font-bold w-28 text-center text-slate-800 dark:text-slate-200 font-mono">{format(currentMonth, "MMMM yyyy")}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-bold w-28 text-center text-slate-800 font-mono">{format(currentMonth, "MMMM yyyy")}</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 text-slate-500" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                    <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -464,31 +462,31 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
                       onClick={() => handleDaySelect(day)}
                       className={cn(
                         "relative aspect-square rounded-lg border flex flex-col items-center justify-center gap-1 transition-all shadow-sm group",
-                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-[#0B0D12] z-10" : "hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-md",
-                        !data ? "bg-white dark:bg-[#0B0D12] border-slate-100 dark:border-slate-800" :
-                        data.pnl > 0 ? "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/30" :
-                        "bg-rose-50/30 dark:bg-rose-950/10 border-rose-100 dark:border-rose-900/30"
+                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 z-10" : "hover:border-indigo-300 hover:shadow-md",
+                        !data ? "bg-white border-slate-100" :
+                        data.pnl > 0 ? "bg-emerald-50/50 border-emerald-100" :
+                        "bg-rose-50/50 border-rose-100"
                       )}
                     >
                       <span className={cn(
                         "text-[10px] font-bold absolute top-2 left-2",
-                        !data ? "text-slate-300" : "text-slate-500 dark:text-slate-400"
+                        !data ? "text-slate-300" : "text-slate-500"
                       )}>{format(day, "d")}</span>
 
                       {data ? (
                         <>
                           <span className={cn(
                             "text-xs font-mono font-medium tracking-tight",
-                            data.pnl > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+                            data.pnl > 0 ? "text-emerald-700" : "text-rose-700"
                           )}>
                             {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl/1000).toFixed(1)}k` : data.pnl.toFixed(0)}
                           </span>
-                          <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50">
+                          <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50">
                             {data.trades}
                           </span>
                         </>
                       ) : (
-                        <div className="w-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-200 transition-colors" />
+                        <div className="w-1 h-1 rounded-full bg-slate-100 group-hover:bg-indigo-200 transition-colors" />
                       )}
                     </motion.button>
                   )
@@ -504,15 +502,15 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="flex flex-col h-full bg-white dark:bg-[#0B0D12]"
+            className="flex flex-col h-full bg-white"
           >
-            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md z-10">
-              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-md hover:bg-slate-100 text-slate-600">
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform text-slate-400" />
                 Back
               </Button>
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <div className="h-4 w-px bg-slate-200" />
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 {format(selectedDay, "MMMM do, yyyy")}
               </h2>
             </div>
@@ -530,18 +528,18 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
   )
 }
 
-// --- 6. METRIC CARDS ---
+// --- 6. METRIC CARDS (Light Mode) ---
 const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => (
-  <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-[#0B0D12] p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all duration-300">
+  <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-sm border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-300">
     <div className="flex items-start justify-between mb-4">
-      <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/10 transition-colors">
-         <Icon className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:bg-indigo-50 transition-colors">
+         <Icon className="h-4 w-4 text-slate-500 group-hover:text-indigo-600" />
       </div>
       {change && (
            <div className={cn(
              "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border",
-             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30" : "",
-             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30" : "text-slate-600 bg-slate-100 border-slate-200 dark:bg-slate-800 dark:text-slate-300",
+             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100" : "",
+             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100" : "text-slate-600 bg-slate-100 border-slate-200",
            )}>
            {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
            {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
@@ -550,23 +548,23 @@ const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any)
       )}
     </div>
     <div>
-       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 dark:text-white font-feature-settings-zero">{value}</h3>
+       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 font-feature-settings-zero">{value}</h3>
        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">{title}</p>
     </div>
   </div>
 ))
 
 const ChartCard = ({ title, subtitle, children, action, className, logoType }: any) => (
-  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-[#0B0D12] rounded-xl", className)}>
-    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
+  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 shadow-sm bg-white rounded-xl", className)}>
+    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100">
       <div className="flex items-center gap-3">
         {logoType && (
-          <div className="p-1.5 bg-slate-50 dark:bg-slate-900 rounded-md border border-slate-100 dark:border-slate-800">
+          <div className="p-1.5 bg-slate-50 rounded-md border border-slate-100">
              <AnalyticsLogoSelector type={logoType} className="w-4 h-4 text-slate-500" />
           </div>
         )}
         <div className="space-y-0.5">
-          <CardTitle className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase">{title}</CardTitle>
+          <CardTitle className="text-sm font-bold text-slate-900 tracking-wide uppercase">{title}</CardTitle>
           {subtitle && <CardDescription className="text-xs text-slate-400">{subtitle}</CardDescription>}
         </div>
       </div>
@@ -577,10 +575,10 @@ const ChartCard = ({ title, subtitle, children, action, className, logoType }: a
 )
 
 const DashboardSkeleton = () => (
-  <div className="w-full min-h-screen bg-slate-50 dark:bg-[#0B0D12] p-8 space-y-8 animate-pulse">
-    <div className="h-16 w-full border-b border-slate-200 dark:border-slate-800" />
+  <div className="w-full min-h-screen bg-slate-50 p-8 space-y-8 animate-pulse">
+    <div className="h-16 w-full border-b border-slate-200 bg-white" />
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
-       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-xl" />)}
+       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 rounded-xl" />)}
     </div>
   </div>
 )
@@ -807,9 +805,13 @@ export default function AnalyticsPage() {
     plugins: {
         legend: { display: false },
         tooltip: {
-            backgroundColor: "#0F172A",
+            backgroundColor: "#ffffff",
+            titleColor: "#0f172a",
+            bodyColor: "#334155",
+            borderColor: "#e2e8f0",
+            borderWidth: 1,
             padding: 12,
-            cornerRadius: 4,
+            cornerRadius: 8,
             titleFont: { family: "monospace", size: 12 },
             bodyFont: { family: "monospace", size: 12 },
             displayColors: false,
@@ -821,12 +823,12 @@ export default function AnalyticsPage() {
     scales: {
         x: {
           grid: { display: false },
-          ticks: { color: "#94a3b8", font: { family: "monospace", size: 10 } }
+          ticks: { color: "#64748b", font: { family: "monospace", size: 10 } }
         },
         y: {
           border: { display: false, dash: [4, 4] },
-          grid: { color: "rgba(148, 163, 184, 0.05)" },
-          ticks: { color: "#94a3b8", font: { family: "monospace", size: 10 }, callback: (v) => `$${Number(v).toFixed(0)}` }
+          grid: { color: "#f1f5f9" },
+          ticks: { color: "#64748b", font: { family: "monospace", size: 10 }, callback: (v) => `$${Number(v).toFixed(0)}` }
         }
     },
   }
@@ -838,10 +840,10 @@ export default function AnalyticsPage() {
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0D12] pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900 transition-colors duration-500">
       
       {/* --- HEADER: STICKY TOOLBAR --- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           
           <div className="flex items-center gap-4">
@@ -849,7 +851,7 @@ export default function AnalyticsPage() {
               <LayoutDashboard className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white leading-none">ANALYTICS</h1>
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-none">ANALYTICS</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-slate-400 font-medium">Performance & Insights</span>
               </div>
@@ -857,17 +859,17 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-0.5 shadow-sm">
-              <div className="w-[200px] border-r border-slate-100 dark:border-slate-800">
-                <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
+            <div className="hidden md:flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-sm">
+              <div className="w-[200px] border-r border-slate-100">
+                <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} className="border-0 shadow-none hover:bg-transparent" />
               </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setShowFilters(!showFilters)} 
                 className={cn(
-                  "h-9 rounded-md px-3 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800",
-                  showFilters && "bg-slate-100 dark:bg-slate-800 text-indigo-600"
+                  "h-9 rounded-md px-3 text-slate-500 hover:text-indigo-600 hover:bg-slate-50",
+                  showFilters && "bg-slate-100 text-indigo-600"
                 )}
               >
                 <Filter className="h-4 w-4" />
@@ -876,11 +878,11 @@ export default function AnalyticsPage() {
 
             <Sheet>
                <SheetTrigger asChild>
-                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded-lg shadow-sm">
+                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors rounded-lg shadow-sm">
                     <CalendarIcon className="h-4 w-4" />
                  </Button>
                </SheetTrigger>
-               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12]/50">
+               <SheetContent className="p-0 flex flex-col h-full bg-slate-50">
                   <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
                </SheetContent>
             </Sheet>
@@ -894,14 +896,14 @@ export default function AnalyticsPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0B0D12]/50"
+              className="overflow-hidden border-t border-slate-100 bg-slate-50"
             >
               <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                   <div className="space-y-1.5">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Instrument</Label>
                     <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
+                      <SelectTrigger className="bg-white border-slate-200 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Instruments</SelectItem>
                         {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
@@ -911,7 +913,7 @@ export default function AnalyticsPage() {
                   <div className="space-y-1.5">
                       <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Setup</Label>
                       <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
+                      <SelectTrigger className="bg-white border-slate-200 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Setups</SelectItem>
                         {Array.from(new Set(trades.map(t => t.setup_name).filter(Boolean))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -929,17 +931,17 @@ export default function AnalyticsPage() {
         
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
           
-          <div className="flex border-b border-slate-200 dark:border-slate-800">
+          <div className="flex border-b border-slate-200">
             <TabsList className="bg-transparent p-0 gap-6 h-auto">
               <TabsTrigger 
                 value="overview" 
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="intelligence" 
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-purple-600 data-[state=active]:bg-transparent data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-purple-600 data-[state=active]:bg-transparent data-[state=active]:text-purple-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 <Sparkles className="w-3 h-3 mr-2" />
                 Intelligence
@@ -988,7 +990,7 @@ export default function AnalyticsPage() {
                 className="lg:col-span-2 h-[350px]" 
                 logoType="MonthlyProfits"
                 action={
-                   <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600"><Download className="h-4 w-4" /></Button>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600"><Download className="h-4 w-4" /></Button>
                 }
               >
                 <div className="h-full w-full">
@@ -1043,17 +1045,17 @@ export default function AnalyticsPage() {
                                     legend: { 
                                         position: 'bottom', 
                                         labels: { 
-                                          font: { size: 10, family: 'monospace' }, 
-                                          usePointStyle: true, 
-                                          padding: 15,
-                                          color: '#94a3b8' 
+                                            font: { size: 10, family: 'monospace' }, 
+                                            usePointStyle: true, 
+                                            padding: 15,
+                                            color: '#64748b' 
                                         } 
                                     } 
                                 } 
                             }}
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
-                             <span className="text-3xl font-mono font-bold text-slate-900 dark:text-white">{analytics.totalTrades}</span>
+                             <span className="text-3xl font-mono font-bold text-slate-900">{analytics.totalTrades}</span>
                              <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Total</span>
                         </div>
                       </div>
@@ -1103,13 +1105,13 @@ export default function AnalyticsPage() {
             {/* --- 4. INTELLIGENCE MODULES (Bottom of Overview) --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Hexagram Score */}
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-[#0B0D12] overflow-hidden rounded-xl h-full">
+                <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl h-full">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                    <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
                       <Brain className="w-4 h-4 text-indigo-500" />
                       Trader DNA
                     </CardTitle>
-                    <Badge variant="outline" className="font-mono text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900">
+                    <Badge variant="outline" className="font-mono text-indigo-600 bg-indigo-50 border-indigo-100">
                       {analytics.overallScore}/100
                     </Badge>
                   </CardHeader>
@@ -1129,7 +1131,7 @@ export default function AnalyticsPage() {
                 {/* Timing Dashboard */}
                 <TimingAnalyticsDashboard
                   trades={trades}
-                  className="rounded-xl bg-white dark:bg-[#0B0D12] border border-slate-200 dark:border-slate-800 shadow-sm h-full"
+                  className="rounded-xl bg-white border border-slate-200 shadow-sm h-full"
                 />
             </div>
 
@@ -1141,13 +1143,13 @@ export default function AnalyticsPage() {
             {/* 1. Header & AI Summary */}
             <div className="space-y-6">
               {/* Action Bar */}
-              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-indigo-50 via-white to-white dark:from-indigo-950/20 dark:via-[#0B0D12] dark:to-[#0B0D12] rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-indigo-50 via-white to-white rounded-xl border border-indigo-100 shadow-sm">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-indigo-500" />
                     Trading Intelligence
                   </h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-sm text-slate-500 mt-1">
                     AI-powered insights and behavioral pattern recognition
                   </p>
                 </div>
@@ -1178,16 +1180,16 @@ export default function AnalyticsPage() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="p-6 bg-white dark:bg-[#0B0D12] rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm relative overflow-hidden"
+                  className="p-6 bg-white rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden"
                 >
                   <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg shrink-0">
-                       <Brain className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="p-3 bg-indigo-50 rounded-lg shrink-0">
+                       <Brain className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">Executive Summary</h3>
-                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
+                      <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">Executive Summary</h3>
+                      <p className="text-slate-600 leading-relaxed text-sm">
                         {aiReport}
                       </p>
                     </div>
@@ -1207,13 +1209,13 @@ export default function AnalyticsPage() {
                 transition={{ delay: 0.1 }}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                     <Target className="w-4 h-4" /> Trading DNA
                   </h3>
                 </div>
 
                 {/* Personal Edge Card */}
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 dark:from-[#0F172A] dark:to-[#0B0D12] border border-slate-200 dark:border-slate-800 overflow-hidden relative">
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 border border-slate-200 overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                   
                   <CardHeader>
@@ -1223,7 +1225,7 @@ export default function AnalyticsPage() {
                         <CardDescription>Highest probability configurations based on historical performance</CardDescription>
                       </div>
                       {personalEdge && (
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900">
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
                           {personalEdge.winRate > 0.6 ? "High Probability" : "Moderate Probability"}
                         </Badge>
                       )}
@@ -1234,22 +1236,22 @@ export default function AnalyticsPage() {
                     {personalEdge ? (
                       <>
                         <div className="grid grid-cols-3 gap-4">
-                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                             <p className="text-xs text-slate-500 mb-1">Top Setup</p>
-                            <p className="text-lg font-bold text-slate-900 dark:text-white truncate" title={personalEdge.setupName}>{personalEdge.setupName}</p>
+                            <p className="text-lg font-bold text-slate-900 truncate" title={personalEdge.setupName}>{personalEdge.setupName}</p>
                           </div>
-                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                             <p className="text-xs text-slate-500 mb-1">Win Rate</p>
                             <p className="text-lg font-bold text-emerald-600">{(personalEdge.winRate * 100).toFixed(1)}%</p>
                           </div>
-                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                             <p className="text-xs text-slate-500 mb-1">Optimal R:R</p>
                             <p className="text-lg font-bold text-indigo-600">1:{personalEdge.optimalRRR.toFixed(1)}</p>
                           </div>
                         </div>
                         
                         {/* Integrated Scatter Chart */}
-                        <div className="h-[250px] w-full mt-4 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-slate-100 dark:border-slate-800/50">
+                        <div className="h-[250px] w-full mt-4 bg-slate-50/50 rounded-xl p-4 border border-slate-100">
                            <SetupScatterChart data={scatterData} />
                         </div>
                       </>
@@ -1271,22 +1273,22 @@ export default function AnalyticsPage() {
               >
                 {/* Psychology Section */}
                 <div>
-                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2">
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4" /> Psychology
                   </h3>
                   
                   <div className="space-y-3">
                     {/* Enablers */}
-                    <Card className="border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/10 dark:bg-emerald-950/5">
+                    <Card className="border border-emerald-100 bg-emerald-50/10">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase">Edge Enablers</span>
+                          <span className="text-xs font-bold text-emerald-700 uppercase">Edge Enablers</span>
                           <CheckCircle className="w-3 h-3 text-emerald-500" />
                         </div>
                         <div className="space-y-2">
                           {psychologyAnalysis.topEnablers.slice(0, 2).map((factor, i) => (
                             <div key={i} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700 dark:text-slate-300">{factor.factor}</span>
+                              <span className="text-slate-700">{factor.factor}</span>
                               <span className="font-mono font-bold text-emerald-600">+{factor.impact.toFixed(0)}%</span>
                             </div>
                           ))}
@@ -1298,16 +1300,16 @@ export default function AnalyticsPage() {
                     </Card>
 
                     {/* Killers */}
-                    <Card className="border border-rose-100 dark:border-rose-900/30 bg-rose-50/10 dark:bg-rose-950/5">
+                    <Card className="border border-rose-100 bg-rose-50/10">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase">Edge Killers</span>
+                          <span className="text-xs font-bold text-rose-700 uppercase">Edge Killers</span>
                           <AlertTriangle className="w-3 h-3 text-rose-500" />
                         </div>
                         <div className="space-y-2">
                           {psychologyAnalysis.topKillers.slice(0, 2).map((factor, i) => (
                             <div key={i} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700 dark:text-slate-300">{factor.factor}</span>
+                              <span className="text-slate-700">{factor.factor}</span>
                               <span className="font-mono font-bold text-rose-600">{factor.impact.toFixed(0)}%</span>
                             </div>
                           ))}
@@ -1322,11 +1324,11 @@ export default function AnalyticsPage() {
 
                 {/* Risk Section */}
                 <div>
-                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2">
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-2">
                     <Shield className="w-4 h-4" /> Risk Assessment
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <Card className="bg-white border border-slate-200">
                       <CardContent className="p-3">
                         <p className="text-[10px] text-slate-500 uppercase">Max Drawdown</p>
                         <p className="text-lg font-mono font-bold text-rose-600">
@@ -1334,7 +1336,7 @@ export default function AnalyticsPage() {
                         </p>
                       </CardContent>
                     </Card>
-                    <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <Card className="bg-white border border-slate-200">
                       <CardContent className="p-3">
                         <p className="text-[10px] text-slate-500 uppercase">Kelly Criterion</p>
                         <p className="text-lg font-mono font-bold text-indigo-600">
@@ -1356,7 +1358,7 @@ export default function AnalyticsPage() {
               className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
             >
                {analytics.metricsList.map((metric, i) => (
-                 <Card key={i} className="border-0 shadow-sm bg-slate-50 dark:bg-slate-900/50">
+                 <Card key={i} className="border-0 shadow-sm bg-slate-50">
                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{metric.name}</span>
                       <span className={cn(

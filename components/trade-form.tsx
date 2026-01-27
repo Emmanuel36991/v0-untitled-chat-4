@@ -125,7 +125,7 @@ const getInitialFormState = (initialTrade?: Trade): ExtendedTradeInput => {
   if (initialTrade) {
     return {
       ...baseState,
-      ...(initialTrade as unknown as ExtendedTradeInput),
+      ...initialTrade as unknown as ExtendedTradeInput,
       date: typeof initialTrade.date === "string" ? initialTrade.date : new Date(initialTrade.date).toISOString().split("T")[0],
       account_id: initialTrade.account_id || "",
     }
@@ -519,10 +519,25 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
     setIsSubmitting(true)
     try {
-      const submissionData = { ...formData, pnl: formData.pnl || pnlResult || 0 }
+      // *** CRITICAL FIX: AGGREGATE PSYCHOLOGY FACTORS INTO TRADE DATA ***
+      // This ensures the analytics page (which reads 'trades.psychology_factors') works correctly.
+      const combinedFactors = [
+        psychologyMood ? `Mood: ${MOODS.find(m => m.id === psychologyMood)?.label}` : null,
+        ...psychologyTriggers.map(id => EMOTIONAL_TRIGGERS.find(t => t.id === id)?.label),
+        ...psychologyPatterns.map(id => BEHAVIORAL_PATTERNS.find(p => p.id === id)?.label),
+        ...psychologyCustomTags
+      ].filter(Boolean) as string[];
+
+      const submissionData = { 
+        ...formData, 
+        pnl: formData.pnl || pnlResult || 0,
+        psychologyFactors: combinedFactors // Inject into trade payload
+      }
+      
       const result = await onSubmitTrade(submissionData)
 
       if (result.success && result.tradeId) {
+        // Also log to the detailed psychology journal if needed for granular tracking
         if (psychologyMood || psychologyTriggers.length > 0 || psychologyPatterns.length > 0) {
           await logTradePsychology(result.tradeId, {
             mood: psychologyMood,
@@ -564,7 +579,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
             <h1 className="text-lg font-bold tracking-tight">New Trade Entry</h1>
           </div>
           <Button onClick={() => handleSubmit()} disabled={isSubmitting} className="rounded-full px-6 bg-gradient-to-r from-primary to-purple-600">
-             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Save Log
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Save Log
           </Button>
         </div>
       </header>
@@ -586,9 +601,9 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
                   <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Globe className="w-5 h-5 text-primary"/> Instrument & Account</CardTitle></CardHeader>
                   <CardContent className="space-y-6">
-                     
-                     {/* --- ACCOUNT SELECTOR --- */}
-                     {tradingAccounts.length > 0 && (
+                      
+                      {/* --- ACCOUNT SELECTOR --- */}
+                      {tradingAccounts.length > 0 && (
                         <div className="space-y-2">
                            <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
                               <Wallet className="w-3 h-3" /> Select Account
@@ -598,74 +613,74 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                               onValueChange={(val) => setFormData(prev => ({...prev, account_id: val}))}
                            >
                               <SelectTrigger className={cn("w-full h-11 bg-background border-input", errors.account_id && "border-red-500 ring-1 ring-red-500")}>
-                                 <SelectValue placeholder="Select Trading Account (e.g. Topstep, Funded)" />
+                                  <SelectValue placeholder="Select Trading Account (e.g. Topstep, Funded)" />
                               </SelectTrigger>
                               <SelectContent>
-                                 {tradingAccounts.map(account => (
-                                    <SelectItem key={account.id} value={account.id}>
-                                       <span className="font-medium">{account.name}</span>
-                                       <span className="ml-2 text-muted-foreground text-xs">({account.type})</span>
-                                    </SelectItem>
-                                 ))}
+                                  {tradingAccounts.map(account => (
+                                     <SelectItem key={account.id} value={account.id}>
+                                         <span className="font-medium">{account.name}</span>
+                                         <span className="ml-2 text-muted-foreground text-xs">({account.type})</span>
+                                     </SelectItem>
+                                  ))}
                               </SelectContent>
                            </Select>
                            {errors.account_id && <p className="text-xs text-red-500">{errors.account_id}</p>}
                         </div>
-                     )}
+                      )}
 
-                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input placeholder="Search Instrument (e.g. ES, BTC)..." className="pl-10 h-12 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                     </div>
-                     <ScrollArea className="h-[200px] w-full rounded-xl border bg-muted/10 p-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                           {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
-                              <button key={inst.symbol} type="button" onClick={() => setFormData(prev => ({ ...prev, instrument: inst.symbol }))} className={cn("flex flex-col items-start p-3 rounded-xl border transition-all text-left", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background")}>
-                                 <span className="font-bold text-sm">{inst.symbol}</span>
-                                 <span className="text-[10px] text-muted-foreground">{inst.name}</span>
-                              </button>
-                           ))}
-                        </div>
-                     </ScrollArea>
+                      <div className="relative">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                         <Input placeholder="Search Instrument (e.g. ES, BTC)..." className="pl-10 h-12 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                      </div>
+                      <ScrollArea className="h-[200px] w-full rounded-xl border bg-muted/10 p-4">
+                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
+                               <button key={inst.symbol} type="button" onClick={() => setFormData(prev => ({ ...prev, instrument: inst.symbol }))} className={cn("flex flex-col items-start p-3 rounded-xl border transition-all text-left", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background")}>
+                                  <span className="font-bold text-sm">{inst.symbol}</span>
+                                  <span className="text-[10px] text-muted-foreground">{inst.name}</span>
+                               </button>
+                            ))}
+                         </div>
+                      </ScrollArea>
                   </CardContent>
                </Card>
 
                <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
                   <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Crosshair className="w-5 h-5 text-primary"/> Execution</CardTitle></CardHeader>
                   <CardContent className="space-y-8">
-                     <div className="grid grid-cols-2 gap-4 p-1 bg-muted/50 rounded-2xl">
-                        <button type="button" onClick={() => setFormData(prev => ({...prev, direction: 'long'}))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-emerald-500 text-white shadow-lg" : "text-muted-foreground hover:bg-emerald-500/10")}>Long</button>
-                        <button type="button" onClick={() => setFormData(prev => ({...prev, direction: 'short'}))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-rose-500 text-white shadow-lg" : "text-muted-foreground hover:bg-rose-500/10")}>Short</button>
-                     </div>
-                     
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/20 rounded-xl border border-border/50">
-                        <div className="space-y-2">
-                           <Label className="text-xs font-bold uppercase text-muted-foreground">Entry Time</Label>
-                           <Input type="datetime-local" name="entry_time" value={formData.entry_time || ""} onChange={handleChange} className="bg-background h-10" />
-                        </div>
-                        <div className="space-y-2">
-                           <Label className="text-xs font-bold uppercase text-muted-foreground">Exit Time</Label>
-                           <Input type="datetime-local" name="exit_time" value={formData.exit_time || ""} onChange={handleChange} className="bg-background h-10" />
-                        </div>
-                     </div>
+                      <div className="grid grid-cols-2 gap-4 p-1 bg-muted/50 rounded-2xl">
+                         <button type="button" onClick={() => setFormData(prev => ({...prev, direction: 'long'}))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-emerald-500 text-white shadow-lg" : "text-muted-foreground hover:bg-emerald-500/10")}>Long</button>
+                         <button type="button" onClick={() => setFormData(prev => ({...prev, direction: 'short'}))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-rose-500 text-white shadow-lg" : "text-muted-foreground hover:bg-rose-500/10")}>Short</button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/20 rounded-xl border border-border/50">
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Entry Time</Label>
+                            <Input type="datetime-local" name="entry_time" value={formData.entry_time || ""} onChange={handleChange} className="bg-background h-10" />
+                         </div>
+                         <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Exit Time</Label>
+                            <Input type="datetime-local" name="exit_time" value={formData.exit_time || ""} onChange={handleChange} className="bg-background h-10" />
+                         </div>
+                      </div>
 
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} icon={MousePointer} color="text-primary" />
-                        <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-rose-500" />
-                        <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={Target} color="text-emerald-500" />
-                     </div>
-                     <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground">Exit Price</Label><Input type="number" name="exit_price" value={formData.exit_price || ""} onChange={handleChange} className="h-12 bg-background border-2" /></div>
-                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground">Size</Label><Input type="number" name="size" value={formData.size || ""} onChange={handleChange} className="h-12 bg-background border-2" /></div>
-                     </div>
-                     <div className="space-y-3">
-                        <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3"/> Session</Label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                           {TRADING_SESSIONS.map(session => (
-                              <SessionCard key={session.value} session={session} isSelected={formData.tradeSession === session.value} onSelect={() => setFormData(prev => ({...prev, tradeSession: session.value}))} />
-                           ))}
-                        </div>
-                     </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                         <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} icon={MousePointer} color="text-primary" />
+                         <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-rose-500" />
+                         <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={Target} color="text-emerald-500" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-6">
+                         <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground">Exit Price</Label><Input type="number" name="exit_price" value={formData.exit_price || ""} onChange={handleChange} className="h-12 bg-background border-2" /></div>
+                         <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground">Size</Label><Input type="number" name="size" value={formData.size || ""} onChange={handleChange} className="h-12 bg-background border-2" /></div>
+                      </div>
+                      <div className="space-y-3">
+                         <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3"/> Session</Label>
+                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {TRADING_SESSIONS.map(session => (
+                               <SessionCard key={session.value} session={session} isSelected={formData.tradeSession === session.value} onSelect={() => setFormData(prev => ({...prev, tradeSession: session.value}))} />
+                            ))}
+                         </div>
+                      </div>
                   </CardContent>
                   <CardFooter className="bg-muted/20 border-t p-4 flex justify-end"><Button size="lg" onClick={() => setActiveTab("strategy")} className="rounded-xl px-8">Next <ChevronRight className="ml-2 w-4 h-4"/></Button></CardFooter>
                </Card>
@@ -744,22 +759,58 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
                <Card className="border-0 shadow-md bg-card">
                   <CardContent className="p-6">
-                     <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
-                     <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
+                      <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
+                      <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
                   </CardContent>
                   <CardFooter className="bg-muted/20 border-t p-4 flex justify-end"><Button size="lg" onClick={() => setActiveTab("psychology")} className="rounded-xl px-8">Next <ChevronRight className="ml-2 w-4 h-4"/></Button></CardFooter>
                </Card>
             </TabsContent>
 
-            {/* TAB 3: PSYCHOLOGY (Unchanged Logic) */}
+            {/* TAB 3: PSYCHOLOGY (UPDATED) */}
             <TabsContent value="psychology" className="space-y-8">
                <div className="flex items-center justify-between"><h2 className="text-2xl font-bold">Psychology</h2><Button variant="outline" size="sm" onClick={() => setActiveTab("strategy")}><ChevronLeft className="w-4 h-4 mr-2"/> Back</Button></div>
                
                <Card className="border-0 shadow-lg"><CardHeader><CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-primary"/> Emotional State</CardTitle></CardHeader><CardContent><div className="grid grid-cols-3 md:grid-cols-7 gap-3">{MOODS.map(m => (<button key={m.id} type="button" onClick={() => setPsychologyMood(m.id)} className={cn("flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105", psychologyMood === m.id ? m.color : "border-transparent bg-muted/30 hover:bg-muted")}><span className="text-2xl mb-1">{m.emoji}</span><span className="text-xs font-bold">{m.label}</span></button>))}</div></CardContent></Card>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3"><Label className="text-xs font-bold uppercase text-muted-foreground">Triggers</Label><div className="flex flex-wrap gap-2">{EMOTIONAL_TRIGGERS.map(t => (<Badge key={t.id} variant={psychologyTriggers.includes(t.id) ? "destructive" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => togglePsychologyTrigger(t.id)}>{t.label}</Badge>))}</div></div>
-                  <div className="space-y-3"><Label className="text-xs font-bold uppercase text-muted-foreground">Patterns</Label><div className="flex flex-wrap gap-2">{BEHAVIORAL_PATTERNS.map(p => (<Badge key={p.id} variant={psychologyPatterns.includes(p.id) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5 bg-blue-500 hover:bg-blue-600 border-transparent text-white" onClick={() => togglePsychologyPattern(p.id)}>{p.label}</Badge>))}</div></div>
+                  <div className="space-y-3">
+                    <Label className="text-xs font-bold uppercase text-muted-foreground">Triggers</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {EMOTIONAL_TRIGGERS.map(t => (
+                        <Badge 
+                          key={t.id} 
+                          variant={psychologyTriggers.includes(t.id) ? "destructive" : "outline"} 
+                          className={cn(
+                            "cursor-pointer px-3 py-1.5 transition-colors",
+                            psychologyTriggers.includes(t.id) ? "bg-red-500 hover:bg-red-600 text-white border-transparent" : "hover:bg-red-500/10 hover:text-red-500"
+                          )} 
+                          onClick={() => togglePsychologyTrigger(t.id)}
+                        >
+                          {t.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <Label className="text-xs font-bold uppercase text-muted-foreground">Patterns</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {BEHAVIORAL_PATTERNS.map(p => (
+                        <Badge 
+                          key={p.id} 
+                          variant={psychologyPatterns.includes(p.id) ? "default" : "outline"} 
+                          className={cn(
+                            "cursor-pointer px-3 py-1.5 transition-colors",
+                            psychologyPatterns.includes(p.id) 
+                              ? "bg-blue-500 hover:bg-blue-600 border-transparent text-white" 
+                              : "hover:bg-blue-500/10 hover:text-blue-500"
+                          )} 
+                          onClick={() => togglePsychologyPattern(p.id)}
+                        >
+                          {p.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

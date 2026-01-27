@@ -9,9 +9,7 @@ function mapRowToTrade(row: any): Trade {
   return {
     id: row.id,
     user_id: row.user_id,
-    // --- FIX: Map the account_id so the frontend can see it ---
     account_id: row.account_id, 
-    // ---------------------------------------------------------
     date: typeof row.date === "string" ? row.date : new Date(row.date).toISOString().split("T")[0],
     instrument: row.instrument,
     direction: row.direction,
@@ -110,7 +108,6 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
     if (key === 'playbook_strategy_id') {
        payload['playbook_strategy_id'] = value
     } else if (key === 'account_id') {
-       // --- FIX: Explicitly handle account_id mapping ---
        payload['account_id'] = value
     } else if (key === 'executed_rules') {
        payload['executed_rules'] = value
@@ -154,7 +151,6 @@ export async function getTrades(): Promise<Trade[]> {
 
     if (!user) return []
 
-    // Select ALL columns to ensure account_id is retrieved
     const { data, error } = await supabase
       .from("trades")
       .select("*")
@@ -345,7 +341,7 @@ export async function getTradeById(id: string): Promise<Trade | null> {
   }
 }
 
-// 8. LOG TRADE PSYCHOLOGY
+// 8. LOG TRADE PSYCHOLOGY - FIXED TO CONNECT WITH JOURNAL
 export async function logTradePsychology(tradeId: string, data: {
   mood: string
   triggers: string[]
@@ -361,22 +357,34 @@ export async function logTradePsychology(tradeId: string, data: {
 
     if (!user) return { success: false, error: "User not authenticated" }
 
-    const { error } = await supabase.from("trade_psychology").insert({
-      trade_id: tradeId,
+    // Combine all arrays into the single 'emotions' array required by psychology_journal_entries
+    const emotions = [
+      ...(data.triggers || []),
+      ...(data.patterns || []),
+      ...(data.tags || [])
+    ]
+
+    // Insert into the CORRECT table: psychology_journal_entries
+    const { error } = await supabase.from("psychology_journal_entries").insert({
       user_id: user.id,
-      mood: data.mood,
-      triggers: data.triggers,
-      patterns: data.patterns,
-      tags: data.tags,
-      pre_thoughts: data.pre_thoughts,
-      post_thoughts: data.post_thoughts,
-      lessons_learned: data.lessons
+      trade_id: tradeId, // Link this journal entry to the trade
+      entry_date: new Date().toISOString().split("T")[0],
+      mood: data.mood || "neutral",
+      emotions: emotions,
+      pre_trade_thoughts: data.pre_thoughts || "",
+      post_trade_thoughts: data.post_thoughts || "",
+      lessons_learned: data.lessons || ""
     })
 
     if (error) {
-      console.error("Error logging trade psychology:", error)
+      console.error("Error logging psychology:", error)
       return { success: false, error: error.message }
     }
+
+    // Refresh pages to show data immediately
+    revalidatePath("/psychology") 
+    revalidatePath("/dashboard")
+    revalidatePath("/trades")
 
     return { success: true }
   } catch (error: any) {

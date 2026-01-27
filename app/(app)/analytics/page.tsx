@@ -1,23 +1,20 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  PointElement,
-  LineElement,
-  Filler,
-  RadialLinearScale,
-  type ChartOptions,
-  type ScriptableContext,
-} from "chart.js"
-import { Bar, Line, Pie } from "react-chartjs-2"
+import { 
+  Area, 
+  AreaChart, 
+  Bar, 
+  BarChart, 
+  CartesianGrid, 
+  Cell, 
+  Pie, 
+  PieChart, 
+  ResponsiveContainer, 
+  Tooltip as RechartsTooltip, 
+  XAxis, 
+  YAxis 
+} from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -37,19 +34,12 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
-  Zap,
   Calendar as CalendarIcon,
   LayoutDashboard,
-  SlidersHorizontal,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  Shield,
+  Filter,
   Download,
   Brain,
   CheckCircle,
-  Award,
-  PieChart,
   Sparkles,
   RefreshCw,
   CheckCircle2,
@@ -57,12 +47,10 @@ import {
   ChevronRight,
   Clock,
   ArrowLeft,
-  Search,
-  Check,
   Layers,
-  Filter,
-  Lightbulb,
-  Maximize2
+  Shield,
+  AlertTriangle,
+  Zap
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
@@ -73,34 +61,16 @@ import { cn } from "@/lib/utils"
 import { useAIAdvisor } from "@/hooks/use-ai-advisor"
 import { AdvisorPanel } from "@/components/ai/advisor-panel"
 import { EnhancedHexagram } from "@/components/charts/enhanced-hexagram"
-import { InsightsWindows } from "@/components/insights/insights-windows"
-import { AnalyticsLogoSelector } from "@/components/analytics-logos"
 import { TimingAnalyticsDashboard } from "@/components/charts/timing-analytics-dashboard"
 import { SetupScatterChart } from "@/components/insights/setup-scatter-chart"
 import { AiSummaryCard } from "@/components/analytics/ai-summary-card"
-import { ConfluencePerformance } from "@/components/analytics/confluence-performance"
 
 // Import Insight Analyzers
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
 import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
 import { analyzeAndCalculateRisk } from "@/lib/insights/risk-calculator"
 
-// --- 1. CHART.JS REGISTRATION ---
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  PointElement,
-  LineElement,
-  Filler,
-  RadialLinearScale,
-)
-
-// --- 2. TYPES ---
+// --- 1. TYPES ---
 interface AnalyticsFilters {
   dateRange: DateRange | undefined
   instruments: string[]
@@ -120,7 +90,7 @@ interface ProcessedAnalytics {
   metricsList: Array<{ name: string; value: number }>
 }
 
-// --- 3. UI COMPONENTS ---
+// --- 2. UI COMPONENTS (Light Mode Only) ---
 
 const Sheet = SheetPrimitive.Root
 const SheetTrigger = SheetPrimitive.Trigger
@@ -132,7 +102,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-slate-950/20 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 bg-slate-900/10 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -150,13 +120,13 @@ const SheetContent = React.forwardRef<
     <SheetPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 gap-4 bg-white dark:bg-[#0B0D12] shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 dark:border-slate-800 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0",
+        "fixed z-50 gap-4 bg-white shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0",
         className
       )}
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-md p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors z-50">
+      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-md p-2 bg-transparent hover:bg-slate-100 transition-colors z-50">
         <X className="h-4 w-4 text-slate-500" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
@@ -164,6 +134,24 @@ const SheetContent = React.forwardRef<
   </SheetPortal>
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
+
+// --- 3. CUSTOM RECHARTS TOOLTIP ---
+const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-slate-200 shadow-xl rounded-lg p-3">
+        <p className="text-xs font-bold text-slate-400 mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm font-mono font-medium text-slate-700 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            {entry.name}: {prefix}{typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
+          </p>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
 
 // --- 4. FIXED DATE PICKER ---
 function DatePickerWithRange({ className, date, setDate }: any) {
@@ -189,7 +177,7 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           variant={"ghost"}
           size="sm"
           className={cn(
-            "h-9 w-full justify-start text-left font-normal text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 px-3",
+            "h-9 w-full justify-start text-left font-normal text-slate-600 hover:bg-slate-50 px-3",
             !date && "text-muted-foreground",
             className
           )}
@@ -197,7 +185,7 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
           {date?.from ? (
             date.to ? (
-              <span className="text-xs font-mono">
+              <span className="text-xs font-mono font-medium">
                 {format(date.from, "MMM dd")} - {format(date.to, "MMM dd")}
               </span>
             ) : (
@@ -208,9 +196,9 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-0 shadow-xl rounded-xl overflow-hidden ring-1 ring-slate-200 dark:ring-slate-800" align="start">
-        <div className="flex flex-col sm:flex-row bg-white dark:bg-[#0B0D12]">
-          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 sm:w-[160px]">
+      <PopoverContent className="w-auto p-0 border-0 shadow-xl rounded-xl overflow-hidden ring-1 ring-slate-200" align="start">
+        <div className="flex flex-col sm:flex-row bg-white">
+          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50/50 sm:w-[160px]">
              <div className="px-2 py-1.5 mb-1">
                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Select</span>
              </div>
@@ -226,8 +214,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                    className={cn(
                      "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
                      isActive
-                       ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                       : "hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                       ? "bg-indigo-50 text-indigo-600"
+                       : "hover:bg-white text-slate-600"
                    )}
                  >
                    {preset.label}
@@ -248,11 +236,11 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               className="rounded-md border-0"
               classNames={{
                 day_selected: "bg-indigo-600 text-white hover:bg-indigo-600 focus:bg-indigo-600",
-                day_today: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100",
-                day_range_middle: "aria-selected:bg-indigo-50 dark:aria-selected:bg-indigo-900/20 aria-selected:text-indigo-900 dark:aria-selected:text-indigo-100",
+                day_today: "bg-slate-100 text-slate-900",
+                day_range_middle: "aria-selected:bg-indigo-50 aria-selected:text-indigo-900",
               }}
             />
-            <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-800 mt-2 gap-2">
+            <div className="flex items-center justify-end pt-4 border-t border-slate-100 mt-2 gap-2">
                <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
             </div>
@@ -279,10 +267,10 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
   if (trades.length === 0) {
     return (
       <div className="h-[60vh] flex flex-col items-center justify-center text-slate-400">
-        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900/50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 dark:border-slate-800">
+        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
           <Layers className="w-8 h-8 opacity-20 text-slate-500" />
         </div>
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No trading activity</p>
+        <p className="text-sm font-medium text-slate-600">No trading activity</p>
         <p className="text-xs opacity-60">This day is empty.</p>
       </div>
     )
@@ -294,30 +282,30 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
         <div className={cn(
           "p-6 rounded-xl border flex flex-col justify-between h-28 shadow-sm transition-all",
           stats.pnl >= 0
-            ? "bg-emerald-50/50 border-emerald-100 dark:bg-emerald-950/20 dark:border-emerald-900/50"
-            : "bg-rose-50/50 border-rose-100 dark:bg-rose-950/20 dark:border-rose-900/50"
+            ? "bg-emerald-50/50 border-emerald-100"
+            : "bg-rose-50/50 border-rose-100"
         )}>
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Net PnL</span>
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Net PnL</span>
            <span className={cn(
              "text-3xl font-mono font-medium tracking-tight",
-             stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+             stats.pnl >= 0 ? "text-emerald-700" : "text-rose-700"
            )}>
              {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
            </span>
         </div>
 
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] shadow-sm flex flex-col justify-between h-28">
+        <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
            <div className="flex items-baseline gap-2">
-             <span className="text-3xl font-mono font-medium text-slate-900 dark:text-white">{stats.winRate.toFixed(0)}%</span>
+             <span className="text-3xl font-mono font-medium text-slate-900">{stats.winRate.toFixed(0)}%</span>
              <span className="text-xs text-slate-400 font-medium">{stats.count} Trades</span>
            </div>
         </div>
 
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] shadow-sm flex flex-col justify-between h-28">
+        <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
            <div className="flex items-center gap-2 mt-auto">
-             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-900">
+             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100">
                 {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
              </Badge>
            </div>
@@ -326,34 +314,34 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
 
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+          <div className="h-6 w-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
             <Clock className="w-3.5 h-3.5" />
           </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Session Log</h3>
+          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Session Log</h3>
         </div>
 
-        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200 dark:before:bg-slate-800">
+        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
           {trades.map((trade) => (
             <div key={trade.id} className="relative pl-12 group">
               <div className={cn(
-                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white dark:border-[#0B0D12] z-10 box-content shadow-sm",
+                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white z-10 box-content shadow-sm",
                 trade.pnl >= 0 ? "bg-emerald-500" : "bg-rose-500"
               )} />
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B0D12] hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-white hover:shadow-md hover:border-slate-300 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs border shadow-sm",
                     trade.direction === "long"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/50"
-                      : "bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/50"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                      : "bg-rose-50 text-rose-700 border-rose-100"
                   )}>
                     {trade.direction === "long" ? "L" : "S"}
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-sm text-slate-900 dark:text-slate-200">{trade.instrument}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 font-medium border border-slate-200 dark:border-slate-700">
+                      <span className="font-bold text-sm text-slate-900">{trade.instrument}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium border border-slate-200">
                         {trade.setup_name || "No Setup"}
                       </span>
                     </div>
@@ -362,7 +350,7 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
                 </div>
 
                 <div className="text-right">
-                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600" : "text-rose-600")}>
                     {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                   </p>
                   <p className="text-[10px] text-slate-400 font-mono mt-0.5">
@@ -409,7 +397,7 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12] relative overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-50/50 relative overflow-hidden">
       <AnimatePresence mode="wait">
 
         {view === "month" && (
@@ -420,14 +408,14 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col h-full"
           >
-            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md sticky top-0 z-10">
+            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
                     <ChevronLeft className="w-4 h-4 text-slate-500" />
                   </Button>
-                  <span className="text-sm font-bold w-28 text-center text-slate-800 dark:text-slate-200 font-mono">{format(currentMonth, "MMMM yyyy")}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                  <span className="text-sm font-bold w-28 text-center text-slate-800 font-mono">{format(currentMonth, "MMMM yyyy")}</span>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
                     <ChevronRight className="w-4 h-4 text-slate-500" />
                   </Button>
                 </div>
@@ -464,31 +452,31 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
                       onClick={() => handleDaySelect(day)}
                       className={cn(
                         "relative aspect-square rounded-lg border flex flex-col items-center justify-center gap-1 transition-all shadow-sm group",
-                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-[#0B0D12] z-10" : "hover:border-indigo-300 dark:hover:border-indigo-800 hover:shadow-md",
-                        !data ? "bg-white dark:bg-[#0B0D12] border-slate-100 dark:border-slate-800" :
-                        data.pnl > 0 ? "bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900/30" :
-                        "bg-rose-50/30 dark:bg-rose-950/10 border-rose-100 dark:border-rose-900/30"
+                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 z-10" : "hover:border-indigo-300 hover:shadow-md",
+                        !data ? "bg-white border-slate-100" :
+                        data.pnl > 0 ? "bg-emerald-50/30 border-emerald-100" :
+                        "bg-rose-50/30 border-rose-100"
                       )}
                     >
                       <span className={cn(
                         "text-[10px] font-bold absolute top-2 left-2",
-                        !data ? "text-slate-300" : "text-slate-500 dark:text-slate-400"
+                        !data ? "text-slate-300" : "text-slate-500"
                       )}>{format(day, "d")}</span>
 
                       {data ? (
                         <>
                           <span className={cn(
                             "text-xs font-mono font-medium tracking-tight",
-                            data.pnl > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+                            data.pnl > 0 ? "text-emerald-700" : "text-rose-700"
                           )}>
                             {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl/1000).toFixed(1)}k` : data.pnl.toFixed(0)}
                           </span>
-                          <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50 dark:bg-slate-800/50">
+                          <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50">
                             {data.trades}
                           </span>
                         </>
                       ) : (
-                        <div className="w-1 h-1 rounded-full bg-slate-100 dark:bg-slate-800 group-hover:bg-indigo-200 transition-colors" />
+                        <div className="w-1 h-1 rounded-full bg-slate-100 group-hover:bg-indigo-200 transition-colors" />
                       )}
                     </motion.button>
                   )
@@ -504,15 +492,15 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="flex flex-col h-full bg-white dark:bg-[#0B0D12]"
+            className="flex flex-col h-full bg-white"
           >
-            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md z-10">
-              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-md hover:bg-slate-100 text-slate-600">
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform text-slate-400" />
                 Back
               </Button>
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              <div className="h-4 w-px bg-slate-200" />
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 {format(selectedDay, "MMMM do, yyyy")}
               </h2>
             </div>
@@ -532,16 +520,16 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
 
 // --- 6. METRIC CARDS ---
 const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => (
-  <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-[#0B0D12] p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all duration-300">
+  <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 hover:shadow-md transition-all duration-300">
     <div className="flex items-start justify-between mb-4">
-      <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/10 transition-colors">
-         <Icon className="h-4 w-4 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:bg-indigo-50 transition-colors">
+         <Icon className="h-4 w-4 text-slate-500 group-hover:text-indigo-600" />
       </div>
       {change && (
            <div className={cn(
              "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border",
-             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/30" : "",
-             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/30" : "text-slate-600 bg-slate-100 border-slate-200 dark:bg-slate-800 dark:text-slate-300",
+             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100" : "",
+             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100" : "text-slate-600 bg-slate-100 border-slate-200",
            )}>
            {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
            {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
@@ -550,23 +538,18 @@ const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any)
       )}
     </div>
     <div>
-       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 dark:text-white font-feature-settings-zero">{value}</h3>
+       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 font-feature-settings-zero">{value}</h3>
        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">{title}</p>
     </div>
   </div>
 ))
 
-const ChartCard = ({ title, subtitle, children, action, className, logoType }: any) => (
-  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-[#0B0D12] rounded-xl", className)}>
-    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
+const ChartCard = ({ title, subtitle, children, action, className }: any) => (
+  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white rounded-xl", className)}>
+    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100">
       <div className="flex items-center gap-3">
-        {logoType && (
-          <div className="p-1.5 bg-slate-50 dark:bg-slate-900 rounded-md border border-slate-100 dark:border-slate-800">
-             <AnalyticsLogoSelector type={logoType} className="w-4 h-4 text-slate-500" />
-          </div>
-        )}
         <div className="space-y-0.5">
-          <CardTitle className="text-sm font-bold text-slate-900 dark:text-white tracking-wide uppercase">{title}</CardTitle>
+          <CardTitle className="text-sm font-bold text-slate-900 tracking-wide uppercase">{title}</CardTitle>
           {subtitle && <CardDescription className="text-xs text-slate-400">{subtitle}</CardDescription>}
         </div>
       </div>
@@ -577,10 +560,10 @@ const ChartCard = ({ title, subtitle, children, action, className, logoType }: a
 )
 
 const DashboardSkeleton = () => (
-  <div className="w-full min-h-screen bg-slate-50 dark:bg-[#0B0D12] p-8 space-y-8 animate-pulse">
-    <div className="h-16 w-full border-b border-slate-200 dark:border-slate-800" />
+  <div className="w-full min-h-screen bg-slate-50 p-8 space-y-8 animate-pulse">
+    <div className="h-16 w-full border-b border-slate-200" />
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
-       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-xl" />)}
+       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 rounded-xl" />)}
     </div>
   </div>
 )
@@ -589,7 +572,7 @@ const DashboardSkeleton = () => (
 
 export default function AnalyticsPage() {
   const [trades, setTrades] = useState<Trade[]>([])
-  const [confluenceStats, setConfluenceStats] = useState<any[]>([]) // Store confluence data
+  const [confluenceStats, setConfluenceStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
   const [mainTab, setMainTab] = useState("overview")
@@ -607,7 +590,6 @@ export default function AnalyticsPage() {
     timeframe: "daily",
   })
 
-  // AI Advisor Hook
   const { openAdvisor, isOpen, close, advisorData } = useAIAdvisor()
 
   const handleGenerateAIReport = () => {
@@ -627,9 +609,7 @@ export default function AnalyticsPage() {
           getTrades(),
           getAnalyticsData()
         ])
-
         setTrades(tradesData || [])
-
         if (analyticsData?.confluenceStats) {
           setConfluenceStats(analyticsData.confluenceStats)
         }
@@ -779,16 +759,15 @@ export default function AnalyticsPage() {
     }
   }, [trades, filters])
 
-  // 2. Deep Insights Analytics (Intelligence)
+  // Intelligence Analytics
   const setupAnalysis = useMemo(() => analyzeSetupPatterns(trades), [trades])
   const psychologyAnalysis = useMemo(() => analyzePsychologyPatterns(trades), [trades])
   const riskAnalysis = useMemo(() => analyzeAndCalculateRisk(trades), [trades])
 
-  // Prepare Data for Charts (Safe mapping)
+  // Prepare Recharts Data
   const scatterData = useMemo(() => {
     const top = setupAnalysis.topSetups || []
     const bottom = setupAnalysis.bottomSetups || []
-
     return [
       ...top.map(s => ({
         name: s.setupName, x: s.winRate * 100, y: 2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 2
@@ -799,49 +778,37 @@ export default function AnalyticsPage() {
     ]
   }, [setupAnalysis])
 
-  // --- CHART OPTIONS ---
-  const commonOptions: ChartOptions<"line" | "bar"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: 'index', intersect: false },
-    plugins: {
-        legend: { display: false },
-        tooltip: {
-            backgroundColor: "#0F172A",
-            padding: 12,
-            cornerRadius: 4,
-            titleFont: { family: "monospace", size: 12 },
-            bodyFont: { family: "monospace", size: 12 },
-            displayColors: false,
-            callbacks: {
-                label: (ctx) => `${ctx.dataset.label}: ${typeof ctx.raw === 'number' ? ctx.raw.toFixed(2) : ctx.raw}`
-            }
-        }
-    },
-    scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: "#94a3b8", font: { family: "monospace", size: 10 } }
-        },
-        y: {
-          border: { display: false, dash: [4, 4] },
-          grid: { color: "rgba(148, 163, 184, 0.05)" },
-          ticks: { color: "#94a3b8", font: { family: "monospace", size: 10 }, callback: (v) => `$${Number(v).toFixed(0)}` }
-        }
-    },
-  }
+  const outcomeData = useMemo(() => [
+    { name: "Wins", value: analytics.wins, color: "#10b981" },
+    { name: "Losses", value: analytics.losses, color: "#ef4444" },
+    { name: "Breakeven", value: analytics.breakeven, color: "#94a3b8" }
+  ], [analytics])
 
-  const topSetup = setupAnalysis.topSetups?.[0]
-  const bottomSetup = setupAnalysis.bottomSetups?.[0]
+  const instrumentData = useMemo(() => 
+    Object.entries(analytics.instrumentDistribution).map(([key, val]) => ({
+      name: key,
+      value: val.pnl,
+      color: val.pnl >= 0 ? "#10b981" : "#ef4444"
+    }))
+  , [analytics])
+
+  const setupData = useMemo(() => 
+    Object.entries(analytics.setupDistribution).map(([key, val]) => ({
+      name: key,
+      value: val.count,
+      color: "#6366f1"
+    }))
+  , [analytics])
+
   const personalEdge = setupAnalysis.personalEdge
 
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0D12] pb-20 font-sans text-slate-900 dark:text-slate-100 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900 transition-colors duration-500">
       
-      {/* --- HEADER: STICKY TOOLBAR --- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#0B0D12]/80 backdrop-blur-md">
+      {/* --- HEADER --- */}
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           
           <div className="flex items-center gap-4">
@@ -849,7 +816,7 @@ export default function AnalyticsPage() {
               <LayoutDashboard className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white leading-none">ANALYTICS</h1>
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-none">ANALYTICS</h1>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-slate-400 font-medium">Performance & Insights</span>
               </div>
@@ -857,8 +824,8 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-0.5 shadow-sm">
-              <div className="w-[200px] border-r border-slate-100 dark:border-slate-800">
+            <div className="hidden md:flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-sm">
+              <div className="w-[200px] border-r border-slate-100">
                 <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
               </div>
               <Button 
@@ -866,8 +833,8 @@ export default function AnalyticsPage() {
                 size="sm" 
                 onClick={() => setShowFilters(!showFilters)} 
                 className={cn(
-                  "h-9 rounded-md px-3 text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800",
-                  showFilters && "bg-slate-100 dark:bg-slate-800 text-indigo-600"
+                  "h-9 rounded-md px-3 text-slate-500 hover:text-indigo-600 hover:bg-slate-50",
+                  showFilters && "bg-slate-100 text-indigo-600"
                 )}
               >
                 <Filter className="h-4 w-4" />
@@ -876,11 +843,11 @@ export default function AnalyticsPage() {
 
             <Sheet>
                <SheetTrigger asChild>
-                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors rounded-lg shadow-sm">
+                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors rounded-lg shadow-sm">
                     <CalendarIcon className="h-4 w-4" />
                  </Button>
                </SheetTrigger>
-               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12]/50">
+               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50">
                   <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
                </SheetContent>
             </Sheet>
@@ -894,14 +861,14 @@ export default function AnalyticsPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0B0D12]/50"
+              className="overflow-hidden border-t border-slate-100 bg-slate-50/50"
             >
               <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                   <div className="space-y-1.5">
                     <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Instrument</Label>
                     <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
+                      <SelectTrigger className="bg-white border-slate-200 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Instruments</SelectItem>
                         {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
@@ -911,7 +878,7 @@ export default function AnalyticsPage() {
                   <div className="space-y-1.5">
                       <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Setup</Label>
                       <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
+                      <SelectTrigger className="bg-white border-slate-200 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Setups</SelectItem>
                         {Array.from(new Set(trades.map(t => t.setup_name).filter(Boolean))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -929,17 +896,17 @@ export default function AnalyticsPage() {
         
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
           
-          <div className="flex border-b border-slate-200 dark:border-slate-800">
+          <div className="flex border-b border-slate-200">
             <TabsList className="bg-transparent p-0 gap-6 h-auto">
               <TabsTrigger 
                 value="overview" 
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="intelligence" 
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-purple-600 data-[state=active]:bg-transparent data-[state=active]:text-purple-600 dark:data-[state=active]:text-purple-400 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-purple-600 data-[state=active]:bg-transparent data-[state=active]:text-purple-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 <Sparkles className="w-3 h-3 mr-2" />
                 Intelligence
@@ -979,137 +946,127 @@ export default function AnalyticsPage() {
               />
             </div>
 
-            {/* --- 2. MAIN CHARTS --- */}
+            {/* --- 2. MAIN CHARTS (RECHARTS) --- */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* EQUITY CURVE */}
               <ChartCard 
                 title="Equity Curve" 
                 subtitle="Cumulative Performance" 
                 className="lg:col-span-2 h-[350px]" 
-                logoType="MonthlyProfits"
                 action={
                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600"><Download className="h-4 w-4" /></Button>
                 }
               >
                 <div className="h-full w-full">
-                  <Line 
-                    data={{
-                      labels: analytics.dailyData.map((d) => format(new Date(d.date), "MMM dd")),
-                      datasets: [{
-                          label: "Cumulative P&L",
-                          data: analytics.dailyData.map(d => d.cumulative),
-                          borderColor: "#6366f1",
-                          borderWidth: 2,
-                          pointBackgroundColor: "#fff",
-                          pointBorderColor: "#6366f1",
-                          pointBorderWidth: 2,
-                          backgroundColor: (context: ScriptableContext<"line">) => {
-                            const ctx = context.chart.ctx
-                            const gradient = ctx.createLinearGradient(0, 0, 0, 300)
-                            gradient.addColorStop(0, "rgba(99, 102, 241, 0.1)")
-                            gradient.addColorStop(1, "rgba(99, 102, 241, 0)")
-                            return gradient
-                          },
-                          fill: true,
-                          tension: 0.3,
-                          pointRadius: 0,
-                          pointHoverRadius: 4,
-                      }],
-                    }} 
-                    options={commonOptions} 
-                  />
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={analytics.dailyData}>
+                      <defs>
+                        <linearGradient id="colorPnL" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(str) => format(new Date(str), "MMM d")}
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false} 
+                      />
+                      <YAxis 
+                        stroke="#94a3b8" 
+                        fontSize={10} 
+                        tickLine={false} 
+                        axisLine={false}
+                        tickFormatter={(val) => `$${val}`}
+                      />
+                      <RechartsTooltip content={<CustomTooltip />} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="cumulative" 
+                        stroke="#6366f1" 
+                        strokeWidth={2}
+                        fillOpacity={1} 
+                        fill="url(#colorPnL)" 
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </ChartCard>
 
-              {/* WIN/LOSS PIE */}
-              <ChartCard title="Outcomes" subtitle="Win / Loss Ratio" className="h-[350px]" logoType="WinLoss">
-                  <div className="h-full flex flex-col justify-center items-center relative pb-2">
-                      <div className="relative w-full h-[200px] flex justify-center items-center">
-                        <Pie 
-                            data={{
-                                labels: ["Win", "Loss", "BE"],
-                                datasets: [{
-                                    data: [analytics.wins, analytics.losses, analytics.breakeven],
-                                    backgroundColor: ["#10b981", "#ef4444", "#94a3b8"],
-                                    borderWidth: 2,
-                                    borderColor: "#fff",
-                                    hoverOffset: 4,
-                                }]
-                            }}
-                            options={{ 
-                                maintainAspectRatio: false,
-                                cutout: '70%',
-                                plugins: { 
-                                    legend: { 
-                                        position: 'bottom', 
-                                        labels: { 
-                                          font: { size: 10, family: 'monospace' }, 
-                                          usePointStyle: true, 
-                                          padding: 15,
-                                          color: '#94a3b8' 
-                                        } 
-                                    } 
-                                } 
-                            }}
-                        />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-8">
-                             <span className="text-3xl font-mono font-bold text-slate-900 dark:text-white">{analytics.totalTrades}</span>
-                             <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Total</span>
-                        </div>
-                      </div>
+              {/* WIN/LOSS DONUT */}
+              <ChartCard title="Outcomes" subtitle="Win / Loss Ratio" className="h-[350px]">
+                <div className="h-full w-full relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={outcomeData}
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {outcomeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
+                     <span className="text-3xl font-mono font-bold text-slate-900">{analytics.totalTrades}</span>
+                     <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Trades</span>
                   </div>
+                </div>
               </ChartCard>
             </div>
 
-            {/* --- 3. BREAKDOWNS & TIMING --- */}
+            {/* --- 3. BREAKDOWNS (RECHARTS) --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ChartCard title="By Instrument" subtitle="P&L Distribution" logoType="InstrumentDistribution">
-                <div className="h-[200px]">
-                    <Bar
-                    data={{
-                        labels: Object.keys(analytics.instrumentDistribution),
-                        datasets: [{
-                        label: "P&L",
-                        data: Object.values(analytics.instrumentDistribution).map((d) => d.pnl),
-                        backgroundColor: Object.values(analytics.instrumentDistribution).map((d) => d.pnl >= 0 ? "#10b981" : "#ef4444"),
-                        borderRadius: 4,
-                        barThickness: 24
-                        }],
-                    }}
-                    options={commonOptions}
-                    />
-                </div>
+                <ChartCard title="By Instrument" subtitle="P&L Distribution">
+                  <div className="h-[200px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={instrumentData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`}/>
+                        <RechartsTooltip cursor={{fill: '#f1f5f9'}} content={<CustomTooltip prefix="$" />} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                          {instrumentData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </ChartCard>
                 
-                <ChartCard title="By Strategy" subtitle="Setup Frequency" logoType="SetupDistribution">
-                <div className="h-[200px]">
-                    <Bar
-                    data={{
-                        labels: Object.keys(analytics.setupDistribution),
-                        datasets: [{
-                        label: "Count",
-                        data: Object.values(analytics.setupDistribution).map((d) => d.count),
-                        backgroundColor: "#818cf8",
-                        borderRadius: 4,
-                        barThickness: 24
-                        }],
-                    }}
-                    options={commonOptions}
-                    />
-                </div>
+                <ChartCard title="By Strategy" subtitle="Setup Frequency">
+                  <div className="h-[200px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={setupData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                        <RechartsTooltip cursor={{fill: '#f1f5f9'}} content={<CustomTooltip />} />
+                        <Bar dataKey="value" fill="#818cf8" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </ChartCard>
             </div>
 
-            {/* --- 4. INTELLIGENCE MODULES (Bottom of Overview) --- */}
+            {/* --- 4. INTELLIGENCE MODULES --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Hexagram Score */}
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-[#0B0D12] overflow-hidden rounded-xl h-full">
+                <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl h-full">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                    <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
                       <Brain className="w-4 h-4 text-indigo-500" />
                       Trader DNA
                     </CardTitle>
-                    <Badge variant="outline" className="font-mono text-indigo-600 bg-indigo-50 border-indigo-100 dark:bg-indigo-950/30 dark:text-indigo-400 dark:border-indigo-900">
+                    <Badge variant="outline" className="font-mono text-indigo-600 bg-indigo-50 border-indigo-100">
                       {analytics.overallScore}/100
                     </Badge>
                   </CardHeader>
@@ -1126,28 +1083,26 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
 
-                {/* Timing Dashboard */}
                 <TimingAnalyticsDashboard
                   trades={trades}
-                  className="rounded-xl bg-white dark:bg-[#0B0D12] border border-slate-200 dark:border-slate-800 shadow-sm h-full"
+                  className="rounded-xl bg-white border border-slate-200 shadow-sm h-full"
                 />
             </div>
 
           </TabsContent>
 
-          {/* --- INTELLIGENCE TAB: COMMAND CENTER DASHBOARD --- */}
+          {/* --- INTELLIGENCE TAB --- */}
           <TabsContent value="intelligence" className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-500">
             
-            {/* 1. Header & AI Summary */}
+            {/* Header & AI Summary */}
             <div className="space-y-6">
-              {/* Action Bar */}
-              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-indigo-50 via-white to-white dark:from-indigo-950/20 dark:via-[#0B0D12] dark:to-[#0B0D12] rounded-xl border border-indigo-100 dark:border-indigo-900/50 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-indigo-50 via-white to-white rounded-xl border border-indigo-100 shadow-sm">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-indigo-500" />
                     Trading Intelligence
                   </h2>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-sm text-slate-500 mt-1">
                     AI-powered insights and behavioral pattern recognition
                   </p>
                 </div>
@@ -1168,26 +1123,24 @@ export default function AnalyticsPage() {
                 </div>
               </div>
 
-              {/* AI Summary Card (Moved here) */}
               <div className="animate-in slide-in-from-top-2 fade-in duration-500 delay-100">
                 <AiSummaryCard />
               </div>
               
-              {/* Executive AI Report Text (If Generated) */}
               {aiReport && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="p-6 bg-white dark:bg-[#0B0D12] rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm relative overflow-hidden"
+                  className="p-6 bg-white rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden"
                 >
                   <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg shrink-0">
-                       <Brain className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="p-3 bg-indigo-50 rounded-lg shrink-0">
+                       <Brain className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wide">Executive Summary</h3>
-                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm">
+                      <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">Executive Summary</h3>
+                      <p className="text-slate-600 leading-relaxed text-sm">
                         {aiReport}
                       </p>
                     </div>
@@ -1196,10 +1149,9 @@ export default function AnalyticsPage() {
               )}
             </div>
 
-            {/* 2. BENTO GRID DASHBOARD */}
+            {/* Bento Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
-              {/* COL 1 & 2: PERSONAL EDGE (Featured) */}
               <motion.div 
                 className="lg:col-span-2 space-y-6"
                 initial={{ opacity: 0, y: 20 }}
@@ -1207,13 +1159,12 @@ export default function AnalyticsPage() {
                 transition={{ delay: 0.1 }}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                     <Target className="w-4 h-4" /> Trading DNA
                   </h3>
                 </div>
 
-                {/* Personal Edge Card */}
-                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 dark:from-[#0F172A] dark:to-[#0B0D12] border border-slate-200 dark:border-slate-800 overflow-hidden relative">
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 border border-slate-200 overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                   
                   <CardHeader>
@@ -1223,7 +1174,7 @@ export default function AnalyticsPage() {
                         <CardDescription>Highest probability configurations based on historical performance</CardDescription>
                       </div>
                       {personalEdge && (
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900">
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
                           {personalEdge.winRate > 0.6 ? "High Probability" : "Moderate Probability"}
                         </Badge>
                       )}
@@ -1234,22 +1185,21 @@ export default function AnalyticsPage() {
                     {personalEdge ? (
                       <>
                         <div className="grid grid-cols-3 gap-4">
-                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                             <p className="text-xs text-slate-500 mb-1">Top Setup</p>
-                            <p className="text-lg font-bold text-slate-900 dark:text-white truncate" title={personalEdge.setupName}>{personalEdge.setupName}</p>
+                            <p className="text-lg font-bold text-slate-900 truncate" title={personalEdge.setupName}>{personalEdge.setupName}</p>
                           </div>
-                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                             <p className="text-xs text-slate-500 mb-1">Win Rate</p>
                             <p className="text-lg font-bold text-emerald-600">{(personalEdge.winRate * 100).toFixed(1)}%</p>
                           </div>
-                          <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                          <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
                             <p className="text-xs text-slate-500 mb-1">Optimal R:R</p>
                             <p className="text-lg font-bold text-indigo-600">1:{personalEdge.optimalRRR.toFixed(1)}</p>
                           </div>
                         </div>
                         
-                        {/* Integrated Scatter Chart */}
-                        <div className="h-[250px] w-full mt-4 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-slate-100 dark:border-slate-800/50">
+                        <div className="h-[250px] w-full mt-4 bg-slate-50/50 rounded-xl p-4 border border-slate-100">
                            <SetupScatterChart data={scatterData} />
                         </div>
                       </>
@@ -1262,31 +1212,28 @@ export default function AnalyticsPage() {
                 </Card>
               </motion.div>
 
-              {/* COL 3: PSYCHOLOGY & RISK (Stacked) */}
               <motion.div 
                 className="space-y-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                {/* Psychology Section */}
                 <div>
-                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2">
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4" /> Psychology
                   </h3>
                   
                   <div className="space-y-3">
-                    {/* Enablers */}
-                    <Card className="border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/10 dark:bg-emerald-950/5">
+                    <Card className="border border-emerald-100 bg-emerald-50/10">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase">Edge Enablers</span>
+                          <span className="text-xs font-bold text-emerald-700 uppercase">Edge Enablers</span>
                           <CheckCircle className="w-3 h-3 text-emerald-500" />
                         </div>
                         <div className="space-y-2">
                           {psychologyAnalysis.topEnablers.slice(0, 2).map((factor, i) => (
                             <div key={i} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700 dark:text-slate-300">{factor.factor}</span>
+                              <span className="text-slate-700">{factor.factor}</span>
                               <span className="font-mono font-bold text-emerald-600">+{factor.impact.toFixed(0)}%</span>
                             </div>
                           ))}
@@ -1297,17 +1244,16 @@ export default function AnalyticsPage() {
                       </CardContent>
                     </Card>
 
-                    {/* Killers */}
-                    <Card className="border border-rose-100 dark:border-rose-900/30 bg-rose-50/10 dark:bg-rose-950/5">
+                    <Card className="border border-rose-100 bg-rose-50/10">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase">Edge Killers</span>
+                          <span className="text-xs font-bold text-rose-700 uppercase">Edge Killers</span>
                           <AlertTriangle className="w-3 h-3 text-rose-500" />
                         </div>
                         <div className="space-y-2">
                           {psychologyAnalysis.topKillers.slice(0, 2).map((factor, i) => (
                             <div key={i} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700 dark:text-slate-300">{factor.factor}</span>
+                              <span className="text-slate-700">{factor.factor}</span>
                               <span className="font-mono font-bold text-rose-600">{factor.impact.toFixed(0)}%</span>
                             </div>
                           ))}
@@ -1320,13 +1266,12 @@ export default function AnalyticsPage() {
                   </div>
                 </div>
 
-                {/* Risk Section */}
                 <div>
-                  <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2">
+                  <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-2">
                     <Shield className="w-4 h-4" /> Risk Assessment
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <Card className="bg-white border border-slate-200">
                       <CardContent className="p-3">
                         <p className="text-[10px] text-slate-500 uppercase">Max Drawdown</p>
                         <p className="text-lg font-mono font-bold text-rose-600">
@@ -1334,7 +1279,7 @@ export default function AnalyticsPage() {
                         </p>
                       </CardContent>
                     </Card>
-                    <Card className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                    <Card className="bg-white border border-slate-200">
                       <CardContent className="p-3">
                         <p className="text-[10px] text-slate-500 uppercase">Kelly Criterion</p>
                         <p className="text-lg font-mono font-bold text-indigo-600">
@@ -1348,7 +1293,7 @@ export default function AnalyticsPage() {
               </motion.div>
             </div>
 
-            {/* 3. METRICS STRIP (Bottom) */}
+            {/* Metrics Strip */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1356,7 +1301,7 @@ export default function AnalyticsPage() {
               className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
             >
                {analytics.metricsList.map((metric, i) => (
-                 <Card key={i} className="border-0 shadow-sm bg-slate-50 dark:bg-slate-900/50">
+                 <Card key={i} className="border-0 shadow-sm bg-slate-50">
                    <CardContent className="p-4 flex flex-col items-center justify-center text-center">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{metric.name}</span>
                       <span className={cn(
@@ -1374,7 +1319,7 @@ export default function AnalyticsPage() {
         </Tabs>
       </main>
 
-      {/* MOBILE CALENDAR FAB */}
+      {/* Mobile Calendar FAB */}
       <div className="fixed bottom-6 right-6 md:hidden z-50">
           <Sheet>
             <SheetTrigger asChild>
@@ -1393,7 +1338,6 @@ export default function AnalyticsPage() {
           </Sheet>
       </div>
 
-      {/* AI ADVISOR OVERLAY */}
       {advisorData && (
         <AdvisorPanel
           isOpen={isOpen}

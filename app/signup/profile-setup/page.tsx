@@ -5,12 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useUserConfig } from "@/hooks/use-user-config"
 import { motion, AnimatePresence } from "framer-motion"
 import { 
-  CheckCircle2, TrendingUp, BarChart3, Settings, Shield, 
+  CheckCircle2, TrendingUp, Shield, 
   Bell, UserIcon, Eye, ChevronRight, ChevronLeft, Search, 
-  List, Check, AlertCircle, Terminal, Zap, Globe, Cpu, 
-  LayoutGrid, Loader2, CheckSquare, Square, Filter
+  List, Check, AlertCircle, Terminal, Zap, Globe, 
+  LayoutGrid, Loader2, CheckSquare, Square
 } from "lucide-react"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,66 +40,66 @@ const stepConfig = [
   {
     id: 1,
     title: "Markets",
-    subtitle: "Asset Classes",
-    description: "Initialize market data feeds for your active environments.",
+    subtitle: "Assets",
+    description: "Choose the markets you want to follow.",
     icon: Globe,
-    color: "text-purple-500",
+    color: "text-purple-400",
   },
   {
     id: 2,
     title: "Watchlist",
-    subtitle: "Instruments",
-    description: "Select specific tickers to track in your terminal.",
+    subtitle: "Favorites",
+    description: "Pick specific symbols to track on your dashboard.",
     icon: TrendingUp,
-    color: "text-emerald-500",
+    color: "text-emerald-400",
   },
   {
     id: 3,
-    title: "Operator",
-    subtitle: "Identity",
-    description: "Establish your professional trading profile.",
+    title: "Profile",
+    subtitle: "Personal Info",
+    description: "Set up your trader identity and details.",
     icon: UserIcon,
-    color: "text-cyan-500",
+    color: "text-cyan-400",
   },
   {
     id: 4,
-    title: "Layout",
+    title: "Display",
     subtitle: "Visibility",
-    description: "Configure which instruments appear in your trade entry dropdowns.",
+    description: "Customize which assets appear in your menus.",
     icon: Eye,
-    color: "text-indigo-500",
+    color: "text-indigo-400",
   },
   {
     id: 5,
-    title: "Comms",
+    title: "Alerts",
     subtitle: "Notifications",
-    description: "Set protocols for system alerts and updates.",
+    description: "Choose how and when we should contact you.",
     icon: Bell,
-    color: "text-yellow-500",
+    color: "text-yellow-400",
   },
   {
     id: 6,
-    title: "Protocol",
-    subtitle: "Legal",
-    description: "Review and accept compliance terms.",
+    title: "Legal",
+    subtitle: "Terms",
+    description: "Review and accept the service agreements.",
     icon: Shield,
-    color: "text-slate-500",
+    color: "text-slate-400",
   },
   {
     id: 7,
-    title: "Verify",
-    subtitle: "Review",
-    description: "Final system integrity check before deployment.",
+    title: "Review",
+    subtitle: "Summary",
+    description: "Double-check your settings before finishing.",
     icon: List,
-    color: "text-teal-500",
+    color: "text-teal-400",
   },
   {
     id: 8,
-    title: "Deploy",
-    subtitle: "Launch",
-    description: "Finalize setup and enter the terminal.",
+    title: "Finish",
+    subtitle: "Complete",
+    description: "Finalize your setup and enter the platform.",
     icon: Zap,
-    color: "text-violet-500",
+    color: "text-violet-400",
   },
 ]
 
@@ -122,7 +121,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
   return (
     <div className={cn(
       "relative flex items-center group py-3 px-3 mb-1 rounded-md transition-all duration-300", 
-      isActive ? "bg-accent/50 border-l-2 border-primary pl-[10px]" : "hover:bg-accent/20 border-l-2 border-transparent"
+      isActive ? "bg-zinc-800/80 border-l-2 border-primary pl-[10px]" : "hover:bg-zinc-800/40 border-l-2 border-transparent"
     )}>
       <div className="flex items-center gap-3 w-full">
         <div
@@ -132,7 +131,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
               ? "bg-primary text-primary-foreground shadow-sm"
               : isPast
                 ? "bg-primary/20 text-primary"
-                : "bg-muted text-muted-foreground",
+                : "bg-zinc-800 text-zinc-400",
           )}
         >
           {isPast ? <Check className="w-3 h-3" /> : step.id}
@@ -140,7 +139,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
         <div className="flex flex-col min-w-0">
           <span className={cn(
             "text-xs font-bold uppercase tracking-wider transition-colors", 
-            isActive ? "text-foreground" : "text-muted-foreground"
+            isActive ? "text-white" : "text-zinc-400"
           )}>
             {step.title}
           </span>
@@ -154,18 +153,17 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
   <div
     onClick={onClick}
     className={cn(
-      "flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200 bg-card hover:bg-accent/50",
+      "flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200",
       isSelected 
-        // Fixed: Use shadow-primary/10 instead of invalid rgba(var(--primary))
-        ? "border-primary bg-primary/5 shadow-lg shadow-primary/10" 
-        : "border-border/60"
+        ? "border-primary bg-primary/20 shadow-lg shadow-primary/10" 
+        : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60 hover:border-zinc-700"
     )}
   >
-    <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-muted-foreground grayscale")}>
+    <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-zinc-500 grayscale")}>
       {category.icon}
     </div>
-    <div className="font-bold text-sm text-center uppercase tracking-wide">{category.label}</div>
-    <div className="text-[10px] text-muted-foreground text-center mt-1 font-mono">{category.description}</div>
+    <div className="font-bold text-sm text-center uppercase tracking-wide text-white">{category.label}</div>
+    <div className="text-[10px] text-zinc-300 text-center mt-1 font-mono">{category.description}</div>
   </div>
 )
 
@@ -174,19 +172,21 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
     <div
       onClick={() => onSelect(instrument.symbol)}
       className={cn(
-        "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:bg-muted/50 bg-card/40 backdrop-blur-sm",
-        isSelected ? "border-primary/60 bg-primary/10" : "border-border/40"
+        "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all backdrop-blur-sm",
+        isSelected 
+          ? "border-primary/60 bg-primary/20" 
+          : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60"
       )}
     >
        <div className={cn(
          "w-8 h-8 rounded flex items-center justify-center font-mono text-[10px] font-bold border transition-colors", 
-         isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-muted/50 border-border/50 text-muted-foreground"
+         isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-zinc-800 border-zinc-700 text-zinc-400"
        )}>
           {instrument.symbol.substring(0,2)}
        </div>
        <div className="overflow-hidden">
-         <div className="text-sm font-bold truncate">{instrument.symbol}</div>
-         <div className="text-[10px] text-muted-foreground truncate">{instrument.name}</div>
+         <div className="text-sm font-bold truncate text-white">{instrument.symbol}</div>
+         <div className="text-[10px] text-zinc-300 truncate">{instrument.name}</div>
        </div>
        {isSelected && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
     </div>
@@ -213,8 +213,6 @@ function ProfileSetupContent() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [instrumentLayout, setInstrumentLayout] = useState<"grid" | "list">("grid")
-  
-  // New State for Step 4 Redesign
   const [activeLayoutTab, setActiveLayoutTab] = useState<string | null>(null)
 
   const currentStep = Number.parseInt(searchParams.get("step") || "1", 10)
@@ -230,15 +228,66 @@ function ProfileSetupContent() {
     checkAuth()
   }, [router])
 
-  // Set initial active tab for Step 4
   useEffect(() => {
     if (currentStep === 4 && !activeLayoutTab && config.tradingPreferences.primaryInstruments?.length) {
       setActiveLayoutTab(config.tradingPreferences.primaryInstruments[0])
     }
   }, [currentStep, config.tradingPreferences.primaryInstruments, activeLayoutTab])
 
-  const handleNext = async () => {
+  // --- REAL-TIME ERROR CLEARING ---
+  useEffect(() => {
+    if (!saveError) return
+
+    if (currentStep === 1) {
+      if (config.tradingPreferences.primaryInstruments?.length > 0) setSaveError(null)
+    }
+    // FIX: Check for fullName instead of firstName
+    if (currentStep === 3) {
+      // @ts-ignore - Assuming fullName exists on userProfile based on user request
+      if (config.userProfile?.fullName && config.userProfile.fullName.length > 2) setSaveError(null)
+    }
+    if (currentStep === 6) {
+      const { termsAccepted, privacyPolicyAccepted, dataCollectionConsent } = config.privacyPreferences
+      if (termsAccepted && privacyPolicyAccepted && dataCollectionConsent) setSaveError(null)
+    }
+  }, [config, currentStep, saveError])
+
+  // --- STRICT VALIDATION LOGIC ---
+  const validateStep = (step: number): boolean => {
     setSaveError(null)
+
+    // Step 1: Markets (Must select at least one)
+    if (step === 1) {
+      if (!config.tradingPreferences.primaryInstruments || config.tradingPreferences.primaryInstruments.length === 0) {
+        setSaveError("Please select at least one market to continue.")
+        return false
+      }
+    }
+
+    // Step 3: Identity (Must have a Full Name)
+    if (step === 3) {
+      // @ts-ignore - Check for fullName
+      if (!config.userProfile?.fullName || config.userProfile.fullName.trim().length < 3) {
+        setSaveError("Please enter your full name.")
+        return false
+      }
+    }
+
+    // Step 6: Legal (Must accept mandatory policies)
+    if (step === 6) {
+      const { termsAccepted, privacyPolicyAccepted, dataCollectionConsent } = config.privacyPreferences
+      if (!termsAccepted || !privacyPolicyAccepted || !dataCollectionConsent) {
+        setSaveError("You must accept all mandatory agreements to proceed.")
+        return false
+      }
+    }
+
+    return true
+  }
+
+  const handleNext = async () => {
+    if (!validateStep(currentStep)) return
+
     setIsTransitioning(true)
     if (currentStep < TOTAL_STEPS) {
       await new Promise((resolve) => setTimeout(resolve, 300))
@@ -251,13 +300,14 @@ function ProfileSetupContent() {
         await new Promise((resolve) => setTimeout(resolve, 500))
         router.push("/dashboard")
       } else {
-        setSaveError("Failed to save profile.")
+        setSaveError("Failed to save profile. Please try again.")
         setIsTransitioning(false)
       }
     }
   }
 
   const handleBack = () => {
+    setSaveError(null)
     if (currentStep > 1) router.push(`/signup/profile-setup?step=${currentStep - 1}`)
     else router.push("/signup")
   }
@@ -273,7 +323,6 @@ function ProfileSetupContent() {
   const selectedSpecificInstruments = config.tradingPreferences.specificInstruments || []
   const visibleInstruments = config.tradingPreferences.visibleInstruments || []
 
-  // Step 2 Filters
   const getAvailableSpecificInstruments = () => {
     if (selectedPrimaryInstruments.length === 0) return []
     const instruments: any[] = []
@@ -290,7 +339,7 @@ function ProfileSetupContent() {
            instrument.name.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
-  // --- STEP 4 LOGIC (VISIBILITY) ---
+  // --- STEP 4 LOGIC ---
   const toggleVisibility = (symbol: string) => {
     const newVisible = visibleInstruments.includes(symbol)
       ? visibleInstruments.filter((s) => s !== symbol)
@@ -325,18 +374,18 @@ function ProfileSetupContent() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+      <div className="flex h-screen bg-zinc-950 text-white font-sans selection:bg-primary/20">
         
-        {/* MISSION CONTROL SIDEBAR */}
-        <aside className="hidden lg:flex w-64 flex-col border-r border-border/40 bg-card/10 backdrop-blur-xl h-full z-20">
-          <div className="p-6 border-b border-border/40">
+        {/* SIDEBAR */}
+        <aside className="hidden lg:flex w-64 flex-col border-r border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full z-20">
+          <div className="p-6 border-b border-zinc-800">
             <div className="flex items-center gap-3">
               <ConcentradeLogo size={28} variant="icon" />
               <div>
-                <h1 className="font-bold text-sm tracking-tight uppercase">System Config</h1>
+                <h1 className="font-bold text-sm tracking-tight uppercase text-white">System Config</h1>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Online</span>
+                  <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Online</span>
                 </div>
               </div>
             </div>
@@ -348,33 +397,29 @@ function ProfileSetupContent() {
             ))}
           </div>
 
-          <div className="p-6 border-t border-border/40 bg-background/30">
-             <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-wider">
+          <div className="p-6 border-t border-zinc-800 bg-zinc-900/80">
+             <div className="flex justify-between text-[10px] uppercase font-bold text-zinc-500 mb-2 tracking-wider">
                 <span>Initialization</span>
                 <span>{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
              </div>
-             <div className="h-1 w-full bg-muted/50 rounded-full overflow-hidden">
-                {/* Fixed: Use standard shadow utility */}
+             <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
                 <div className="h-full bg-primary transition-all duration-500 shadow-[0_0_10px] shadow-primary/50" style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }} />
              </div>
           </div>
         </aside>
 
         {/* MAIN TERMINAL AREA */}
-        <main className="flex-1 flex flex-col h-full relative bg-background">
-          {/* Technical Grid Background */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <main className="flex-1 flex flex-col h-full relative bg-zinc-950">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
           
-          {/* Header Mobile */}
-          <header className="h-14 border-b border-border/40 flex items-center justify-between px-6 lg:hidden bg-background/80 backdrop-blur-md sticky top-0 z-50">
-             <div className="flex items-center gap-2 font-bold"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
-             <Badge variant="outline" className="bg-background/50">Step {currentStep}</Badge>
+          <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-6 lg:hidden bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50">
+             <div className="flex items-center gap-2 font-bold text-white"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
+             <Badge variant="outline" className="bg-zinc-800 border-zinc-700 text-zinc-300">Step {currentStep}</Badge>
           </header>
 
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
              <div className="max-w-4xl mx-auto px-6 py-12">
                 
-                {/* Step Header */}
                 <motion.div 
                    initial={{ opacity: 0, y: 10 }} 
                    animate={{ opacity: 1, y: 0 }} 
@@ -385,11 +430,10 @@ function ProfileSetupContent() {
                       <currentStepConfig.icon className="w-5 h-5" />
                       <span className="text-xs font-bold uppercase tracking-[0.2em]">{currentStepConfig.subtitle}</span>
                    </div>
-                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-foreground">{currentStepConfig.title}</h1>
-                   <p className="text-muted-foreground text-lg max-w-2xl">{currentStepConfig.description}</p>
+                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">{currentStepConfig.title}</h1>
+                   <p className="text-zinc-300 text-lg max-w-2xl">{currentStepConfig.description}</p>
                 </motion.div>
 
-                {/* Step Content */}
                 <motion.div
                    initial={{ opacity: 0, x: 10 }}
                    animate={{ opacity: 1, x: 0 }}
@@ -397,7 +441,6 @@ function ProfileSetupContent() {
                    key={`content-${currentStep}`}
                    className="min-h-[400px]"
                 >
-                   {/* STEP 1: MARKETS */}
                    {currentStep === 1 && (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                          {premiumInstrumentCategories.map(cat => (
@@ -411,30 +454,29 @@ function ProfileSetupContent() {
                       </div>
                    )}
 
-                   {/* STEP 2: WATCHLIST */}
                    {currentStep === 2 && (
                       <div className="space-y-6">
                         <div className="relative flex gap-3">
                            <div className="relative flex-1">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                              <Input 
                                 placeholder="Search tickers..." 
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-card/50 border-border/60 h-11"
+                                className="pl-10 bg-zinc-900 border-zinc-800 h-11 text-white placeholder:text-zinc-600 focus-visible:ring-primary/50"
                              />
                            </div>
-                           <div className="flex border rounded-md overflow-hidden">
-                              <Button variant={instrumentLayout === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setInstrumentLayout('grid')} className="rounded-none h-11 w-11"><LayoutGrid className="w-4 h-4"/></Button>
-                              <Button variant={instrumentLayout === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setInstrumentLayout('list')} className="rounded-none h-11 w-11"><List className="w-4 h-4"/></Button>
+                           <div className="flex border border-zinc-800 rounded-md overflow-hidden bg-zinc-900">
+                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-white", instrumentLayout === 'grid' && "bg-zinc-800 text-white")}><LayoutGrid className="w-4 h-4"/></Button>
+                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-white", instrumentLayout === 'list' && "bg-zinc-800 text-white")}><List className="w-4 h-4"/></Button>
                            </div>
                         </div>
                         {selectedPrimaryInstruments.length === 0 ? (
-                           <div className="text-center py-16 border border-dashed border-border/50 rounded-xl bg-card/20">
-                              <AlertCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                              <h3 className="text-lg font-semibold">Feed Offline</h3>
-                              <p className="text-muted-foreground mb-6">Select a market class to initialize the feed.</p>
-                              <Button variant="outline" onClick={handleBack}>Return to Markets</Button>
+                           <div className="text-center py-16 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
+                              <AlertCircle className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                              <h3 className="text-lg font-semibold text-white">Feed Offline</h3>
+                              <p className="text-zinc-300 mb-6">Select a market class to initialize the feed.</p>
+                              <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Return to Markets</Button>
                            </div>
                         ) : (
                            <div className={cn("grid gap-3", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
@@ -451,21 +493,17 @@ function ProfileSetupContent() {
                       </div>
                    )}
                    
-                   {/* STEP 3: IDENTITY */}
                    {currentStep === 3 && (
-                      <div className="max-w-xl bg-card/30 border rounded-xl p-6 backdrop-blur-sm">
+                      <div className="max-w-xl bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm shadow-sm">
                          <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
                       </div>
                    )}
                    
-                   {/* STEP 4: LAYOUT / VISIBILITY (Redesigned) */}
                    {currentStep === 4 && (
                       <div className="space-y-6">
-                         {/* Control Bar */}
-                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border/40">
-                            {/* Tabs */}
+                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-800">
                             <div className="flex flex-wrap gap-2">
-                               {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-muted-foreground">No markets configured.</span>}
+                               {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-zinc-500">No markets configured.</span>}
                                {selectedPrimaryInstruments.map(catId => (
                                   <button
                                      key={catId}
@@ -473,8 +511,8 @@ function ProfileSetupContent() {
                                      className={cn(
                                         "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all",
                                         activeLayoutTab === catId 
-                                           ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/50" 
-                                           : "bg-muted/30 text-muted-foreground border-transparent hover:border-border"
+                                           ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/50" 
+                                           : "bg-zinc-900/50 text-zinc-500 border-transparent hover:border-zinc-700 hover:text-zinc-300"
                                      )}
                                   >
                                      {catId}
@@ -482,13 +520,12 @@ function ProfileSetupContent() {
                                ))}
                             </div>
                             
-                            {/* Bulk Action */}
                             {activeLayoutTab && (
                                <Button 
                                   size="sm" 
                                   variant="outline" 
                                   onClick={() => toggleAllVisibility(activeLayoutTab, !isAllVisibleInTab)}
-                                  className="h-8 text-xs border-indigo-500/20 hover:bg-indigo-500/10 hover:text-indigo-500"
+                                  className="h-8 text-xs border-indigo-500/20 hover:bg-indigo-500/10 hover:text-indigo-400 bg-transparent text-indigo-400/80"
                                >
                                   {isAllVisibleInTab ? <Square className="w-3 h-3 mr-2" /> : <CheckSquare className="w-3 h-3 mr-2" />}
                                   {isAllVisibleInTab ? "Disable All" : "Enable All"}
@@ -496,7 +533,6 @@ function ProfileSetupContent() {
                             )}
                          </div>
 
-                         {/* Instrument Grid */}
                          {activeLayoutTab ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                {activeCategoryInstruments.map((inst) => {
@@ -508,18 +544,17 @@ function ProfileSetupContent() {
                                         className={cn(
                                            "relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between",
                                            isVisible 
-                                              // Fixed: Use shadow-indigo-500/10 instead of invalid rgba
-                                              ? "bg-indigo-500/5 border-indigo-500/40 shadow-lg shadow-indigo-500/10" 
-                                              : "bg-card/20 border-border/40 hover:bg-muted/20 opacity-60 hover:opacity-100"
+                                              ? "bg-indigo-500/10 border-indigo-500/40 shadow-lg shadow-indigo-500/10" 
+                                              : "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-800/50 hover:border-zinc-700 opacity-70 hover:opacity-100"
                                         )}
                                      >
                                         <div>
-                                           <div className={cn("font-bold text-sm", isVisible ? "text-indigo-400" : "text-foreground")}>{inst.symbol}</div>
-                                           <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">{inst.name}</div>
+                                           <div className={cn("font-bold text-sm", isVisible ? "text-indigo-400" : "text-zinc-200")}>{inst.symbol}</div>
+                                           <div className="text-[10px] text-zinc-500 truncate max-w-[120px]">{inst.name}</div>
                                         </div>
                                         <div className={cn(
                                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                                           isVisible ? "bg-indigo-500 border-indigo-500" : "border-border"
+                                           isVisible ? "bg-indigo-500 border-indigo-500" : "border-zinc-700 bg-zinc-800"
                                         )}>
                                            {isVisible && <Check className="w-3 h-3 text-white" />}
                                         </div>
@@ -528,40 +563,36 @@ function ProfileSetupContent() {
                                })}
                             </div>
                          ) : (
-                            <div className="py-20 text-center text-muted-foreground">Select a market category above to configure feeds.</div>
+                            <div className="py-20 text-center text-zinc-500">Select a market category above to configure feeds.</div>
                          )}
                       </div>
                    )}
                    
-                   {/* STEP 5: ALERTS */}
                    {currentStep === 5 && (
                       <div className="space-y-4">
                          <div className="flex justify-end">
-                            <Button variant="outline" size="sm" onClick={enableAllNotifications} className="gap-2">
+                            <Button variant="outline" size="sm" onClick={enableAllNotifications} className="gap-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
                                <CheckSquare className="w-4 h-4"/> Activate All
                             </Button>
                          </div>
-                         <div className="bg-card/30 border rounded-xl p-6 backdrop-blur-sm">
+                         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
                             <NotificationsStep notificationPreferences={config.notificationPreferences} onUpdate={updateNotificationPreferences} />
                          </div>
                       </div>
                    )}
                    
-                   {/* STEP 6: LEGAL */}
                    {currentStep === 6 && (
-                      <div className="bg-card/30 border rounded-xl p-6 backdrop-blur-sm">
+                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
                          <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
                       </div>
                    )}
                    
-                   {/* STEP 7: REVIEW */}
                    {currentStep === 7 && (
-                      <div className="bg-card/30 border rounded-xl p-6 backdrop-blur-sm">
+                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
                          <ReviewConfirmationStep config={config} />
                       </div>
                    )}
                    
-                   {/* STEP 8: DEPLOY */}
                    {currentStep === 8 && (
                       <div className="flex flex-col items-center justify-center py-24 text-center">
                          <div className="relative mb-8">
@@ -571,8 +602,8 @@ function ProfileSetupContent() {
                             <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-[spin_8s_linear_infinite]" />
                             <div className="absolute inset-2 border border-primary/10 rounded-full animate-[spin_4s_linear_infinite_reverse]" />
                          </div>
-                         <h2 className="text-3xl font-bold mb-3 tracking-tight">System Initialized</h2>
-                         <p className="text-muted-foreground max-w-md mb-8 leading-relaxed">
+                         <h2 className="text-3xl font-bold mb-3 tracking-tight text-white">System Initialized</h2>
+                         <p className="text-zinc-400 max-w-md mb-8 leading-relaxed">
                             Your environment is ready for deployment.
                          </p>
                       </div>
@@ -581,30 +612,53 @@ function ProfileSetupContent() {
              </div>
           </div>
 
-          {/* Footer Controls */}
-          <div className="h-24 border-t border-border/40 bg-background/80 backdrop-blur-md flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
-             <Button 
-                variant="ghost" 
-                onClick={handleBack} 
-                disabled={isTransitioning}
-                className="text-muted-foreground hover:text-foreground"
-             >
-                <ChevronLeft className="w-4 h-4 mr-2" /> Back
-             </Button>
+          <div className="h-24 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
+             <div className="flex items-center gap-4 flex-1">
+               <Button 
+                  variant="ghost" 
+                  onClick={handleBack} 
+                  disabled={isTransitioning}
+                  className="text-zinc-500 hover:text-white hover:bg-zinc-900"
+               >
+                  <ChevronLeft className="w-4 h-4 mr-2" /> Back
+               </Button>
+               
+               <AnimatePresence>
+                 {saveError && (
+                   <motion.div 
+                     initial={{ opacity: 0, x: -10 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     exit={{ opacity: 0 }}
+                     className="hidden md:flex items-center gap-2 text-red-400 text-sm font-medium bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-md"
+                   >
+                     <AlertCircle className="w-4 h-4" />
+                     {saveError}
+                   </motion.div>
+                 )}
+               </AnimatePresence>
+             </div>
              
              <div className="flex gap-4 items-center">
+                {saveError && (
+                   <div className="md:hidden absolute top-2 left-0 w-full px-6 flex justify-center">
+                     <div className="text-xs text-red-400 bg-red-950/50 border border-red-900 px-2 py-1 rounded">{saveError}</div>
+                   </div>
+                )}
+
                 <Button 
                    size="lg"
                    onClick={handleNext} 
                    disabled={isTransitioning} 
-                   className="min-w-[160px] shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground font-bold tracking-wide"
+                   className={cn(
+                     "min-w-[160px] font-bold tracking-wide transition-all",
+                     saveError ? "animate-shake bg-primary/90" : "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground"
+                   )}
                 >
                    {isTransitioning ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === TOTAL_STEPS ? "Enter Terminal" : "Continue"}
                    {currentStep !== TOTAL_STEPS && !isTransitioning && <ChevronRight className="w-4 h-4 ml-2" />}
                 </Button>
              </div>
           </div>
-
         </main>
       </div>
     </TooltipProvider>

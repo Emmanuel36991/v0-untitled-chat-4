@@ -41,17 +41,18 @@ export async function GET(request: NextRequest) {
           .eq("user_id", user.id)
           .maybeSingle()
         
+        // If no config record exists, this is a new user - redirect to profile setup
+        // If config exists but profileSetupComplete is false, also redirect to profile setup
         const config = configData?.config as any
         const profileSetupComplete = config?.profileSetupComplete ?? false
         
-        // If profile setup is not complete, redirect to profile setup
-        if (!profileSetupComplete) {
+        if (!configData || !profileSetupComplete) {
           const response = NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
           return response
         }
       }
       
-      // Profile setup is complete or config doesn't exist yet, proceed to dashboard
+      // Profile setup is complete, proceed to dashboard
       const response = NextResponse.redirect(`${origin}${next}`)
       return response
     }

@@ -504,16 +504,37 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     if (e) e.preventDefault()
     
     const newErrors: Record<string, string> = {}
-    if (!formData.instrument) newErrors.instrument = "Required"
-    if (!formData.entry_price) newErrors.entry_price = "Required"
-    if (!formData.exit_price) newErrors.exit_price = "Required"
-    if (!formData.size) newErrors.size = "Required"
+    const missingFields: string[] = []
+    
+    if (!formData.instrument) {
+      newErrors.instrument = "Required"
+      missingFields.push("Instrument")
+    }
+    if (!formData.entry_price) {
+      newErrors.entry_price = "Required"
+      missingFields.push("Entry Price")
+    }
+    if (!formData.exit_price) {
+      newErrors.exit_price = "Required"
+      missingFields.push("Exit Price")
+    }
+    if (!formData.size) {
+      newErrors.size = "Required"
+      missingFields.push("Position Size")
+    }
     // Account validation
-    if (!formData.account_id && tradingAccounts.length > 0) newErrors.account_id = "Please select an account"
+    if (!formData.account_id && tradingAccounts.length > 0) {
+      newErrors.account_id = "Please select an account"
+      missingFields.push("Trading Account")
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" })
+      toast({ 
+        title: "Missing Required Fields", 
+        description: `Please fill in: ${missingFields.join(", ")}`, 
+        variant: "destructive" 
+      })
       return
     }
 

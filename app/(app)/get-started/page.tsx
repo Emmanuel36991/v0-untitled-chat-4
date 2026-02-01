@@ -1,5 +1,64 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Construction, ArrowLeft, Home } from "lucide-react"
+import { ConcentradeLogo } from "@/components/concentrade-logo"
+
+// TEMPORARY: Payment system disabled for testing
+// Remove this comment and restore full functionality when ready
+
+export default function GetStartedPage() {
+  const router = useRouter()
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950 flex items-center justify-center p-4">
+      <Card className="max-w-2xl w-full border-2">
+        <CardHeader className="text-center pb-8">
+          <div className="flex justify-center mb-4">
+            <ConcentradeLogo size={60} />
+          </div>
+          <div className="flex justify-center mb-4">
+            <div className="p-4 rounded-full bg-muted">
+              <Construction className="h-12 w-12 text-muted-foreground" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl">Payment System Temporarily Disabled</CardTitle>
+          <CardDescription className="text-lg mt-2">
+            Subscription features are currently unavailable for testing
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center space-y-6">
+          <p className="text-muted-foreground leading-relaxed">
+            The subscription and payment system is temporarily disabled while we conduct testing. 
+            All premium features are currently accessible without a subscription.
+          </p>
+          <div className="p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm font-medium text-foreground mb-2">Testing Mode Active</p>
+            <p className="text-xs text-muted-foreground">
+              You have full access to all features during this testing period
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+            <Button onClick={() => router.push('/dashboard')} variant="default" className="gap-2">
+              <Home className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <Button onClick={() => router.back()} variant="outline" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Go Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+/* ORIGINAL CODE - RESTORE WHEN RE-ENABLING PAYMENTS
+"use client"
+
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

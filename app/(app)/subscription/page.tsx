@@ -1,5 +1,53 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { Construction, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+// TEMPORARY: Payment system disabled for testing
+// Remove this comment and restore full functionality when ready
+
+export default function SubscriptionPage() {
+  const router = useRouter()
+
+  return (
+    <div className="max-w-3xl mx-auto py-20">
+      <Card className="border-2">
+        <CardHeader className="text-center pb-8">
+          <div className="flex justify-center mb-4">
+            <div className="p-4 rounded-full bg-muted">
+              <Construction className="h-12 w-12 text-muted-foreground" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl">Subscription System Temporarily Disabled</CardTitle>
+          <CardDescription className="text-lg mt-2">
+            Payment features are currently disabled for testing purposes
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="text-center space-y-6">
+          <p className="text-muted-foreground">
+            The subscription and payment system is temporarily unavailable while we conduct testing. 
+            All premium features are currently accessible for testing purposes.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={() => router.push('/dashboard')} variant="default" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Go to Dashboard
+            </Button>
+            <Button onClick={() => router.back()} variant="outline">
+              Go Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+/* ORIGINAL CODE - RESTORE WHEN RE-ENABLING PAYMENTS
+'use client'
+
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 

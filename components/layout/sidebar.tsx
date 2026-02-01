@@ -92,14 +92,15 @@ const secondaryNavigation = [
 ]
 
 const bottomNavigation = [
-  {
-    name: "Subscription",
-    href: "/subscription",
-    icon: Sparkles,
-    description: "Manage your plan",
-    badge: "PRO",
-    badgeColor: "bg-gradient-to-r from-amber-500 to-orange-500",
-  },
+  // TEMPORARY: Subscription disabled for testing - Uncomment when re-enabling payments
+  // {
+  //   name: "Subscription",
+  //   href: "/subscription",
+  //   icon: Sparkles,
+  //   description: "Manage your plan",
+  //   badge: "PRO",
+  //   badgeColor: "bg-gradient-to-r from-amber-500 to-orange-500",
+  // },
   {
     name: "Settings",
     href: "/settings",

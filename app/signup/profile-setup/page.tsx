@@ -121,7 +121,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
   return (
     <div className={cn(
       "relative flex items-center group py-3 px-3 mb-1 rounded-md transition-all duration-300", 
-      isActive ? "bg-zinc-800/80 border-l-2 border-primary pl-[10px]" : "hover:bg-zinc-800/40 border-l-2 border-transparent"
+      isActive ? "bg-card/80 border-l-2 border-primary pl-[10px]" : "hover:bg-muted/40 border-l-2 border-transparent"
     )}>
       <div className="flex items-center gap-3 w-full">
         <div
@@ -131,7 +131,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
               ? "bg-primary text-primary-foreground shadow-sm"
               : isPast
                 ? "bg-primary/20 text-primary"
-                : "bg-zinc-800 text-zinc-400",
+                : "bg-muted text-muted-foreground",
           )}
         >
           {isPast ? <Check className="w-3 h-3" /> : step.id}
@@ -139,7 +139,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
         <div className="flex flex-col min-w-0">
           <span className={cn(
             "text-xs font-bold uppercase tracking-wider transition-colors", 
-            isActive ? "text-white" : "text-zinc-400"
+            isActive ? "text-foreground" : "text-muted-foreground"
           )}>
             {step.title}
           </span>
@@ -156,14 +156,14 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
       "flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200",
       isSelected 
         ? "border-primary bg-primary/20 shadow-lg shadow-primary/10" 
-        : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60 hover:border-zinc-700"
+        : "border-border bg-card/40 hover:bg-muted/60 hover:border-border"
     )}
   >
-    <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-zinc-500 grayscale")}>
+    <div className={cn("mb-4 transition-all duration-300", isSelected ? "text-primary scale-110" : "text-muted-foreground grayscale")}>
       {category.icon}
     </div>
-    <div className="font-bold text-sm text-center uppercase tracking-wide text-white">{category.label}</div>
-    <div className="text-[10px] text-zinc-300 text-center mt-1 font-mono">{category.description}</div>
+    <div className="font-bold text-sm text-center uppercase tracking-wide text-foreground">{category.label}</div>
+    <div className="text-[10px] text-muted-foreground text-center mt-1 font-mono">{category.description}</div>
   </div>
 )
 
@@ -175,18 +175,18 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
         "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all backdrop-blur-sm",
         isSelected 
           ? "border-primary/60 bg-primary/20" 
-          : "border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/60"
+          : "border-border bg-card/40 hover:bg-muted/60"
       )}
     >
        <div className={cn(
          "w-8 h-8 rounded flex items-center justify-center font-mono text-[10px] font-bold border transition-colors", 
-         isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-zinc-800 border-zinc-700 text-zinc-400"
+         isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"
        )}>
           {instrument.symbol.substring(0,2)}
        </div>
        <div className="overflow-hidden">
-         <div className="text-sm font-bold truncate text-white">{instrument.symbol}</div>
-         <div className="text-[10px] text-zinc-300 truncate">{instrument.name}</div>
+         <div className="text-sm font-bold truncate text-foreground">{instrument.symbol}</div>
+         <div className="text-[10px] text-muted-foreground truncate">{instrument.name}</div>
        </div>
        {isSelected && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
     </div>
@@ -374,18 +374,18 @@ function ProfileSetupContent() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen bg-zinc-950 text-white font-sans selection:bg-primary/20">
+      <div className="flex h-screen bg-background text-foreground font-sans selection:bg-primary/20">
         
         {/* SIDEBAR */}
-        <aside className="hidden lg:flex w-64 flex-col border-r border-zinc-800 bg-zinc-900/50 backdrop-blur-xl h-full z-20">
-          <div className="p-6 border-b border-zinc-800">
+        <aside className="hidden lg:flex w-64 flex-col border-r border-border bg-card/50 backdrop-blur-xl h-full z-20">
+          <div className="p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <ConcentradeLogo size={28} variant="icon" />
               <div>
-                <h1 className="font-bold text-sm tracking-tight uppercase text-white">System Config</h1>
+                <h1 className="font-bold text-sm tracking-tight uppercase text-foreground">System Config</h1>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">Online</span>
+                  <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">Online</span>
                 </div>
               </div>
             </div>
@@ -397,24 +397,24 @@ function ProfileSetupContent() {
             ))}
           </div>
 
-          <div className="p-6 border-t border-zinc-800 bg-zinc-900/80">
-             <div className="flex justify-between text-[10px] uppercase font-bold text-zinc-500 mb-2 tracking-wider">
+          <div className="p-6 border-t border-border bg-card/80">
+             <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-wider">
                 <span>Initialization</span>
                 <span>{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
              </div>
-             <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+             <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-primary transition-all duration-500 shadow-[0_0_10px] shadow-primary/50" style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }} />
              </div>
           </div>
         </aside>
 
         {/* MAIN TERMINAL AREA */}
-        <main className="flex-1 flex flex-col h-full relative bg-zinc-950">
+        <main className="flex-1 flex flex-col h-full relative bg-background">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
           
-          <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-6 lg:hidden bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50">
-             <div className="flex items-center gap-2 font-bold text-white"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
-             <Badge variant="outline" className="bg-zinc-800 border-zinc-700 text-zinc-300">Step {currentStep}</Badge>
+          <header className="h-14 border-b border-border flex items-center justify-between px-6 lg:hidden bg-card/80 backdrop-blur-md sticky top-0 z-50">
+             <div className="flex items-center gap-2 font-bold text-foreground"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
+             <Badge variant="outline">Step {currentStep}</Badge>
           </header>
 
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
@@ -430,8 +430,8 @@ function ProfileSetupContent() {
                       <currentStepConfig.icon className="w-5 h-5" />
                       <span className="text-xs font-bold uppercase tracking-[0.2em]">{currentStepConfig.subtitle}</span>
                    </div>
-                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-white">{currentStepConfig.title}</h1>
-                   <p className="text-zinc-300 text-lg max-w-2xl">{currentStepConfig.description}</p>
+                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-foreground">{currentStepConfig.title}</h1>
+                   <p className="text-muted-foreground text-lg max-w-2xl">{currentStepConfig.description}</p>
                 </motion.div>
 
                 <motion.div
@@ -458,25 +458,25 @@ function ProfileSetupContent() {
                       <div className="space-y-6">
                         <div className="relative flex gap-3">
                            <div className="relative flex-1">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                              <Input 
                                 placeholder="Search tickers..." 
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-zinc-900 border-zinc-800 h-11 text-white placeholder:text-zinc-600 focus-visible:ring-primary/50"
+                                className="pl-10 bg-muted/50 h-11 focus-visible:ring-primary/50"
                              />
                            </div>
-                           <div className="flex border border-zinc-800 rounded-md overflow-hidden bg-zinc-900">
-                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-white", instrumentLayout === 'grid' && "bg-zinc-800 text-white")}><LayoutGrid className="w-4 h-4"/></Button>
-                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-zinc-800 hover:text-white", instrumentLayout === 'list' && "bg-zinc-800 text-white")}><List className="w-4 h-4"/></Button>
+                           <div className="flex border border-border rounded-md overflow-hidden bg-card">
+                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-muted", instrumentLayout === 'grid' && "bg-muted")}><LayoutGrid className="w-4 h-4"/></Button>
+                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-muted", instrumentLayout === 'list' && "bg-muted")}><List className="w-4 h-4"/></Button>
                            </div>
                         </div>
                         {selectedPrimaryInstruments.length === 0 ? (
-                           <div className="text-center py-16 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-                              <AlertCircle className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-                              <h3 className="text-lg font-semibold text-white">Feed Offline</h3>
-                              <p className="text-zinc-300 mb-6">Select a market class to initialize the feed.</p>
-                              <Button variant="outline" onClick={handleBack} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">Return to Markets</Button>
+                           <div className="text-center py-16 border border-dashed border-border rounded-xl bg-card/20">
+                              <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                              <h3 className="text-lg font-semibold text-foreground">Feed Offline</h3>
+                              <p className="text-muted-foreground mb-6">Select a market class to initialize the feed.</p>
+                              <Button variant="outline" onClick={handleBack}>Return to Markets</Button>
                            </div>
                         ) : (
                            <div className={cn("grid gap-3", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
@@ -494,16 +494,16 @@ function ProfileSetupContent() {
                    )}
                    
                    {currentStep === 3 && (
-                      <div className="max-w-xl bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm shadow-sm">
+                      <div className="max-w-xl bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm shadow-sm">
                          <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
                       </div>
                    )}
                    
                    {currentStep === 4 && (
                       <div className="space-y-6">
-                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-800">
+                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
                             <div className="flex flex-wrap gap-2">
-                               {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-zinc-500">No markets configured.</span>}
+                               {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-muted-foreground">No markets configured.</span>}
                                {selectedPrimaryInstruments.map(catId => (
                                   <button
                                      key={catId}
@@ -511,8 +511,8 @@ function ProfileSetupContent() {
                                      className={cn(
                                         "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all",
                                         activeLayoutTab === catId 
-                                           ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/50" 
-                                           : "bg-zinc-900/50 text-zinc-500 border-transparent hover:border-zinc-700 hover:text-zinc-300"
+                                           ? "bg-primary/10 text-primary border-primary/50" 
+                                           : "bg-card/50 text-muted-foreground border-transparent hover:border-border hover:text-foreground"
                                      )}
                                   >
                                      {catId}
@@ -525,7 +525,7 @@ function ProfileSetupContent() {
                                   size="sm" 
                                   variant="outline" 
                                   onClick={() => toggleAllVisibility(activeLayoutTab, !isAllVisibleInTab)}
-                                  className="h-8 text-xs border-indigo-500/20 hover:bg-indigo-500/10 hover:text-indigo-400 bg-transparent text-indigo-400/80"
+                                  className="h-8 text-xs"
                                >
                                   {isAllVisibleInTab ? <Square className="w-3 h-3 mr-2" /> : <CheckSquare className="w-3 h-3 mr-2" />}
                                   {isAllVisibleInTab ? "Disable All" : "Enable All"}
@@ -544,26 +544,26 @@ function ProfileSetupContent() {
                                         className={cn(
                                            "relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between",
                                            isVisible 
-                                              ? "bg-indigo-500/10 border-indigo-500/40 shadow-lg shadow-indigo-500/10" 
-                                              : "bg-zinc-900/40 border-zinc-800 hover:bg-zinc-800/50 hover:border-zinc-700 opacity-70 hover:opacity-100"
+                                              ? "bg-primary/10 border-primary/40 shadow-lg shadow-primary/10" 
+                                              : "bg-card/40 border-border hover:bg-muted/50 hover:border-border opacity-70 hover:opacity-100"
                                         )}
                                      >
                                         <div>
-                                           <div className={cn("font-bold text-sm", isVisible ? "text-indigo-400" : "text-zinc-200")}>{inst.symbol}</div>
-                                           <div className="text-[10px] text-zinc-500 truncate max-w-[120px]">{inst.name}</div>
+                                           <div className={cn("font-bold text-sm", isVisible ? "text-primary" : "text-foreground")}>{inst.symbol}</div>
+                                           <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">{inst.name}</div>
                                         </div>
                                         <div className={cn(
                                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                                           isVisible ? "bg-indigo-500 border-indigo-500" : "border-zinc-700 bg-zinc-800"
+                                           isVisible ? "bg-primary border-primary" : "border-border bg-muted"
                                         )}>
-                                           {isVisible && <Check className="w-3 h-3 text-white" />}
+                                           {isVisible && <Check className="w-3 h-3 text-primary-foreground" />}
                                         </div>
                                      </div>
                                   )
                                })}
                             </div>
                          ) : (
-                            <div className="py-20 text-center text-zinc-500">Select a market category above to configure feeds.</div>
+                            <div className="py-20 text-center text-muted-foreground">Select a market category above to configure feeds.</div>
                          )}
                       </div>
                    )}
@@ -571,24 +571,24 @@ function ProfileSetupContent() {
                    {currentStep === 5 && (
                       <div className="space-y-4">
                          <div className="flex justify-end">
-                            <Button variant="outline" size="sm" onClick={enableAllNotifications} className="gap-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white">
+                            <Button variant="outline" size="sm" onClick={enableAllNotifications} className="gap-2">
                                <CheckSquare className="w-4 h-4"/> Activate All
                             </Button>
                          </div>
-                         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+                         <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
                             <NotificationsStep notificationPreferences={config.notificationPreferences} onUpdate={updateNotificationPreferences} />
                          </div>
                       </div>
                    )}
                    
                    {currentStep === 6 && (
-                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+                      <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
                          <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
                       </div>
                    )}
                    
                    {currentStep === 7 && (
-                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+                      <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
                          <ReviewConfirmationStep config={config} />
                       </div>
                    )}
@@ -602,8 +602,8 @@ function ProfileSetupContent() {
                             <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-[spin_8s_linear_infinite]" />
                             <div className="absolute inset-2 border border-primary/10 rounded-full animate-[spin_4s_linear_infinite_reverse]" />
                          </div>
-                         <h2 className="text-3xl font-bold mb-3 tracking-tight text-white">System Initialized</h2>
-                         <p className="text-zinc-400 max-w-md mb-8 leading-relaxed">
+                         <h2 className="text-3xl font-bold mb-3 tracking-tight text-foreground">System Initialized</h2>
+                         <p className="text-muted-foreground max-w-md mb-8 leading-relaxed">
                             Your environment is ready for deployment.
                          </p>
                       </div>
@@ -612,13 +612,12 @@ function ProfileSetupContent() {
              </div>
           </div>
 
-          <div className="h-24 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
+          <div className="h-24 border-t border-border bg-background/95 backdrop-blur-md flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
              <div className="flex items-center gap-4 flex-1">
                <Button 
                   variant="ghost" 
                   onClick={handleBack} 
                   disabled={isTransitioning}
-                  className="text-zinc-500 hover:text-white hover:bg-zinc-900"
                >
                   <ChevronLeft className="w-4 h-4 mr-2" /> Back
                </Button>
@@ -629,7 +628,7 @@ function ProfileSetupContent() {
                      initial={{ opacity: 0, x: -10 }}
                      animate={{ opacity: 1, x: 0 }}
                      exit={{ opacity: 0 }}
-                     className="hidden md:flex items-center gap-2 text-red-400 text-sm font-medium bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-md"
+                     className="hidden md:flex items-center gap-2 text-destructive text-sm font-medium bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-md"
                    >
                      <AlertCircle className="w-4 h-4" />
                      {saveError}
@@ -641,7 +640,7 @@ function ProfileSetupContent() {
              <div className="flex gap-4 items-center">
                 {saveError && (
                    <div className="md:hidden absolute top-2 left-0 w-full px-6 flex justify-center">
-                     <div className="text-xs text-red-400 bg-red-950/50 border border-red-900 px-2 py-1 rounded">{saveError}</div>
+                     <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded">{saveError}</div>
                    </div>
                 )}
 

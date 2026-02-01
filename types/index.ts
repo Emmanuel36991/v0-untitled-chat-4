@@ -23,6 +23,35 @@ export interface PlaybookStrategy {
   tags: string[]
   equity_curve: number[]
   created_at: string
+  is_merged?: boolean // Whether this is a merged strategy group
+  merged_strategy_ids?: string[] // IDs of strategies in this merged group
+}
+
+// Strategy Relationship Types
+export interface StrategyRelationship {
+  id: string
+  user_id: string
+  parent_strategy_id: string
+  child_strategy_id: string
+  relationship_type: 'merged' | 'derived' | 'complements'
+  relationship_strength: number // 0-100, how closely related
+  created_at: string
+}
+
+export interface MergedStrategy {
+  id: string
+  user_id: string
+  name: string
+  description: string | null
+  strategy_ids: string[] // Array of strategy IDs that are merged
+  strategies: PlaybookStrategy[] // Full strategy objects
+  combined_win_rate: number
+  combined_profit_factor: number
+  combined_trades_count: number
+  combined_pnl: number
+  common_good_habits: string[] // Good habits that appear across strategies
+  created_at: string
+  updated_at: string
 }
 
 // --- TRADE INTERFACE (Unified) ---

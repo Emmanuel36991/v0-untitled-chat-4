@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 
 export async function GET(request: NextRequest) {
@@ -8,7 +9,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard"
 
   if (code) {
-    let redirectUrl = `${origin}${next}`
+    const cookieStore = cookies()
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,14 +17,13 @@ export async function GET(request: NextRequest) {
       {
         cookies: {
           get(name: string) {
-            return request.cookies.get(name)?.value
+            return cookieStore.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            // Cookies will be set on the response object
-            request.cookies.set({ name, value, ...options })
+            cookieStore.set({ name, value, ...options })
           },
           remove(name: string, options: CookieOptions) {
-            request.cookies.set({ name, value: '', ...options })
+            cookieStore.set({ name, value: '', ...options })
           },
         },
       }
@@ -49,23 +49,16 @@ export async function GET(request: NextRequest) {
         const profileSetupComplete = config?.profileSetupComplete ?? false
         
         if (!configData || !profileSetupComplete) {
-          redirectUrl = `${origin}/signup/profile-setup?step=1`
+          return NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
         }
       }
-    } else {
-      // Authentication error - redirect to login with error
-      redirectUrl = `${origin}/login?error=Could not authenticate user`
+      
+      // Profile setup is complete, proceed to dashboard
+      return NextResponse.redirect(`${origin}${next}`)
     }
     
-    // Create response with proper cookie handling
-    const response = NextResponse.redirect(redirectUrl)
-    
-    // Copy cookies from request to response
-    request.cookies.getAll().forEach((cookie) => {
-      response.cookies.set(cookie.name, cookie.value)
-    })
-    
-    return response
+    // Authentication error - redirect to login with error
+    return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
   }
 
   // No code provided - redirect to login

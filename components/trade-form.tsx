@@ -714,7 +714,42 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                   <Button variant="outline" size="sm" onClick={() => setActiveTab("setup")}><ChevronLeft className="w-4 h-4 mr-2"/> Back</Button>
                </div>
 
-               {renderSection("Select Strategy", BookOpen, 
+               {strategies.length === 0 && (
+                  <Card className="border-2 border-amber-500/50 bg-amber-50/10 dark:bg-amber-950/10">
+                     <CardHeader>
+                        <div className="flex items-start gap-3">
+                           <div className="p-2 bg-amber-500/10 rounded-lg">
+                              <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                           </div>
+                           <div className="flex-1">
+                              <CardTitle className="text-amber-900 dark:text-amber-100">No Playbook Strategies Found</CardTitle>
+                              <CardDescription className="text-amber-700 dark:text-amber-300 mt-1">
+                                 You need to create at least one strategy in your playbook before adding trades. 
+                                 Strategies help you track which setups work best for your trading style.
+                              </CardDescription>
+                           </div>
+                        </div>
+                     </CardHeader>
+                     <CardFooter className="bg-amber-50/30 dark:bg-amber-950/20 border-t border-amber-200/30 dark:border-amber-800/30 flex gap-3">
+                        <Button 
+                           variant="default" 
+                           className="bg-amber-600 hover:bg-amber-700 text-white"
+                           onClick={() => router.push("/playbook")}
+                        >
+                           <Plus className="w-4 h-4 mr-2" />
+                           Create Strategy
+                        </Button>
+                        <Button 
+                           variant="outline"
+                           onClick={() => setActiveTab("setup")}
+                        >
+                           Go Back
+                        </Button>
+                     </CardFooter>
+                  </Card>
+               )}
+
+               {strategies.length > 0 && renderSection("Select Strategy", BookOpen, 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      {strategies.map(strat => {
                         const isSelected = formData.playbook_strategy_id === strat.id
@@ -778,13 +813,33 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                   "text-indigo-600", "bg-indigo-50/10", "border-indigo-200 dark:border-indigo-900"
                )}
 
-               <Card className="border-0 shadow-md bg-card">
-                  <CardContent className="p-6">
-                      <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
-                      <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
-                  </CardContent>
-                  <CardFooter className="bg-muted/20 border-t p-4 flex justify-end"><Button size="lg" onClick={() => setActiveTab("psychology")} className="rounded-xl px-8">Next <ChevronRight className="ml-2 w-4 h-4"/></Button></CardFooter>
-               </Card>
+               {strategies.length > 0 && (
+                  <Card className="border-0 shadow-md bg-card">
+                     <CardContent className="p-6">
+                         <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
+                         <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
+                     </CardContent>
+                     <CardFooter className="bg-muted/20 border-t p-4 flex justify-end">
+                        <Button 
+                           size="lg" 
+                           onClick={() => {
+                              if (!formData.playbook_strategy_id) {
+                                 toast({ 
+                                    title: "Strategy Required", 
+                                    description: "Please select a strategy before proceeding.", 
+                                    variant: "destructive" 
+                                 })
+                                 return
+                              }
+                              setActiveTab("psychology")
+                           }} 
+                           className="rounded-xl px-8"
+                        >
+                           Next <ChevronRight className="ml-2 w-4 h-4"/>
+                        </Button>
+                     </CardFooter>
+                  </Card>
+               )}
             </TabsContent>
 
             {/* TAB 3: PSYCHOLOGY (UPDATED) */}

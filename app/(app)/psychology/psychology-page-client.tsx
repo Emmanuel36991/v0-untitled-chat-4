@@ -21,6 +21,10 @@ interface PsychologyStats {
   dominantEmotion: string
   winRate: number
   totalEntries: number
+  currentStreak: number
+  focusScore: number
+  riskAlert: string
+  totalJournalEntries: number
 }
 
 interface Props {
@@ -90,35 +94,35 @@ export default function PsychologyPageClient({ stats }: Props) {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
         >
           <HUDCard 
-            label="Discipline Score" 
-            value={stats ? `${stats.disciplineScore}%` : "0%"} 
-            subtext=""
+            label="Current Streak" 
+            value={stats?.currentStreak || "0"} 
+            subtext="DAYS"
             icon={Zap} 
-            trend={stats && stats.disciplineScore >= 70 ? "Good" : "Improve"}
-            trendColor={stats && stats.disciplineScore >= 70 ? "text-emerald-400 dark:text-emerald-400" : "text-amber-500 dark:text-amber-500"}
+            trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
+            trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-400 dark:text-emerald-400" : "text-amber-500 dark:text-amber-500"}
           />
           <HUDCard 
-            label="Dominant Emotion" 
-            value={stats?.dominantEmotion || "Unknown"} 
-            subtext=""
+            label="Focus Score" 
+            value={stats?.focusScore ? stats.focusScore.toFixed(1) : "0.0"} 
+            subtext="/ 10.0"
             icon={Target} 
-            trend=""
-            trendColor="text-emerald-400 dark:text-emerald-400"
+            trend={stats && stats.focusScore >= 7 ? "Excellent" : stats && stats.focusScore >= 5 ? "Good" : "Improve"}
+            trendColor={stats && stats.focusScore >= 7 ? "text-emerald-400 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-indigo-400 dark:text-indigo-400" : "text-amber-500 dark:text-amber-500"}
           />
           <HUDCard 
-            label="Win Rate" 
-            value={stats ? `${stats.winRate}%` : "0%"} 
-            subtext=""
+            label="Risk Alert" 
+            value={stats?.riskAlert || "None"} 
+            subtext={stats?.riskAlert && stats.riskAlert !== "None" ? "DETECTED" : "CLEAR"}
             icon={ShieldAlert} 
-            trend={stats && stats.winRate >= 50 ? "Profitable" : "At Risk"}
-            trendColor={stats && stats.winRate >= 50 ? "text-emerald-400 dark:text-emerald-400" : "text-rose-400 dark:text-rose-400"}
+            trend={stats?.riskAlert && stats.riskAlert !== "None" ? "High Risk" : "Low Risk"}
+            trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-400 dark:text-rose-400" : "text-emerald-400 dark:text-emerald-400"}
           />
           <HUDCard 
             label="Total Entries" 
-            value={stats?.totalEntries || "0"} 
-            subtext="TRADES"
+            value={stats?.totalJournalEntries || "0"} 
+            subtext="LOGS"
             icon={CalendarDays} 
-            trend=""
+            trend={stats && stats.totalJournalEntries >= 30 ? "+30 Logs" : stats && stats.totalJournalEntries > 0 ? `+${stats.totalJournalEntries}` : "No Data"}
             trendColor="text-indigo-400 dark:text-indigo-400"
           />
         </motion.div>

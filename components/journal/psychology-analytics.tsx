@@ -579,13 +579,13 @@ export default function PsychologyAnalytics({
         </Card>
 
         {/* Mood Distribution */}
-        <Card className="bg-zinc-900/50 backdrop-blur border-zinc-800 shadow-xl overflow-hidden">
+        <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-zinc-100">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
               <PieChart className="h-5 w-5 text-sky-500" />
               State Distribution
             </CardTitle>
-            <CardDescription className="text-zinc-500">Breakdown of your reported emotional states</CardDescription>
+            <CardDescription className="text-slate-600 dark:text-zinc-500">Breakdown of your reported emotional states</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">

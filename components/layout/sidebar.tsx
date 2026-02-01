@@ -8,10 +8,19 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { ConcentrateLogo } from "@/components/ConcentrateLogo" // Assuming ConcentrateLogo is imported from this path
-import { BarChart3, BookOpen, Brain, Calculator, ChevronLeft, ChevronRight, Home, LineChart, PlusCircle, Settings, TrendingUp, Users, Bot, Zap } from 'lucide-react'
+import { BarChart3, BookOpen, Brain, Calculator, ChevronLeft, ChevronRight, CreditCard, Home, LineChart, PlusCircle, Settings, Sparkles, TrendingUp, Users, Bot, Zap } from 'lucide-react'
 
 interface SidebarProps {
   className?: string
+}
+
+interface NavItem {
+  name: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  description: string
+  badge?: string
+  badgeColor?: string
 }
 
 const navigation = [
@@ -83,6 +92,14 @@ const secondaryNavigation = [
 ]
 
 const bottomNavigation = [
+  {
+    name: "Subscription",
+    href: "/subscription",
+    icon: Sparkles,
+    description: "Manage your plan",
+    badge: "PRO",
+    badgeColor: "bg-gradient-to-r from-amber-500 to-orange-500",
+  },
   {
     name: "Settings",
     href: "/settings",
@@ -231,7 +248,7 @@ export function Sidebar({ className }: SidebarProps) {
       </ScrollArea>
 
       {/* Bottom Navigation */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-3">
+      <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-1">
         {bottomNavigation.map((item) => {
           const isActive = pathname === item.href
           return (
@@ -250,7 +267,21 @@ export function Sidebar({ className }: SidebarProps) {
                     isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400",
                   )}
                 />
-                {!isCollapsed && <span className="flex-1">{item.name}</span>}
+                {!isCollapsed && (
+                  <>
+                    <span className="flex-1">{item.name}</span>
+                    {item.badge && (
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 text-xs font-medium text-white rounded-full",
+                          item.badgeColor || "bg-blue-500",
+                        )}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             </Link>
           )

@@ -161,7 +161,7 @@ export default function BacktestingPage() {
              </div>
           </div>
 
-          {/* Center: Charts & Results */}
+          {/* Center: Charts & Result */}
           <div className="col-span-9 space-y-6">
              
              {/* Stats Row */}

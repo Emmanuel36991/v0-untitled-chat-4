@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { createBrowserClient } from "@supabase/ssr"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { Slider } from "@/components/ui/slider"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Plus,
@@ -16,15 +19,21 @@ import {
   Calendar,
   Tag,
   TrendingUp,
-  AlertCircle,
+  AlertTriangle,
   Sparkles,
   ChevronDown,
   ChevronUp,
   Brain,
+  Zap,
+  Save,
+  X,
+  History,
+  Target,
+  Activity
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-// Define our options
+// --- Data Constants (Preserved) ---
 const EMOTIONAL_TRIGGERS = [
   { id: "large-loss", label: "Large Loss" },
   { id: "consecutive-losses", label: "Consecutive Losses" },
@@ -45,21 +54,21 @@ const BEHAVIORAL_PATTERNS = [
   { id: "trading-without-plan", label: "Trading Without Plan" },
   { id: "revenge-trading", label: "Revenge Trading" },
   { id: "fomo-trading", label: "FOMO Trading" },
-  { id: "holding-losers", label: "Holding Losers Too Long" },
-  { id: "position-size-large", label: "Position Size Too Large" },
-  { id: "emotional-decisions", label: "Emotional Decision Making" },
+  { id: "holding-losers", label: "Holding Losers" },
+  { id: "position-size-large", label: "Oversizing" },
 ]
 
+// Updated styling for Fintech aesthetic
 const MOODS = [
-  { id: "euphoric", label: "Euphoric", emoji: "😄", color: "from-green-500 to-emerald-500" },
-  { id: "confident", label: "Confident", emoji: "😊", color: "from-blue-500 to-cyan-500" },
-  { id: "focused", label: "Focused", emoji: "🎯", color: "from-purple-500 to-violet-500" },
-  { id: "neutral", label: "Neutral", emoji: "😐", color: "from-gray-500 to-slate-500" },
-  { id: "cautious", label: "Cautious", emoji: "⚠️", color: "from-yellow-500 to-amber-500" },
-  { id: "frustrated", label: "Frustrated", emoji: "😤", color: "from-orange-500 to-red-500" },
-  { id: "overwhelmed", label: "Overwhelmed", emoji: "😰", color: "from-red-500 to-rose-500" },
-  { id: "exhausted", label: "Exhausted", emoji: "😫", color: "from-indigo-500 to-purple-500" },
-  { id: "anxious", label: "Anxious", emoji: "😟", color: "from-pink-500 to-rose-500" },
+  { id: "euphoric", label: "Euphoric", emoji: "😄", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+  { id: "confident", label: "Confident", emoji: "😊", color: "bg-indigo-500/20 text-indigo-400 border-indigo-500/30" },
+  { id: "focused", label: "Focused", emoji: "🎯", color: "bg-sky-500/20 text-sky-400 border-sky-500/30" },
+  { id: "neutral", label: "Neutral", emoji: "😐", color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" },
+  { id: "cautious", label: "Cautious", emoji: "⚠️", color: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
+  { id: "frustrated", label: "Frustrated", emoji: "😤", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
+  { id: "overwhelmed", label: "Overwhelmed", emoji: "😰", color: "bg-rose-500/20 text-rose-400 border-rose-500/30" },
+  { id: "exhausted", label: "Exhausted", emoji: "😫", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
+  { id: "anxious", label: "Anxious", emoji: "😟", color: "bg-pink-500/20 text-pink-400 border-pink-500/30" },
 ]
 
 interface JournalEntry {
@@ -79,10 +88,14 @@ export default function SimplePsychologyJournal() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [viewingEntry, setViewingEntry] = useState<JournalEntry | null>(null)
-  const [expandedEntry, setExpandedEntry] = useState<string | null>(null)
-
-  // Form state
+  
+  // --- Form State ---
+  const [activeTab, setActiveTab] = useState("pre")
   const [mood, setMood] = useState("")
+  // New States for Sliders
+  const [confidence, setConfidence] = useState([5])
+  const [focus, setFocus] = useState([5])
+  
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([])
   const [selectedPatterns, setSelectedPatterns] = useState<string[]>([])
   const [customTags, setCustomTags] = useState<string[]>([])
@@ -96,16 +109,13 @@ export default function SimplePsychologyJournal() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
-  // Load entries on mount
   useEffect(() => {
     loadEntries()
   }, [])
 
   async function loadEntries() {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         setLoading(false)
         return
@@ -118,22 +128,10 @@ export default function SimplePsychologyJournal() {
         .order("created_at", { ascending: false })
 
       if (error) throw error
-
-      console.log("[v0] Loaded entries:", data)
-      if (data && data.length > 0) {
-        console.log("[v0] First entry emotions:", data[0].emotions)
-        console.log("[v0] Emotions type:", typeof data[0].emotions)
-        console.log("[v0] Is array:", Array.isArray(data[0].emotions))
-      }
-
       setEntries(data || [])
     } catch (error) {
       console.error("Error loading entries:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load journal entries",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to load journal.", variant: "destructive" })
     } finally {
       setLoading(false)
     }
@@ -141,20 +139,20 @@ export default function SimplePsychologyJournal() {
 
   async function saveEntry() {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to save entries",
-          variant: "destructive",
-        })
+        toast({ title: "Error", description: "Login required.", variant: "destructive" })
         return
       }
 
-      // Combine all selections into emotions array
-      const emotionsArray = [...selectedTriggers, ...selectedPatterns, ...customTags]
+      // Combine all data including new sliders into the emotions array for storage compatibility
+      const emotionsArray = [
+        ...selectedTriggers, 
+        ...selectedPatterns, 
+        ...customTags,
+        `Confidence: ${confidence[0]}`,
+        `Focus: ${focus[0]}`
+      ]
 
       const entryData = {
         user_id: user.id,
@@ -166,13 +164,14 @@ export default function SimplePsychologyJournal() {
         lessons_learned: lessonsLearned,
       }
 
-      const { data, error } = await supabase.from("psychology_journal_entries").insert(entryData).select().single()
+      const { error } = await supabase.from("psychology_journal_entries").insert(entryData)
 
       if (error) throw error
 
-      toast({
-        title: "Success",
-        description: "Journal entry saved successfully",
+      toast({ 
+        title: "Log Recorded", 
+        description: "Your mental state has been successfully tracked.",
+        className: "bg-emerald-950 border-emerald-900 text-emerald-100"
       })
 
       // Reset form
@@ -184,57 +183,41 @@ export default function SimplePsychologyJournal() {
       setPreTradeThoughts("")
       setPostTradeThoughts("")
       setLessonsLearned("")
+      setConfidence([5])
+      setFocus([5])
       setShowForm(false)
+      setActiveTab("pre")
 
-      // Reload entries
       loadEntries()
     } catch (error) {
       console.error("Error saving entry:", error)
-      toast({
-        title: "Error",
-        description: "Failed to save journal entry",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to save entry.", variant: "destructive" })
     }
   }
 
   async function deleteEntry(id: string) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
       const { error } = await supabase.from("psychology_journal_entries").delete().eq("id", id).eq("user_id", user.id)
-
       if (error) throw error
 
-      toast({
-        title: "Success",
-        description: "Entry deleted successfully",
-      })
-
+      toast({ title: "Deleted", description: "Journal entry removed." })
       loadEntries()
     } catch (error) {
-      console.error("Error deleting entry:", error)
-      toast({
-        title: "Error",
-        description: "Failed to delete entry",
-        variant: "destructive",
-      })
+      console.error("Error deleting:", error)
+      toast({ title: "Error", description: "Could not delete entry.", variant: "destructive" })
     }
   }
 
-  function toggleTrigger(triggerId: string) {
-    setSelectedTriggers((prev) =>
-      prev.includes(triggerId) ? prev.filter((id) => id !== triggerId) : [...prev, triggerId],
-    )
+  // --- Helper Functions ---
+  function toggleTrigger(id: string) {
+    setSelectedTriggers(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
-  function togglePattern(patternId: string) {
-    setSelectedPatterns((prev) =>
-      prev.includes(patternId) ? prev.filter((id) => id !== patternId) : [...prev, patternId],
-    )
+  function togglePattern(id: string) {
+    setSelectedPatterns(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
   function addCustomTag() {
@@ -245,537 +228,391 @@ export default function SimplePsychologyJournal() {
   }
 
   function removeCustomTag(tag: string) {
-    setCustomTags(customTags.filter((t) => t !== tag))
+    setCustomTags(customTags.filter(t => t !== tag))
   }
 
-  // Helper function to get label for an emotion ID
-  function getEmotionLabel(emotionId: string): string {
-    const trigger = EMOTIONAL_TRIGGERS.find((t) => t.id === emotionId)
+  function getEmotionLabel(id: string): string {
+    const trigger = EMOTIONAL_TRIGGERS.find(t => t.id === id)
     if (trigger) return trigger.label
-
-    const pattern = BEHAVIORAL_PATTERNS.find((p) => p.id === emotionId)
+    const pattern = BEHAVIORAL_PATTERNS.find(p => p.id === id)
     if (pattern) return pattern.label
-
-    return emotionId // Return the ID itself if not found (custom tag)
-  }
-
-  const stats = {
-    totalEntries: entries.length,
-    thisWeek: entries.filter((e) => {
-      const entryDate = new Date(e.created_at)
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      return entryDate >= weekAgo
-    }).length,
-    mostCommonMood:
-      entries.length > 0
-        ? entries
-            .map((e) => e.mood)
-            .sort((a, b) => entries.filter((e) => e.mood === b).length - entries.filter((e) => e.mood === a).length)[0]
-        : null,
+    return id 
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <p className="text-muted-foreground">Loading your journal...</p>
-        </div>
+      <div className="flex items-center justify-center h-[400px] border border-zinc-800 rounded-xl bg-zinc-900/50">
+        <div className="animate-spin h-8 w-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      {entries.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in-up">
-          <Card className="glass-card border-primary/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Entries</p>
-                  <p className="text-3xl font-bold mt-1">{stats.totalEntries}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-accent/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">This Week</p>
-                  <p className="text-3xl font-bold mt-1">{stats.thisWeek}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-accent/10">
-                  <TrendingUp className="h-6 w-6 text-accent-foreground" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card border-chart-1/20">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Common Mood</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    {stats.mostCommonMood && (
-                      <>
-                        <span className="text-2xl">{MOODS.find((m) => m.id === stats.mostCommonMood)?.emoji}</span>
-                        <p className="text-lg font-semibold">
-                          {MOODS.find((m) => m.id === stats.mostCommonMood)?.label}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="space-y-6 h-full flex flex-col">
+      
+      {/* 1. Header / Toggle */}
+      {!showForm ? (
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+              <History className="w-5 h-5 text-indigo-500" />
+              Journal History
+            </h3>
+            <p className="text-xs text-zinc-500 font-mono mt-1">
+              {entries.length} RECORDS FOUND
+            </p>
+          </div>
+          <Button 
+            onClick={() => setShowForm(true)} 
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/20 border border-indigo-400/20"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Log
+          </Button>
         </div>
+      ) : (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 backdrop-blur-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
+              <Brain className="w-5 h-5 text-indigo-400" />
+            </div>
+            <div>
+              <h3 className="font-bold text-zinc-100">New Session Log</h3>
+              <p className="text-xs text-zinc-500">Recording mental state...</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowForm(false)} className="hover:bg-zinc-800 text-zinc-400">
+            <X className="w-4 h-4" />
+          </Button>
+        </motion.div>
       )}
 
-      <div className="flex items-center justify-between animate-fade-in-up stagger-1">
-        <div>
-          <h2 className="text-2xl font-bold">Your Journal Entries</h2>
-          <p className="text-muted-foreground mt-1">Track and reflect on your trading psychology</p>
-        </div>
-        <Button onClick={() => setShowForm(!showForm)} className="gap-2 shadow-lg hover:shadow-xl transition-all">
-          <Plus className="h-4 w-4" />
-          New Entry
-        </Button>
-      </div>
-
-      {showForm && (
-        <Card className="glass-card border-primary/20 animate-slide-fade">
-          <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              New Journal Entry
-            </CardTitle>
-            <CardDescription>Reflect on your trading mindset and emotional state</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8 pt-6">
-            <div className="space-y-4">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <span className="text-2xl">😊</span>
-                How are you feeling?
-              </Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {MOODS.map((moodOption) => (
-                  <button
-                    key={moodOption.id}
-                    type="button"
-                    onClick={() => setMood(moodOption.id)}
-                    className={`relative overflow-hidden rounded-xl p-4 border-2 transition-all duration-300 hover:scale-105 ${
-                      mood === moodOption.id
-                        ? "border-primary shadow-lg shadow-primary/20 bg-primary/10"
-                        : "border-border hover:border-primary/50 bg-card"
-                    }`}
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="text-4xl">{moodOption.emoji}</span>
-                      <span className="font-medium text-sm">{moodOption.label}</span>
-                    </div>
-                    {mood === moodOption.id && (
-                      <div className={`absolute inset-0 bg-gradient-to-br ${moodOption.color} opacity-10 -z-10`} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-orange-500" />
-                Emotional Triggers
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {EMOTIONAL_TRIGGERS.map((trigger) => (
-                  <button
-                    key={trigger.id}
-                    type="button"
-                    onClick={() => toggleTrigger(trigger.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedTriggers.includes(trigger.id)
-                        ? "bg-orange-500/20 text-orange-700 dark:text-orange-300 border-2 border-orange-500/50 shadow-md"
-                        : "bg-muted hover:bg-muted/80 text-muted-foreground border-2 border-transparent hover:border-border"
-                    }`}
-                  >
-                    {trigger.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-500" />
-                Behavioral Patterns
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {BEHAVIORAL_PATTERNS.map((pattern) => (
-                  <button
-                    key={pattern.id}
-                    type="button"
-                    onClick={() => togglePattern(pattern.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                      selectedPatterns.includes(pattern.id)
-                        ? "bg-blue-500/20 text-blue-700 dark:text-blue-300 border-2 border-blue-500/50 shadow-md"
-                        : "bg-muted hover:bg-muted/80 text-muted-foreground border-2 border-transparent hover:border-border"
-                    }`}
-                  >
-                    {pattern.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <Tag className="h-4 w-4 text-purple-500" />
-                Custom Tags
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Add a custom tag..."
-                  value={customTagInput}
-                  onChange={(e) => setCustomTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      addCustomTag()
-                    }
-                  }}
-                  className="input-enhanced"
-                />
-                <Button type="button" onClick={addCustomTag} variant="secondary">
-                  Add
-                </Button>
-              </div>
-              {customTags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {customTags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="px-3 py-1 text-sm badge-animated cursor-pointer"
-                      onClick={() => removeCustomTag(tag)}
-                    >
-                      {tag}
-                      <button className="ml-2 hover:text-destructive transition-colors">×</button>
-                    </Badge>
-                  ))}
+      {/* 2. Main Input Form (Tabs based) */}
+      <AnimatePresence mode="wait">
+        {showForm ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="flex-1"
+          >
+            <Card className="border-zinc-800 bg-zinc-900/80 backdrop-blur-xl shadow-2xl h-full flex flex-col">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+                <div className="px-6 pt-6">
+                  <TabsList className="grid grid-cols-2 bg-zinc-950/50 p-1 rounded-lg border border-zinc-800/50">
+                    <TabsTrigger value="pre" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-indigo-400 font-mono text-xs uppercase tracking-wider">
+                      Pre-Session
+                    </TabsTrigger>
+                    <TabsTrigger value="post" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-emerald-400 font-mono text-xs uppercase tracking-wider">
+                      Post-Session
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
-              )}
-            </div>
 
-            <div className="space-y-4">
-              <Label htmlFor="pre-trade" className="text-base font-semibold">
-                Pre-Trade Thoughts
-              </Label>
-              <Textarea
-                id="pre-trade"
-                placeholder="What were you thinking before the trade? What was your mental state?"
-                value={preTradeThoughts}
-                onChange={(e) => setPreTradeThoughts(e.target.value)}
-                rows={4}
-                className="resize-none input-enhanced"
-              />
-              <p className="text-xs text-muted-foreground">{preTradeThoughts.length} characters</p>
-            </div>
-
-            <div className="space-y-4">
-              <Label htmlFor="post-trade" className="text-base font-semibold">
-                Post-Trade Reflections
-              </Label>
-              <Textarea
-                id="post-trade"
-                placeholder="How do you feel after the trade? What emotions are you experiencing?"
-                value={postTradeThoughts}
-                onChange={(e) => setPostTradeThoughts(e.target.value)}
-                rows={4}
-                className="resize-none input-enhanced"
-              />
-              <p className="text-xs text-muted-foreground">{postTradeThoughts.length} characters</p>
-            </div>
-
-            <div className="space-y-4">
-              <Label htmlFor="lessons" className="text-base font-semibold">
-                Lessons Learned
-              </Label>
-              <Textarea
-                id="lessons"
-                placeholder="What did you learn from this experience? How will you improve?"
-                value={lessonsLearned}
-                onChange={(e) => setLessonsLearned(e.target.value)}
-                rows={4}
-                className="resize-none input-enhanced"
-              />
-              <p className="text-xs text-muted-foreground">{lessonsLearned.length} characters</p>
-            </div>
-
-            <div className="flex gap-3 pt-4 border-t">
-              <Button onClick={saveEntry} disabled={!mood} className="btn-enhanced flex-1">
-                Save Entry
-              </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)} className="flex-1">
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="space-y-4">
-        {entries.length === 0 ? (
-          <Card className="glass-card border-dashed border-2 animate-fade-in-up">
-            <CardContent className="py-16 text-center">
-              <div className="max-w-md mx-auto space-y-4">
-                <div className="p-4 rounded-full bg-primary/10 w-fit mx-auto">
-                  <Brain className="h-12 w-12 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold">Start Your Psychology Journey</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  No journal entries yet. Begin tracking your trading psychology to identify patterns and improve your
-                  mental game.
-                </p>
-                <Button onClick={() => setShowForm(true)} className="gap-2 mt-4">
-                  <Plus className="h-4 w-4" />
-                  Create First Entry
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            {entries.map((entry, index) => {
-              const moodData = MOODS.find((m) => m.id === entry.mood)
-              const isExpanded = expandedEntry === entry.id
-              return (
-                <Card
-                  key={entry.id}
-                  className="glass-card hover:shadow-xl transition-all duration-300 animate-fade-in-up border-l-4"
-                  style={{
-                    borderLeftColor: moodData ? `hsl(var(--primary))` : "transparent",
-                    animationDelay: `${index * 0.1}s`,
-                  }}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div
-                          className={`p-4 rounded-2xl bg-gradient-to-br ${moodData?.color || "from-gray-500 to-slate-500"} bg-opacity-10 shadow-lg`}
-                        >
-                          <span className="text-4xl">{moodData?.emoji || "😐"}</span>
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="text-xl mb-1">{moodData?.label || "Unknown Mood"}</CardTitle>
-                          <CardDescription className="flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(entry.created_at).toLocaleDateString("en-US", {
-                              weekday: "long",
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </CardDescription>
+                <div className="flex-1 overflow-y-auto">
+                  <CardContent className="p-6 space-y-6">
+                    
+                    {/* PRE-SESSION TAB */}
+                    <TabsContent value="pre" className="mt-0 space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                      
+                      {/* Mood Selector */}
+                      <div className="space-y-3">
+                        <Label className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Current State</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {MOODS.map((m) => (
+                            <button
+                              key={m.id}
+                              onClick={() => setMood(m.id)}
+                              className={`
+                                flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all duration-200
+                                ${mood === m.id 
+                                  ? m.color + " shadow-[0_0_15px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/10 scale-[1.02]" 
+                                  : "bg-zinc-950/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:bg-zinc-900"}
+                              `}
+                            >
+                              <span className="text-2xl filter drop-shadow-md">{m.emoji}</span>
+                              <span className="text-[10px] font-medium uppercase tracking-wide">{m.label}</span>
+                            </button>
+                          ))}
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setViewingEntry(entry)}
-                          className="hover:bg-primary/10 hover:text-primary hover:border-primary transition-all"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteEntry(entry.id)}
-                          className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive transition-all"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+
+                      {/* Sliders */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-950/30 p-4 rounded-xl border border-zinc-800/50">
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <Label className="text-xs font-mono text-zinc-400 uppercase flex items-center gap-2">
+                              <Target className="w-3 h-3 text-indigo-500" /> Confidence
+                            </Label>
+                            <span className="text-sm font-mono text-indigo-400 font-bold">{confidence[0]}/10</span>
+                          </div>
+                          <Slider 
+                            value={confidence} 
+                            onValueChange={setConfidence} 
+                            max={10} step={1} 
+                            className="py-2 [&>.relative>.absolute]:bg-indigo-500" 
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <Label className="text-xs font-mono text-zinc-400 uppercase flex items-center gap-2">
+                              <Zap className="w-3 h-3 text-emerald-500" /> Focus Level
+                            </Label>
+                            <span className="text-sm font-mono text-emerald-400 font-bold">{focus[0]}/10</span>
+                          </div>
+                          <Slider 
+                            value={focus} 
+                            onValueChange={setFocus} 
+                            max={10} step={1} 
+                            className="py-2 [&>.relative>.absolute]:bg-emerald-500" 
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {entry.emotions && entry.emotions.length > 0 && (
+
+                      {/* Pre-Trade Notes */}
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                          <Tag className="h-3 w-3" />
-                          Tags & Patterns
+                        <Label className="text-xs font-mono text-zinc-500 uppercase">Mindset & Trade Plan</Label>
+                        <Textarea 
+                          value={preTradeThoughts}
+                          onChange={(e) => setPreTradeThoughts(e.target.value)}
+                          placeholder="What is your plan? Are you forcing a trade?"
+                          className="bg-black/40 border-zinc-800 text-zinc-300 min-h-[100px] focus:ring-indigo-500/20 focus:border-indigo-500/50 placeholder:text-zinc-700 font-sans"
+                        />
+                      </div>
+                    </TabsContent>
+
+                    {/* POST-SESSION TAB */}
+                    <TabsContent value="post" className="mt-0 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                      
+                      {/* Triggers & Patterns */}
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-xs font-mono text-zinc-500 uppercase flex items-center gap-2">
+                            <AlertTriangle className="w-3 h-3 text-amber-500" /> Emotional Triggers
+                          </Label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {EMOTIONAL_TRIGGERS.map(t => (
+                              <button
+                                key={t.id}
+                                onClick={() => toggleTrigger(t.id)}
+                                className={`
+                                  text-[10px] uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all
+                                  ${selectedTriggers.includes(t.id) 
+                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.1)]" 
+                                    : "bg-zinc-900 border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}
+                                `}
+                              >
+                                {t.label}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {entry.emotions.slice(0, isExpanded ? undefined : 5).map((emotion) => (
-                            <Badge key={emotion} variant="secondary" className="badge-animated">
-                              {getEmotionLabel(emotion)}
+
+                        <div className="space-y-3">
+                          <Label className="text-xs font-mono text-zinc-500 uppercase flex items-center gap-2">
+                            <Activity className="w-3 h-3 text-rose-500" /> Bad Habits
+                          </Label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {BEHAVIORAL_PATTERNS.map(p => (
+                              <button
+                                key={p.id}
+                                onClick={() => togglePattern(p.id)}
+                                className={`
+                                  text-[10px] uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all
+                                  ${selectedPatterns.includes(p.id) 
+                                    ? "bg-rose-500/10 text-rose-400 border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.1)]" 
+                                    : "bg-zinc-900 border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}
+                                `}
+                              >
+                                {p.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Custom Tags */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-mono text-zinc-500 uppercase">Custom Tags</Label>
+                        <div className="flex gap-2">
+                          <Input 
+                            value={customTagInput}
+                            onChange={(e) => setCustomTagInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && addCustomTag()}
+                            placeholder="Add tag..."
+                            className="h-8 text-xs bg-black/40 border-zinc-800"
+                          />
+                          <Button size="sm" variant="secondary" onClick={addCustomTag} className="h-8">Add</Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {customTags.map(tag => (
+                            <Badge key={tag} variant="outline" className="text-zinc-400 border-zinc-700 cursor-pointer" onClick={() => removeCustomTag(tag)}>
+                              {tag} <X className="w-3 h-3 ml-1" />
                             </Badge>
                           ))}
-                          {!isExpanded && entry.emotions.length > 5 && (
-                            <Badge
-                              variant="outline"
-                              className="cursor-pointer"
-                              onClick={() => setExpandedEntry(entry.id)}
-                            >
-                              +{entry.emotions.length - 5} more
-                            </Badge>
-                          )}
                         </div>
                       </div>
-                    )}
 
-                    {entry.pre_trade_thoughts && (
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">Pre-Trade Thoughts</p>
-                        <p className={`text-sm leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}>
-                          {entry.pre_trade_thoughts}
-                        </p>
+                        <Label className="text-xs font-mono text-zinc-500 uppercase">Post-Trade Review</Label>
+                        <Textarea 
+                          value={postTradeThoughts}
+                          onChange={(e) => setPostTradeThoughts(e.target.value)}
+                          placeholder="How did you handle your emotions during the trade?"
+                          className="bg-black/40 border-zinc-800 text-zinc-300 min-h-[80px]"
+                        />
                       </div>
-                    )}
 
-                    {(entry.post_trade_thoughts || entry.lessons_learned) && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setExpandedEntry(isExpanded ? null : entry.id)}
-                        className="w-full gap-2"
-                      >
-                        {isExpanded ? (
-                          <>
-                            <ChevronUp className="h-4 w-4" />
-                            Show Less
-                          </>
-                        ) : (
-                          <>
-                            <ChevronDown className="h-4 w-4" />
-                            Show More
-                          </>
-                        )}
-                      </Button>
-                    )}
-
-                    {isExpanded && (
-                      <div className="space-y-4 pt-4 border-t animate-fade-in-up">
-                        {entry.post_trade_thoughts && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-muted-foreground">Post-Trade Reflections</p>
-                            <p className="text-sm leading-relaxed">{entry.post_trade_thoughts}</p>
-                          </div>
-                        )}
-                        {entry.lessons_learned && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-muted-foreground">Lessons Learned</p>
-                            <p className="text-sm leading-relaxed">{entry.lessons_learned}</p>
-                          </div>
-                        )}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-mono text-zinc-500 uppercase flex items-center gap-2">
+                          <Sparkles className="w-3 h-3 text-yellow-500" /> Key Lesson
+                        </Label>
+                        <Textarea 
+                          value={lessonsLearned}
+                          onChange={(e) => setLessonsLearned(e.target.value)}
+                          placeholder="One thing to improve tomorrow..."
+                          className="bg-yellow-500/5 border-yellow-500/20 text-zinc-300 min-h-[60px] focus:border-yellow-500/50"
+                        />
                       </div>
-                    )}
+                    </TabsContent>
                   </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                </div>
 
-      <Dialog open={!!viewingEntry} onOpenChange={() => setViewingEntry(null)}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader className="border-b pb-4">
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              {viewingEntry && MOODS.find((m) => m.id === viewingEntry.mood) && (
-                <span className="text-4xl">{MOODS.find((m) => m.id === viewingEntry.mood)?.emoji}</span>
-              )}
-              Journal Entry Details
-            </DialogTitle>
-            <DialogDescription className="flex items-center gap-2 text-base">
-              <Calendar className="h-4 w-4" />
-              {viewingEntry &&
-                new Date(viewingEntry.created_at).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
+                <div className="p-4 border-t border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
+                  <Button 
+                    onClick={saveEntry} 
+                    disabled={!mood} 
+                    className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium shadow-lg"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Journal Entry
+                  </Button>
+                </div>
+              </Tabs>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            {entries.length === 0 ? (
+              <Card className="bg-zinc-900/30 border-dashed border-2 border-zinc-800">
+                <CardContent className="py-12 text-center">
+                  <Brain className="w-12 h-12 text-zinc-700 mx-auto mb-3" />
+                  <p className="text-zinc-500">No entries yet. Start tracking your mind.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {entries.map((entry) => {
+                  const moodData = MOODS.find((m) => m.id === entry.mood)
+                  return (
+                    <Card 
+                      key={entry.id} 
+                      className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-all group overflow-hidden"
+                    >
+                      <div className={`h-1 w-full bg-gradient-to-r ${moodData?.color.split(' ')[0].replace('bg-', 'from-').replace('/20', '')} to-transparent opacity-50`} />
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-lg ${moodData?.color}`}>
+                              <span className="text-lg">{moodData?.emoji}</span>
+                            </div>
+                            <div>
+                              <div className="font-bold text-zinc-200 text-sm">{moodData?.label}</div>
+                              <div className="text-[10px] text-zinc-500 font-mono flex items-center gap-2">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(entry.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-zinc-400 hover:text-indigo-400" onClick={() => setViewingEntry(entry)}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-zinc-400 hover:text-rose-400" onClick={() => deleteEntry(entry.id)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Tags Preview */}
+                        {entry.emotions && entry.emotions.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-3">
+                            {entry.emotions.slice(0, 3).map((e, i) => (
+                              <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50">
+                                {getEmotionLabel(e)}
+                              </span>
+                            ))}
+                            {entry.emotions.length > 3 && (
+                              <span className="text-[10px] px-1.5 py-0.5 text-zinc-600">+{entry.emotions.length - 3}</span>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
                 })}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Detail Dialog */}
+      <Dialog open={!!viewingEntry} onOpenChange={() => setViewingEntry(null)}>
+        <DialogContent className="bg-zinc-950 border-zinc-800 text-zinc-100 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="text-2xl">{MOODS.find(m => m.id === viewingEntry?.mood)?.emoji}</span>
+              {MOODS.find(m => m.id === viewingEntry?.mood)?.label} Check-in
+            </DialogTitle>
+            <DialogDescription className="text-zinc-500 font-mono">
+              {viewingEntry && new Date(viewingEntry.created_at).toLocaleString()}
             </DialogDescription>
           </DialogHeader>
-
-          {viewingEntry && (
-            <div className="space-y-6 py-4">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  Mood
-                </h3>
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-4 rounded-2xl bg-gradient-to-br ${MOODS.find((m) => m.id === viewingEntry.mood)?.color || "from-gray-500 to-slate-500"} bg-opacity-10`}
-                  >
-                    <span className="text-3xl">{MOODS.find((m) => m.id === viewingEntry.mood)?.emoji}</span>
-                  </div>
-                  <Badge variant="default" className="text-lg py-2 px-4">
-                    {MOODS.find((m) => m.id === viewingEntry.mood)?.label || "Unknown"}
+          
+          <div className="space-y-6 mt-4">
+            {viewingEntry?.emotions && viewingEntry.emotions.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {viewingEntry.emotions.map((e, i) => (
+                  <Badge key={i} variant="secondary" className="bg-zinc-900 border-zinc-800 text-zinc-400">
+                    {getEmotionLabel(e)}
                   </Badge>
-                </div>
+                ))}
               </div>
+            )}
 
-              <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <h3 className="font-semibold text-lg flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-primary" />
-                  Selected Tags & Patterns
-                </h3>
-                {viewingEntry.emotions && Array.isArray(viewingEntry.emotions) && viewingEntry.emotions.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {viewingEntry.emotions.map((emotion, index) => (
-                      <Badge key={`${emotion}-${index}`} variant="default" className="text-sm py-2 px-4 badge-animated">
-                        {getEmotionLabel(emotion)}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No tags selected</p>
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                <Label className="text-xs text-indigo-400 uppercase font-bold mb-2 block">Pre-Session</Label>
+                <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                  {viewingEntry?.pre_trade_thoughts || "No notes."}
+                </p>
               </div>
-
-              {viewingEntry.pre_trade_thoughts && (
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-lg">Pre-Trade Thoughts</h3>
-                  <div className="p-4 rounded-xl bg-muted/50 border">
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingEntry.pre_trade_thoughts}</p>
-                  </div>
-                </div>
-              )}
-
-              {viewingEntry.post_trade_thoughts && (
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-lg">Post-Trade Reflections</h3>
-                  <div className="p-4 rounded-xl bg-muted/50 border">
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingEntry.post_trade_thoughts}</p>
-                  </div>
-                </div>
-              )}
-
-              {viewingEntry.lessons_learned && (
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-lg flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
-                    Lessons Learned
-                  </h3>
-                  <div className="p-4 rounded-xl bg-green-500/5 border border-green-500/20">
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{viewingEntry.lessons_learned}</p>
-                  </div>
-                </div>
-              )}
+              <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                <Label className="text-xs text-emerald-400 uppercase font-bold mb-2 block">Post-Session</Label>
+                <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                  {viewingEntry?.post_trade_thoughts || "No notes."}
+                </p>
+              </div>
             </div>
-          )}
+
+            {viewingEntry?.lessons_learned && (
+              <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                <Label className="text-xs text-amber-500 uppercase font-bold mb-2 block flex items-center gap-2">
+                  <Sparkles className="w-3 h-3" /> Key Lesson
+                </Label>
+                <p className="text-sm text-zinc-300 italic">"{viewingEntry.lessons_learned}"</p>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

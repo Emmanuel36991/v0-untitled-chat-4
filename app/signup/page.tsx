@@ -66,8 +66,8 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          // Point to callback for email confirmation too
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/signup/profile-setup?step=1`,
+          // Redirect to paywall after signup
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/get-started`,
         },
       })
 
@@ -88,8 +88,8 @@ export default function SignUpPage() {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        // FIXED: Point to callback route
-        redirectTo: `${window.location.origin}/auth/callback?next=/signup/profile-setup?step=1`,
+        // Redirect to paywall after social signup
+        redirectTo: `${window.location.origin}/auth/callback?next=/get-started`,
       },
     })
   }

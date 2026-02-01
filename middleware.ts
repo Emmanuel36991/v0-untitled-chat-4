@@ -68,7 +68,8 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/signup") ||
     request.nextUrl.pathname.startsWith("/auth") ||
     request.nextUrl.pathname.startsWith("/forgot-password") ||
-    request.nextUrl.pathname.startsWith("/reset-password")
+    request.nextUrl.pathname.startsWith("/reset-password") ||
+    request.nextUrl.pathname.startsWith("/api/webhooks") // Allow webhooks
 
   // 5. Block unauthenticated access to protected routes
   if (!session && !isPublicRoute) {
@@ -77,8 +78,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // --- REMOVED: Redirect authenticated users away from auth pages ---
-  // The block that forced logged-in users to /dashboard has been deleted.
+  // 6. Paywall: Check subscription status for authenticated users
+  if (session && !isPublicRoute) {
+    const isPaywallRoute = request.nextUrl.pathname.startsWith("/get-started")
+    const isWebhook = request.nextUrl.pathname.startsWith("/api/webhooks")
+    
+    // Skip paywall check for paywall page itself and webhooks
+    if (!isPaywallRoute && !isWebhook) {
+      try {
+        // Check if user has active subscription
+        const { data: subscriptionData } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', session.user.id)
+          .single()
+
+        // If no subscription or inactive, redirect to paywall
+        if (!subscriptionData || subscriptionData.status !== 'active') {
+          return NextResponse.redirect(new URL("/get-started", request.url))
+        }
+      } catch (error) {
+        // If error checking subscription (e.g., table doesn't exist), redirect to paywall
+        console.error("Error checking subscription:", error)
+        return NextResponse.redirect(new URL("/get-started", request.url))
+      }
+    }
+  }
 
   return response
 }

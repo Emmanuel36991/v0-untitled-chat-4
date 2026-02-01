@@ -19,9 +19,7 @@ export function VisualMap({ className }: { className?: string }) {
   
   const [data, setData] = useState<{ nodes: MapNode[], links: MapLink[] }>({ nodes: [], links: [] })
   const [loading, setLoading] = useState(true)
-  const [hoverNode, setHoverNode] = useState<MapNode | null>(null)
   const [selectedNode, setSelectedNode] = useState<MapNode | null>(null)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [dimensions, setDimensions] = useState({ w: 800, h: 600 })
 
   // --- RESIZE OBSERVER ---
@@ -37,21 +35,7 @@ export function VisualMap({ className }: { className?: string }) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // --- MOUSE TRACKING FOR TOOLTIP ---
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        setMousePos({ 
-          x: e.clientX - rect.left, 
-          y: e.clientY - rect.top 
-        })
-      }
-    }
-    const container = containerRef.current
-    container?.addEventListener('mousemove', handleMouseMove)
-    return () => container?.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -245,152 +229,69 @@ export function VisualMap({ className }: { className?: string }) {
             linkDirectionalParticleColor={() => COLORS.strategy.core}
 
             // --- INTERACTIONS ---
-            onNodeHover={(node) => setHoverNode(node as MapNode || null)}
             onNodeClick={handleNodeClick}
             onBackgroundClick={handleBackgroundClick}
             
-            // --- HFT NODE RENDERER (Neon/Glass Effect) ---
+            // --- SIMPLE NODE RENDERER (Clean Circles Only) ---
             nodeCanvasObject={(node: any, ctx, globalScale) => {
-              const radius = getNodeRadius(node as MapNode)
-              const isHovered = hoverNode?.id === node.id
+              const baseRadius = node.type === 'strategy' ? 12 : node.type === 'setup' ? 10 : 8
               const isSelected = selectedNode?.id === node.id
               const isDimmed = connectedIds && !connectedIds.has(node.id)
               const x = node.x
               const y = node.y
 
+              // Expand selected node
+              const radius = isSelected ? baseRadius * 1.5 : baseRadius
+
               // Get colors based on node type
-              let colors = COLORS.strategy
-              if (node.type === 'setup') colors = COLORS.setup
-              else if (node.type === 'psych_positive') colors = COLORS.psych_pos
-              else if (node.type === 'psych_negative') colors = COLORS.psych_neg
+              let coreColor = COLORS.strategy.core
+              if (node.type === 'setup') coreColor = COLORS.setup.core
+              else if (node.type === 'psych_positive') coreColor = COLORS.psych_pos.core
+              else if (node.type === 'psych_negative') coreColor = COLORS.psych_neg.core
 
               // Apply dimming effect
-              const opacity = isDimmed ? 0.15 : 1
+              const opacity = isDimmed ? 0.2 : 1
 
               ctx.save()
               ctx.globalAlpha = opacity
 
-              // --- OUTER GLOW (Shadow blur technique) ---
-              if (!isDimmed) {
-                ctx.shadowBlur = isSelected ? 25 : isHovered ? 20 : 12
-                ctx.shadowColor = colors.glow
+              // Simple circle - no glow unless selected
+              if (isSelected) {
+                ctx.shadowBlur = 20
+                ctx.shadowColor = coreColor
               }
 
-              // --- NODE SHAPE BASED ON TYPE ---
-              if (node.type === 'strategy') {
-                // STRATEGY: Solid radiant core with double ring
-                
-                // Outer ring
-                ctx.beginPath()
-                ctx.arc(x, y, radius + 3, 0, 2 * Math.PI)
-                ctx.strokeStyle = colors.core
-                ctx.lineWidth = 1
-                ctx.stroke()
-                
-                // Main circle with gradient fill
-                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius)
-                gradient.addColorStop(0, colors.core)
-                gradient.addColorStop(0.7, colors.core)
-                gradient.addColorStop(1, isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.4)')
-                
-                ctx.beginPath()
-                ctx.arc(x, y, radius, 0, 2 * Math.PI)
-                ctx.fillStyle = gradient
-                ctx.fill()
-                
-                // Inner bright core
-                ctx.beginPath()
-                ctx.arc(x, y, radius * 0.3, 0, 2 * Math.PI)
-                ctx.fillStyle = isDark ? '#e0e7ff' : '#c7d2fe'
-                ctx.fill()
-                
-              } else if (node.type === 'setup') {
-                // SETUP: Orbiting satellite ring style
-                
-                ctx.beginPath()
-                ctx.arc(x, y, radius, 0, 2 * Math.PI)
-                ctx.strokeStyle = colors.core
-                ctx.lineWidth = isHovered ? 3 : 2
-                ctx.stroke()
-                
-                // Inner dot
-                ctx.beginPath()
-                ctx.arc(x, y, radius * 0.4, 0, 2 * Math.PI)
-                ctx.fillStyle = colors.core
-                ctx.fill()
-                
-                // Small orbital indicator
-                if (isHovered || isSelected) {
-                  ctx.beginPath()
-                  ctx.arc(x + radius * 0.7, y - radius * 0.7, 2, 0, 2 * Math.PI)
-                  ctx.fillStyle = colors.core
-                  ctx.fill()
-                }
-                
-              } else {
-                // PSYCHOLOGY: Beacon style with pulsing effect
-                
-                // Outer glow ring
-                ctx.beginPath()
-                ctx.arc(x, y, radius + 2, 0, 2 * Math.PI)
-                ctx.strokeStyle = colors.glow
-                ctx.lineWidth = 1
-                ctx.stroke()
-                
-                // Main filled circle
-                ctx.beginPath()
-                ctx.arc(x, y, radius, 0, 2 * Math.PI)
-                ctx.fillStyle = isHovered ? colors.core : colors.glow
-                ctx.fill()
-                
-                // Border
-                ctx.strokeStyle = colors.core
-                ctx.lineWidth = 1.5
-                ctx.stroke()
-              }
+              ctx.beginPath()
+              ctx.arc(x, y, radius, 0, 2 * Math.PI)
+              ctx.fillStyle = coreColor
+              ctx.fill()
+
+              // Subtle border for definition
+              ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'
+              ctx.lineWidth = 1
+              ctx.stroke()
 
               ctx.restore()
 
-              // --- LABEL RENDERING ---
-              ctx.shadowBlur = 0
-              
-              // Larger base font size for better readability
-              const baseFontSize = node.type === 'strategy' ? 14 : node.type === 'setup' ? 12 : 10
-              const fontSize = Math.max(baseFontSize / globalScale, 8)
-              
-              // Show labels more liberally for better UX
-              const showLabel = node.type === 'strategy' || 
-                               node.type === 'setup' || 
-                               isHovered || 
-                               isSelected || 
-                               globalScale > 1.3
-
-              if (showLabel && !isDimmed) {
-                // Clean up label text
-                let label = node.label
+              // --- LABEL ONLY ON SELECTED NODE ---
+              if (isSelected && !isDimmed) {
+                ctx.shadowBlur = 0
                 
-                // Truncate long labels with ellipsis
-                const maxChars = node.type === 'strategy' ? 20 : 15
-                if (label.length > maxChars) {
-                  label = label.substring(0, maxChars - 1) + '…'
-                }
-                
-                ctx.font = `${node.type === 'strategy' ? '600' : '500'} ${fontSize}px Inter, system-ui, sans-serif`
+                const label = node.label
+                const fontSize = 13
+                ctx.font = `600 ${fontSize}px Inter, system-ui, sans-serif`
                 ctx.textAlign = 'center'
                 ctx.textBaseline = 'middle'
                 
                 const textWidth = ctx.measureText(label).width
+                const labelY = y + radius + fontSize + 8
                 
-                // Position label below node with more spacing
-                const labelY = y + radius + fontSize + 6
-                
-                // Enhanced glass background pill
-                const pillPadding = 6
+                // Glass background pill
+                const pillPadding = 8
                 const pillHeight = fontSize + pillPadding * 2
                 const pillWidth = textWidth + pillPadding * 4
                 const pillRadius = pillHeight / 2
                 
-                // Draw pill background with better contrast
                 ctx.fillStyle = COLORS.glassBg
                 ctx.beginPath()
                 ctx.roundRect(
@@ -402,74 +303,20 @@ export function VisualMap({ className }: { className?: string }) {
                 )
                 ctx.fill()
                 
-                // Enhanced border for better definition
-                ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(100, 116, 139, 0.25)'
-                ctx.lineWidth = 1
+                // Border
+                ctx.strokeStyle = coreColor
+                ctx.lineWidth = 1.5
                 ctx.stroke()
                 
-                // Text with better contrast
-                ctx.fillStyle = node.type === 'strategy' ? COLORS.text : COLORS.textMuted
+                // Text
+                ctx.fillStyle = COLORS.text
                 ctx.fillText(label, x, labelY)
-                
-                // Add subtle shadow for text depth on hover/select
-                if (isHovered || isSelected) {
-                  ctx.save()
-                  ctx.shadowBlur = 3
-                  ctx.shadowColor = isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)'
-                  ctx.fillText(label, x, labelY)
-                  ctx.restore()
-                }
               }
             }}
           />
         </div>
 
-        {/* --- FLOATING TOOLTIP (Mouse-following) --- */}
-        {hoverNode && !selectedNode && (
-          <div 
-            className="absolute z-30 pointer-events-none transition-all duration-75"
-            style={{
-              left: Math.min(mousePos.x + 16, dimensions.w - 220),
-              top: Math.min(mousePos.y - 10, dimensions.h - 140),
-            }}
-          >
-            <div className="bg-background/95 backdrop-blur-md border border-border/60 rounded-lg p-3 shadow-2xl w-52">
-              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/40">
-                <div className={cn("w-2.5 h-2.5 rounded-full shadow-lg", 
-                  hoverNode.type === 'strategy' ? "bg-indigo-500" : 
-                  hoverNode.type === 'setup' ? "bg-blue-500" :
-                  hoverNode.type === 'psych_positive' ? "bg-emerald-500" : "bg-rose-500"
-                )} 
-                style={{
-                  boxShadow: hoverNode.type === 'strategy' ? '0 0 8px rgba(99, 102, 241, 0.6)' :
-                             hoverNode.type === 'setup' ? '0 0 8px rgba(59, 130, 246, 0.6)' :
-                             hoverNode.type === 'psych_positive' ? '0 0 8px rgba(16, 185, 129, 0.6)' :
-                             '0 0 8px rgba(244, 63, 94, 0.6)'
-                }}
-                />
-                <span className="font-semibold text-sm truncate">{hoverNode.label}</span>
-              </div>
-              <div className="space-y-1.5 font-mono text-xs">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Trades</span>
-                  <span className="font-medium">{hoverNode.stats?.trades || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Win Rate</span>
-                  <span className={cn("font-medium", (hoverNode.stats?.winRate || 0) >= 50 ? "text-emerald-500" : "text-muted-foreground")}>
-                    {hoverNode.stats?.winRate || 0}%
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Net P&L</span>
-                  <span className={cn("font-medium", (hoverNode.stats?.pnl || 0) >= 0 ? "text-emerald-500" : "text-rose-500")}>
-                    ${(hoverNode.stats?.pnl || 0).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* --- SELECTED NODE PANEL (Fixed Position) --- */}
         {selectedNode && (

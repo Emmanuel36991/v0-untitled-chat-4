@@ -32,6 +32,8 @@ import {
   type Trade,
   type NewTradeInput,
   type StrategyRule,
+  BAD_HABITS,
+  GOOD_HABITS,
 } from "@/types"
 import type { TradingAccount } from "@/types/accounts"
 
@@ -344,6 +346,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const [psychologyMood, setPsychologyMood] = useState("")
   const [psychologyTriggers, setPsychologyTriggers] = useState<string[]>([])
   const [psychologyPatterns, setPsychologyPatterns] = useState<string[]>([])
+  const [badHabits, setBadHabits] = useState<string[]>([])
+  const [goodHabits, setGoodHabits] = useState<string[]>([])
   const [psychologyCustomTags, setPsychologyCustomTags] = useState<string[]>([])
   const [psychologyCustomTagInput, setPsychologyCustomTagInput] = useState("")
   const [psychologyPreThoughts, setPsychologyPreThoughts] = useState("")
@@ -499,21 +503,44 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const removePsychologyCustomTag = (tag: string) => setPsychologyCustomTags(psychologyCustomTags.filter((t) => t !== tag))
   const togglePsychologyTrigger = (id: string) => setPsychologyTriggers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   const togglePsychologyPattern = (id: string) => setPsychologyPatterns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  const toggleBadHabit = (id: string) => setBadHabits((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  const toggleGoodHabit = (id: string) => setGoodHabits((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     
     const newErrors: Record<string, string> = {}
-    if (!formData.instrument) newErrors.instrument = "Required"
-    if (!formData.entry_price) newErrors.entry_price = "Required"
-    if (!formData.exit_price) newErrors.exit_price = "Required"
-    if (!formData.size) newErrors.size = "Required"
+    const missingFields: string[] = []
+    
+    if (!formData.instrument) {
+      newErrors.instrument = "Required"
+      missingFields.push("Instrument")
+    }
+    if (!formData.entry_price) {
+      newErrors.entry_price = "Required"
+      missingFields.push("Entry Price")
+    }
+    if (!formData.exit_price) {
+      newErrors.exit_price = "Required"
+      missingFields.push("Exit Price")
+    }
+    if (!formData.size) {
+      newErrors.size = "Required"
+      missingFields.push("Position Size")
+    }
     // Account validation
-    if (!formData.account_id && tradingAccounts.length > 0) newErrors.account_id = "Please select an account"
+    if (!formData.account_id && tradingAccounts.length > 0) {
+      newErrors.account_id = "Please select an account"
+      missingFields.push("Trading Account")
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      toast({ title: "Validation Error", description: "Please fill in all required fields.", variant: "destructive" })
+      toast({ 
+        title: "Missing Required Fields", 
+        description: `Please fill in: ${missingFields.join(", ")}`, 
+        variant: "destructive" 
+      })
       return
     }
 
@@ -521,17 +548,23 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     try {
       // *** CRITICAL FIX: AGGREGATE PSYCHOLOGY FACTORS INTO TRADE DATA ***
       // This ensures the analytics page (which reads 'trades.psychology_factors') works correctly.
-      const combinedFactors = [
+      const combinedBadFactors = [
         psychologyMood ? `Mood: ${MOODS.find(m => m.id === psychologyMood)?.label}` : null,
         ...psychologyTriggers.map(id => EMOTIONAL_TRIGGERS.find(t => t.id === id)?.label),
         ...psychologyPatterns.map(id => BEHAVIORAL_PATTERNS.find(p => p.id === id)?.label),
+        ...badHabits.map(id => BAD_HABITS.find(h => h.id === id)?.name),
         ...psychologyCustomTags
+      ].filter(Boolean) as string[];
+
+      const combinedGoodFactors = [
+        ...goodHabits.map(id => GOOD_HABITS.find(h => h.id === id)?.name),
       ].filter(Boolean) as string[];
 
       const submissionData = { 
         ...formData, 
         pnl: formData.pnl || pnlResult || 0,
-        psychologyFactors: combinedFactors // Inject into trade payload
+        psychologyFactors: combinedBadFactors, // Inject bad habits into trade payload
+        goodHabits: combinedGoodFactors // Add good habits separately
       }
       
       const result = await onSubmitTrade(submissionData)
@@ -693,7 +726,42 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                   <Button variant="outline" size="sm" onClick={() => setActiveTab("setup")}><ChevronLeft className="w-4 h-4 mr-2"/> Back</Button>
                </div>
 
-               {renderSection("Select Strategy", BookOpen, 
+               {strategies.length === 0 && (
+                  <Card className="border-2 border-amber-500/50 bg-amber-50/10 dark:bg-amber-950/10">
+                     <CardHeader>
+                        <div className="flex items-start gap-3">
+                           <div className="p-2 bg-amber-500/10 rounded-lg">
+                              <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                           </div>
+                           <div className="flex-1">
+                              <CardTitle className="text-amber-900 dark:text-amber-100">No Playbook Strategies Found</CardTitle>
+                              <CardDescription className="text-amber-700 dark:text-amber-300 mt-1">
+                                 You need to create at least one strategy in your playbook before adding trades. 
+                                 Strategies help you track which setups work best for your trading style.
+                              </CardDescription>
+                           </div>
+                        </div>
+                     </CardHeader>
+                     <CardFooter className="bg-amber-50/30 dark:bg-amber-950/20 border-t border-amber-200/30 dark:border-amber-800/30 flex gap-3">
+                        <Button 
+                           variant="default" 
+                           className="bg-amber-600 hover:bg-amber-700 text-white"
+                           onClick={() => router.push("/playbook")}
+                        >
+                           <Plus className="w-4 h-4 mr-2" />
+                           Create Strategy
+                        </Button>
+                        <Button 
+                           variant="outline"
+                           onClick={() => setActiveTab("setup")}
+                        >
+                           Go Back
+                        </Button>
+                     </CardFooter>
+                  </Card>
+               )}
+
+               {strategies.length > 0 && renderSection("Select Strategy", BookOpen, 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      {strategies.map(strat => {
                         const isSelected = formData.playbook_strategy_id === strat.id
@@ -757,13 +825,33 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                   "text-indigo-600", "bg-indigo-50/10", "border-indigo-200 dark:border-indigo-900"
                )}
 
-               <Card className="border-0 shadow-md bg-card">
-                  <CardContent className="p-6">
-                      <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
-                      <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
-                  </CardContent>
-                  <CardFooter className="bg-muted/20 border-t p-4 flex justify-end"><Button size="lg" onClick={() => setActiveTab("psychology")} className="rounded-xl px-8">Next <ChevronRight className="ml-2 w-4 h-4"/></Button></CardFooter>
-               </Card>
+               {strategies.length > 0 && (
+                  <Card className="border-0 shadow-md bg-card">
+                     <CardContent className="p-6">
+                         <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
+                         <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
+                     </CardContent>
+                     <CardFooter className="bg-muted/20 border-t p-4 flex justify-end">
+                        <Button 
+                           size="lg" 
+                           onClick={() => {
+                              if (!formData.playbook_strategy_id) {
+                                 toast({ 
+                                    title: "Strategy Required", 
+                                    description: "Please select a strategy before proceeding.", 
+                                    variant: "destructive" 
+                                 })
+                                 return
+                              }
+                              setActiveTab("psychology")
+                           }} 
+                           className="rounded-xl px-8"
+                        >
+                           Next <ChevronRight className="ml-2 w-4 h-4"/>
+                        </Button>
+                     </CardFooter>
+                  </Card>
+               )}
             </TabsContent>
 
             {/* TAB 3: PSYCHOLOGY (UPDATED) */}
@@ -772,46 +860,77 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                
                <Card className="border-0 shadow-lg"><CardHeader><CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-primary"/> Emotional State</CardTitle></CardHeader><CardContent><div className="grid grid-cols-3 md:grid-cols-7 gap-3">{MOODS.map(m => (<button key={m.id} type="button" onClick={() => setPsychologyMood(m.id)} className={cn("flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105", psychologyMood === m.id ? m.color : "border-transparent bg-muted/30 hover:bg-muted")}><span className="text-2xl mb-1">{m.emoji}</span><span className="text-xs font-bold">{m.label}</span></button>))}</div></CardContent></Card>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">Triggers</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {EMOTIONAL_TRIGGERS.map(t => (
-                        <Badge 
-                          key={t.id} 
-                          variant={psychologyTriggers.includes(t.id) ? "destructive" : "outline"} 
-                          className={cn(
-                            "cursor-pointer px-3 py-1.5 transition-colors",
-                            psychologyTriggers.includes(t.id) ? "bg-red-500 hover:bg-red-600 text-white border-transparent" : "hover:bg-red-500/10 hover:text-red-500"
-                          )} 
-                          onClick={() => togglePsychologyTrigger(t.id)}
-                        >
-                          {t.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">Patterns</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {BEHAVIORAL_PATTERNS.map(p => (
-                        <Badge 
-                          key={p.id} 
-                          variant={psychologyPatterns.includes(p.id) ? "default" : "outline"} 
-                          className={cn(
-                            "cursor-pointer px-3 py-1.5 transition-colors",
-                            psychologyPatterns.includes(p.id) 
-                              ? "bg-blue-500 hover:bg-blue-600 border-transparent text-white" 
-                              : "hover:bg-blue-500/10 hover:text-blue-500"
-                          )} 
-                          onClick={() => togglePsychologyPattern(p.id)}
-                        >
-                          {p.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-               </div>
+               {/* Good Habits Section */}
+               <Card className="border-2 border-emerald-500/20 bg-emerald-50/5 dark:bg-emerald-950/5">
+                  <CardHeader className="pb-3">
+                     <div className="flex items-center gap-2">
+                        <div className="p-2 bg-emerald-500/10 rounded-lg">
+                           <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                           <CardTitle className="text-base text-emerald-900 dark:text-emerald-100">Good Habits</CardTitle>
+                           <CardDescription className="text-xs text-emerald-700 dark:text-emerald-300">
+                              What did you do right?
+                           </CardDescription>
+                        </div>
+                     </div>
+                  </CardHeader>
+                  <CardContent>
+                     <div className="flex flex-wrap gap-2">
+                        {GOOD_HABITS.map(h => (
+                           <Badge 
+                              key={h.id} 
+                              variant={goodHabits.includes(h.id) ? "default" : "outline"} 
+                              className={cn(
+                                 "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
+                                 goodHabits.includes(h.id) 
+                                    ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent shadow-sm" 
+                                    : "hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/50"
+                              )} 
+                              onClick={() => toggleGoodHabit(h.id)}
+                           >
+                              {h.name}
+                           </Badge>
+                        ))}
+                     </div>
+                  </CardContent>
+               </Card>
+
+               {/* Bad Habits Section */}
+               <Card className="border-2 border-red-500/20 bg-red-50/5 dark:bg-red-950/5">
+                  <CardHeader className="pb-3">
+                     <div className="flex items-center gap-2">
+                        <div className="p-2 bg-red-500/10 rounded-lg">
+                           <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div>
+                           <CardTitle className="text-base text-red-900 dark:text-red-100">Bad Habits</CardTitle>
+                           <CardDescription className="text-xs text-red-700 dark:text-red-300">
+                              What went wrong psychologically?
+                           </CardDescription>
+                        </div>
+                     </div>
+                  </CardHeader>
+                  <CardContent>
+                     <div className="flex flex-wrap gap-2">
+                        {BAD_HABITS.map(h => (
+                           <Badge 
+                              key={h.id} 
+                              variant={badHabits.includes(h.id) ? "destructive" : "outline"} 
+                              className={cn(
+                                 "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
+                                 badHabits.includes(h.id) 
+                                    ? "bg-red-500 hover:bg-red-600 text-white border-transparent shadow-sm" 
+                                    : "hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/50"
+                              )} 
+                              onClick={() => toggleBadHabit(h.id)}
+                           >
+                              {h.name}
+                           </Badge>
+                        ))}
+                     </div>
+                  </CardContent>
+               </Card>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card className="border-0 shadow-md h-full"><CardHeader><CardTitle className="text-base">Pre-Trade</CardTitle></CardHeader><CardContent><Textarea value={psychologyPreThoughts} onChange={(e) => setPsychologyPreThoughts(e.target.value)} className="min-h-[150px] bg-muted/10 border-2" placeholder="Mindset before entering..." /></CardContent></Card>

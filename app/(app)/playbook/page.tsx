@@ -37,6 +37,7 @@ import {
   type StrategySetup,
 } from "@/app/actions/playbook-actions"
 import { VisualMap } from "@/components/playbook/visual-map"
+import { EnhancedVisualMap } from "@/components/playbook/enhanced-visual-map"
 
 // --- CONSTANTS ---
 const CONFLUENCE_CATEGORIES = [
@@ -572,7 +573,13 @@ export default function PlaybookPage() {
                     Ecosystem Map
                  </h2>
               </div>
-              <VisualMap className="w-full shadow-lg border-border/60" />
+              {/* Enhanced Visual Map with Strategy Merging */}
+              <EnhancedVisualMap strategies={strategies} />
+              
+              {/* Original Visual Map */}
+              <div className="mt-8">
+                <VisualMap className="w-full shadow-lg border-border/60" />
+              </div>
            </div>
 
            {/* SECTION 3: STRATEGY CARDS */}

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { cookies } from "next/headers"
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 
 export async function GET(request: NextRequest) {
@@ -8,20 +9,21 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard"
 
   if (code) {
+    const cookieStore = cookies()
+    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           get(name: string) {
-            return request.cookies.get(name)?.value
+            return cookieStore.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            // We need to set cookies before redirecting
-            request.cookies.set(name, value, options)
+            cookieStore.set({ name, value, ...options })
           },
           remove(name: string, options: CookieOptions) {
-            request.cookies.delete(name)
+            cookieStore.set({ name, value: '', ...options })
           },
         },
       }
@@ -41,22 +43,24 @@ export async function GET(request: NextRequest) {
           .eq("user_id", user.id)
           .maybeSingle()
         
+        // If no config record exists, this is a new user - redirect to profile setup
+        // If config exists but profileSetupComplete is false, also redirect to profile setup
         const config = configData?.config as any
         const profileSetupComplete = config?.profileSetupComplete ?? false
         
-        // If profile setup is not complete, redirect to profile setup
-        if (!profileSetupComplete) {
-          const response = NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
-          return response
+        if (!configData || !profileSetupComplete) {
+          return NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
         }
       }
       
-      // Profile setup is complete or config doesn't exist yet, proceed to dashboard
-      const response = NextResponse.redirect(`${origin}${next}`)
-      return response
+      // Profile setup is complete, proceed to dashboard
+      return NextResponse.redirect(`${origin}${next}`)
     }
+    
+    // Authentication error - redirect to login with error
+    return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
   }
 
-  // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
+  // No code provided - redirect to login
+  return NextResponse.redirect(`${origin}/login?error=No authentication code provided`)
 }

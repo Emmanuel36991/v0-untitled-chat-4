@@ -23,6 +23,35 @@ export interface PlaybookStrategy {
   tags: string[]
   equity_curve: number[]
   created_at: string
+  is_merged?: boolean // Whether this is a merged strategy group
+  merged_strategy_ids?: string[] // IDs of strategies in this merged group
+}
+
+// Strategy Relationship Types
+export interface StrategyRelationship {
+  id: string
+  user_id: string
+  parent_strategy_id: string
+  child_strategy_id: string
+  relationship_type: 'merged' | 'derived' | 'complements'
+  relationship_strength: number // 0-100, how closely related
+  created_at: string
+}
+
+export interface MergedStrategy {
+  id: string
+  user_id: string
+  name: string
+  description: string | null
+  strategy_ids: string[] // Array of strategy IDs that are merged
+  strategies: PlaybookStrategy[] // Full strategy objects
+  combined_win_rate: number
+  combined_profit_factor: number
+  combined_trades_count: number
+  combined_pnl: number
+  common_good_habits: string[] // Good habits that appear across strategies
+  created_at: string
+  updated_at: string
 }
 
 // --- TRADE INTERFACE (Unified) ---
@@ -113,6 +142,7 @@ export interface Trade {
   support_resistance_used?: string[] | null
 
   psychology_factors?: string[] | null
+  good_habits?: string[] | null
 }
 
 export type NewTradeInput = Omit<
@@ -134,6 +164,7 @@ export type NewTradeInput = Omit<
   preciseDurationMinutes?: number | null
 
   psychologyFactors?: string[] | null
+  goodHabits?: string[] | null
 }
 
 // --- ANALYTICS TYPES ---
@@ -529,11 +560,35 @@ export interface ChecklistItem {
   category: "Psychology"
 }
 
-export const AVAILABLE_PSYCHOLOGY_FACTORS: ChecklistItem[] = [
-  { id: "psy_well_rested", name: "Well Rested", category: "Psychology" },
-  { id: "psy_focused", name: "Focused", category: "Psychology" },
-  { id: "psy_distracted", name: "Distracted", category: "Psychology" },
-  { id: "psy_emotional", name: "Emotional", category: "Psychology" },
-  { id: "psy_revenge", name: "Revenge Trading", category: "Psychology" },
-  { id: "psy_fomo", name: "FOMO", category: "Psychology" },
+// Bad Habits / Negative Psychological Factors
+export const BAD_HABITS: ChecklistItem[] = [
+  { id: "bad_distracted", name: "Distracted", category: "Psychology" },
+  { id: "bad_emotional", name: "Emotional/Impulsive", category: "Psychology" },
+  { id: "bad_revenge", name: "Revenge Trading", category: "Psychology" },
+  { id: "bad_fomo", name: "FOMO (Fear of Missing Out)", category: "Psychology" },
+  { id: "bad_overtrading", name: "Overtrading", category: "Psychology" },
+  { id: "bad_ignored_plan", name: "Ignored Trading Plan", category: "Psychology" },
+  { id: "bad_moved_sl", name: "Moved Stop Loss", category: "Psychology" },
+  { id: "bad_oversized", name: "Position Too Large", category: "Psychology" },
+  { id: "bad_tired", name: "Fatigued/Tired", category: "Psychology" },
+  { id: "bad_stressed", name: "Stressed/Anxious", category: "Psychology" },
 ]
+
+// Good Habits / Positive Psychological Factors
+export const GOOD_HABITS: ChecklistItem[] = [
+  { id: "good_well_rested", name: "Well Rested", category: "Psychology" },
+  { id: "good_focused", name: "Focused & Alert", category: "Psychology" },
+  { id: "good_followed_plan", name: "Followed Trading Plan", category: "Psychology" },
+  { id: "good_patient", name: "Patient Entry", category: "Psychology" },
+  { id: "good_disciplined", name: "Disciplined Risk Management", category: "Psychology" },
+  { id: "good_calm", name: "Calm & Composed", category: "Psychology" },
+  { id: "good_proper_sizing", name: "Proper Position Sizing", category: "Psychology" },
+  { id: "good_stuck_to_sl", name: "Stuck to Stop Loss", category: "Psychology" },
+  { id: "good_took_profit", name: "Took Profit at Target", category: "Psychology" },
+  { id: "good_pre_market", name: "Did Pre-Market Analysis", category: "Psychology" },
+  { id: "good_journal_review", name: "Reviewed Journal Before Trade", category: "Psychology" },
+  { id: "good_no_distractions", name: "Eliminated Distractions", category: "Psychology" },
+]
+
+// Legacy export for backward compatibility
+export const AVAILABLE_PSYCHOLOGY_FACTORS: ChecklistItem[] = BAD_HABITS

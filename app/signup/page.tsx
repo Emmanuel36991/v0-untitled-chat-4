@@ -38,6 +38,15 @@ export default function SignUpPage() {
   
   const router = useRouter()
 
+  // Force light mode on mount
+  React.useEffect(() => {
+    document.documentElement.classList.add('light')
+    document.documentElement.classList.remove('dark')
+    return () => {
+      document.documentElement.classList.remove('light')
+    }
+  }, [])
+
   useEffect(() => {
     setStrength(calculatePasswordStrength(password))
   }, [password])
@@ -95,7 +104,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
       <AnimatedTradingBackground />
 
       <div className="relative z-10 container mx-auto px-6 py-12">

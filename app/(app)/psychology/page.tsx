@@ -1,145 +1,219 @@
-"use client"
-
 import React from "react"
-import { motion } from "framer-motion"
-import SimplePsychologyJournal from "@/components/journal/simple-psychology-journal"
-import PsychologyAnalytics from "@/components/journal/psychology-analytics"
-import { 
-  Activity, 
-  Brain, 
-  Target, 
-  Zap, 
-  CalendarDays,
-  ShieldAlert,
-  BarChart3
-} from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { createClient } from "@/lib/supabase/server"
+import PsychologyPageClient from "./psychology-page-client"
 
-const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-emerald-400" }: any) => (
-  <Card className="bg-zinc-900/50 backdrop-blur-md border-zinc-800 shadow-lg relative overflow-hidden group hover:border-zinc-700 transition-all duration-300">
-    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-    <CardContent className="p-5">
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-zinc-500 text-[10px] font-mono font-medium uppercase tracking-widest">{label}</span>
-        <Icon className="w-4 h-4 text-indigo-500/80" />
-      </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-2xl font-bold text-zinc-100 tracking-tight font-mono">{value}</span>
-        {subtext && <span className="text-xs text-zinc-500 font-medium">{subtext}</span>}
-      </div>
-      {trend && (
-        <div className="mt-2 flex items-center text-xs font-mono">
-          <span className={`${trendColor} font-medium bg-zinc-800/80 px-1.5 py-0.5 rounded border border-zinc-700/50`}>{trend}</span>
-          <span className="text-zinc-600 ml-2">vs 7d avg</span>
-        </div>
-      )}
-    </CardContent>
-  </Card>
-)
+interface PsychologyStats {
+  disciplineScore: number
+  dominantEmotion: string
+  winRate: number
+  totalEntries: number
+  currentStreak: number
+  focusScore: number
+  riskAlert: string
+  totalJournalEntries: number
+}
 
-export default function PsychologyPage() {
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      
-      {/* Background Pattern */}
-      <div className="fixed inset-0 z-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-zinc-950 via-zinc-950/90 to-zinc-950 pointer-events-none" />
-      
-      <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        
-        {/* Header Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2"
-        >
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-3">
-              <Brain className="w-6 h-6 text-indigo-500" />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 to-zinc-400">
-                Trader Mindset Journal
-              </span>
-            </h1>
-            <p className="text-zinc-500 mt-1 text-sm font-medium tracking-wide">
-              Track your emotional state and optimize performance.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 text-[10px] font-mono text-zinc-400 bg-zinc-900/50 border border-zinc-800 px-3 py-1.5 rounded-full shadow-inner backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"/>
-            JOURNAL ACTIVE
-          </div>
-        </motion.div>
+export default async function PsychologyPage() {
+  const supabase = await createClient()
+  
+  // Get the current user
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return <PsychologyPageClient stats={null} />
+  }
 
-        {/* Top HUD (Heads Up Display) */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          <HUDCard 
-            label="Current Streak" 
-            value="12" 
-            subtext="DAYS"
-            icon={Zap} 
-            trend="+2"
-            trendColor="text-emerald-400"
-          />
-          <HUDCard 
-            label="Focus Score" 
-            value="8.4" 
-            subtext="/ 10.0"
-            icon={Target} 
-            trend="+0.3"
-            trendColor="text-emerald-400"
-          />
-          <HUDCard 
-            label="Risk Alert" 
-            value="FOMO" 
-            subtext="DETECTED"
-            icon={ShieldAlert} 
-            trend="High Risk"
-            trendColor="text-rose-400"
-          />
-          <HUDCard 
-            label="Total Entries" 
-            value="143" 
-            subtext="LOGS"
-            icon={CalendarDays} 
-            trend="+5"
-            trendColor="text-indigo-400"
-          />
-        </motion.div>
+  // Fetch trades data from database with psychology_factors
+  const { data: trades, error } = await supabase
+    .from("trades")
+    .select("pnl, outcome, psychology_factors, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
 
-        <Separator className="bg-zinc-800/50 my-2" />
+  if (error) {
+    console.error("Error fetching trades:", error)
+    return <PsychologyPageClient stats={null} />
+  }
 
-        {/* Main Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full">
-          
-          {/* Left Column: Input Interface (40%) */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-5 w-full"
-          >
-            <div className="sticky top-6">
-              <SimplePsychologyJournal />
-            </div>
-          </motion.div>
+  // Fetch journal entries (includes both standalone entries and trade-linked entries)
+  const { data: journalEntries } = await supabase
+    .from("psychology_journal_entries")
+    .select("created_at, mood, emotions, trade_id")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
 
-          {/* Right Column: Analytics & Visualization (60%) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="lg:col-span-7 w-full h-full"
-          >
-            <PsychologyAnalytics />
-          </motion.div>
-        </div>
-      </div>
-    </div>
+  // Calculate server-side stats
+  const stats: PsychologyStats = calculateStats(trades || [], journalEntries || [])
+
+  return <PsychologyPageClient stats={stats} />
+}
+
+function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {
+  if (trades.length === 0 && journalEntries.length === 0) {
+    return {
+      disciplineScore: 0,
+      dominantEmotion: "Unknown",
+      winRate: 0,
+      totalEntries: 0,
+      currentStreak: 0,
+      focusScore: 0,
+      riskAlert: "None",
+      totalJournalEntries: 0
+    }
+  }
+
+  // 1. Discipline Score: Percentage of trades without impulsive psychology_factors
+  const disciplinedTrades = trades.filter(trade => {
+    const psychologyFactors = trade.psychology_factors || []
+    const hasImpulsive = psychologyFactors.some((factor: string) => 
+      factor.toLowerCase().includes('impulsive') || 
+      factor.toLowerCase().includes('revenge') ||
+      factor.toLowerCase().includes('fomo') ||
+      factor.toLowerCase().includes('overtrading')
+    )
+    return !hasImpulsive
+  })
+  const disciplineScore = trades.length > 0 
+    ? Math.round((disciplinedTrades.length / trades.length) * 100)
+    : 0
+
+  // 2. Dominant Emotion: Most frequent mood from journal entries (including trade-linked ones)
+  const emotionCounts: Record<string, number> = {}
+  
+  // Count all journal entry moods (both standalone and trade-linked)
+  journalEntries.forEach(entry => {
+    if (entry.mood) {
+      emotionCounts[entry.mood] = (emotionCounts[entry.mood] || 0) + 1
+    }
+  })
+  
+  let dominantEmotion = "Neutral"
+  let maxCount = 0
+  Object.entries(emotionCounts).forEach(([emotion, count]) => {
+    if (count > maxCount) {
+      maxCount = count
+      dominantEmotion = emotion
+    }
+  })
+
+  // 3. Win Rate: Percentage of trades with pnl > 0
+  const winningTrades = trades.filter(trade => trade.pnl > 0)
+  const winRate = trades.length > 0 
+    ? Math.round((winningTrades.length / trades.length) * 100)
+    : 0
+
+  // 4. Current Streak: Calculate consecutive days with journal entries
+  const currentStreak = calculateJournalStreak(journalEntries)
+
+  // 5. Focus Score: Average focus level from journal entries
+  const focusScore = calculateFocusScore(journalEntries)
+
+  // 6. Risk Alert: Detect FOMO or Revenge trading patterns
+  const riskAlert = detectRiskAlert(trades, journalEntries)
+
+  return {
+    disciplineScore,
+    dominantEmotion: dominantEmotion.charAt(0).toUpperCase() + dominantEmotion.slice(1),
+    winRate,
+    totalEntries: trades.length,
+    currentStreak,
+    focusScore,
+    riskAlert,
+    totalJournalEntries: journalEntries.length
+  }
+}
+
+function calculateJournalStreak(journalEntries: any[]): number {
+  if (journalEntries.length === 0) return 0
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  let streak = 0
+  let checkDate = new Date(today)
+
+  // Sort entries by date (newest first)
+  const sortedEntries = [...journalEntries].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
+
+  // Check each day backwards from today
+  for (let i = 0; i < 90; i++) { // Check up to 90 days
+    const dateStr = checkDate.toISOString().split('T')[0]
+    const hasEntry = sortedEntries.some(entry => 
+      entry.created_at.startsWith(dateStr)
+    )
+    
+    if (hasEntry) {
+      streak++
+      checkDate.setDate(checkDate.getDate() - 1)
+    } else {
+      break
+    }
+  }
+
+  return streak
+}
+
+function calculateFocusScore(journalEntries: any[]): number {
+  if (journalEntries.length === 0) return 0
+
+  let totalFocus = 0
+  let count = 0
+
+  journalEntries.forEach(entry => {
+    if (entry.emotions && Array.isArray(entry.emotions)) {
+      entry.emotions.forEach((emotion: string) => {
+        if (emotion.startsWith("Focus:")) {
+          const focusValue = parseInt(emotion.split(":")[1]) || 0
+          totalFocus += focusValue
+          count++
+        }
+      })
+    }
+  })
+
+  return count > 0 ? Math.round((totalFocus / count) * 10) / 10 : 0
+}
+
+function detectRiskAlert(trades: any[], journalEntries: any[]): string {
+  // Check recent trades for FOMO/Revenge patterns in psychology_factors
+  const recentTrades = trades.slice(0, 10)
+  const fomoCount = recentTrades.filter(trade => {
+    const factors = trade.psychology_factors || []
+    return factors.some((f: string) => f.toLowerCase().includes('fomo'))
+  }).length
+
+  const revengeCount = recentTrades.filter(trade => {
+    const factors = trade.psychology_factors || []
+    return factors.some((f: string) => f.toLowerCase().includes('revenge'))
+  }).length
+
+  const overtradingCount = recentTrades.filter(trade => {
+    const factors = trade.psychology_factors || []
+    return factors.some((f: string) => f.toLowerCase().includes('overtrading'))
+  }).length
+
+  // Check journal entries for emotional triggers (both standalone and trade-linked)
+  const recentJournalEntries = journalEntries.slice(0, 7)
+  const stressedMoods = ['anxious', 'frustrated']
+  const stressCount = recentJournalEntries.filter(entry => 
+    stressedMoods.includes(entry.mood?.toLowerCase())
+  ).length
+
+  // Also check emotions array for stress indicators
+  const emotionalTriggers = recentJournalEntries.flatMap(entry => entry.emotions || [])
+  const hasStressTriggers = emotionalTriggers.some((emotion: string) => 
+    emotion.toLowerCase().includes('time-pressure') || 
+    emotion.toLowerCase().includes('large-loss') ||
+    emotion.toLowerCase().includes('consecutive-losses')
+  )
+
+  // Determine risk alert based on patterns
+  if (fomoCount >= 3) return "FOMO"
+  if (revengeCount >= 2) return "Revenge"
+  if (overtradingCount >= 3) return "Overtrading"
+  if (stressCount >= 4 || hasStressTriggers) return "Burnout"
+  
+  return "None"
 }

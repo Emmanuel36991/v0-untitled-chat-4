@@ -27,6 +27,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
 
+  // Force light mode on mount
+  React.useEffect(() => {
+    document.documentElement.classList.add('light')
+    document.documentElement.classList.remove('dark')
+    return () => {
+      document.documentElement.classList.remove('light')
+    }
+  }, [])
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     const supabase = createClient()
@@ -75,7 +84,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
       <AnimatedTradingBackground />
 
       <div className="relative z-10 container mx-auto px-6 py-12">

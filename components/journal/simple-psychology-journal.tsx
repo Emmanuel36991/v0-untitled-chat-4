@@ -121,9 +121,10 @@ export default function SimplePsychologyJournal() {
         return
       }
 
+      // Fetch with trade information if linked
       const { data, error } = await supabase
         .from("psychology_journal_entries")
-        .select("*")
+        .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl, outcome)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
@@ -525,10 +526,22 @@ export default function SimplePsychologyJournal() {
                               <span className="text-lg">{moodData?.emoji}</span>
                             </div>
                             <div>
-                              <div className="font-bold text-zinc-200 text-sm">{moodData?.label}</div>
+                              <div className="flex items-center gap-2">
+                                <div className="font-bold text-zinc-200 text-sm">{moodData?.label}</div>
+                                {(entry as any).trades && (
+                                  <Badge className="text-[9px] px-1.5 py-0 bg-indigo-500/10 text-indigo-400 border-indigo-500/30">
+                                    Trade: {(entry as any).trades.instrument}
+                                  </Badge>
+                                )}
+                              </div>
                               <div className="text-[10px] text-zinc-500 font-mono flex items-center gap-2">
                                 <Calendar className="w-3 h-3" />
                                 {new Date(entry.created_at).toLocaleDateString()}
+                                {(entry as any).trades && (
+                                  <span className={(entry as any).trades.pnl > 0 ? "text-emerald-400" : "text-rose-400"}>
+                                    {(entry as any).trades.pnl > 0 ? "+" : ""}{(entry as any).trades.pnl?.toFixed(2)}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>

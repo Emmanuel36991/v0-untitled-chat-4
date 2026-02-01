@@ -48,15 +48,10 @@ const CONFLUENCE_CATEGORIES = [
 
 // --- SPARKLINE CHART ---
 const Sparkline = ({ data, color }: { data: number[]; color: string }) => {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   const chartData = useMemo(() => {
     if (!data || data.length === 0) return [{ val: 0 }, { val: 0 }]
     return data.map((val, i) => ({ i, val }))
   }, [data])
-
-  if (!mounted) return null
 
   return (
     <div className="h-full w-full absolute inset-0 opacity-[0.06] pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen">

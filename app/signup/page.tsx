@@ -35,8 +35,14 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [strength, setStrength] = useState(0)
+  const [mounted, setMounted] = useState(false)
   
   const router = useRouter()
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     setStrength(calculatePasswordStrength(password))
@@ -94,8 +100,19 @@ export default function SignUpPage() {
     })
   }
 
+  // Force light mode wrapper
+  if (!mounted) {
+    return null // Prevent hydration mismatch
+  }
+
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="light min-h-screen relative overflow-hidden bg-white text-slate-900">
+      <style jsx global>{`
+        html, body {
+          background: white !important;
+          color: rgb(15 23 42) !important;
+        }
+      `}</style>
       <AnimatedTradingBackground />
 
       <div className="relative z-10 container mx-auto px-6 py-12">

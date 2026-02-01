@@ -25,7 +25,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
+
+  // Prevent hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,8 +80,19 @@ export default function LoginPage() {
     })
   }
 
+  // Force light mode wrapper
+  if (!mounted) {
+    return null // Prevent hydration mismatch
+  }
+
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="light min-h-screen relative overflow-hidden bg-white text-slate-900">
+      <style jsx global>{`
+        html, body {
+          background: white !important;
+          color: rgb(15 23 42) !important;
+        }
+      `}</style>
       <AnimatedTradingBackground />
 
       <div className="relative z-10 container mx-auto px-6 py-12">

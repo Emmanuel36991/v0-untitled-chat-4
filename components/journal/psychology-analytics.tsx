@@ -67,7 +67,7 @@ const MOODS = [
   { id: "anxious", label: "Anxious", emoji: "😟", color: "#ec4899", value: 3 },   // Pink
 ]
 
-const CHART_THEME = {
+const CHART_THEME_DARK = {
   background: "#09090b",
   border: "#27272a",
   text: "#a1a1aa",
@@ -75,10 +75,42 @@ const CHART_THEME = {
   tooltipBg: "#18181b"
 }
 
-export default function PsychologyAnalytics() {
+const CHART_THEME_LIGHT = {
+  background: "#ffffff",
+  border: "#e2e8f0",
+  text: "#64748b",
+  grid: "#e2e8f0",
+  tooltipBg: "#f8fafc"
+}
+
+interface PsychologyAnalyticsProps {
+  disciplineScore?: number
+  dominantEmotion?: string
+  winRate?: number
+}
+
+export default function PsychologyAnalytics({ 
+  disciplineScore = 0, 
+  dominantEmotion = "Unknown", 
+  winRate = 0 
+}: PsychologyAnalyticsProps) {
   const [entries, setEntries] = useState<JournalEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d")
+  const [isDark, setIsDark] = useState(false)
+
+  // Detect theme
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'))
+    }
+    checkTheme()
+    const observer = new MutationObserver(checkTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  const CHART_THEME = isDark ? CHART_THEME_DARK : CHART_THEME_LIGHT
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -311,10 +343,10 @@ export default function PsychologyAnalytics() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] h-full bg-zinc-900/50 rounded-xl border border-zinc-800">
+      <div className="flex items-center justify-center min-h-[400px] h-full bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800">
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-indigo-500 mx-auto" />
-          <p className="text-zinc-500 font-mono text-sm">Decrypting psychology data...</p>
+          <p className="text-slate-500 dark:text-zinc-500 font-mono text-sm">Decrypting psychology data...</p>
         </div>
       </div>
     )
@@ -322,14 +354,14 @@ export default function PsychologyAnalytics() {
 
   if (!analytics || entries.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-zinc-800 bg-zinc-900/20">
+      <Card className="border-dashed border-2 border-slate-300 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/20">
         <CardContent className="py-20 text-center">
           <div className="max-w-md mx-auto space-y-4">
             <div className="p-4 rounded-full bg-indigo-500/10 w-fit mx-auto border border-indigo-500/20">
               <Brain className="h-10 w-10 text-indigo-500" />
             </div>
-            <h3 className="text-xl font-semibold text-zinc-200">No Analytics Available</h3>
-            <p className="text-zinc-500 leading-relaxed">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-zinc-200">No Analytics Available</h3>
+            <p className="text-slate-600 dark:text-zinc-500 leading-relaxed">
               Start creating journal entries to see comprehensive analytics and AI-powered insights about your trading
               psychology.
             </p>
@@ -345,21 +377,21 @@ export default function PsychologyAnalytics() {
       {/* Header with Time Range Selector */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2 text-zinc-100">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-zinc-100">
             <Activity className="h-5 w-5 text-indigo-500" />
             Psychology Analytics
           </h2>
-          <p className="text-zinc-500 text-sm mt-1">AI-powered insights into your trading mindset</p>
+          <p className="text-slate-600 dark:text-zinc-500 text-sm mt-1">AI-powered insights into your trading mindset</p>
         </div>
-        <div className="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+        <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
           {(["7d", "30d", "90d"] as const).map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
               className={`px-3 py-1.5 text-xs font-mono font-medium rounded-md transition-all ${
                 timeRange === range 
-                  ? "bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700" 
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm border border-slate-300 dark:border-zinc-700" 
+                  : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"
               }`}
             >
               {range.toUpperCase()}
@@ -369,13 +401,13 @@ export default function PsychologyAnalytics() {
       </div>
 
       {/* Current Emotional State Circular Indicators */}
-      <Card className="bg-zinc-900/50 backdrop-blur border-zinc-800">
+      <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur border-slate-200 dark:border-zinc-800">
         <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-zinc-100">
+          <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
             <Brain className="h-5 w-5 text-indigo-500" />
             Current Emotional State
           </CardTitle>
-          <CardDescription className="text-zinc-500">Your calculated mental readiness metrics</CardDescription>
+          <CardDescription className="text-slate-600 dark:text-zinc-500">Your calculated mental readiness metrics</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -383,7 +415,7 @@ export default function PsychologyAnalytics() {
             <div className="text-center group">
               <div className="relative w-20 h-20 mx-auto mb-3 transform group-hover:scale-105 transition-transform duration-300">
                 <svg className="w-20 h-20 transform -rotate-90">
-                  <circle cx="40" cy="40" r="36" stroke="#27272a" strokeWidth="6" fill="transparent" />
+                  <circle cx="40" cy="40" r="36" stroke={isDark ? "#27272a" : "#e2e8f0"} strokeWidth="6" fill="transparent" />
                   <circle
                     cx="40" cy="40" r="36" stroke="#10b981" strokeWidth="6" fill="transparent"
                     strokeDasharray={`${2 * Math.PI * 36}`}
@@ -392,17 +424,17 @@ export default function PsychologyAnalytics() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-emerald-400 font-mono">{Math.round(analytics.avgMood * 10)}%</span>
+                  <span className="text-lg font-bold text-emerald-400 dark:text-emerald-400 font-mono">{Math.round(analytics.avgMood * 10)}%</span>
                 </div>
               </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Confidence</div>
+              <div className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-widest">Confidence</div>
             </div>
 
             {/* Stress Gauge (Inverted) */}
             <div className="text-center group">
               <div className="relative w-20 h-20 mx-auto mb-3 transform group-hover:scale-105 transition-transform duration-300">
                 <svg className="w-20 h-20 transform -rotate-90">
-                  <circle cx="40" cy="40" r="36" stroke="#27272a" strokeWidth="6" fill="transparent" />
+                  <circle cx="40" cy="40" r="36" stroke={isDark ? "#27272a" : "#e2e8f0"} strokeWidth="6" fill="transparent" />
                   <circle
                     cx="40" cy="40" r="36" stroke="#ef4444" strokeWidth="6" fill="transparent"
                     strokeDasharray={`${2 * Math.PI * 36}`}
@@ -411,17 +443,17 @@ export default function PsychologyAnalytics() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-rose-400 font-mono">{Math.round((10 - analytics.avgMood) * 10)}%</span>
+                  <span className="text-lg font-bold text-rose-400 dark:text-rose-400 font-mono">{Math.round((10 - analytics.avgMood) * 10)}%</span>
                 </div>
               </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Stress</div>
+              <div className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-widest">Stress</div>
             </div>
 
             {/* Focus Gauge */}
             <div className="text-center group">
               <div className="relative w-20 h-20 mx-auto mb-3 transform group-hover:scale-105 transition-transform duration-300">
                 <svg className="w-20 h-20 transform -rotate-90">
-                  <circle cx="40" cy="40" r="36" stroke="#27272a" strokeWidth="6" fill="transparent" />
+                  <circle cx="40" cy="40" r="36" stroke={isDark ? "#27272a" : "#e2e8f0"} strokeWidth="6" fill="transparent" />
                   <circle
                     cx="40" cy="40" r="36" stroke="#3b82f6" strokeWidth="6" fill="transparent"
                     strokeDasharray={`${2 * Math.PI * 36}`}
@@ -430,17 +462,17 @@ export default function PsychologyAnalytics() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-blue-400 font-mono">{Math.round(analytics.avgMood * 8.5)}%</span>
+                  <span className="text-lg font-bold text-blue-400 dark:text-blue-400 font-mono">{Math.round(analytics.avgMood * 8.5)}%</span>
                 </div>
               </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Focus</div>
+              <div className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-widest">Focus</div>
             </div>
 
             {/* Patience Gauge */}
             <div className="text-center group">
               <div className="relative w-20 h-20 mx-auto mb-3 transform group-hover:scale-105 transition-transform duration-300">
                 <svg className="w-20 h-20 transform -rotate-90">
-                  <circle cx="40" cy="40" r="36" stroke="#27272a" strokeWidth="6" fill="transparent" />
+                  <circle cx="40" cy="40" r="36" stroke={isDark ? "#27272a" : "#e2e8f0"} strokeWidth="6" fill="transparent" />
                   <circle
                     cx="40" cy="40" r="36" stroke="#a855f7" strokeWidth="6" fill="transparent"
                     strokeDasharray={`${2 * Math.PI * 36}`}
@@ -449,10 +481,10 @@ export default function PsychologyAnalytics() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-bold text-purple-400 font-mono">{Math.round(analytics.avgMood * 9.2)}%</span>
+                  <span className="text-lg font-bold text-purple-400 dark:text-purple-400 font-mono">{Math.round(analytics.avgMood * 9.2)}%</span>
                 </div>
               </div>
-              <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Patience</div>
+              <div className="text-xs font-mono text-slate-500 dark:text-zinc-500 uppercase tracking-widest">Patience</div>
             </div>
           </div>
         </CardContent>
@@ -462,18 +494,18 @@ export default function PsychologyAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Radar Chart - NEW Feature */}
-        <Card className="bg-zinc-900/50 backdrop-blur border-zinc-800 shadow-xl overflow-hidden">
+        <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-zinc-100">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
               <RadarIcon className="h-5 w-5 text-indigo-500" />
               Psychometric Profile
             </CardTitle>
-            <CardDescription className="text-zinc-500">Multidimensional analysis of your mental state</CardDescription>
+            <CardDescription className="text-slate-600 dark:text-zinc-500">Multidimensional analysis of your mental state</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={analytics.radarData}>
-                <PolarGrid stroke={CHART_THEME.grid} />
+                <PolarGrid stroke={CHART_THEME.grid} strokeOpacity={isDark ? 1 : 0.5} />
                 <PolarAngleAxis 
                   dataKey="subject" 
                   tick={{ fill: CHART_THEME.text, fontSize: 11, fontFamily: 'monospace' }} 
@@ -485,16 +517,16 @@ export default function PsychologyAnalytics() {
                   stroke="#6366f1"
                   strokeWidth={2}
                   fill="#6366f1"
-                  fillOpacity={0.25}
+                  fillOpacity={isDark ? 0.25 : 0.15}
                 />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: CHART_THEME.tooltipBg, 
                     borderColor: CHART_THEME.border,
                     borderRadius: '8px',
-                    color: '#fff'
+                    color: isDark ? '#fff' : '#0f172a'
                   }}
-                  itemStyle={{ color: '#e4e4e7' }}
+                  itemStyle={{ color: isDark ? '#e4e4e7' : '#334155' }}
                 />
               </RadarChart>
             </ResponsiveContainer>
@@ -502,13 +534,13 @@ export default function PsychologyAnalytics() {
         </Card>
 
         {/* Mood Trend Chart */}
-        <Card className="bg-zinc-900/50 backdrop-blur border-zinc-800 shadow-xl overflow-hidden">
+        <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-zinc-100">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
               <TrendingUp className="h-5 w-5 text-emerald-500" />
               Mood Trend
             </CardTitle>
-            <CardDescription className="text-zinc-500">Track your emotional state progression</CardDescription>
+            <CardDescription className="text-slate-600 dark:text-zinc-500">Track your emotional state progression</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">

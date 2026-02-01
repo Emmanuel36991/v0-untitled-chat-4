@@ -1224,41 +1224,45 @@ export default function AnalyticsPage() {
                   </h3>
                   
                   <div className="space-y-3">
-                    <Card className="border border-emerald-100 bg-emerald-50/10">
+                    {/* Good Habits Card */}
+                    <Card className="border border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/20">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-emerald-700 uppercase">Edge Enablers</span>
-                          <CheckCircle className="w-3 h-3 text-emerald-500" />
+                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase">Good Habits</span>
+                          <CheckCircle className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                         </div>
                         <div className="space-y-2">
-                          {psychologyAnalysis.topEnablers.slice(0, 2).map((factor, i) => (
+                          {psychologyAnalysis.goodHabits.slice(0, 2).map((habit, i) => (
                             <div key={i} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700">{factor.factor}</span>
-                              <span className="font-mono font-bold text-emerald-600">+{factor.impact.toFixed(0)}%</span>
+                              <span className="text-slate-700 dark:text-zinc-300 truncate max-w-[140px]">{habit.factor}</span>
+                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                {habit.impact >= 0 ? '+' : ''}{habit.impact.toFixed(0)}%
+                              </span>
                             </div>
                           ))}
-                          {psychologyAnalysis.topEnablers.length === 0 && (
-                            <span className="text-xs text-slate-400 italic">No positive patterns yet</span>
+                          {psychologyAnalysis.goodHabits.length === 0 && (
+                            <span className="text-xs text-slate-400 dark:text-zinc-500 italic">No good habits logged yet</span>
                           )}
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="border border-rose-100 bg-rose-50/10">
+                    {/* Bad Habits Card */}
+                    <Card className="border border-rose-200 dark:border-rose-800 bg-rose-50/30 dark:bg-rose-950/20">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold text-rose-700 uppercase">Edge Killers</span>
-                          <AlertTriangle className="w-3 h-3 text-rose-500" />
+                          <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase">Bad Habits</span>
+                          <AlertTriangle className="w-3 h-3 text-rose-500 dark:text-rose-400" />
                         </div>
                         <div className="space-y-2">
                           {psychologyAnalysis.topKillers.slice(0, 2).map((factor, i) => (
                             <div key={i} className="flex justify-between items-center text-sm">
-                              <span className="text-slate-700">{factor.factor}</span>
-                              <span className="font-mono font-bold text-rose-600">{factor.impact.toFixed(0)}%</span>
+                              <span className="text-slate-700 dark:text-zinc-300 truncate max-w-[140px]">{factor.factor}</span>
+                              <span className="font-mono font-bold text-rose-600 dark:text-rose-400">{factor.impact.toFixed(0)}%</span>
                             </div>
                           ))}
                           {psychologyAnalysis.topKillers.length === 0 && (
-                            <span className="text-xs text-slate-400 italic">No negative patterns yet</span>
+                            <span className="text-xs text-slate-400 dark:text-zinc-500 italic">No bad habits logged yet</span>
                           )}
                         </div>
                       </CardContent>

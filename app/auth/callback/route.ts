@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard"
 
   if (code) {
+    let redirectUrl = `${origin}${next}`
+    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -17,11 +19,11 @@ export async function GET(request: NextRequest) {
             return request.cookies.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            // We need to set cookies before redirecting
-            request.cookies.set(name, value, options)
+            // Cookies will be set on the response object
+            request.cookies.set({ name, value, ...options })
           },
           remove(name: string, options: CookieOptions) {
-            request.cookies.delete(name)
+            request.cookies.set({ name, value: '', ...options })
           },
         },
       }
@@ -47,17 +49,25 @@ export async function GET(request: NextRequest) {
         const profileSetupComplete = config?.profileSetupComplete ?? false
         
         if (!configData || !profileSetupComplete) {
-          const response = NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
-          return response
+          redirectUrl = `${origin}/signup/profile-setup?step=1`
         }
       }
-      
-      // Profile setup is complete, proceed to dashboard
-      const response = NextResponse.redirect(`${origin}${next}`)
-      return response
+    } else {
+      // Authentication error - redirect to login with error
+      redirectUrl = `${origin}/login?error=Could not authenticate user`
     }
+    
+    // Create response with proper cookie handling
+    const response = NextResponse.redirect(redirectUrl)
+    
+    // Copy cookies from request to response
+    request.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value)
+    })
+    
+    return response
   }
 
-  // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
+  // No code provided - redirect to login
+  return NextResponse.redirect(`${origin}/login?error=No authentication code provided`)
 }

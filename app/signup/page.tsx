@@ -94,11 +94,16 @@ export default function SignUpPage() {
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     const supabase = createClient()
+    
+    // Use production URL or fallback to current origin
+    const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`
+      : `${window.location.origin}/auth/callback?next=/dashboard`
+    
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        // Redirect to paywall after social signup
-        redirectTo: `${window.location.origin}/auth/callback?next=/get-started`,
+        redirectTo: redirectUrl,
       },
     })
   }

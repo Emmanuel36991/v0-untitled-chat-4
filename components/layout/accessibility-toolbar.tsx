@@ -25,8 +25,6 @@ export function AccessibilityToolbar() {
 
   const togglePanel = () => setIsOpen(!isOpen)
 
-  console.log("[v0] Accessibility Toolbar mounted, isOpen:", isOpen)
-
   return (
     <>
       {/* Floating Trigger Button */}
@@ -64,7 +62,6 @@ export function AccessibilityToolbar() {
         aria-label="Accessibility Settings Panel"
         aria-hidden={!isOpen}
       >
-        <div className="flex flex-col h-full">
         {/* Header */}
         <div className="p-4 border-b-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950">
           <div className="flex items-center justify-between mb-2">
@@ -86,19 +83,9 @@ export function AccessibilityToolbar() {
             Customize your experience for better accessibility
           </p>
         </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={togglePanel}
-              className="h-8 w-8 focus-visible:ring-2"
-              aria-label="Close Accessibility Toolbar"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
 
-          {/* Controls */}
-          <ScrollArea className="flex-1 p-4">
+        {/* Controls */}
+        <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
               {/* Text Size */}
               <section>
@@ -220,10 +207,10 @@ export function AccessibilityToolbar() {
                 </div>
               </section>
             </div>
-          </ScrollArea>
+        </ScrollArea>
 
-          {/* Footer */}
-          <div className="p-4 border-t border-border/60 space-y-3">
+        {/* Footer */}
+        <div className="p-4 border-t border-border/60 space-y-3">
             <Button
               variant="destructive"
               className="w-full h-12 font-semibold"
@@ -242,14 +229,13 @@ export function AccessibilityToolbar() {
               Accessibility Statement
               <ExternalLink className="h-3 w-3" aria-hidden="true" />
             </a>
-          </div>
         </div>
       </div>
 
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[99]"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"
           onClick={togglePanel}
           aria-hidden="true"
         />

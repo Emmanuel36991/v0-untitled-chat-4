@@ -25,8 +25,6 @@ export function AccessibilityToolbar() {
 
   const togglePanel = () => setIsOpen(!isOpen)
 
-  console.log("[v0] Accessibility Toolbar mounted, isOpen:", isOpen)
-
   return (
     <>
       {/* Floating Trigger Button */}
@@ -64,7 +62,6 @@ export function AccessibilityToolbar() {
         aria-label="Accessibility Settings Panel"
         aria-hidden={!isOpen}
       >
-        <div className="flex flex-col h-full">
         {/* Header */}
         <div className="p-4 border-b-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950">
           <div className="flex items-center justify-between mb-2">
@@ -86,16 +83,6 @@ export function AccessibilityToolbar() {
             Customize your experience for better accessibility
           </p>
         </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={togglePanel}
-              className="h-8 w-8 focus-visible:ring-2"
-              aria-label="Close Accessibility Toolbar"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
 
           {/* Controls */}
           <ScrollArea className="flex-1 p-4">
@@ -249,7 +236,7 @@ export function AccessibilityToolbar() {
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[99]"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[98]"
           onClick={togglePanel}
           aria-hidden="true"
         />

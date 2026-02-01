@@ -84,8 +84,8 @@ export function AccessibilityToolbar() {
           </p>
         </div>
 
-          {/* Controls */}
-          <ScrollArea className="flex-1 p-4">
+        {/* Controls */}
+        <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
               {/* Text Size */}
               <section>
@@ -207,10 +207,10 @@ export function AccessibilityToolbar() {
                 </div>
               </section>
             </div>
-          </ScrollArea>
+        </ScrollArea>
 
-          {/* Footer */}
-          <div className="p-4 border-t border-border/60 space-y-3">
+        {/* Footer */}
+        <div className="p-4 border-t border-border/60 space-y-3">
             <Button
               variant="destructive"
               className="w-full h-12 font-semibold"
@@ -229,7 +229,6 @@ export function AccessibilityToolbar() {
               Accessibility Statement
               <ExternalLink className="h-3 w-3" aria-hidden="true" />
             </a>
-          </div>
         </div>
       </div>
 

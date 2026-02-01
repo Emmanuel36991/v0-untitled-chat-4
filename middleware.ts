@@ -79,6 +79,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // 6. Paywall: Check subscription status for authenticated users
+  // TEMPORARY: Paywall disabled for testing - Uncomment when re-enabling payments
+  /*
   if (session && !isPublicRoute) {
     const isPaywallRoute = request.nextUrl.pathname.startsWith("/get-started")
     const isWebhook = request.nextUrl.pathname.startsWith("/api/webhooks")
@@ -104,6 +106,7 @@ export async function middleware(request: NextRequest) {
       }
     }
   }
+  */
 
   return response
 }

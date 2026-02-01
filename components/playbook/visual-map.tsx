@@ -152,8 +152,8 @@ export function VisualMap({ className }: { className?: string }) {
             <Network className="w-5 h-5" />
           </div>
           <div>
-             <CardTitle className="text-base font-bold">Strategy Ecosystem</CardTitle>
-             <CardDescription className="text-xs">Correlations: Strategy - Setup - Psychology</CardDescription>
+             <CardTitle className="text-base font-bold">Ecosystem Map</CardTitle>
+             <CardDescription className="text-xs">Strategy → Setup → Psychology Correlations</CardDescription>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="h-8 text-xs gap-2">
@@ -211,11 +211,13 @@ export function VisualMap({ className }: { className?: string }) {
             graphData={data}
             backgroundColor="transparent"
             
-            // --- STABILIZED PHYSICS ---
-            d3AlphaDecay={0.03}
-            d3VelocityDecay={0.5}
-            cooldownTicks={150}
-            warmupTicks={50}
+            // --- STABILIZED PHYSICS WITH BETTER SPACING ---
+            d3AlphaDecay={0.02}
+            d3VelocityDecay={0.4}
+            cooldownTicks={200}
+            warmupTicks={80}
+            linkDistance={80}
+            chargeStrength={-150}
             
             // --- LINK RENDERING ---
             linkColor={(link: any) => {
@@ -351,28 +353,44 @@ export function VisualMap({ className }: { className?: string }) {
 
               // --- LABEL RENDERING ---
               ctx.shadowBlur = 0
-              const fontSize = Math.max(11 / globalScale, 4)
+              
+              // Larger base font size for better readability
+              const baseFontSize = node.type === 'strategy' ? 14 : node.type === 'setup' ? 12 : 10
+              const fontSize = Math.max(baseFontSize / globalScale, 8)
+              
+              // Show labels more liberally for better UX
               const showLabel = node.type === 'strategy' || 
                                node.type === 'setup' || 
                                isHovered || 
                                isSelected || 
-                               globalScale > 1.8
+                               globalScale > 1.3
 
               if (showLabel && !isDimmed) {
-                const label = node.label
-                ctx.font = `${node.type === 'strategy' ? '600' : '400'} ${fontSize}px Inter, system-ui, sans-serif`
+                // Clean up label text
+                let label = node.label
+                
+                // Truncate long labels with ellipsis
+                const maxChars = node.type === 'strategy' ? 20 : 15
+                if (label.length > maxChars) {
+                  label = label.substring(0, maxChars - 1) + '…'
+                }
+                
+                ctx.font = `${node.type === 'strategy' ? '600' : '500'} ${fontSize}px Inter, system-ui, sans-serif`
                 ctx.textAlign = 'center'
                 ctx.textBaseline = 'middle'
                 
                 const textWidth = ctx.measureText(label).width
-                const labelY = y + radius + fontSize + 4
                 
-                // Glass background pill
-                const pillPadding = 4
+                // Position label below node with more spacing
+                const labelY = y + radius + fontSize + 6
+                
+                // Enhanced glass background pill
+                const pillPadding = 6
                 const pillHeight = fontSize + pillPadding * 2
                 const pillWidth = textWidth + pillPadding * 4
                 const pillRadius = pillHeight / 2
                 
+                // Draw pill background with better contrast
                 ctx.fillStyle = COLORS.glassBg
                 ctx.beginPath()
                 ctx.roundRect(
@@ -384,14 +402,23 @@ export function VisualMap({ className }: { className?: string }) {
                 )
                 ctx.fill()
                 
-                // Subtle border
-                ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.15)'
-                ctx.lineWidth = 0.5
+                // Enhanced border for better definition
+                ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(100, 116, 139, 0.25)'
+                ctx.lineWidth = 1
                 ctx.stroke()
                 
-                // Text
+                // Text with better contrast
                 ctx.fillStyle = node.type === 'strategy' ? COLORS.text : COLORS.textMuted
                 ctx.fillText(label, x, labelY)
+                
+                // Add subtle shadow for text depth on hover/select
+                if (isHovered || isSelected) {
+                  ctx.save()
+                  ctx.shadowBlur = 3
+                  ctx.shadowColor = isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.2)'
+                  ctx.fillText(label, x, labelY)
+                  ctx.restore()
+                }
               }
             }}
           />

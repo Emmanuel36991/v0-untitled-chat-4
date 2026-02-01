@@ -8,8 +8,6 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard"
 
   if (code) {
-    const response = NextResponse.redirect(`${origin}${next}`)
-    
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -19,17 +17,11 @@ export async function GET(request: NextRequest) {
             return request.cookies.get(name)?.value
           },
           set(name: string, value: string, options: CookieOptions) {
-            response.cookies.set({
-              name,
-              value,
-              ...options,
-            })
+            // We need to set cookies before redirecting
+            request.cookies.set(name, value, options)
           },
           remove(name: string, options: CookieOptions) {
-            response.cookies.delete({
-              name,
-              ...options,
-            })
+            request.cookies.delete(name)
           },
         },
       }
@@ -38,6 +30,29 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
+      // Check if user has completed profile setup
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        // Check if user_config exists and profileSetupComplete is true
+        const { data: configData } = await supabase
+          .from("user_config_settings")
+          .select("config")
+          .eq("user_id", user.id)
+          .maybeSingle()
+        
+        const config = configData?.config as any
+        const profileSetupComplete = config?.profileSetupComplete ?? false
+        
+        // If profile setup is not complete, redirect to profile setup
+        if (!profileSetupComplete) {
+          const response = NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
+          return response
+        }
+      }
+      
+      // Profile setup is complete or config doesn't exist yet, proceed to dashboard
+      const response = NextResponse.redirect(`${origin}${next}`)
       return response
     }
   }

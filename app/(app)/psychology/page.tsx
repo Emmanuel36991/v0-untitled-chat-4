@@ -23,10 +23,10 @@ export default async function PsychologyPage() {
     return <PsychologyPageClient stats={null} />
   }
 
-  // Fetch trades data from database
+  // Fetch trades data from database with psychology_factors
   const { data: trades, error } = await supabase
     .from("trades")
-    .select("pnl, outcome, psychology_state, mistakes, created_at")
+    .select("pnl, outcome, psychology_factors, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
@@ -35,10 +35,10 @@ export default async function PsychologyPage() {
     return <PsychologyPageClient stats={null} />
   }
 
-  // Fetch journal entries for additional stats
+  // Fetch journal entries (includes both standalone entries and trade-linked entries)
   const { data: journalEntries } = await supabase
     .from("psychology_journal_entries")
-    .select("created_at, mood, emotions")
+    .select("created_at, mood, emotions, trade_id")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
@@ -62,11 +62,14 @@ function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {
     }
   }
 
-  // 1. Discipline Score: Percentage of trades without 'Impulsive' or 'Revenge' tags
+  // 1. Discipline Score: Percentage of trades without impulsive psychology_factors
   const disciplinedTrades = trades.filter(trade => {
-    const mistakes = trade.mistakes || []
-    const hasImpulsive = mistakes.some((m: string) => 
-      m.toLowerCase().includes('impulsive') || m.toLowerCase().includes('revenge')
+    const psychologyFactors = trade.psychology_factors || []
+    const hasImpulsive = psychologyFactors.some((factor: string) => 
+      factor.toLowerCase().includes('impulsive') || 
+      factor.toLowerCase().includes('revenge') ||
+      factor.toLowerCase().includes('fomo') ||
+      factor.toLowerCase().includes('overtrading')
     )
     return !hasImpulsive
   })
@@ -74,15 +77,10 @@ function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {
     ? Math.round((disciplinedTrades.length / trades.length) * 100)
     : 0
 
-  // 2. Dominant Emotion: Most frequent psychology_state from trades
+  // 2. Dominant Emotion: Most frequent mood from journal entries (including trade-linked ones)
   const emotionCounts: Record<string, number> = {}
-  trades.forEach(trade => {
-    if (trade.psychology_state) {
-      emotionCounts[trade.psychology_state] = (emotionCounts[trade.psychology_state] || 0) + 1
-    }
-  })
   
-  // Also include journal entry moods
+  // Count all journal entry moods (both standalone and trade-linked)
   journalEntries.forEach(entry => {
     if (entry.mood) {
       emotionCounts[entry.mood] = (emotionCounts[entry.mood] || 0) + 1
@@ -179,29 +177,43 @@ function calculateFocusScore(journalEntries: any[]): number {
 }
 
 function detectRiskAlert(trades: any[], journalEntries: any[]): string {
-  // Check recent trades for FOMO/Revenge patterns
+  // Check recent trades for FOMO/Revenge patterns in psychology_factors
   const recentTrades = trades.slice(0, 10)
   const fomoCount = recentTrades.filter(trade => {
-    const mistakes = trade.mistakes || []
-    return mistakes.some((m: string) => m.toLowerCase().includes('fomo'))
+    const factors = trade.psychology_factors || []
+    return factors.some((f: string) => f.toLowerCase().includes('fomo'))
   }).length
 
   const revengeCount = recentTrades.filter(trade => {
-    const mistakes = trade.mistakes || []
-    return mistakes.some((m: string) => m.toLowerCase().includes('revenge'))
+    const factors = trade.psychology_factors || []
+    return factors.some((f: string) => f.toLowerCase().includes('revenge'))
   }).length
 
-  // Check journal entries for emotional triggers
-  const recentJournalEntries = journalEntries.slice(0, 5)
-  const stressedMoods = ['anxious', 'overwhelmed', 'frustrated', 'exhausted']
+  const overtradingCount = recentTrades.filter(trade => {
+    const factors = trade.psychology_factors || []
+    return factors.some((f: string) => f.toLowerCase().includes('overtrading'))
+  }).length
+
+  // Check journal entries for emotional triggers (both standalone and trade-linked)
+  const recentJournalEntries = journalEntries.slice(0, 7)
+  const stressedMoods = ['anxious', 'frustrated']
   const stressCount = recentJournalEntries.filter(entry => 
-    stressedMoods.includes(entry.mood)
+    stressedMoods.includes(entry.mood?.toLowerCase())
   ).length
 
-  // Determine risk alert
+  // Also check emotions array for stress indicators
+  const emotionalTriggers = recentJournalEntries.flatMap(entry => entry.emotions || [])
+  const hasStressTriggers = emotionalTriggers.some((emotion: string) => 
+    emotion.toLowerCase().includes('time-pressure') || 
+    emotion.toLowerCase().includes('large-loss') ||
+    emotion.toLowerCase().includes('consecutive-losses')
+  )
+
+  // Determine risk alert based on patterns
   if (fomoCount >= 3) return "FOMO"
   if (revengeCount >= 2) return "Revenge"
-  if (stressCount >= 3) return "Burnout"
+  if (overtradingCount >= 3) return "Overtrading"
+  if (stressCount >= 4 || hasStressTriggers) return "Burnout"
   
   return "None"
 }

@@ -136,9 +136,10 @@ export default function PsychologyAnalytics({
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - daysAgo)
 
+      // Fetch journal entries with trade information if linked
       const { data, error } = await supabase
         .from("psychology_journal_entries")
-        .select("*")
+        .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl)")
         .eq("user_id", user.id)
         .gte("created_at", startDate.toISOString())
         .order("created_at", { ascending: true })

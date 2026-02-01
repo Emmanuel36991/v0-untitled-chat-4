@@ -5,9 +5,8 @@ import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { RefreshCw, Network, Minimize2, Maximize2, Layers } from "lucide-react"
-import { generateEcosystemData, MapNode } from "@/app/actions/visual-map-actions"
+import { RefreshCw, Network, ZoomIn, ZoomOut, Maximize, X } from "lucide-react"
+import { generateEcosystemData, MapNode, MapLink } from "@/app/actions/visual-map-actions"
 import { cn } from "@/lib/utils"
 
 // No SSR for canvas
@@ -18,9 +17,11 @@ export function VisualMap({ className }: { className?: string }) {
   const fgRef = useRef<any>()
   const containerRef = useRef<HTMLDivElement>(null)
   
-  const [data, setData] = useState<{ nodes: MapNode[], links: any[] }>({ nodes: [], links: [] })
+  const [data, setData] = useState<{ nodes: MapNode[], links: MapLink[] }>({ nodes: [], links: [] })
   const [loading, setLoading] = useState(true)
   const [hoverNode, setHoverNode] = useState<MapNode | null>(null)
+  const [selectedNode, setSelectedNode] = useState<MapNode | null>(null)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [dimensions, setDimensions] = useState({ w: 800, h: 600 })
 
   // --- RESIZE OBSERVER ---
@@ -36,6 +37,22 @@ export function VisualMap({ className }: { className?: string }) {
     return () => resizeObserver.disconnect();
   }, []);
 
+  // --- MOUSE TRACKING FOR TOOLTIP ---
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        setMousePos({ 
+          x: e.clientX - rect.left, 
+          y: e.clientY - rect.top 
+        })
+      }
+    }
+    const container = containerRef.current
+    container?.addEventListener('mousemove', handleMouseMove)
+    return () => container?.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
   const loadData = useCallback(async () => {
     setLoading(true)
     const graphData = await generateEcosystemData()
@@ -46,17 +63,86 @@ export function VisualMap({ className }: { className?: string }) {
   useEffect(() => { loadData() }, [loadData])
 
   const isDark = theme === "dark"
-  const bgColor = isDark ? "#020617" : "#ffffff" // Slate-950 or White
-  const gridColor = isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"
   
-  // Node Colors
+  // --- HFT COLOR PALETTE ---
   const COLORS = {
-    strategy: "#6366f1", // Indigo
-    setup: "#3b82f6",    // Blue
-    psych_pos: "#10b981", // Emerald
-    psych_neg: "#f43f5e", // Rose
-    text: isDark ? "rgba(255,255,255,0.8)" : "rgba(15,23,42,0.8)"
+    strategy: { 
+      core: isDark ? "#818cf8" : "#6366f1", 
+      glow: isDark ? "rgba(129, 140, 248, 0.6)" : "rgba(99, 102, 241, 0.5)" 
+    },
+    setup: { 
+      core: isDark ? "#60a5fa" : "#3b82f6", 
+      glow: isDark ? "rgba(96, 165, 250, 0.5)" : "rgba(59, 130, 246, 0.4)" 
+    },
+    psych_pos: { 
+      core: isDark ? "#34d399" : "#10b981", 
+      glow: isDark ? "rgba(52, 211, 153, 0.5)" : "rgba(16, 185, 129, 0.4)" 
+    },
+    psych_neg: { 
+      core: isDark ? "#fb7185" : "#f43f5e", 
+      glow: isDark ? "rgba(251, 113, 133, 0.5)" : "rgba(244, 63, 94, 0.4)" 
+    },
+    text: isDark ? "rgba(248, 250, 252, 0.9)" : "rgba(15, 23, 42, 0.9)",
+    textMuted: isDark ? "rgba(148, 163, 184, 0.7)" : "rgba(100, 116, 139, 0.7)",
+    linkDefault: isDark ? "rgba(100, 116, 139, 0.15)" : "rgba(148, 163, 184, 0.2)",
+    linkActive: isDark ? "rgba(129, 140, 248, 0.4)" : "rgba(99, 102, 241, 0.3)",
+    bg: isDark ? "#020617" : "#ffffff",
+    glassBg: isDark ? "rgba(15, 23, 42, 0.85)" : "rgba(255, 255, 255, 0.9)"
   }
+
+  // --- CAMERA CONTROLS ---
+  const handleZoomIn = () => fgRef.current?.zoom(fgRef.current.zoom() * 1.5, 300)
+  const handleZoomOut = () => fgRef.current?.zoom(fgRef.current.zoom() / 1.5, 300)
+  const handleRecenter = () => {
+    fgRef.current?.zoomToFit(400, 60)
+    setSelectedNode(null)
+  }
+
+  // --- GET CONNECTED NODE IDS ---
+  const getConnectedIds = useCallback((nodeId: string): Set<string> => {
+    const connected = new Set<string>([nodeId])
+    data.links.forEach(link => {
+      const sourceId = typeof link.source === 'object' ? (link.source as any).id : link.source
+      const targetId = typeof link.target === 'object' ? (link.target as any).id : link.target
+      if (sourceId === nodeId) connected.add(targetId)
+      if (targetId === nodeId) connected.add(sourceId)
+    })
+    return connected
+  }, [data.links])
+
+  // --- NODE CLICK HANDLER (Focus Mode) ---
+  const handleNodeClick = useCallback((node: any) => {
+    if (selectedNode?.id === node.id) {
+      // Deselect if clicking same node
+      setSelectedNode(null)
+      fgRef.current?.zoomToFit(400, 60)
+    } else {
+      setSelectedNode(node as MapNode)
+      // Smooth camera animation to selected node
+      fgRef.current?.centerAt(node.x, node.y, 600)
+      fgRef.current?.zoom(2.5, 600)
+    }
+  }, [selectedNode])
+
+  // --- BACKGROUND CLICK (Reset Focus) ---
+  const handleBackgroundClick = useCallback(() => {
+    if (selectedNode) {
+      setSelectedNode(null)
+      fgRef.current?.zoomToFit(400, 60)
+    }
+  }, [selectedNode])
+
+  // --- LOGARITHMIC NODE SIZING ---
+  const getNodeRadius = (node: MapNode): number => {
+    const baseSizes = { strategy: 16, setup: 10, psych_positive: 6, psych_negative: 6 }
+    const base = baseSizes[node.type] || 8
+    const trades = node.stats?.trades || 1
+    // Logarithmic scaling to prevent massive nodes
+    return Math.min(base + Math.log10(trades + 1) * 4, base * 2.5)
+  }
+
+  // Connected nodes set for dimming effect
+  const connectedIds = selectedNode ? getConnectedIds(selectedNode.id) : null
 
   return (
     <Card className={cn("overflow-hidden border-border/60 bg-card shadow-xl", className)}>
@@ -67,7 +153,7 @@ export function VisualMap({ className }: { className?: string }) {
           </div>
           <div>
              <CardTitle className="text-base font-bold">Strategy Ecosystem</CardTitle>
-             <CardDescription className="text-xs">Correlations: Strategy ↔ Setup ↔ Psychology</CardDescription>
+             <CardDescription className="text-xs">Correlations: Strategy - Setup - Psychology</CardDescription>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="h-8 text-xs gap-2">
@@ -78,151 +164,395 @@ export function VisualMap({ className }: { className?: string }) {
       
       <CardContent className="p-0 relative h-[500px]" ref={containerRef}>
         
-        {/* --- CUSTOM GRID BACKGROUND (The "Not Void" Part) --- */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-            {/* Polar Grid SVG */}
-            <svg width="100%" height="100%" className="opacity-[0.15]">
-                <defs>
-                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                    </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#grid)" />
-                {/* Center Crosshair */}
-                <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeDasharray="4 4" strokeWidth="1"/>
-                <line x1="0" y1="50%" x2="100%" y2="50%" stroke="currentColor" strokeDasharray="4 4" strokeWidth="1"/>
-            </svg>
+        {/* --- ANIMATED GRID BACKGROUND --- */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+          {/* Radial gradient overlay */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: isDark 
+                ? 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 70%)'
+                : 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%)'
+            }}
+          />
+          {/* Grid SVG */}
+          <svg width="100%" height="100%" className="opacity-20">
+            <defs>
+              <pattern id="hft-grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-muted-foreground/30"/>
+              </pattern>
+              <pattern id="hft-grid-large" width="150" height="150" patternUnits="userSpaceOnUse">
+                <path d="M 150 0 L 0 0 0 150" fill="none" stroke="currentColor" strokeWidth="1" className="text-muted-foreground/20"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hft-grid)" />
+            <rect width="100%" height="100%" fill="url(#hft-grid-large)" />
+            {/* Center crosshair */}
+            <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeDasharray="8 8" strokeWidth="0.5" className="text-indigo-500/20"/>
+            <line x1="0" y1="50%" x2="100%" y2="100%" stroke="currentColor" strokeDasharray="8 8" strokeWidth="0.5" className="text-indigo-500/20"/>
+          </svg>
+          {/* Scan line effect */}
+          <div 
+            className="absolute inset-0 pointer-events-none animate-pulse"
+            style={{
+              background: isDark
+                ? 'linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.02) 50%, transparent 100%)'
+                : 'linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.03) 50%, transparent 100%)'
+            }}
+          />
         </div>
 
-        {/* --- GRAPH --- */}
+        {/* --- FORCE GRAPH --- */}
         <div className="absolute inset-0 z-10">
-            <ForceGraph2D
-                ref={fgRef}
-                width={dimensions.w}
-                height={dimensions.h}
-                graphData={data}
-                backgroundColor="transparent" // Allow grid to show
+          <ForceGraph2D
+            ref={fgRef}
+            width={dimensions.w}
+            height={dimensions.h}
+            graphData={data}
+            backgroundColor="transparent"
+            
+            // --- STABILIZED PHYSICS ---
+            d3AlphaDecay={0.03}
+            d3VelocityDecay={0.5}
+            cooldownTicks={150}
+            warmupTicks={50}
+            
+            // --- LINK RENDERING ---
+            linkColor={(link: any) => {
+              const sourceId = typeof link.source === 'object' ? link.source.id : link.source
+              const targetId = typeof link.target === 'object' ? link.target.id : link.target
+              
+              // Dim unconnected links when node is selected
+              if (connectedIds && !connectedIds.has(sourceId) && !connectedIds.has(targetId)) {
+                return isDark ? 'rgba(100, 116, 139, 0.03)' : 'rgba(148, 163, 184, 0.05)'
+              }
+              
+              // Highlight profitable connections
+              const targetNode = data.nodes.find(n => n.id === targetId)
+              if (targetNode?.stats?.pnl && targetNode.stats.pnl > 0) {
+                return isDark ? 'rgba(52, 211, 153, 0.25)' : 'rgba(16, 185, 129, 0.2)'
+              }
+              
+              return link.type === 'structural' ? COLORS.linkActive : COLORS.linkDefault
+            }}
+            linkWidth={(link: any) => link.type === 'structural' ? 2 : 1}
+            linkLineDash={(link: any) => link.type === 'correlation' ? [2, 3] : []}
+            linkDirectionalParticles={(link: any) => link.type === 'structural' ? 2 : 0}
+            linkDirectionalParticleSpeed={0.003}
+            linkDirectionalParticleWidth={2}
+            linkDirectionalParticleColor={() => COLORS.strategy.core}
+
+            // --- INTERACTIONS ---
+            onNodeHover={(node) => setHoverNode(node as MapNode || null)}
+            onNodeClick={handleNodeClick}
+            onBackgroundClick={handleBackgroundClick}
+            
+            // --- HFT NODE RENDERER (Neon/Glass Effect) ---
+            nodeCanvasObject={(node: any, ctx, globalScale) => {
+              const radius = getNodeRadius(node as MapNode)
+              const isHovered = hoverNode?.id === node.id
+              const isSelected = selectedNode?.id === node.id
+              const isDimmed = connectedIds && !connectedIds.has(node.id)
+              const x = node.x
+              const y = node.y
+
+              // Get colors based on node type
+              let colors = COLORS.strategy
+              if (node.type === 'setup') colors = COLORS.setup
+              else if (node.type === 'psych_positive') colors = COLORS.psych_pos
+              else if (node.type === 'psych_negative') colors = COLORS.psych_neg
+
+              // Apply dimming effect
+              const opacity = isDimmed ? 0.15 : 1
+
+              ctx.save()
+              ctx.globalAlpha = opacity
+
+              // --- OUTER GLOW (Shadow blur technique) ---
+              if (!isDimmed) {
+                ctx.shadowBlur = isSelected ? 25 : isHovered ? 20 : 12
+                ctx.shadowColor = colors.glow
+              }
+
+              // --- NODE SHAPE BASED ON TYPE ---
+              if (node.type === 'strategy') {
+                // STRATEGY: Solid radiant core with double ring
                 
-                // Physics
-                d3AlphaDecay={0.02}
-                d3VelocityDecay={0.4}
-                cooldownTicks={100}
+                // Outer ring
+                ctx.beginPath()
+                ctx.arc(x, y, radius + 3, 0, 2 * Math.PI)
+                ctx.strokeStyle = colors.core
+                ctx.lineWidth = 1
+                ctx.stroke()
                 
-                // Links
-                linkColor={(link: any) => link.type === 'structural' ? (isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.15)') : (isDark ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.15)')}
-                linkWidth={(link: any) => link.type === 'structural' ? 2 : 1}
-                linkDirectionalParticles={link => (link as any).type === 'correlation' ? 2 : 0}
-                linkDirectionalParticleSpeed={0.005}
-                linkDirectionalParticleWidth={2}
-
-                // Interactions
-                onNodeHover={(node) => setHoverNode(node as MapNode || null)}
+                // Main circle with gradient fill
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius)
+                gradient.addColorStop(0, colors.core)
+                gradient.addColorStop(0.7, colors.core)
+                gradient.addColorStop(1, isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.4)')
                 
-                // --- INSTITUTIONAL NODE RENDERER ---
-                nodeCanvasObject={(node: any, ctx, globalScale) => {
-                    const label = node.label;
-                    const radius = node.val;
-                    const isHovered = hoverNode?.id === node.id;
-                    const x = node.x;
-                    const y = node.y;
+                ctx.beginPath()
+                ctx.arc(x, y, radius, 0, 2 * Math.PI)
+                ctx.fillStyle = gradient
+                ctx.fill()
+                
+                // Inner bright core
+                ctx.beginPath()
+                ctx.arc(x, y, radius * 0.3, 0, 2 * Math.PI)
+                ctx.fillStyle = isDark ? '#e0e7ff' : '#c7d2fe'
+                ctx.fill()
+                
+              } else if (node.type === 'setup') {
+                // SETUP: Orbiting satellite ring style
+                
+                ctx.beginPath()
+                ctx.arc(x, y, radius, 0, 2 * Math.PI)
+                ctx.strokeStyle = colors.core
+                ctx.lineWidth = isHovered ? 3 : 2
+                ctx.stroke()
+                
+                // Inner dot
+                ctx.beginPath()
+                ctx.arc(x, y, radius * 0.4, 0, 2 * Math.PI)
+                ctx.fillStyle = colors.core
+                ctx.fill()
+                
+                // Small orbital indicator
+                if (isHovered || isSelected) {
+                  ctx.beginPath()
+                  ctx.arc(x + radius * 0.7, y - radius * 0.7, 2, 0, 2 * Math.PI)
+                  ctx.fillStyle = colors.core
+                  ctx.fill()
+                }
+                
+              } else {
+                // PSYCHOLOGY: Beacon style with pulsing effect
+                
+                // Outer glow ring
+                ctx.beginPath()
+                ctx.arc(x, y, radius + 2, 0, 2 * Math.PI)
+                ctx.strokeStyle = colors.glow
+                ctx.lineWidth = 1
+                ctx.stroke()
+                
+                // Main filled circle
+                ctx.beginPath()
+                ctx.arc(x, y, radius, 0, 2 * Math.PI)
+                ctx.fillStyle = isHovered ? colors.core : colors.glow
+                ctx.fill()
+                
+                // Border
+                ctx.strokeStyle = colors.core
+                ctx.lineWidth = 1.5
+                ctx.stroke()
+              }
 
-                    // Color Logic
-                    let fill = COLORS.text;
-                    let stroke = COLORS.text;
-                    
-                    if (node.type === 'strategy') { fill = COLORS.strategy; stroke = COLORS.strategy; }
-                    else if (node.type === 'setup') { fill = COLORS.setup; stroke = COLORS.setup; }
-                    else if (node.type === 'psych_positive') { fill = COLORS.psych_pos; stroke = COLORS.psych_pos; }
-                    else if (node.type === 'psych_negative') { fill = COLORS.psych_neg; stroke = COLORS.psych_neg; }
+              ctx.restore()
 
-                    // 1. Draw "Hollow" Circle (Institutional Look)
-                    ctx.beginPath();
-                    ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-                    ctx.fillStyle = isHovered ? fill : 'rgba(0,0,0,0)'; // Transparent fill unless hovered
-                    ctx.fill();
-                    
-                    ctx.lineWidth = isHovered ? 2 : 1.5;
-                    ctx.strokeStyle = fill;
-                    ctx.stroke();
+              // --- LABEL RENDERING ---
+              ctx.shadowBlur = 0
+              const fontSize = Math.max(11 / globalScale, 4)
+              const showLabel = node.type === 'strategy' || 
+                               node.type === 'setup' || 
+                               isHovered || 
+                               isSelected || 
+                               globalScale > 1.8
 
-                    // 2. Inner Dot for Strategies
-                    if (node.type === 'strategy') {
-                        ctx.beginPath();
-                        ctx.arc(x, y, 4, 0, 2 * Math.PI, false);
-                        ctx.fillStyle = fill;
-                        ctx.fill();
-                    }
-
-                    // 3. Label (Always for Strategy/Setup, Hover for Psych)
-                    const fontSize = 12/globalScale;
-                    const showLabel = node.type !== 'psych_negative' && node.type !== 'psych_positive' || isHovered || globalScale > 1.5;
-
-                    if (showLabel) {
-                        ctx.font = `${node.type === 'strategy' ? 'bold' : ''} ${Math.max(fontSize, 4)}px monospace`;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillStyle = COLORS.text;
-                        const yOffset = radius + fontSize + 2;
-                        
-                        // Text Background for readability
-                        if (node.type === 'strategy') {
-                             const textWidth = ctx.measureText(label).width;
-                             ctx.fillStyle = isDark ? "rgba(2, 6, 23, 0.8)" : "rgba(255, 255, 255, 0.8)";
-                             ctx.fillRect(x - textWidth/2 - 2, y + radius + 2, textWidth + 4, fontSize + 4);
-                        }
-                        
-                        ctx.fillStyle = COLORS.text;
-                        ctx.fillText(label, x, y + yOffset);
-                    }
-                }}
-            />
+              if (showLabel && !isDimmed) {
+                const label = node.label
+                ctx.font = `${node.type === 'strategy' ? '600' : '400'} ${fontSize}px Inter, system-ui, sans-serif`
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                
+                const textWidth = ctx.measureText(label).width
+                const labelY = y + radius + fontSize + 4
+                
+                // Glass background pill
+                const pillPadding = 4
+                const pillHeight = fontSize + pillPadding * 2
+                const pillWidth = textWidth + pillPadding * 4
+                const pillRadius = pillHeight / 2
+                
+                ctx.fillStyle = COLORS.glassBg
+                ctx.beginPath()
+                ctx.roundRect(
+                  x - pillWidth / 2, 
+                  labelY - pillHeight / 2, 
+                  pillWidth, 
+                  pillHeight, 
+                  pillRadius
+                )
+                ctx.fill()
+                
+                // Subtle border
+                ctx.strokeStyle = isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.15)'
+                ctx.lineWidth = 0.5
+                ctx.stroke()
+                
+                // Text
+                ctx.fillStyle = node.type === 'strategy' ? COLORS.text : COLORS.textMuted
+                ctx.fillText(label, x, labelY)
+              }
+            }}
+          />
         </div>
 
-        {/* --- HUD OVERLAY (The "Control Panel" Feel) --- */}
-        <div className="absolute top-4 right-4 z-20 pointer-events-none">
-            {hoverNode ? (
-                <div className="bg-background/90 backdrop-blur border border-border rounded-lg p-3 shadow-xl w-56 animate-in slide-in-from-right-2">
-                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/50">
-                        <div className={cn("w-2 h-2 rounded-full", 
-                             hoverNode.type === 'strategy' ? "bg-indigo-500" : 
-                             hoverNode.type === 'setup' ? "bg-blue-500" :
-                             hoverNode.type === 'psych_positive' ? "bg-emerald-500" : "bg-rose-500"
-                        )} />
-                        <span className="font-bold text-sm truncate">{hoverNode.label}</span>
-                    </div>
-                    <div className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                           <span className="text-muted-foreground">Trades</span>
-                           <span className="font-mono">{hoverNode.stats?.trades}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                           <span className="text-muted-foreground">Win Rate</span>
-                           <span className={cn("font-mono font-bold", (hoverNode.stats?.winRate || 0) > 50 ? "text-emerald-500" : "text-muted-foreground")}>
-                             {hoverNode.stats?.winRate}%
-                           </span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                           <span className="text-muted-foreground">Net PnL</span>
-                           <span className={cn("font-mono font-bold", (hoverNode.stats?.pnl || 0) > 0 ? "text-emerald-500" : "text-rose-500")}>
-                             ${hoverNode.stats?.pnl.toLocaleString()}
-                           </span>
-                        </div>
-                    </div>
+        {/* --- FLOATING TOOLTIP (Mouse-following) --- */}
+        {hoverNode && !selectedNode && (
+          <div 
+            className="absolute z-30 pointer-events-none transition-all duration-75"
+            style={{
+              left: Math.min(mousePos.x + 16, dimensions.w - 220),
+              top: Math.min(mousePos.y - 10, dimensions.h - 140),
+            }}
+          >
+            <div className="bg-background/95 backdrop-blur-md border border-border/60 rounded-lg p-3 shadow-2xl w-52">
+              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/40">
+                <div className={cn("w-2.5 h-2.5 rounded-full shadow-lg", 
+                  hoverNode.type === 'strategy' ? "bg-indigo-500" : 
+                  hoverNode.type === 'setup' ? "bg-blue-500" :
+                  hoverNode.type === 'psych_positive' ? "bg-emerald-500" : "bg-rose-500"
+                )} 
+                style={{
+                  boxShadow: hoverNode.type === 'strategy' ? '0 0 8px rgba(99, 102, 241, 0.6)' :
+                             hoverNode.type === 'setup' ? '0 0 8px rgba(59, 130, 246, 0.6)' :
+                             hoverNode.type === 'psych_positive' ? '0 0 8px rgba(16, 185, 129, 0.6)' :
+                             '0 0 8px rgba(244, 63, 94, 0.6)'
+                }}
+                />
+                <span className="font-semibold text-sm truncate">{hoverNode.label}</span>
+              </div>
+              <div className="space-y-1.5 font-mono text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Trades</span>
+                  <span className="font-medium">{hoverNode.stats?.trades || 0}</span>
                 </div>
-            ) : (
-                <div className="flex flex-col gap-2 opacity-50 text-[10px] text-muted-foreground font-mono text-right">
-                    <span>ECOSYSTEM STATUS: ONLINE</span>
-                    <span>NODES: {data.nodes.length}</span>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Win Rate</span>
+                  <span className={cn("font-medium", (hoverNode.stats?.winRate || 0) >= 50 ? "text-emerald-500" : "text-muted-foreground")}>
+                    {hoverNode.stats?.winRate || 0}%
+                  </span>
                 </div>
-            )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Net P&L</span>
+                  <span className={cn("font-medium", (hoverNode.stats?.pnl || 0) >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                    ${(hoverNode.stats?.pnl || 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- SELECTED NODE PANEL (Fixed Position) --- */}
+        {selectedNode && (
+          <div className="absolute top-4 right-4 z-30 animate-in slide-in-from-right-2 fade-in duration-200">
+            <div className="bg-background/95 backdrop-blur-md border border-border/60 rounded-lg p-4 shadow-2xl w-60">
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/40">
+                <div className="flex items-center gap-2">
+                  <div className={cn("w-3 h-3 rounded-full", 
+                    selectedNode.type === 'strategy' ? "bg-indigo-500" : 
+                    selectedNode.type === 'setup' ? "bg-blue-500" :
+                    selectedNode.type === 'psych_positive' ? "bg-emerald-500" : "bg-rose-500"
+                  )} />
+                  <span className="font-bold text-sm truncate max-w-[160px]">{selectedNode.label}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  onClick={() => {
+                    setSelectedNode(null)
+                    fgRef.current?.zoomToFit(400, 60)
+                  }}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+              <div className="space-y-2 font-mono">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Type</span>
+                  <span className="font-medium capitalize">{selectedNode.type.replace('_', ' ')}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Trades</span>
+                  <span className="font-medium">{selectedNode.stats?.trades || 0}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Win Rate</span>
+                  <span className={cn("font-medium", (selectedNode.stats?.winRate || 0) >= 50 ? "text-emerald-500" : "text-muted-foreground")}>
+                    {selectedNode.stats?.winRate || 0}%
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Net P&L</span>
+                  <span className={cn("font-medium", (selectedNode.stats?.pnl || 0) >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                    ${(selectedNode.stats?.pnl || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Connections</span>
+                  <span className="font-medium">{connectedIds ? connectedIds.size - 1 : 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- CAMERA CONTROLS (Bottom Right) --- */}
+        <div className="absolute bottom-4 right-4 z-20 flex gap-1.5">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90"
+            onClick={handleZoomIn}
+          >
+            <ZoomIn className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90"
+            onClick={handleZoomOut}
+          >
+            <ZoomOut className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-8 w-8 bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90"
+            onClick={handleRecenter}
+          >
+            <Maximize className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* --- LEGEND (Bottom Left) --- */}
-        <div className="absolute bottom-4 left-4 z-20 flex gap-4 text-[10px] font-mono text-muted-foreground bg-background/50 backdrop-blur px-3 py-1.5 rounded-full border border-border/30">
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-indigo-500"/> Strategy</div>
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-blue-500"/> Setup</div>
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-emerald-500"/> +Psych</div>
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-rose-500"/> -Psych</div>
+        <div className="absolute bottom-4 left-4 z-20 flex gap-3 text-[10px] font-mono text-muted-foreground bg-background/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-border/30">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.5)]"/>
+            <span>Strategy</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-blue-500"/>
+            <span>Setup</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50 border border-emerald-500"/>
+            <span>+Psych</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50 border border-rose-500"/>
+            <span>-Psych</span>
+          </div>
+        </div>
+
+        {/* --- STATUS INDICATOR (Top Left) --- */}
+        <div className="absolute top-4 left-4 z-20 flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-background/50 backdrop-blur-sm px-2.5 py-1.5 rounded-md border border-border/20">
+          <div className={cn("w-1.5 h-1.5 rounded-full", loading ? "bg-amber-500 animate-pulse" : "bg-emerald-500")} />
+          <span>{loading ? "SYNCING" : "LIVE"}</span>
+          <span className="text-muted-foreground/50">|</span>
+          <span>{data.nodes.length} NODES</span>
         </div>
 
       </CardContent>

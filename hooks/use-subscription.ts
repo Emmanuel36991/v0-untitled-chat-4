@@ -9,8 +9,8 @@ export type SubscriptionStatus = "active" | "trialing" | "past_due" | "canceled"
 export interface Subscription {
   id: string
   user_id: string
-  rapyd_customer_id: string | null
-  rapyd_subscription_id: string | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
   tier: SubscriptionTier
   status: SubscriptionStatus
   current_period_start: string | null

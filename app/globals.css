@@ -120,8 +120,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    background: var(--background);
+  }
   body {
     @apply bg-background text-foreground;
+    background-color: var(--background) !important;
   }
 }
 
@@ -171,11 +175,19 @@ select {
   border-radius: var(--radius-md);
 }
 
-/* Smooth theme transitions */
+/* Smooth theme transitions - DISABLED for body to prevent black screen */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+body {
+  transition: none !important;
+}
+
+html {
+  transition: none !important;
 }
 
 /* Keyframe animations for AnimatedTradingBackground component */

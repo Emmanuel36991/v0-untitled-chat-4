@@ -35,13 +35,16 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [strength, setStrength] = useState(0)
-  const [mounted, setMounted] = useState(false)
   
   const router = useRouter()
 
-  // Prevent hydration mismatch
+  // Force light mode on mount
   React.useEffect(() => {
-    setMounted(true)
+    document.documentElement.classList.add('light')
+    document.documentElement.classList.remove('dark')
+    return () => {
+      document.documentElement.classList.remove('light')
+    }
   }, [])
 
   useEffect(() => {
@@ -100,19 +103,8 @@ export default function SignUpPage() {
     })
   }
 
-  // Force light mode wrapper
-  if (!mounted) {
-    return null // Prevent hydration mismatch
-  }
-
   return (
-    <div className="light min-h-screen relative overflow-hidden bg-white text-slate-900">
-      <style jsx global>{`
-        html, body {
-          background: white !important;
-          color: rgb(15 23 42) !important;
-        }
-      `}</style>
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
       <AnimatedTradingBackground />
 
       <div className="relative z-10 container mx-auto px-6 py-12">

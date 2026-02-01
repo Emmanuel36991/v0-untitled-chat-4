@@ -62,70 +62,70 @@
 }
 
 .dark {
-  /* Updated dark mode with vibrant colors */
-  /* Dark mode colors using OKLCH */
-  --background: oklch(0.12 0.02 264);
+  /* Bloomberg Terminal / TradingView inspired dark mode */
+  /* Deep background for Bloomberg-like feel with better contrast */
+  --background: oklch(0.10 0.015 264);
   --foreground: oklch(0.98 0.005 264);
 
-  --card: oklch(0.15 0.02 264);
+  /* Cards need visible distinction from background */
+  --card: oklch(0.16 0.02 264);
   --card-foreground: oklch(0.98 0.005 264);
 
-  --popover: oklch(0.14 0.02 264);
+  /* Popovers slightly lighter than cards */
+  --popover: oklch(0.18 0.02 264);
   --popover-foreground: oklch(0.98 0.005 264);
 
-  /* Brighter primary for dark mode */
-  --primary: oklch(0.65 0.24 270);
+  /* Brighter primary for dark mode - high visibility */
+  --primary: oklch(0.68 0.26 270);
   --primary-foreground: oklch(0.99 0.005 264);
 
-  /* Darker secondary for dark mode */
-  --secondary: oklch(0.22 0.04 280);
+  /* Secondary needs more contrast */
+  --secondary: oklch(0.24 0.05 280);
   --secondary-foreground: oklch(0.98 0.005 264);
 
-  --muted: oklch(0.2 0.02 264);
-  --muted-foreground: oklch(0.6 0.02 264);
+  /* Muted backgrounds for input fields - clearly visible boxes */
+  --muted: oklch(0.22 0.025 264);
+  --muted-foreground: oklch(0.65 0.02 264);
 
-  /* Vibrant accent for dark mode */
-  --accent: oklch(0.25 0.06 280);
+  /* Accent for highlights */
+  --accent: oklch(0.28 0.07 280);
   --accent-foreground: oklch(0.98 0.005 264);
 
-  --destructive: oklch(0.6 0.25 27.325);
+  --destructive: oklch(0.62 0.26 27.325);
   --destructive-foreground: oklch(0.99 0.005 264);
 
-  --border: oklch(0.25 0.03 264);
-  --input: oklch(0.22 0.03 264);
-  --ring: oklch(0.65 0.24 270);
+  /* Borders must be visible and distinct */
+  --border: oklch(0.30 0.04 264);
+  --input: oklch(0.24 0.03 264);
+  --ring: oklch(0.68 0.26 270);
 
-  /* Chart colors for dark mode - more vibrant */
-  --chart-1: oklch(0.7 0.26 270);
-  --chart-2: oklch(0.72 0.22 320);
-  --chart-3: oklch(0.75 0.2 200);
-  --chart-4: oklch(0.78 0.18 140);
-  --chart-5: oklch(0.73 0.24 40);
+  /* Chart colors for dark mode - high contrast and vibrant */
+  --chart-1: oklch(0.72 0.28 270);
+  --chart-2: oklch(0.74 0.24 320);
+  --chart-3: oklch(0.76 0.22 200);
+  --chart-4: oklch(0.78 0.20 140);
+  --chart-5: oklch(0.75 0.26 40);
 
   /* Sidebar colors for dark mode */
-  --sidebar: oklch(0.12 0.02 264);
+  --sidebar: oklch(0.10 0.015 264);
   --sidebar-foreground: oklch(0.98 0.005 264);
-  --sidebar-primary: oklch(0.65 0.24 270);
+  --sidebar-primary: oklch(0.68 0.26 270);
   --sidebar-primary-foreground: oklch(0.99 0.005 264);
-  --sidebar-accent: oklch(0.22 0.04 280);
+  --sidebar-accent: oklch(0.24 0.05 280);
   --sidebar-accent-foreground: oklch(0.98 0.005 264);
-  --sidebar-border: oklch(0.25 0.03 264);
-  --sidebar-ring: oklch(0.65 0.24 270);
+  --sidebar-border: oklch(0.30 0.04 264);
+  --sidebar-ring: oklch(0.68 0.26 270);
 
   /* Semantic overlay color for dark mode */
-  --overlay: oklch(0.05 0.02 264 / 0.9);
+  --overlay: oklch(0.05 0.02 264 / 0.92);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  html {
-    background: var(--background);
-  }
   body {
     @apply bg-background text-foreground;
-    background-color: var(--background) !important;
   }
 }
 
@@ -175,19 +175,11 @@ select {
   border-radius: var(--radius-md);
 }
 
-/* Smooth theme transitions - DISABLED for body to prevent black screen */
+/* Smooth theme transitions */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
-}
-
-body {
-  transition: none !important;
-}
-
-html {
-  transition: none !important;
 }
 
 /* Keyframe animations for AnimatedTradingBackground component */

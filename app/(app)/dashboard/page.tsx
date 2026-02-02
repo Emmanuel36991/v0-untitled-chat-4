@@ -71,6 +71,7 @@ import { cn } from "@/lib/utils"
 import { usePnLDisplay } from "@/hooks/use-pnl-display"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
 import { calculateInstrumentPnL } from "@/types/instrument-calculations"
+import { CompactPerformanceCalendar } from "@/components/dashboard/compact-performance-calendar"
 import {
   format,
   subDays,
@@ -825,20 +826,25 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           
           {/* Main Chart Section (Takes 2/3 width) */}
-          <Card 
-            className="xl:col-span-2 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
-            data-tutorial="performance-chart"
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
-              <div className="space-y-1">
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary" />
-                  Equity Curve
-                </CardTitle>
-                <CardDescription>
-                  Performance analysis over selected period
-                </CardDescription>
-              </div>
+          <div className="xl:col-span-2 space-y-6">
+            {/* Performance Calendar - Above Equity Curve */}
+            <CompactPerformanceCalendar trades={filteredTrades} />
+
+            {/* Equity Curve Chart */}
+            <Card 
+              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
+              data-tutorial="performance-chart"
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Equity Curve
+                  </CardTitle>
+                  <CardDescription>
+                    Performance analysis over selected period
+                  </CardDescription>
+                </div>
               
               <Tabs value={chartViewMode} onValueChange={(v: any) => setChartViewMode(v)} className="w-auto">
                 <TabsList className="h-9 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
@@ -925,7 +931,8 @@ export default function DashboardPage() {
                 )}
               </ResponsiveContainer>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
 
           {/* Side Panel: Strategy & Calendar */}
           <div className="space-y-6 flex flex-col">

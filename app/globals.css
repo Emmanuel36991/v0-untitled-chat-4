@@ -62,62 +62,70 @@
 }
 
 .dark {
-  /* Bloomberg Terminal / TradingView inspired dark mode */
-  /* Deep background for Bloomberg-like feel with better contrast */
-  --background: oklch(0.10 0.015 264);
-  --foreground: oklch(0.98 0.005 264);
+  /* Premium Analytics Dashboard - Enhanced Dark Mode */
+  /* Ultra-deep background for professional analytics feel */
+  --background: oklch(0.08 0.018 264);
+  --foreground: oklch(0.98 0.003 264);
 
-  /* Cards need visible distinction from background */
-  --card: oklch(0.16 0.02 264);
-  --card-foreground: oklch(0.98 0.005 264);
+  /* Elevated cards with stronger distinction */
+  --card: oklch(0.14 0.025 264);
+  --card-foreground: oklch(0.98 0.003 264);
 
-  /* Popovers slightly lighter than cards */
-  --popover: oklch(0.18 0.02 264);
-  --popover-foreground: oklch(0.98 0.005 264);
+  /* Popovers with premium feel */
+  --popover: oklch(0.16 0.025 264);
+  --popover-foreground: oklch(0.98 0.003 264);
 
-  /* Brighter primary for dark mode - high visibility */
-  --primary: oklch(0.68 0.26 270);
-  --primary-foreground: oklch(0.99 0.005 264);
+  /* Vibrant primary for analytics highlights */
+  --primary: oklch(0.65 0.28 270);
+  --primary-foreground: oklch(0.99 0.002 264);
 
-  /* Secondary needs more contrast */
-  --secondary: oklch(0.24 0.05 280);
-  --secondary-foreground: oklch(0.98 0.005 264);
+  /* Enhanced secondary for grouping */
+  --secondary: oklch(0.20 0.06 280);
+  --secondary-foreground: oklch(0.98 0.003 264);
 
-  /* Muted backgrounds for input fields - clearly visible boxes */
-  --muted: oklch(0.22 0.025 264);
-  --muted-foreground: oklch(0.65 0.02 264);
+  /* Muted with better visibility */
+  --muted: oklch(0.19 0.028 264);
+  --muted-foreground: oklch(0.62 0.02 264);
 
-  /* Accent for highlights */
-  --accent: oklch(0.28 0.07 280);
-  --accent-foreground: oklch(0.98 0.005 264);
+  /* Vibrant accent for interactive elements */
+  --accent: oklch(0.25 0.08 280);
+  --accent-foreground: oklch(0.98 0.003 264);
 
-  --destructive: oklch(0.62 0.26 27.325);
-  --destructive-foreground: oklch(0.99 0.005 264);
+  --destructive: oklch(0.60 0.27 27.325);
+  --destructive-foreground: oklch(0.99 0.002 264);
 
-  /* Borders must be visible and distinct */
-  --border: oklch(0.30 0.04 264);
-  --input: oklch(0.24 0.03 264);
-  --ring: oklch(0.68 0.26 270);
+  /* Refined borders for subtle separation */
+  --border: oklch(0.26 0.045 264);
+  --input: oklch(0.20 0.035 264);
+  --ring: oklch(0.65 0.28 270);
 
-  /* Chart colors for dark mode - high contrast and vibrant */
-  --chart-1: oklch(0.72 0.28 270);
-  --chart-2: oklch(0.74 0.24 320);
-  --chart-3: oklch(0.76 0.22 200);
-  --chart-4: oklch(0.78 0.20 140);
-  --chart-5: oklch(0.75 0.26 40);
+  /* Enhanced chart colors - maximum vibrancy for dark mode */
+  --chart-1: oklch(0.70 0.30 270);
+  --chart-2: oklch(0.72 0.26 320);
+  --chart-3: oklch(0.74 0.24 200);
+  --chart-4: oklch(0.76 0.22 140);
+  --chart-5: oklch(0.73 0.28 40);
 
-  /* Sidebar colors for dark mode */
-  --sidebar: oklch(0.10 0.015 264);
-  --sidebar-foreground: oklch(0.98 0.005 264);
-  --sidebar-primary: oklch(0.68 0.26 270);
-  --sidebar-primary-foreground: oklch(0.99 0.005 264);
-  --sidebar-accent: oklch(0.24 0.05 280);
-  --sidebar-accent-foreground: oklch(0.98 0.005 264);
-  --sidebar-border: oklch(0.30 0.04 264);
-  --sidebar-ring: oklch(0.68 0.26 270);
+  /* Analytics-specific colors */
+  --success: oklch(0.70 0.24 150);
+  --success-foreground: oklch(0.99 0.002 150);
+  --warning: oklch(0.75 0.22 60);
+  --warning-foreground: oklch(0.15 0.02 60);
+  --info: oklch(0.68 0.26 230);
+  --info-foreground: oklch(0.99 0.002 230);
 
-  /* Semantic overlay color for dark mode */
-  --overlay: oklch(0.05 0.02 264 / 0.92);
+  /* Sidebar colors */
+  --sidebar: oklch(0.08 0.018 264);
+  --sidebar-foreground: oklch(0.98 0.003 264);
+  --sidebar-primary: oklch(0.65 0.28 270);
+  --sidebar-primary-foreground: oklch(0.99 0.002 264);
+  --sidebar-accent: oklch(0.20 0.06 280);
+  --sidebar-accent-foreground: oklch(0.98 0.003 264);
+  --sidebar-border: oklch(0.26 0.045 264);
+  --sidebar-ring: oklch(0.65 0.28 270);
+
+  /* Premium overlay */
+  --overlay: oklch(0.04 0.02 264 / 0.94);
 }
 
 @layer base {
@@ -365,6 +373,12 @@ select {
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

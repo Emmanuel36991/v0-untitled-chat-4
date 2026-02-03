@@ -72,6 +72,7 @@ import { usePnLDisplay } from "@/hooks/use-pnl-display"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
 import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 import { PremiumCalendarView } from "@/components/dashboard/premium-calendar-view"
+import { MonthlyProgressOverview } from "@/components/dashboard/monthly-progress-overview"
 import {
   format,
   subDays,
@@ -998,16 +999,16 @@ export default function DashboardPage() {
                </CardContent>
             </Card>
 
-            {/* Calendar Heatmap Preview */}
+            {/* Monthly Progress Overview */}
             <Card className="border-0 shadow-lg dark:shadow-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
               <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
                 <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                  <span>Consistency Map</span>
-                  <span className="text-xs font-normal bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-foreground">{format(new Date(), "MMMM")}</span>
+                  <span>Monthly Progress</span>
+                  <span className="text-xs font-normal bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-foreground">Last 6 Months</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <CalendarHeatmap trades={filteredTrades} currentDate={new Date()} />
+                <MonthlyProgressOverview trades={filteredTrades} />
               </CardContent>
             </Card>
           </div>

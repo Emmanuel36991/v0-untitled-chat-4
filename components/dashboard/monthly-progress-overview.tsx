@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 interface MonthlyProgressOverviewProps {
-  trades: Trade[]
+  trades?: Trade[]
 }
 
 interface MonthlyData {
@@ -23,47 +23,34 @@ interface MonthlyData {
 }
 
 export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverviewProps) {
-  console.log('[v0] MonthlyProgressOverview rendering with trades:', trades?.length || 0)
+  // Ensure trades is always an array
+  const safeTrades = Array.isArray(trades) ? trades : []
   
-  // Calculate monthly metrics for the last 6 months
+  // Calculate monthly metrics for the last 6 months using safe Array.map approach
   const monthlyData = useMemo(() => {
-    console.log('[v0] Calculating monthly data...')
-    
-    if (!trades || trades.length === 0) {
-      console.log('[v0] No trades available, returning empty data')
+    if (safeTrades.length === 0) {
       return []
     }
     
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
     const months = eachMonthOfInterval({ start: sixMonthsAgo, end: now })
-    console.log('[v0] Months to analyze:', months.length)
 
-    const data: MonthlyData[] = months.map((monthDate, index) => {
+    // First pass: calculate base metrics for each month
+    const baseData = months.map((monthDate) => {
       const monthStart = startOfMonth(monthDate)
       const monthEnd = endOfMonth(monthDate)
 
-      const monthTrades = trades.filter((trade) => {
-        if (!trade.entry_date) return false
-        const tradeDate = new Date(trade.entry_date)
+      const monthTrades = safeTrades.filter((trade) => {
+        if (!trade?.date) return false
+        const tradeDate = new Date(trade.date)
         return tradeDate >= monthStart && tradeDate <= monthEnd
       })
 
-      const totalPnL = monthTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0)
-      const wins = monthTrades.filter((t) => t.outcome === 'win').length
+      const totalPnL = monthTrades.reduce((sum, trade) => sum + (trade?.pnl || 0), 0)
+      const wins = monthTrades.filter((t) => t?.outcome === 'win').length
       const winRate = monthTrades.length > 0 ? (wins / monthTrades.length) * 100 : 0
       const avgTrade = monthTrades.length > 0 ? totalPnL / monthTrades.length : 0
-
-      // Calculate change from previous month
-      let changeFromPrev: number | null = null
-      if (index > 0) {
-        const prevMonthPnL = data[index - 1].totalPnL
-        if (prevMonthPnL !== 0) {
-          changeFromPrev = ((totalPnL - prevMonthPnL) / Math.abs(prevMonthPnL)) * 100
-        } else if (totalPnL !== 0) {
-          changeFromPrev = 100
-        }
-      }
 
       return {
         month: format(monthDate, 'MMMM yyyy'),
@@ -73,13 +60,28 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
         winRate,
         avgTrade,
         isPositive: totalPnL >= 0,
-        changeFromPrev,
+        changeFromPrev: null as number | null,
       }
     })
 
-    console.log('[v0] Monthly data calculated:', data.length, 'months')
-    return data
-  }, [trades])
+    // Second pass: calculate change from previous month (avoids referencing uninitialized data)
+    const dataWithChanges: MonthlyData[] = baseData.map((item, index) => {
+      if (index === 0) return item
+      
+      const prevMonthPnL = baseData[index - 1].totalPnL
+      let changeFromPrev: number | null = null
+      
+      if (prevMonthPnL !== 0) {
+        changeFromPrev = ((item.totalPnL - prevMonthPnL) / Math.abs(prevMonthPnL)) * 100
+      } else if (item.totalPnL !== 0) {
+        changeFromPrev = 100
+      }
+      
+      return { ...item, changeFromPrev }
+    })
+
+    return dataWithChanges
+  }, [safeTrades])
 
   // Calculate overall summary
   const summary = useMemo(() => {
@@ -141,106 +143,108 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
   }
 
   return (
-    <div className="space-y-4">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 rounded-lg p-3 border border-emerald-200/50 dark:border-emerald-800/30">
-          <div className="flex items-center gap-2 mb-1">
-            <DollarSign className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
+    <div className="space-y-3">
+      {/* Summary Cards - Compact */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 rounded-md p-2.5 border border-emerald-200/50 dark:border-emerald-800/30">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <DollarSign className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
               6-Month P&L
             </span>
           </div>
-          <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+          <div className="text-base font-bold text-emerald-700 dark:text-emerald-300">
             {summary.total >= 0 ? '+' : ''}${summary.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 rounded-lg p-3 border border-blue-200/50 dark:border-blue-800/30">
-          <div className="flex items-center gap-2 mb-1">
-            <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 rounded-md p-2.5 border border-blue-200/50 dark:border-blue-800/30">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Activity className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+            <span className="text-[9px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
               Total Trades
             </span>
           </div>
-          <div className="text-xl font-bold text-blue-700 dark:text-blue-300">{summary.totalTrades}</div>
+          <div className="text-base font-bold text-blue-700 dark:text-blue-300">{summary.totalTrades}</div>
         </div>
       </div>
 
-      {/* Bar Chart */}
-      <div className="bg-card/50 rounded-xl border border-border/50 p-4">
-        <div className="mb-3">
-          <div className="flex items-center justify-between mb-1">
-            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Monthly Performance</h4>
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+      {/* Bar Chart - Compact */}
+      <div className="bg-card/50 rounded-lg border border-border/50 p-3">
+        <div className="mb-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Monthly Performance</h4>
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+              <div className="flex items-center gap-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>Profit</span>
               </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-rose-500" />
+              <div className="flex items-center gap-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 <span>Loss</span>
               </div>
             </div>
           </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <XAxis dataKey="monthShort" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-            <YAxis
-              tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.1)' }} />
-            <Bar dataKey="totalPnL" radius={[6, 6, 0, 0]}>
-              {monthlyData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.isPositive ? '#10b981' : '#f43f5e'}
-                  opacity={0.85}
-                  className="transition-opacity hover:opacity-100"
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="h-[120px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthlyData} margin={{ top: 5, right: 5, left: 5, bottom: 0 }}>
+              <XAxis dataKey="monthShort" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+              <YAxis
+                tick={{ fontSize: 8, fill: 'hsl(var(--muted-foreground))' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.1)' }} />
+              <Bar dataKey="totalPnL" radius={[4, 4, 0, 0]}>
+                {monthlyData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.isPositive ? '#10b981' : '#f43f5e'}
+                    opacity={0.85}
+                    className="transition-opacity hover:opacity-100"
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      {/* Monthly Breakdown List */}
-      <div className="space-y-2">
+      {/* Monthly Breakdown List - Compact */}
+      <div className="space-y-1.5">
         {monthlyData.slice(-3).reverse().map((month, idx) => (
           <div
             key={month.month}
-            className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group"
+            className="flex items-center justify-between p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors group"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className={cn(
-                'w-10 h-10 rounded-lg flex items-center justify-center',
+                'w-8 h-8 rounded-md flex items-center justify-center',
                 month.isPositive
                   ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                   : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
               )}>
-                <Calendar className="w-5 h-5" />
+                <Calendar className="w-3.5 h-3.5" />
               </div>
               <div>
-                <div className="text-sm font-bold text-foreground">{month.monthShort}</div>
-                <div className="text-[10px] text-muted-foreground">{month.tradeCount} trades</div>
+                <div className="text-xs font-bold text-foreground">{month.monthShort}</div>
+                <div className="text-[9px] text-muted-foreground">{month.tradeCount} trades</div>
               </div>
             </div>
             <div className="text-right">
               <div className={cn(
-                'text-sm font-bold flex items-center gap-1',
+                'text-xs font-bold flex items-center gap-0.5',
                 month.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
               )}>
-                {month.isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                {month.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 {month.isPositive ? '+' : ''}${Math.abs(month.totalPnL).toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
               {month.changeFromPrev !== null && (
                 <div className={cn(
-                  'text-[10px] font-medium',
+                  'text-[9px] font-medium',
                   month.changeFromPrev >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                 )}>
                   {month.changeFromPrev >= 0 ? '↑' : '↓'} {Math.abs(month.changeFromPrev).toFixed(1)}%
@@ -251,18 +255,18 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
         ))}
       </div>
 
-      {/* Consistency Indicator */}
-      <div className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg p-3 border border-border/30">
+      {/* Consistency Indicator - Compact */}
+      <div className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-md p-2.5 border border-border/30">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            <div className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">
               Consistency Rate
             </div>
-            <div className="text-lg font-bold text-foreground">
+            <div className="text-base font-bold text-foreground">
               {summary.consistencyRate.toFixed(0)}%
             </div>
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-[10px] text-muted-foreground">
             {summary.profitableMonths}/{monthlyData.length} profitable
           </div>
         </div>

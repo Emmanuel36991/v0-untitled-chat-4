@@ -72,7 +72,7 @@ import { usePnLDisplay } from "@/hooks/use-pnl-display"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
 import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 import { PremiumCalendarView } from "@/components/dashboard/premium-calendar-view"
-import { MonthlyProgressOverview } from "@/components/dashboard/monthly-progress-overview"
+import { TradingConsistencyOverview } from "@/components/dashboard/trading-consistency-overview"
 import {
   format,
   subDays,
@@ -824,11 +824,12 @@ export default function DashboardPage() {
         </div>
 
         {/* --- Main Content Area --- */}
-        <div className="grid grid-cols-1 xl:grid-cols-11 gap-8 max-w-[1600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Main Chart Section (Takes 2/3 width) */}
+          {/* Left Column: Equity Chart (2/3 = 66%) */}
+          <div className="lg:col-span-2 space-y-6">
           <Card 
-              className="xl:col-span-7 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
+              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
               data-tutorial="performance-chart"
             >
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
@@ -939,8 +940,25 @@ export default function DashboardPage() {
             </CardContent>
             </Card>
 
-          {/* Side Panel: Strategy & Calendar */}
-          <div className="xl:col-span-4 space-y-6 flex flex-col">
+            {/* Yearly Consistency Heatmap - GitHub Style */}
+            <Card className="border-0 shadow-lg dark:shadow-2xl bg-white dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">
+              <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-emerald-500" />
+                  Yearly Consistency
+                </CardTitle>
+                <CardDescription>
+                  Trading activity over the past 365 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <YearlyConsistencyHeatmap trades={trades} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column: Strategy & Monthly Progress (3/12 = 25%) */}
+          <div className="lg:col-span-3 space-y-6 flex flex-col">
             
             {/* Strategy Donut */}
             <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">

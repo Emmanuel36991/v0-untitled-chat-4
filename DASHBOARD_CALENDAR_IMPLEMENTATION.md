@@ -39,7 +39,7 @@ Successfully integrated a compact performance calendar component above the equit
 - **Metric Badges**: P&L amount displayed directly on profitable/loss days
 
 ### Layout Structure
-```
+\`\`\`
 ┌────────────────────────────────────────────┐
 │  Performance Calendar (Feb 2025)           │
 │  ┌───┬───┬───┬───┬───┬───┬───┐           │
@@ -56,7 +56,7 @@ Successfully integrated a compact performance calendar component above the equit
 │  │     [Area/Bar Chart]                 │ │
 │  └──────────────────────────────────────┘ │
 └────────────────────────────────────────────┘
-```
+\`\`\`
 
 ## Key Benefits
 
@@ -75,7 +75,7 @@ Successfully integrated a compact performance calendar component above the equit
 ## Technical Implementation
 
 ### Color Intensity Algorithm
-```typescript
+\`\`\`typescript
 const getIntensityClass = (pnl: number, maxPnl: number) => {
   const intensity = Math.abs(pnl) / maxPnl
   if (intensity > 0.75) return "opacity-100"
@@ -83,7 +83,7 @@ const getIntensityClass = (pnl: number, maxPnl: number) => {
   if (intensity > 0.25) return "opacity-60"
   return "opacity-40"
 }
-```
+\`\`\`
 
 ### Data Processing
 - Filters trades by calendar day using `date-fns` library
@@ -100,12 +100,12 @@ const getIntensityClass = (pnl: number, maxPnl: number) => {
 ## Integration Details
 
 ### Props Interface
-```typescript
+\`\`\`typescript
 interface CompactPerformanceCalendarProps {
   trades: Trade[]      // Full trade dataset
   className?: string   // Optional styling override
 }
-```
+\`\`\`
 
 ### Dependencies
 - `date-fns`: Date manipulation and formatting

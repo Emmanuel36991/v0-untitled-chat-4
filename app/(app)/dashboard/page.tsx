@@ -72,6 +72,7 @@ import { usePnLDisplay } from "@/hooks/use-pnl-display"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
 import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 import { PremiumCalendarView } from "@/components/dashboard/premium-calendar-view"
+import { MonthlyProgressOverview } from "@/components/dashboard/monthly-progress-overview"
 import {
   format,
   subDays,
@@ -823,11 +824,11 @@ export default function DashboardPage() {
         </div>
 
         {/* --- Main Content Area --- */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-11 gap-8 max-w-[1600px]">
           
           {/* Main Chart Section (Takes 2/3 width) */}
           <Card 
-              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
+              className="xl:col-span-7 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
               data-tutorial="performance-chart"
             >
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
@@ -852,10 +853,10 @@ export default function DashboardPage() {
             
             <CardContent className={cn(
               "pt-6 pl-0",
-              chartViewMode === 'calendar' ? "h-auto pb-6" : "flex-1 min-h-[420px]"
+              chartViewMode === 'calendar' ? "h-auto pb-3" : "flex-1 min-h-[420px]"
             )}>
               {chartViewMode === 'calendar' ? (
-                <div className="px-6">
+                <div className="px-6 pb-3">
                   <PremiumCalendarView trades={filteredTrades} />
                 </div>
               ) : (
@@ -939,7 +940,7 @@ export default function DashboardPage() {
             </Card>
 
           {/* Side Panel: Strategy & Calendar */}
-          <div className="space-y-6 flex flex-col">
+          <div className="xl:col-span-4 space-y-6 flex flex-col">
             
             {/* Strategy Donut */}
             <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">
@@ -998,16 +999,16 @@ export default function DashboardPage() {
                </CardContent>
             </Card>
 
-            {/* Calendar Heatmap Preview */}
+            {/* Monthly Progress Overview */}
             <Card className="border-0 shadow-lg dark:shadow-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
               <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
                 <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                  <span>Consistency Map</span>
-                  <span className="text-xs font-normal bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-foreground">{format(new Date(), "MMMM")}</span>
+                  <span>Monthly Progress</span>
+                  <span className="text-xs font-normal bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-foreground">Last 6 Months</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <CalendarHeatmap trades={filteredTrades} currentDate={new Date()} />
+                <MonthlyProgressOverview trades={filteredTrades} />
               </CardContent>
             </Card>
           </div>

@@ -72,8 +72,7 @@ import { usePnLDisplay } from "@/hooks/use-pnl-display"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
 import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 import { PremiumCalendarView } from "@/components/dashboard/premium-calendar-view"
-import { MonthlyProgressOverview } from "@/components/dashboard/monthly-progress-overview"
-import { YearlyConsistencyHeatmap } from "@/components/dashboard/yearly-consistency-heatmap"
+import { TradingConsistencyOverview } from "@/components/dashboard/trading-consistency-overview"
 import {
   format,
   subDays,
@@ -825,10 +824,10 @@ export default function DashboardPage() {
         </div>
 
         {/* --- Main Content Area --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Left Column: Equity & Calendar (9/12 = 75%) */}
-          <div className="lg:col-span-9 space-y-6">
+          {/* Left Column: Equity Chart (2/3 = 66%) */}
+          <div className="lg:col-span-2 space-y-6">
           <Card 
               className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
               data-tutorial="performance-chart"

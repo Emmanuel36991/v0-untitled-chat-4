@@ -148,7 +148,7 @@ Create a premium, data-focused trading analytics dashboard that combines profess
 - **Transition**: All properties 200ms ease
 
 **Intensity Mapping** (P&L-based):
-```
+\`\`\`
 No Activity:   bg-zinc-900/40  border-zinc-800/60
 Profit Level 1: bg-emerald-500/30  border-emerald-700  (Low profit)
 Profit Level 2: bg-emerald-500/50  border-emerald-600
@@ -159,7 +159,7 @@ Loss Level 1:   bg-rose-500/30  border-rose-700  (Low loss)
 Loss Level 2:   bg-rose-500/50  border-rose-600
 Loss Level 3:   bg-rose-500/70  border-rose-500
 Loss Level 4:   bg-rose-500/90  border-rose-400  shadow-rose-500/20 (High loss)
-```
+\`\`\`
 
 **Interactive States**:
 - **Hover**: `scale-110 z-10 shadow-2xl` with smooth transition
@@ -197,14 +197,14 @@ Loss Level 4:   bg-rose-500/90  border-rose-400  shadow-rose-500/20 (High loss)
 ## Component Specifications
 
 ### Metric Cards
-```tsx
+\`\`\`tsx
 Structure:
 - Icon (top-left, 20x20px, in circular bg)
 - Label (small, uppercase, muted color)
 - Value (large, bold, mono font for numbers)
 - Trend Badge (percentage with arrow icon)
 - Mini Chart (sparkline, 40px height)
-```
+\`\`\`
 
 **Styling**:
 - Background: Gradient overlay based on metric type

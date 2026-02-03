@@ -97,9 +97,9 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col">
       {/* Header with Month Navigation */}
-      <div className="flex items-center justify-between mb-6 px-1">
+      <div className="flex items-center justify-between mb-4 px-1">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-primary" />
@@ -164,13 +164,13 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
       </div>
 
       {/* Calendar Grid */}
-      <div className="flex-1 bg-card/50 rounded-xl border border-border/50 p-4">
+      <div className="bg-card/50 rounded-xl border border-border/50 p-4">
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-3 mb-4">
+        <div className="grid grid-cols-7 gap-2.5 mb-3">
           {weekDays.map(day => (
             <div
               key={day}
-              className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wide py-2"
+              className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wide py-1.5"
             >
               {day}
             </div>
@@ -178,7 +178,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-3">
+        <div className="grid grid-cols-7 gap-2.5">
           {calendarData.map((day, index) => {
             const isCurrentDay = isToday(day.date)
             const hasTrades = day.trades.length > 0
@@ -187,7 +187,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
               <div
                 key={index}
                 className={cn(
-                  "group relative rounded-lg border transition-all duration-200 min-h-[85px] flex flex-col",
+                  "group relative rounded-lg border transition-all duration-200 min-h-[75px] flex flex-col",
                   day.isCurrentMonth
                     ? "border-border/50 hover:border-primary/50 hover:shadow-md cursor-pointer"
                     : "border-transparent opacity-40",
@@ -271,17 +271,17 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-4 text-xs text-muted-foreground">
+      <div className="flex items-center justify-center gap-6 mt-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-emerald-500/20 border border-emerald-500/30" />
+          <div className="w-3.5 h-3.5 rounded bg-emerald-500/20 border border-emerald-500/30" />
           <span>Profitable Day</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-rose-500/20 border border-rose-500/30" />
+          <div className="w-3.5 h-3.5 rounded bg-rose-500/20 border border-rose-500/30" />
           <span>Loss Day</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded bg-gray-200 dark:bg-gray-800 border border-border" />
+          <div className="w-3.5 h-3.5 rounded bg-gray-200 dark:bg-gray-800 border border-border" />
           <span>No Trades</span>
         </div>
       </div>

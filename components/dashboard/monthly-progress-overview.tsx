@@ -22,18 +22,29 @@ interface MonthlyData {
   changeFromPrev: number | null
 }
 
-export function MonthlyProgressOverview({ trades }: MonthlyProgressOverviewProps) {
+export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverviewProps) {
+  console.log('[v0] MonthlyProgressOverview rendering with trades:', trades?.length || 0)
+  
   // Calculate monthly metrics for the last 6 months
   const monthlyData = useMemo(() => {
+    console.log('[v0] Calculating monthly data...')
+    
+    if (!trades || trades.length === 0) {
+      console.log('[v0] No trades available, returning empty data')
+      return []
+    }
+    
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
     const months = eachMonthOfInterval({ start: sixMonthsAgo, end: now })
+    console.log('[v0] Months to analyze:', months.length)
 
     const data: MonthlyData[] = months.map((monthDate, index) => {
       const monthStart = startOfMonth(monthDate)
       const monthEnd = endOfMonth(monthDate)
 
       const monthTrades = trades.filter((trade) => {
+        if (!trade.entry_date) return false
         const tradeDate = new Date(trade.entry_date)
         return tradeDate >= monthStart && tradeDate <= monthEnd
       })
@@ -66,6 +77,7 @@ export function MonthlyProgressOverview({ trades }: MonthlyProgressOverviewProps
       }
     })
 
+    console.log('[v0] Monthly data calculated:', data.length, 'months')
     return data
   }, [trades])
 
@@ -115,6 +127,17 @@ export function MonthlyProgressOverview({ trades }: MonthlyProgressOverviewProps
       )
     }
     return null
+  }
+
+  // Show empty state if no data
+  if (monthlyData.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <Calendar className="w-12 h-12 text-muted-foreground/50 mb-3" />
+        <p className="text-sm font-medium text-muted-foreground">No trading data available</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">Start tracking trades to see monthly progress</p>
+      </div>
+    )
   }
 
   return (

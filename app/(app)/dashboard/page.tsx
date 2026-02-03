@@ -823,11 +823,11 @@ export default function DashboardPage() {
         </div>
 
         {/* --- Main Content Area --- */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-11 gap-8 max-w-[1600px]">
           
           {/* Main Chart Section (Takes 2/3 width) */}
           <Card 
-              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
+              className="xl:col-span-7 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
               data-tutorial="performance-chart"
             >
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
@@ -939,7 +939,7 @@ export default function DashboardPage() {
             </Card>
 
           {/* Side Panel: Strategy & Calendar */}
-          <div className="space-y-6 flex flex-col">
+          <div className="xl:col-span-4 space-y-6 flex flex-col">
             
             {/* Strategy Donut */}
             <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">

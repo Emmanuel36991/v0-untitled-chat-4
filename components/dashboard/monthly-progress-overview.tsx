@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 interface MonthlyProgressOverviewProps {
-  trades: Trade[]
+  trades?: Trade[]
 }
 
 interface MonthlyData {
@@ -23,47 +23,34 @@ interface MonthlyData {
 }
 
 export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverviewProps) {
-  console.log('[v0] MonthlyProgressOverview rendering with trades:', trades?.length || 0)
+  // Ensure trades is always an array
+  const safeTrades = Array.isArray(trades) ? trades : []
   
-  // Calculate monthly metrics for the last 6 months
+  // Calculate monthly metrics for the last 6 months using safe Array.map approach
   const monthlyData = useMemo(() => {
-    console.log('[v0] Calculating monthly data...')
-    
-    if (!trades || trades.length === 0) {
-      console.log('[v0] No trades available, returning empty data')
+    if (safeTrades.length === 0) {
       return []
     }
     
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
     const months = eachMonthOfInterval({ start: sixMonthsAgo, end: now })
-    console.log('[v0] Months to analyze:', months.length)
 
-    const data: MonthlyData[] = months.map((monthDate, index) => {
+    // First pass: calculate base metrics for each month
+    const baseData = months.map((monthDate) => {
       const monthStart = startOfMonth(monthDate)
       const monthEnd = endOfMonth(monthDate)
 
-      const monthTrades = trades.filter((trade) => {
-        if (!trade.entry_date) return false
-        const tradeDate = new Date(trade.entry_date)
+      const monthTrades = safeTrades.filter((trade) => {
+        if (!trade?.date) return false
+        const tradeDate = new Date(trade.date)
         return tradeDate >= monthStart && tradeDate <= monthEnd
       })
 
-      const totalPnL = monthTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0)
-      const wins = monthTrades.filter((t) => t.outcome === 'win').length
+      const totalPnL = monthTrades.reduce((sum, trade) => sum + (trade?.pnl || 0), 0)
+      const wins = monthTrades.filter((t) => t?.outcome === 'win').length
       const winRate = monthTrades.length > 0 ? (wins / monthTrades.length) * 100 : 0
       const avgTrade = monthTrades.length > 0 ? totalPnL / monthTrades.length : 0
-
-      // Calculate change from previous month
-      let changeFromPrev: number | null = null
-      if (index > 0) {
-        const prevMonthPnL = data[index - 1].totalPnL
-        if (prevMonthPnL !== 0) {
-          changeFromPrev = ((totalPnL - prevMonthPnL) / Math.abs(prevMonthPnL)) * 100
-        } else if (totalPnL !== 0) {
-          changeFromPrev = 100
-        }
-      }
 
       return {
         month: format(monthDate, 'MMMM yyyy'),
@@ -73,13 +60,28 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
         winRate,
         avgTrade,
         isPositive: totalPnL >= 0,
-        changeFromPrev,
+        changeFromPrev: null as number | null,
       }
     })
 
-    console.log('[v0] Monthly data calculated:', data.length, 'months')
-    return data
-  }, [trades])
+    // Second pass: calculate change from previous month (avoids referencing uninitialized data)
+    const dataWithChanges: MonthlyData[] = baseData.map((item, index) => {
+      if (index === 0) return item
+      
+      const prevMonthPnL = baseData[index - 1].totalPnL
+      let changeFromPrev: number | null = null
+      
+      if (prevMonthPnL !== 0) {
+        changeFromPrev = ((item.totalPnL - prevMonthPnL) / Math.abs(prevMonthPnL)) * 100
+      } else if (item.totalPnL !== 0) {
+        changeFromPrev = 100
+      }
+      
+      return { ...item, changeFromPrev }
+    })
+
+    return dataWithChanges
+  }, [safeTrades])
 
   // Calculate overall summary
   const summary = useMemo(() => {
@@ -185,28 +187,30 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
           </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-            <XAxis dataKey="monthShort" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-            <YAxis
-              tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.1)' }} />
-            <Bar dataKey="totalPnL" radius={[6, 6, 0, 0]}>
-              {monthlyData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.isPositive ? '#10b981' : '#f43f5e'}
-                  opacity={0.85}
-                  className="transition-opacity hover:opacity-100"
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="h-[180px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <XAxis dataKey="monthShort" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+              <YAxis
+                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.1)' }} />
+              <Bar dataKey="totalPnL" radius={[6, 6, 0, 0]}>
+                {monthlyData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.isPositive ? '#10b981' : '#f43f5e'}
+                    opacity={0.85}
+                    className="transition-opacity hover:opacity-100"
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Monthly Breakdown List */}

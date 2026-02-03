@@ -97,7 +97,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-2.5">
       {/* Header with Month Navigation */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-4">
@@ -164,9 +164,9 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
       </div>
 
       {/* Calendar Grid */}
-      <div className="bg-card/50 rounded-xl border border-border/50 p-3">
+      <div className="bg-card/50 rounded-xl border border-border/50 p-2.5">
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-2 mb-1.5">
           {weekDays.map(day => (
             <div
               key={day}
@@ -187,7 +187,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
               <div
                 key={index}
                 className={cn(
-                  "group relative rounded-lg border transition-all duration-200 min-h-[68px] flex flex-col",
+                  "group relative rounded-lg border transition-all duration-200 min-h-[64px] flex flex-col",
                   day.isCurrentMonth
                     ? "border-border/50 hover:border-primary/50 hover:shadow-md cursor-pointer"
                     : "border-transparent opacity-40",

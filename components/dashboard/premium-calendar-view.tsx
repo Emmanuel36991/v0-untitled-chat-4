@@ -166,11 +166,11 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
       {/* Calendar Grid */}
       <div className="flex-1 bg-card/50 rounded-xl border border-border/50 p-4">
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-2 mb-3">
+        <div className="grid grid-cols-7 gap-3 mb-4">
           {weekDays.map(day => (
             <div
               key={day}
-              className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider py-2"
+              className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wide py-2"
             >
               {day}
             </div>
@@ -178,7 +178,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-3">
           {calendarData.map((day, index) => {
             const isCurrentDay = isToday(day.date)
             const hasTrades = day.trades.length > 0
@@ -187,17 +187,17 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
               <div
                 key={index}
                 className={cn(
-                  "group relative aspect-square rounded-lg border transition-all duration-200",
+                  "group relative rounded-lg border transition-all duration-200 min-h-[85px] flex flex-col",
                   day.isCurrentMonth
                     ? "border-border/50 hover:border-primary/50 hover:shadow-md cursor-pointer"
                     : "border-transparent opacity-40",
                   isCurrentDay && "ring-2 ring-primary ring-offset-2 ring-offset-background",
-                  hasTrades && "hover:scale-105"
+                  hasTrades && "hover:scale-[1.02]"
                 )}
                 style={hasTrades ? getPnlStyle(day.pnl) : undefined}
               >
                 {/* Date Number */}
-                <div className="absolute top-1.5 left-2 text-xs font-medium">
+                <div className="absolute top-2 left-2.5 text-sm font-semibold">
                   <span className={cn(
                     day.isCurrentMonth ? "text-foreground" : "text-muted-foreground",
                     isCurrentDay && "text-primary font-bold"
@@ -208,8 +208,8 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
 
                 {/* Trade Count Badge */}
                 {hasTrades && (
-                  <div className="absolute top-1.5 right-2">
-                    <div className="bg-background/80 backdrop-blur-sm rounded-full px-1.5 py-0.5 text-[10px] font-semibold border border-border/50">
+                  <div className="absolute top-2 right-2.5">
+                    <div className="bg-background/90 backdrop-blur-sm rounded-full px-2 py-0.5 text-[11px] font-bold border border-border/50 shadow-sm">
                       {day.trades.length}
                     </div>
                   </div>
@@ -217,19 +217,19 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
 
                 {/* P&L Display */}
                 {hasTrades && (
-                  <div className="absolute inset-x-0 bottom-0 p-2 flex flex-col items-center gap-0.5">
+                  <div className="absolute inset-x-0 bottom-0 p-2 flex flex-col items-center gap-1">
                     <div className={cn(
-                      "text-xs font-bold flex items-center gap-0.5",
+                      "text-sm font-bold flex items-center gap-1",
                       day.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                     )}>
                       {day.pnl >= 0 ? (
-                        <TrendingUp className="w-3 h-3" />
+                        <TrendingUp className="w-3.5 h-3.5" />
                       ) : (
-                        <TrendingDown className="w-3 h-3" />
+                        <TrendingDown className="w-3.5 h-3.5" />
                       )}
                       ${Math.abs(day.pnl).toLocaleString()}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[11px] text-muted-foreground font-medium">
                       {day.winRate.toFixed(0)}% WR
                     </div>
                   </div>

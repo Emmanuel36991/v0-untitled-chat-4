@@ -850,9 +850,12 @@ export default function DashboardPage() {
               </Tabs>
             </CardHeader>
             
-            <CardContent className="flex-1 min-h-[420px] pt-6 pl-0">
+            <CardContent className={cn(
+              "flex-1 pt-6 pl-0",
+              chartViewMode === 'calendar' ? "min-h-[620px]" : "min-h-[420px]"
+            )}>
               {chartViewMode === 'calendar' ? (
-                <div className="h-full px-6">
+                <div className="h-full px-6 py-2">
                   <PremiumCalendarView trades={filteredTrades} />
                 </div>
               ) : (

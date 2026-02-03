@@ -71,6 +71,7 @@ import { cn } from "@/lib/utils"
 import { usePnLDisplay } from "@/hooks/use-pnl-display"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
 import { calculateInstrumentPnL } from "@/types/instrument-calculations"
+import { PremiumCalendarView } from "@/components/dashboard/premium-calendar-view"
 import {
   format,
   subDays,
@@ -826,29 +827,38 @@ export default function DashboardPage() {
           
           {/* Main Chart Section (Takes 2/3 width) */}
           <Card 
-            className="xl:col-span-2 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
-            data-tutorial="performance-chart"
-          >
-            <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
-              <div className="space-y-1">
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary" />
-                  Equity Curve
-                </CardTitle>
-                <CardDescription>
-                  Performance analysis over selected period
-                </CardDescription>
-              </div>
+              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
+              data-tutorial="performance-chart"
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Equity Curve
+                  </CardTitle>
+                  <CardDescription>
+                    Performance analysis over selected period
+                  </CardDescription>
+                </div>
               
               <Tabs value={chartViewMode} onValueChange={(v: any) => setChartViewMode(v)} className="w-auto">
                 <TabsList className="h-9 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <TabsTrigger value="cumulative" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">Growth</TabsTrigger>
                   <TabsTrigger value="daily" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">Daily P&L</TabsTrigger>
+                  <TabsTrigger value="calendar" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm">Calendar</TabsTrigger>
                 </TabsList>
               </Tabs>
             </CardHeader>
             
-            <CardContent className="flex-1 min-h-[420px] pt-6 pl-0">
+            <CardContent className={cn(
+              "pt-6 pl-0",
+              chartViewMode === 'calendar' ? "h-auto pb-6" : "flex-1 min-h-[420px]"
+            )}>
+              {chartViewMode === 'calendar' ? (
+                <div className="px-6">
+                  <PremiumCalendarView trades={filteredTrades} />
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
                 {chartViewMode === 'cumulative' ? (
                   <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
@@ -924,8 +934,9 @@ export default function DashboardPage() {
                   </BarChart>
                 )}
               </ResponsiveContainer>
+              )}
             </CardContent>
-          </Card>
+            </Card>
 
           {/* Side Panel: Strategy & Calendar */}
           <div className="space-y-6 flex flex-col">

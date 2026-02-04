@@ -708,16 +708,16 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0B0D12]">
         <div className="text-center space-y-6 max-w-md p-8 bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800">
-           <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-             <AlertTriangle className="w-8 h-8" />
-           </div>
-           <div>
-             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Connection Issue</h2>
-             <p className="text-muted-foreground text-sm leading-relaxed">{error}</p>
-           </div>
-           <Button onClick={() => loadTrades()} className="w-full rounded-xl h-11">
-             <RefreshCw className="mr-2 h-4 w-4" /> Retry Connection
-           </Button>
+          <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Connection Issue</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">{error}</p>
+          </div>
+          <Button onClick={() => loadTrades()} className="w-full rounded-xl h-11">
+            <RefreshCw className="mr-2 h-4 w-4" /> Retry Connection
+          </Button>
         </div>
       </div>
     );
@@ -726,71 +726,64 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-[#0B0D12] text-foreground transition-colors duration-300">
       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-        
         {/* --- Top Bar: Header & Controls --- */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
           <div className="space-y-1 relative">
-             <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-               <span className="flex items-center text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
-                 <Flame className="w-3 h-3 mr-1" /> {getGreeting()}
-               </span>
-               <span>•</span>
-               <span>{format(new Date(), "MMMM dd, yyyy")}</span>
-             </div>
-             
-             <AnimatedTitle className="text-3xl sm:text-4xl">Dashboard Overview</AnimatedTitle>
-             
-             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-               <BrainCircuit className="w-4 h-4 text-indigo-500" />
-               <span className="italic text-gray-500 dark:text-gray-400">"{MOTIVATIONAL_QUOTES[quoteIndex]}"</span>
-             </div>
+            <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              <span className="flex items-center text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                <Flame className="w-3 h-3 mr-1" /> {getGreeting()}
+              </span>
+              <span>{"•"}</span>
+              <span>{format(new Date(), "MMMM dd, yyyy")}</span>
+            </div>
+            <AnimatedTitle className="text-3xl sm:text-4xl">Dashboard Overview</AnimatedTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
+              <BrainCircuit className="w-4 h-4 text-indigo-500" />
+              <span className="italic text-gray-500 dark:text-gray-400">{`"${MOTIVATIONAL_QUOTES[quoteIndex]}"`}</span>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-             <div className="bg-white dark:bg-gray-900/60 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center gap-1 backdrop-blur-sm">
-                {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
-                  <Button
-                    key={period}
-                    variant={selectedPeriod === period ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setSelectedPeriod(period)}
-                    className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
-                      selectedPeriod === period 
-                        ? "bg-primary text-primary-foreground shadow-sm" 
-                        : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800"
-                    )}
-                  >
-                    {period.toUpperCase()}
-                  </Button>
-                ))}
-             </div>
-             
-             <Separator orientation="vertical" className="h-8 hidden xl:block mx-1 bg-gray-200 dark:bg-gray-800" />
-
-             <div className="flex items-center gap-2">
-               <PnLDisplaySelector currentFormat={displayFormat} onFormatChange={setDisplayFormat} />
-               
-               <Button
-                 variant="outline"
-                 size="icon"
-                 onClick={() => loadTrades(false)}
-                 className={cn("rounded-xl h-10 w-10 border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800", isRefreshing && "animate-spin text-primary")}
-                 title="Refresh Data"
-               >
-                 <RefreshCw className="h-4 w-4" />
-               </Button>
-
-               <Button 
-                 data-tutorial="add-trade-btn"
-                 className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.02]" 
-                 asChild
-               >
-                 <Link href="/add-trade">
-                   <Plus className="mr-2 h-4 w-4" /> New Trade
-                 </Link>
-               </Button>
-             </div>
+            <div className="bg-white dark:bg-gray-900/60 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center gap-1 backdrop-blur-sm">
+              {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
+                <Button
+                  key={period}
+                  variant={selectedPeriod === period ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedPeriod(period)}
+                  className={cn(
+                    "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    selectedPeriod === period 
+                      ? "bg-primary text-primary-foreground shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800"
+                  )}
+                >
+                  {period.toUpperCase()}
+                </Button>
+              ))}
+            </div>
+            <Separator orientation="vertical" className="h-8 hidden xl:block mx-1 bg-gray-200 dark:bg-gray-800" />
+            <div className="flex items-center gap-2">
+              <PnLDisplaySelector currentFormat={displayFormat} onFormatChange={setDisplayFormat} />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => loadTrades(false)}
+                className={cn("rounded-xl h-10 w-10 border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800", isRefreshing && "animate-spin text-primary")}
+                title="Refresh Data"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button 
+                data-tutorial="add-trade-btn"
+                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.02]" 
+                asChild
+              >
+                <Link href="/add-trade">
+                  <Plus className="mr-2 h-4 w-4" /> New Trade
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 

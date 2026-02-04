@@ -451,7 +451,6 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(({ trades, currentDate 
 })
 
 // --- Main Dashboard Page ---
-
 export default function DashboardPage() {
   // State Management
   const [trades, setTrades] = useState<Trade[]>([])

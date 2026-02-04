@@ -461,7 +461,7 @@ export default function DashboardPage() {
   
   // UI Controls
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "ytd" | "all">("30d")
-  const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily">("cumulative")
+  const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily" | "calendar">("cumulative")
   const [quoteIndex, setQuoteIndex] = useState(0)
   
   // Custom Hooks
@@ -469,6 +469,28 @@ export default function DashboardPage() {
   const { displayFormat, setDisplayFormat } = usePnLDisplay()
 
   // --- Effects ---
+
+  // Load Sample Data
+  const loadSampleData = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/trades/sample', { method: 'POST' })
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to load sample data')
+      }
+      
+      console.log("[v0] Sample data loaded:", result.trades?.length || 0)
+      await loadTrades(false) // Reload trades after inserting sample data
+    } catch (err) {
+      console.error("Failed to load sample data:", err)
+      setError(err instanceof Error ? err.message : "Failed to load sample data")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   // Load Trades
   const loadTrades = useCallback(async (showLoadingState = true) => {
@@ -481,6 +503,7 @@ export default function DashboardPage() {
       // Simulate network delay for smoother UI
       await new Promise(resolve => setTimeout(resolve, 600)) 
       const fetchedTrades = await getTrades()
+      console.log("[v0] Dashboard - Fetched trades:", fetchedTrades?.length || 0)
       setTrades(fetchedTrades || [])
     } catch (err) {
       console.error("Dashboard: Failed to fetch trades", err)
@@ -614,11 +637,12 @@ export default function DashboardPage() {
 
   // Chart Data Preparation
   const chartData = useMemo(() => {
+    console.log("[v0] Chart Data - filteredTrades count:", filteredTrades.length)
     if (filteredTrades.length === 0) return []
     const sorted = [...filteredTrades].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     
     let cumulative = 0
-    return sorted.map(trade => {
+    const data = sorted.map(trade => {
       const { adjustedPnL } = calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size)
       cumulative += adjustedPnL
       return {
@@ -630,6 +654,8 @@ export default function DashboardPage() {
         outcome: trade.outcome
       }
     })
+    console.log("[v0] Chart Data - generated data points:", data.length, "Sample:", data[0])
+    return data
   }, [filteredTrades])
 
   // Strategy Data Preparation
@@ -829,7 +855,7 @@ export default function DashboardPage() {
           {/* Left Column: Equity Chart (2/3 = 66%) */}
           <div className="lg:col-span-2 space-y-6">
           <Card 
-              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800"
+              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800 h-[550px]"
               data-tutorial="performance-chart"
             >
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
@@ -854,15 +880,38 @@ export default function DashboardPage() {
             
             <CardContent className={cn(
               "pt-6 pl-0",
-              chartViewMode === 'calendar' ? "h-auto pb-3" : "flex-1 min-h-[420px]"
+              chartViewMode === 'calendar' ? "h-auto pb-3" : "h-[420px]"
             )}>
               {chartViewMode === 'calendar' ? (
                 <div className="px-6 pb-3">
                   <PremiumCalendarView trades={filteredTrades} />
                 </div>
+              ) : chartData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                  <BarChart3 className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Trading Data</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Start adding trades to see your performance analytics</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={loadSampleData}>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Load Sample Data
+                    </Button>
+                    <Link href="/add-trade">
+                      <Button size="sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Your First Trade
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
               ) : (
+              <div className="w-full h-full px-6">
               <ResponsiveContainer width="100%" height="100%">
-                {chartViewMode === 'cumulative' ? (
+                {(() => {
+                  console.log("[v0] Rendering chart - mode:", chartViewMode, "data points:", chartData.length)
+                  console.log("[v0] First 3 data entries:", chartData.slice(0, 3))
+                  console.log("[v0] Data keys:", chartData.length > 0 ? Object.keys(chartData[0]) : 'no data')
+                  return chartViewMode === 'cumulative' ? (
                   <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorPnLMain" x1="0" y1="0" x2="0" y2="1">
@@ -934,8 +983,10 @@ export default function DashboardPage() {
                       ))}
                     </Bar>
                   </BarChart>
-                )}
+                  ) : null
+                })()}
               </ResponsiveContainer>
+              </div>
               )}
             </CardContent>
             </Card>

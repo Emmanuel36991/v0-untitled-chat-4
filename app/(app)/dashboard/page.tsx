@@ -10,6 +10,8 @@ import {
   startOfMonth,
   endOfMonth,
   getDay,
+  addMonths,
+  subMonths,
 } from "date-fns"
 import { getTrades } from "@/app/actions/trade-actions"
 import { useUserConfig } from "@/hooks/use-user-config"
@@ -53,6 +55,7 @@ import {
   PieChart,
   Zap,
   ChevronRight,
+  ChevronLeft,
   Flame,
   Shield,
   Rocket,
@@ -499,6 +502,7 @@ export default function DashboardPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "ytd" | "all">("30d")
   const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily" | "calendar">("cumulative")
   const [quoteIndex, setQuoteIndex] = useState(0)
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date())
 
   // --- Load user config ---
   const { config: userConfig, isLoading: isConfigLoading } = useUserConfig()
@@ -900,9 +904,40 @@ export default function DashboardPage() {
               >
                 {chartViewMode === "calendar" ? (
                   <div className="px-6 pb-3">
+                    <div className="flex items-center justify-between mb-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+                        className="h-8 px-3"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold">
+                          {format(calendarMonth, "MMMM yyyy")}
+                        </h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setCalendarMonth(new Date())}
+                          className="h-7 px-2 text-xs"
+                        >
+                          Today
+                        </Button>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+                        className="h-8 px-3"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <CalendarHeatmap
                       trades={filteredTrades}
-                      currentDate={new Date()}
+                      currentDate={calendarMonth}
                     />
                   </div>
                 ) : chartData.length === 0 ? (

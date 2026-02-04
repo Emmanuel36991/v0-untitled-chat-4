@@ -1,5 +1,8 @@
 import { callGroqAPI, GROQ_MODEL, GROQ_FALLBACK_MODEL } from "@/lib/ai/groq"
-import { TRADING_SYSTEM_PROMPTS } from "@/lib/ai/trading-prompts"
+import { ENHANCED_TRADING_PROMPTS, buildDynamicSystemPrompt } from "@/lib/ai/enhanced-prompts"
+import { buildEnhancedContext } from "@/lib/ai/enhanced-context-builder"
+import { analyzeSentiment, getSentimentResponseModifier } from "@/lib/ai/sentiment-analyzer"
+import { getConversationMemory, summarizeConversationContext, saveConversationMessage, extractTopics } from "@/lib/ai/conversation-memory"
 import { createClient } from "@/lib/supabase/server"
 import { sanitizeInput } from "@/lib/security/input-validation"
 import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
@@ -35,18 +38,50 @@ export async function POST(req: Request) {
       })
     }
 
-    const { messages, context } = await req.json()
+    const { messages, context: pageContext, page } = await req.json()
 
-    console.log("[v0] Chat request received, messages:", messages?.length)
+    console.log("[v0] Chat request received, messages:", messages?.length, "page:", page)
 
     const sanitizedMessages = messages.map((msg: any) => ({
       role: msg.role,
       content: sanitizeInput(msg.content, { maxLength: 5000 }),
     }))
 
-    let systemPrompt = TRADING_SYSTEM_PROMPTS.base
-    if (context) {
-      systemPrompt += `\n\nCURRENT USER CONTEXT:\n${sanitizeInput(context, { maxLength: 1000 })}`
+    // Get the latest user message for sentiment analysis
+    const latestUserMessage = sanitizedMessages.filter((m: any) => m.role === "user").pop()
+    
+    // Analyze sentiment of user's message
+    const sentimentResult = latestUserMessage 
+      ? analyzeSentiment(latestUserMessage.content)
+      : null
+
+    // Build enhanced context with all user data (trades, psychology, strategies)
+    const [enhancedContext, conversationMemory] = await Promise.all([
+      buildEnhancedContext(),
+      getConversationMemory()
+    ])
+
+    // Build dynamic system prompt based on all context
+    const systemPrompt = buildDynamicSystemPrompt({
+      enhancedContext,
+      conversationMemory,
+      sentimentResult,
+      pageContext: pageContext ? sanitizeInput(pageContext, { maxLength: 1000 }) : undefined,
+      currentPage: page
+    })
+
+    console.log("[v0] Enhanced context built - Trades:", enhancedContext.tradingContext.performance.totalTrades)
+    console.log("[v0] Sentiment:", sentimentResult?.sentiment, "Urgency:", sentimentResult?.urgency)
+
+    // Save user message to conversation history (async, don't await)
+    if (latestUserMessage) {
+      const topics = extractTopics(latestUserMessage.content)
+      saveConversationMessage({
+        role: "user",
+        content: latestUserMessage.content,
+        sentiment: sentimentResult?.sentiment,
+        topics
+      }).catch(err => console.error("[v0] Error saving user message:", err))
     }
 
     try {

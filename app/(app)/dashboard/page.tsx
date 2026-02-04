@@ -700,7 +700,7 @@ export default function DashboardPage() {
           <div className="h-[450px] rounded-2xl bg-gray-200 dark:bg-gray-800 animate-pulse" />
         </div>
       </div>
-    )
+    );
   }
 
   // Error State
@@ -720,7 +720,7 @@ export default function DashboardPage() {
            </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -1224,5 +1224,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

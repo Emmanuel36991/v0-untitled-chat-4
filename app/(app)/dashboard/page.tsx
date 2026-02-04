@@ -939,22 +939,6 @@ export default function DashboardPage() {
               )}
             </CardContent>
             </Card>
-
-            {/* Yearly Consistency Heatmap - GitHub Style */}
-            <Card className="border-0 shadow-lg dark:shadow-2xl bg-white dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">
-              <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-emerald-500" />
-                  Yearly Consistency
-                </CardTitle>
-                <CardDescription>
-                  Trading activity over the past 365 days
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <YearlyConsistencyHeatmap trades={trades} />
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Column: Strategy & Monthly Progress (3/12 = 25%) */}
@@ -1015,19 +999,6 @@ export default function DashboardPage() {
                    })}
                  </div>
                </CardContent>
-            </Card>
-
-            {/* Monthly Progress Overview */}
-            <Card className="border-0 shadow-lg dark:shadow-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
-              <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                  <span>Monthly Progress</span>
-                  <span className="text-xs font-normal bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-foreground">Last 6 Months</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <MonthlyProgressOverview trades={filteredTrades} />
-              </CardContent>
             </Card>
           </div>
         </div>

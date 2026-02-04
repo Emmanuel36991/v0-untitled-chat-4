@@ -855,7 +855,10 @@ export default function DashboardPage() {
           {/* Equity Chart (Left, 2/3 width) */}
           <div className="lg:col-span-2 space-y-6">
             <Card
-              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800 h-[550px]"
+              className={cn(
+                "border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800",
+                chartViewMode === "calendar" ? "h-auto" : "h-[550px]"
+              )}
             >
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
                 <div className="space-y-1">

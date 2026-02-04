@@ -941,8 +941,8 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Right Column: Strategy & Monthly Progress (3/12 = 25%) */}
-          <div className="lg:col-span-3 space-y-6 flex flex-col">
+  {/* Right Column: Strategy & Monthly Progress (1/3 = 33%) */}
+  <div className="lg:col-span-1 space-y-6 flex flex-col">
             
             {/* Strategy Donut */}
             <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">

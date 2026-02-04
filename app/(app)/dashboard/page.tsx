@@ -11,6 +11,9 @@ import {
   endOfMonth,
   getDay,
 } from "date-fns"
+import { getTrades } from "@/app/actions/trade-actions"
+import { useUserConfig } from "@/hooks/use-user-config"
+import type { Trade } from "@/types"
 
 // --- UI Components (Shadcn) ---
 import {
@@ -88,19 +91,6 @@ import {
 // 1. DATA MODELS & TYPES
 // ==========================================
 
-interface Trade {
-  id: string
-  date: string
-  instrument: string
-  direction: "long" | "short"
-  entry_price: number
-  exit_price: number
-  size: number
-  outcome: "win" | "loss" | "be"
-  setup_name?: string
-  pnl?: number
-}
-
 interface MetricCardProps {
   title: string
   value: string | number
@@ -155,6 +145,10 @@ const MOTIVATIONAL_QUOTES = [
 // 3. LOGIC HELPERS
 // ==========================================
 
+/**
+ * Calculates the P&L of a trade based on instrument ticks/points.
+ * Embedded here to avoid external file dependency.
+ */
 const calculateInstrumentPnL = (
   instrument: string,
   direction: "long" | "short",
@@ -163,12 +157,14 @@ const calculateInstrumentPnL = (
   size: number
 ) => {
   let multiplier = 1
-  if (["NQ", "MNQ", "ES", "MES"].includes(instrument)) multiplier = 20
-  if (["EURUSD", "GBPUSD"].includes(instrument)) multiplier = 100000
+  // Simple multiplier logic for common instruments
+  if (["NQ", "MNQ", "ES", "MES"].includes(instrument)) multiplier = 20 // Approx futures multiplier (simplified)
+  if (["EURUSD", "GBPUSD"].includes(instrument)) multiplier = 100000 // Forex lot
   
   const diff = direction === "long" ? exit - entry : entry - exit
   const rawPnL = diff * size * multiplier
   
+  // Return adjusted PnL (rounded to 2 decimals)
   return { adjustedPnL: Math.round(rawPnL * 100) / 100 }
 }
 
@@ -193,6 +189,7 @@ const getGreeting = () => {
 // 4. SUB-COMPONENTS
 // ==========================================
 
+// --- Animated Title Component ---
 const AnimatedTitle = React.memo<{ children: React.ReactNode; className?: string }>(
   ({ children, className }) => (
     <h1
@@ -206,8 +203,8 @@ const AnimatedTitle = React.memo<{ children: React.ReactNode; className?: string
     </h1>
   )
 )
-AnimatedTitle.displayName = "AnimatedTitle"
 
+// --- Custom Chart Tooltip ---
 const CustomChartTooltip = ({ active, payload, label, currency = false }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -251,6 +248,7 @@ const CustomChartTooltip = ({ active, payload, label, currency = false }: any) =
   return null
 }
 
+// --- Metric Card Component ---
 const MetricCard = React.memo<MetricCardProps>(
   ({
     title,
@@ -327,6 +325,7 @@ const MetricCard = React.memo<MetricCardProps>(
           )}
         </div>
 
+        {/* Sparkline Background */}
         {trendData && trendData.length > 0 && (
           <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none">
             <ResponsiveContainer width="100%" height="100%">
@@ -353,8 +352,8 @@ const MetricCard = React.memo<MetricCardProps>(
     </Card>
   )
 )
-MetricCard.displayName = "MetricCard"
 
+// --- Calendar Heatmap Component (Fixed Logic) ---
 const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
   ({ trades, currentDate }) => {
     const daysInMonth = useMemo(() => {
@@ -362,11 +361,13 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
       const end = endOfMonth(currentDate)
       const days = eachDayOfInterval({ start, end })
       const startDay = getDay(start)
+      // Pad empty days at start of month
       return Array(startDay).fill(null).concat(days)
     }, [currentDate])
 
     const getDayData = (day: Date | null) => {
       if (!day) return null
+      // Use embedded PnL calculation if 'pnl' property is missing from raw trade
       const dayTrades = trades.filter((t) => isSameDay(new Date(t.date), day))
       const pnl = dayTrades.reduce((acc, t) => {
         const val =
@@ -400,8 +401,10 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
           <TooltipProvider delayDuration={100}>
             {daysInMonth.map((day, idx) => {
               const data = getDayData(day)
+              // Empty slot for padding
               if (!day) return <div key={`empty-${idx}`} className="aspect-square" />
 
+              // Determine color intensity
               let bgClass = "bg-gray-100 dark:bg-gray-800/50"
               let opacity = 1
 
@@ -409,11 +412,15 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
                 if (data.pnl > 0) bgClass = "bg-emerald-500"
                 else if (data.pnl < 0) bgClass = "bg-rose-500"
                 else bgClass = "bg-amber-400"
+                
+                // Dynamic opacity based on PnL size (capped at 1000 for max opacity)
                 opacity = Math.min(Math.abs(data.pnl) / 1000, 1) * 0.6 + 0.4
               }
 
               const CellContent = (
-                <div className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 dark:ring-offset-gray-950">
+                <div
+                  className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 dark:ring-offset-gray-950"
+                >
                   <div
                     className={cn(
                       "absolute inset-0 rounded-md transition-colors duration-300",
@@ -476,65 +483,54 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
     )
   }
 )
-CalendarHeatmap.displayName = "CalendarHeatmap"
 
 // ==========================================
 // 5. MAIN DASHBOARD COMPONENT
 // ==========================================
 
 export default function DashboardPage() {
+  // --- State ---
   const [trades, setTrades] = useState<Trade[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // UI State
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "ytd" | "all">("30d")
   const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily" | "calendar">("cumulative")
   const [quoteIndex, setQuoteIndex] = useState(0)
 
+  // --- Load user config ---
+  const { config: userConfig, isLoading: isConfigLoading } = useUserConfig()
+
+  // --- Load Trades from Database ---
   const loadTrades = useCallback(async (showLoading = true) => {
+    if (isConfigLoading) return
     if (showLoading) setIsLoading(true)
     else setIsRefreshing(true)
     setError(null)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800))
-      
-      const mockTrades: Trade[] = Array.from({ length: 50 }).map((_, i) => {
-        const isWin = Math.random() > 0.45
-        const direction = Math.random() > 0.5 ? "long" : "short"
-        const entryPrice = 15000 + Math.random() * 500
-        const pnl = isWin ? 50 + Math.random() * 200 : -50 - Math.random() * 150
-        const date = subDays(new Date(), Math.floor(Math.random() * 60)).toISOString()
-        
-        return {
-          id: `trade-${i}`,
-          date,
-          instrument: "NQ",
-          direction,
-          entry_price: parseFloat(entryPrice.toFixed(2)),
-          exit_price: parseFloat((entryPrice + (direction === 'long' ? 10 : -10)).toFixed(2)),
-          size: 1,
-          outcome: isWin ? "win" : "loss",
-          pnl: parseFloat(pnl.toFixed(2)),
-          setup_name: ["Trend Following", "Reversal", "Scalping", "Breakout"][Math.floor(Math.random() * 4)]
-        }
-      })
-      
-      setTrades(mockTrades)
+      // Simulate network delay for smoother UI
+      await new Promise((resolve) => setTimeout(resolve, 600))
+      const fetchedTrades = await getTrades()
+      console.log("[v0] Dashboard - Fetched trades:", fetchedTrades?.length || 0)
+      setTrades(fetchedTrades || [])
     } catch (err) {
-      console.error("Failed to load trades", err)
-      setError("Failed to load trading data")
+      console.error("Dashboard: Failed to fetch trades", err)
+      setError("Failed to synchronize trading data.")
+      setTrades([])
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [])
+  }, [isConfigLoading])
 
   useEffect(() => {
     loadTrades()
   }, [loadTrades])
 
+  // Cycle quotes
   useEffect(() => {
     const interval = setInterval(() => {
       setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)
@@ -542,11 +538,14 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [])
 
+  // --- Data Processing ---
+
+  // Filter by Date
   const filteredTrades = useMemo(() => {
     if (selectedPeriod === "all") return trades
 
     const now = new Date()
-    let startDate = subDays(now, 30)
+    let startDate = subDays(now, 30) // default
 
     if (selectedPeriod === "7d") startDate = subDays(now, 7)
     if (selectedPeriod === "90d") startDate = subDays(now, 90)
@@ -555,6 +554,7 @@ export default function DashboardPage() {
     return trades.filter((trade) => new Date(trade.date) >= startDate)
   }, [trades, selectedPeriod])
 
+  // Calculate Statistics
   const stats = useMemo(() => {
     if (filteredTrades.length === 0) {
       return {
@@ -573,6 +573,7 @@ export default function DashboardPage() {
       }
     }
 
+    // Ensure PnL exists on all trades
     const processedTrades = filteredTrades.map((trade) => {
       const pnl = trade.pnl !== undefined 
         ? trade.pnl 
@@ -598,12 +599,14 @@ export default function DashboardPage() {
     const lossPct = losses.length / totalTrades
     const expectancy = winPct * avgWin - lossPct * avgLoss
 
+    // Drawdown Calculation
     let peak = -Infinity
     let maxDrawdown = 0
     let runningPnL = 0
     let currentWinStreak = 0
     let maxWinStreak = 0
 
+    // Sort by date ascending for curve calculation
     const sortedByDate = [...processedTrades].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     )
@@ -638,6 +641,7 @@ export default function DashboardPage() {
     }
   }, [filteredTrades])
 
+  // Prepare Chart Data
   const chartData = useMemo(() => {
     if (filteredTrades.length === 0) return []
     const sorted = [...filteredTrades].sort(
@@ -661,6 +665,7 @@ export default function DashboardPage() {
     })
   }, [filteredTrades])
 
+  // Prepare Strategy Data
   const strategyData = useMemo(() => {
     const map = new Map<string, { name: string; pnl: number; wins: number; total: number }>()
 
@@ -682,15 +687,17 @@ export default function DashboardPage() {
     return Array.from(map.values())
       .map((s) => ({ ...s, winRate: (s.wins / s.total) * 100 }))
       .sort((a, b) => b.pnl - a.pnl)
-      .slice(0, 5)
+      .slice(0, 5) // Top 5
   }, [filteredTrades])
+
+  // --- Render ---
 
   if (isLoading && !isRefreshing) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0B0D12] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium">Loading trading data...</p>
+           <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+           <p className="text-muted-foreground font-medium">Loading trading data...</p>
         </div>
       </div>
     )
@@ -699,6 +706,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-[#0B0D12] text-foreground transition-colors duration-300">
       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+        
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
           <div className="space-y-1 relative">
@@ -706,7 +714,7 @@ export default function DashboardPage() {
               <span className="flex items-center text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
                 <Flame className="w-3 h-3 mr-1" /> {getGreeting()}
               </span>
-              <span>{"•"}</span>
+              <span>•</span>
               <span>{format(new Date(), "MMMM dd, yyyy")}</span>
             </div>
 
@@ -717,12 +725,13 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
               <BrainCircuit className="w-4 h-4 text-indigo-500" />
               <span className="italic text-gray-500 dark:text-gray-400">
-                {`"${MOTIVATIONAL_QUOTES[quoteIndex]}"`}
+                "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+            {/* Period Selector */}
             <div className="bg-white dark:bg-gray-900/60 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center gap-1 backdrop-blur-sm">
               {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
                 <Button
@@ -803,8 +812,8 @@ export default function DashboardPage() {
             icon={Target}
             iconColor="text-purple-600 dark:text-purple-400"
             trendData={[
-              {value: 45}, {value: 48}, {value: 52}, {value: stats.winRate}
-            ]}
+                {value: 45}, {value: 48}, {value: 52}, {value: stats.winRate}
+            ]} // Simple trend simulation
             subtitle={`Current Streak: ${stats.consecutiveWins} Wins`}
           />
 
@@ -838,9 +847,12 @@ export default function DashboardPage() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
           {/* Equity Chart (Left, 2/3 width) */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800 h-[550px]">
+            <Card
+              className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800 h-[550px]"
+            >
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
                 <div className="space-y-1">
                   <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -1125,6 +1137,7 @@ export default function DashboardPage() {
 
         {/* Recent Trades & Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
+          
           {/* Recent Trade List */}
           <Card className="lg:col-span-2 border-0 shadow-lg dark:shadow-2xl overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
             <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10 py-5">
@@ -1152,8 +1165,8 @@ export default function DashboardPage() {
                 const isLong = trade.direction === "long"
                 const StrategyIcon = getStrategyIcon(trade.setup_name || "")
                 const tradePnl = trade.pnl !== undefined 
-                  ? trade.pnl 
-                  : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+                    ? trade.pnl 
+                    : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
 
                 return (
                   <div
@@ -1214,7 +1227,7 @@ export default function DashboardPage() {
                           <span className="opacity-60">
                             {trade.entry_price}
                           </span>{" "}
-                          <span className="mx-1">{"->"}</span>{" "}
+                          <span className="mx-1">→</span>{" "}
                           <span>{trade.exit_price}</span>
                         </p>
                       </div>
@@ -1300,6 +1313,13 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
+                  {/* Hover Effect */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity",
+                      action.color.replace("bg-", "bg-text-")
+                    )}
+                  />
                 </Link>
               ))}
             </div>

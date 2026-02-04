@@ -470,28 +470,6 @@ export default function DashboardPage() {
 
   // --- Effects ---
 
-  // Load Sample Data
-  const loadSampleData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const response = await fetch('/api/trades/sample', { method: 'POST' })
-      const result = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to load sample data')
-      }
-      
-      console.log("[v0] Sample data loaded:", result.trades?.length || 0)
-      await loadTrades(false) // Reload trades after inserting sample data
-    } catch (err) {
-      console.error("Failed to load sample data:", err)
-      setError(err instanceof Error ? err.message : "Failed to load sample data")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   // Load Trades
   const loadTrades = useCallback(async (showLoadingState = true) => {
     if (isConfigLoading) return
@@ -514,6 +492,28 @@ export default function DashboardPage() {
       setIsRefreshing(false)
     }
   }, [isConfigLoading])
+
+  // Load Sample Data
+  const loadSampleData = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/trades/sample', { method: 'POST' })
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to load sample data')
+      }
+      
+      console.log("[v0] Sample data loaded:", result.trades?.length || 0)
+      await loadTrades(false) // Reload trades after inserting sample data
+    } catch (err) {
+      console.error("Failed to load sample data:", err)
+      setError(err instanceof Error ? err.message : "Failed to load sample data")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [loadTrades])
 
   useEffect(() => {
     loadTrades()

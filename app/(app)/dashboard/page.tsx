@@ -513,11 +513,11 @@ export default function DashboardPage() {
       setIsLoading(false)
     }
   }, [loadTrades])
-
+  
   useEffect(() => {
     loadTrades()
   }, [loadTrades])
-
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)

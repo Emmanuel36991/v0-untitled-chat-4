@@ -460,7 +460,7 @@ export function calculateInstrumentPnL(
 ): PnLCalculationResult {
   const config = customConfig || INSTRUMENT_CONFIGS[instrument.toUpperCase()]
 
-  // Basic price difference
+  // Basic price difference (with direction)
   const priceDifference = direction === "long" ? exitPrice - entryPrice : entryPrice - exitPrice
 
   // Raw P&L (basic calculation)
@@ -472,14 +472,17 @@ export function calculateInstrumentPnL(
     adjustedPnL = priceDifference * size * config.multiplier
   }
 
-  // Points calculation
-  const points = Math.abs(priceDifference)
+  // Points calculation (should respect direction for +/-)
+  const points = priceDifference
 
-  // Pips calculation (mainly for forex)
+  // Pips calculation (mainly for forex, should respect direction)
   let pips = 0
   if (config?.category === "forex") {
     const pipSize = instrument.toUpperCase().includes("JPY") ? 0.01 : 0.0001
-    pips = Math.abs(priceDifference) / pipSize
+    pips = priceDifference / pipSize
+  } else {
+    // For futures, 1 point = 1 pip equivalent
+    pips = priceDifference
   }
 
   // Percentage calculation
@@ -504,20 +507,25 @@ export function formatPnLDisplay(
 
   switch (format) {
     case "dollars":
-      return `$${pnlResult.adjustedPnL.toFixed(2)}`
+      const dollarSign = pnlResult.adjustedPnL >= 0 ? '+' : ''
+      return `${dollarSign}$${pnlResult.adjustedPnL.toFixed(2)}`
 
     case "points":
       const decimals = config?.displayDecimals ?? 2
-      return `${pnlResult.points.toFixed(decimals)} pts`
+      const pointsSign = pnlResult.points >= 0 ? '+' : ''
+      return `${pointsSign}${pnlResult.points.toFixed(decimals)} pts`
 
     case "pips":
+      const pipsSign = pnlResult.pips >= 0 ? '+' : ''
       if (config?.category === "forex") {
-        return `${pnlResult.pips.toFixed(1)} pips`
+        return `${pipsSign}${pnlResult.pips.toFixed(1)} pips`
       }
-      return `${pnlResult.points.toFixed(2)} pts`
+      // For futures/other instruments, show as points
+      return `${pipsSign}${pnlResult.pips.toFixed(decimals ?? 2)} pts`
 
     case "percentage":
-      return `${pnlResult.percentage.toFixed(2)}%`
+      const percentSign = pnlResult.percentage >= 0 ? '+' : ''
+      return `${percentSign}${pnlResult.percentage.toFixed(2)}%`
 
     default:
       return `$${pnlResult.adjustedPnL.toFixed(2)}`

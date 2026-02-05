@@ -17,9 +17,10 @@ interface Message {
 
 interface TradingAssistantProps {
   initialContext?: string
+  currentPage?: string
 }
 
-export function TradingAssistant({ initialContext }: TradingAssistantProps) {
+export function TradingAssistant({ initialContext, currentPage }: TradingAssistantProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [input, setInput] = useState("")
@@ -68,6 +69,7 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
         body: JSON.stringify({
           messages: [...messages, userMessage].map(({ role, content }) => ({ role, content })),
           context: initialContext,
+          page: currentPage || "general",
         }),
       })
 

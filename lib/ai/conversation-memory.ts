@@ -1,5 +1,3 @@
-"use server"
-
 import { createClient } from "@/lib/supabase/server"
 
 // ==========================================
@@ -56,6 +54,7 @@ export async function saveConversationMessage(
   message: Omit<ConversationMessage, "timestamp">,
   sessionId?: string
 ): Promise<{ success: boolean; sessionId?: string; error?: string }> {
+  "use server"
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -144,6 +143,7 @@ export async function saveConversationMessage(
 }
 
 export async function getConversationHistory(limit: number = 20): Promise<ConversationMessage[]> {
+  "use server"
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -176,6 +176,7 @@ export async function getConversationHistory(limit: number = 20): Promise<Conver
 }
 
 export async function getConversationMemory(): Promise<ConversationMemory> {
+  "use server"
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

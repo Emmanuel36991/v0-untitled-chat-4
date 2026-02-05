@@ -9,7 +9,7 @@
  * - Behavioral insights and coaching opportunities
  */
 
-import type { EnhancedUserContext } from "./enhanced-context-builder"
+import type { EnhancedTradingContext as EnhancedUserContext } from "./enhanced-context-builder"
 import type { ConversationMemory } from "./conversation-memory"
 import type { SentimentResult } from "./sentiment-analyzer"
 
@@ -234,18 +234,18 @@ export function buildDynamicSystemPrompt(params: DynamicPromptParams): string {
   }
   
   // 6. Psychology context
-  if (enhancedContext.psychologyContext) {
-    parts.push(buildPsychologySection(enhancedContext.psychologyContext))
+  if (enhancedContext.emotionalState || enhancedContext.psychologyAnalysis) {
+    parts.push(buildPsychologySection(enhancedContext))
   }
   
   // 7. Conversation memory
-  if (conversationMemory.summary || conversationMemory.recentTopics.length > 0) {
+  if (conversationMemory.frequentTopics?.length > 0 || conversationMemory.recentMessages?.length > 0) {
     parts.push(buildConversationMemorySection(conversationMemory))
   }
   
   // 8. User preferences and profile
-  if (conversationMemory.userProfile) {
-    parts.push(buildUserProfileSection(conversationMemory.userProfile))
+  if (enhancedContext.userProfile) {
+    parts.push(buildUserProfileSection(enhancedContext))
   }
   
   // 9. Additional page context
@@ -264,130 +264,115 @@ export function buildDynamicSystemPrompt(params: DynamicPromptParams): string {
 // ==========================================
 
 function buildTradingContextSection(context: EnhancedUserContext): string {
-  const { tradingContext } = context
-  const { performance, recentActivity, streaks, bestSetups } = tradingContext
+  const { tradingContext, recentActivity } = context
+  const { performance, patterns, recentTrends } = tradingContext
   
   const lines: string[] = [
     "--- USER'S TRADING DATA (LIVE) ---",
     "",
     "OVERALL PERFORMANCE:",
     `- Total Trades: ${performance.totalTrades}`,
-    `- Win Rate: ${(performance.winRate * 100).toFixed(1)}%`,
-    `- Total P&L: $${performance.totalPnL.toFixed(2)}`,
+    `- Win Rate: ${performance.winRate.toFixed(1)}%`,
+    `- Total P&L: $${performance.totalPnl.toFixed(2)}`,
     `- Profit Factor: ${performance.profitFactor.toFixed(2)}`,
-    `- Average Win: $${performance.avgWin.toFixed(2)}`,
-    `- Average Loss: $${performance.avgLoss.toFixed(2)}`,
-    `- Largest Win: $${performance.largestWin.toFixed(2)}`,
-    `- Largest Loss: $${performance.largestLoss.toFixed(2)}`,
-    `- Max Drawdown: ${(performance.maxDrawdown * 100).toFixed(1)}%`,
+    `- Avg P&L Per Trade: $${performance.avgPnlPerTrade.toFixed(2)}`,
+    `- Max Drawdown: $${performance.maxDrawdown.toFixed(2)}`,
+    `- Sharpe Ratio: ${performance.sharpeRatio.toFixed(2)}`,
   ]
   
-  if (streaks) {
+  if (recentTrends) {
     lines.push("")
-    lines.push("CURRENT STREAKS:")
-    lines.push(`- Current Streak: ${streaks.currentStreak > 0 ? `${streaks.currentStreak} wins` : `${Math.abs(streaks.currentStreak)} losses`}`)
-    lines.push(`- Longest Win Streak: ${streaks.longestWinStreak}`)
-    lines.push(`- Longest Loss Streak: ${streaks.longestLossStreak}`)
+    lines.push("RECENT TRENDS:")
+    lines.push(`- Last 10 Trades Win Rate: ${recentTrends.last10Trades.winRate.toFixed(1)}%`)
+    lines.push(`- Last 10 Trades P&L: $${recentTrends.last10Trades.totalPnl.toFixed(2)}`)
+    lines.push(`- Trend: ${recentTrends.last10Trades.trend}`)
+    lines.push(`- Last 30 Days Win Rate: ${recentTrends.last30Days.winRate.toFixed(1)}%`)
+    lines.push(`- Last 30 Days P&L: $${recentTrends.last30Days.totalPnl.toFixed(2)}`)
   }
   
   if (recentActivity) {
     lines.push("")
     lines.push("RECENT ACTIVITY:")
-    lines.push(`- Trades Today: ${recentActivity.tradesToday}`)
-    lines.push(`- P&L Today: $${recentActivity.pnlToday.toFixed(2)}`)
+    lines.push(`- Days Since Last Trade: ${recentActivity.daysSinceLastTrade}`)
     lines.push(`- Trades This Week: ${recentActivity.tradesThisWeek}`)
-    lines.push(`- P&L This Week: $${recentActivity.pnlThisWeek.toFixed(2)}`)
-    
-    if (recentActivity.lastTrade) {
-      const lastTrade = recentActivity.lastTrade
-      lines.push(`- Last Trade: ${lastTrade.instrument} ${lastTrade.direction} - ${lastTrade.outcome} ($${lastTrade.pnl?.toFixed(2) || 0})`)
+    lines.push(`- Trades This Month: ${recentActivity.tradesThisMonth}`)
+    if (recentActivity.currentStreak.type !== "none") {
+      lines.push(`- Current Streak: ${recentActivity.currentStreak.count} ${recentActivity.currentStreak.type}${recentActivity.currentStreak.count > 1 ? 's' : ''}`)
     }
   }
   
-  if (bestSetups && bestSetups.length > 0) {
+  if (patterns?.bestSetups && patterns.bestSetups.length > 0) {
     lines.push("")
     lines.push("TOP PERFORMING SETUPS:")
-    bestSetups.slice(0, 3).forEach((setup, i) => {
-      lines.push(`${i + 1}. ${setup.name}: ${(setup.winRate * 100).toFixed(0)}% win rate, ${setup.trades} trades, $${setup.totalPnL.toFixed(0)} P&L`)
+    patterns.bestSetups.slice(0, 3).forEach((setup, i) => {
+      lines.push(`${i + 1}. ${setup.name}: ${setup.winRate.toFixed(0)}% win rate, ${setup.trades} trades, $${setup.avgPnl.toFixed(0)} avg P&L`)
     })
+  }
+  
+  if (tradingContext.strengths && tradingContext.strengths.length > 0) {
+    lines.push("")
+    lines.push("STRENGTHS: " + tradingContext.strengths.slice(0, 3).join(", "))
+  }
+  
+  if (tradingContext.weaknesses && tradingContext.weaknesses.length > 0) {
+    lines.push("AREAS TO IMPROVE: " + tradingContext.weaknesses.slice(0, 3).join(", "))
   }
   
   return lines.join("\n")
 }
 
 function buildBehavioralSection(patterns: EnhancedUserContext["behavioralPatterns"]): string {
-  if (!patterns) return ""
+  if (!patterns || !Array.isArray(patterns) || patterns.length === 0) return ""
   
   const lines: string[] = [
     "--- BEHAVIORAL PATTERNS DETECTED ---",
   ]
   
-  if (patterns.riskPatterns) {
-    const rp = patterns.riskPatterns
-    if (rp.overtrading) lines.push("⚠️ PATTERN: Possible overtrading detected")
-    if (rp.revengeTrading) lines.push("⚠️ PATTERN: Possible revenge trading behavior")
-    if (rp.inconsistentSizing) lines.push("⚠️ PATTERN: Inconsistent position sizing")
-    if (rp.chasingLosses) lines.push("⚠️ PATTERN: May be chasing losses")
-  }
-  
-  if (patterns.timePatterns) {
-    const tp = patterns.timePatterns
-    if (tp.bestDays && tp.bestDays.length > 0) {
-      lines.push(`Best Trading Days: ${tp.bestDays.join(", ")}`)
+  patterns.forEach(pattern => {
+    const icon = pattern.impact === "negative" ? "⚠️" : pattern.impact === "positive" ? "✓" : "→"
+    lines.push(`${icon} ${pattern.pattern}: ${pattern.description}`)
+    if (pattern.recommendation) {
+      lines.push(`   Recommendation: ${pattern.recommendation}`)
     }
-    if (tp.worstDays && tp.worstDays.length > 0) {
-      lines.push(`Challenging Days: ${tp.worstDays.join(", ")}`)
-    }
-    if (tp.bestSessions && tp.bestSessions.length > 0) {
-      lines.push(`Best Sessions: ${tp.bestSessions.join(", ")}`)
-    }
-  }
-  
-  if (patterns.emotionalPatterns) {
-    const ep = patterns.emotionalPatterns
-    if (ep.performanceAfterWins !== undefined) {
-      const trend = ep.performanceAfterWins > 0 ? "positive" : "negative"
-      lines.push(`Performance after wins tends to be ${trend}`)
-    }
-    if (ep.performanceAfterLosses !== undefined) {
-      const trend = ep.performanceAfterLosses > 0 ? "positive" : "negative"
-      lines.push(`Performance after losses tends to be ${trend}`)
-    }
-  }
+  })
   
   return lines.join("\n")
 }
 
-function buildPsychologySection(psychology: EnhancedUserContext["psychologyContext"]): string {
-  if (!psychology) return ""
+function buildPsychologySection(context: EnhancedUserContext): string {
+  const { emotionalState, psychologyAnalysis } = context
+  if (!emotionalState && !psychologyAnalysis) return ""
   
   const lines: string[] = [
     "--- PSYCHOLOGY & MINDSET ---",
   ]
   
-  if (psychology.currentMood) {
-    lines.push(`Recent Mood: ${psychology.currentMood}`)
+  if (emotionalState) {
+    lines.push(`Current Mood: ${emotionalState.currentMood}`)
+    lines.push(`Stress Level: ${emotionalState.stressLevel.toUpperCase()}`)
+    lines.push(`Emotional Trend: ${emotionalState.emotionalTrend}`)
+    lines.push(`Risk of Tilt: ${emotionalState.riskOfTilt}%`)
+    if (emotionalState.recentMoods.length > 0) {
+      lines.push(`Recent Moods: ${emotionalState.recentMoods.slice(0, 5).join(", ")}`)
+    }
   }
   
-  if (psychology.stressLevel !== undefined) {
-    const stressLabel = psychology.stressLevel > 7 ? "HIGH" : psychology.stressLevel > 4 ? "MODERATE" : "LOW"
-    lines.push(`Stress Level: ${stressLabel} (${psychology.stressLevel}/10)`)
-  }
-  
-  if (psychology.recentJournalThemes && psychology.recentJournalThemes.length > 0) {
-    lines.push(`Recent Journal Themes: ${psychology.recentJournalThemes.join(", ")}`)
-  }
-  
-  if (psychology.goodHabits && psychology.goodHabits.length > 0) {
-    lines.push(`Positive Habits: ${psychology.goodHabits.slice(0, 3).join(", ")}`)
-  }
-  
-  if (psychology.badHabits && psychology.badHabits.length > 0) {
-    lines.push(`Habits to Improve: ${psychology.badHabits.slice(0, 3).join(", ")}`)
-  }
-  
-  if (psychology.disciplineScore !== undefined) {
-    lines.push(`Discipline Score: ${psychology.disciplineScore}/10`)
+  if (psychologyAnalysis) {
+    if (psychologyAnalysis.topKillers && psychologyAnalysis.topKillers.length > 0) {
+      lines.push(`Top Performance Killers: ${psychologyAnalysis.topKillers.slice(0, 3).map(k => k.factor).join(", ")}`)
+    }
+    if (psychologyAnalysis.topEnablers && psychologyAnalysis.topEnablers.length > 0) {
+      lines.push(`Top Performance Enablers: ${psychologyAnalysis.topEnablers.slice(0, 3).map(e => e.factor).join(", ")}`)
+    }
+    if (psychologyAnalysis.goodHabits && psychologyAnalysis.goodHabits.length > 0) {
+      lines.push(`Good Habits: ${psychologyAnalysis.goodHabits.slice(0, 3).map(h => h.factor).join(", ")}`)
+    }
+    if (psychologyAnalysis.badHabits && psychologyAnalysis.badHabits.length > 0) {
+      lines.push(`Bad Habits: ${psychologyAnalysis.badHabits.slice(0, 3).map(h => h.factor).join(", ")}`)
+    }
+    if (psychologyAnalysis.insights && psychologyAnalysis.insights.length > 0) {
+      lines.push(`Insights: ${psychologyAnalysis.insights.slice(0, 2).join("; ")}`)
+    }
   }
   
   return lines.join("\n")
@@ -398,46 +383,54 @@ function buildConversationMemorySection(memory: ConversationMemory): string {
     "--- CONVERSATION CONTEXT ---",
   ]
   
-  if (memory.summary) {
-    lines.push(`Previous Discussion: ${memory.summary}`)
+  if (memory.frequentTopics && memory.frequentTopics.length > 0) {
+    lines.push(`Frequent Topics: ${memory.frequentTopics.slice(0, 5).map(t => t.topic).join(", ")}`)
   }
   
-  if (memory.recentTopics && memory.recentTopics.length > 0) {
-    lines.push(`Recent Topics: ${memory.recentTopics.join(", ")}`)
+  if (memory.recentMessages && memory.recentMessages.length > 0) {
+    lines.push(`Recent Discussion: ${memory.recentMessages.slice(0, 3).map(m => m.content.substring(0, 50) + "...").join(" | ")}`)
   }
   
-  if (memory.pendingQuestions && memory.pendingQuestions.length > 0) {
-    lines.push(`Unanswered Questions: ${memory.pendingQuestions.join("; ")}`)
+  if (memory.insights && memory.insights.length > 0) {
+    const concerns = memory.insights.filter(i => i.type === "concern" || i.type === "knowledge_gap")
+    if (concerns.length > 0) {
+      lines.push(`Notable Patterns: ${concerns.slice(0, 2).map(c => c.description).join("; ")}`)
+    }
   }
   
   return lines.join("\n")
 }
 
-function buildUserProfileSection(profile: ConversationMemory["userProfile"]): string {
-  if (!profile) return ""
+function buildUserProfileSection(context: EnhancedUserContext): string {
+  const { userProfile } = context
+  if (!userProfile) return ""
   
   const lines: string[] = [
     "--- USER PROFILE ---",
   ]
   
-  if (profile.tradingStyle) {
-    lines.push(`Trading Style: ${profile.tradingStyle}`)
+  if (userProfile.tradingStyle) {
+    lines.push(`Trading Style: ${userProfile.tradingStyle}`)
   }
   
-  if (profile.preferredMethodologies && profile.preferredMethodologies.length > 0) {
-    lines.push(`Methodologies: ${profile.preferredMethodologies.join(", ")}`)
+  if (userProfile.preferredInstruments && userProfile.preferredInstruments.length > 0) {
+    lines.push(`Preferred Instruments: ${userProfile.preferredInstruments.join(", ")}`)
   }
   
-  if (profile.experienceLevel) {
-    lines.push(`Experience: ${profile.experienceLevel}`)
+  if (userProfile.experienceLevel) {
+    lines.push(`Experience Level: ${userProfile.experienceLevel}`)
   }
   
-  if (profile.goals && profile.goals.length > 0) {
-    lines.push(`Goals: ${profile.goals.join(", ")}`)
+  if (userProfile.riskTolerance) {
+    lines.push(`Risk Tolerance: ${userProfile.riskTolerance}`)
   }
   
-  if (profile.communicationPreference) {
-    lines.push(`Communication Style: ${profile.communicationPreference}`)
+  if (userProfile.strengths && userProfile.strengths.length > 0) {
+    lines.push(`Strengths: ${userProfile.strengths.slice(0, 3).join(", ")}`)
+  }
+  
+  if (userProfile.areasForImprovement && userProfile.areasForImprovement.length > 0) {
+    lines.push(`Areas to Improve: ${userProfile.areasForImprovement.slice(0, 3).join(", ")}`)
   }
   
   return lines.join("\n")
@@ -463,7 +456,7 @@ function buildFinalInstructions(context: EnhancedUserContext, sentiment: Sentime
     instructions.push("NOTE: User has limited trade history. Focus on process and learning rather than statistical analysis.")
   }
   
-  if (performance.totalPnL < 0 && Math.abs(performance.totalPnL) > 500) {
+  if (performance.totalPnl < 0 && Math.abs(performance.totalPnl) > 500) {
     instructions.push("")
     instructions.push("NOTE: User is in significant drawdown. Be supportive and focus on risk management and recovery.")
   }
@@ -473,8 +466,8 @@ function buildFinalInstructions(context: EnhancedUserContext, sentiment: Sentime
     instructions.push("PRIORITY: User may be struggling emotionally. Lead with empathy before analysis.")
   }
   
-  const recentActivity = context.tradingContext.recentActivity
-  if (recentActivity && recentActivity.tradesToday > 5) {
+  const recentActivity = context.recentActivity
+  if (recentActivity && recentActivity.tradesThisWeek > 25) {
     instructions.push("")
     instructions.push("NOTE: High trade frequency today. May need to discuss overtrading if losses are mounting.")
   }

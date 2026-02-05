@@ -51,26 +51,72 @@ export async function POST(req: Request) {
     const latestUserMessage = sanitizedMessages.filter((m: any) => m.role === "user").pop()
     
     // Analyze sentiment of user's message
-    const sentimentResult = latestUserMessage 
-      ? analyzeSentiment(latestUserMessage.content)
-      : null
+    let sentimentResult = null
+    try {
+      sentimentResult = latestUserMessage 
+        ? analyzeSentiment(latestUserMessage.content)
+        : null
+    } catch (sentimentError) {
+      console.error("[v0] Sentiment analysis error:", sentimentError)
+    }
 
     // Build enhanced context with all user data (trades, psychology, strategies)
-    const [enhancedContext, conversationMemory] = await Promise.all([
-      buildEnhancedContext(),
-      getConversationMemory()
-    ])
+    let enhancedContext
+    let conversationMemory
+    
+    try {
+      [enhancedContext, conversationMemory] = await Promise.all([
+        buildEnhancedContext(),
+        getConversationMemory()
+      ])
+    } catch (contextError) {
+      console.error("[v0] Context building error:", contextError)
+      // Fall back to minimal context
+      enhancedContext = {
+        tradingContext: {
+          performance: { totalTrades: 0, winRate: 0, totalPnl: 0, avgPnlPerTrade: 0, profitFactor: 0, maxDrawdown: 0, sharpeRatio: 0 },
+          patterns: { bestSetups: [], worstSetups: [], instrumentPerformance: [], timePatterns: [] },
+          riskMetrics: { stopLossUsage: 0, avgRiskPerTrade: 0, riskRewardRatio: 0, maxConsecutiveLosses: 0, riskScore: 0 },
+          recentTrends: { last10Trades: { winRate: 0, totalPnl: 0, trend: "stable" }, last30Days: { winRate: 0, totalPnl: 0, tradeFrequency: 0 } },
+          strengths: [],
+          weaknesses: [],
+          recommendations: [],
+        },
+        emotionalState: { currentMood: "neutral", recentMoods: [], stressLevel: "low", emotionalTrend: "stable", riskOfTilt: 0, lastJournalDate: null },
+        psychologyAnalysis: { allFactors: [], positiveFactors: [], negativeFactors: [], topKillers: [], topEnablers: [], goodHabits: [], badHabits: [], insights: [] },
+        behavioralPatterns: [],
+        userProfile: { tradingStyle: "Day Trading", preferredInstruments: [], preferredSessions: [], riskTolerance: "moderate", experienceLevel: "beginner", strengths: [], areasForImprovement: [], goals: [] },
+        strategies: { total: 0, topPerforming: [], recentlyUsed: [] },
+        recentActivity: { lastTradeDate: null, tradesThisWeek: 0, tradesThisMonth: 0, currentStreak: { type: "none", count: 0 }, daysSinceLastTrade: -1 },
+        alerts: [],
+        contextSummary: "",
+      }
+      conversationMemory = {
+        recentMessages: [],
+        sessions: [],
+        frequentTopics: [],
+        userPreferences: { preferredDetailLevel: "detailed", preferredTone: "mentor", frequentQuestions: [], helpfulResponses: [], learningStyle: "analytical" },
+        insights: []
+      }
+    }
 
     // Build dynamic system prompt based on all context
-    const systemPrompt = buildDynamicSystemPrompt({
-      enhancedContext,
-      conversationMemory,
-      sentimentResult,
-      pageContext: pageContext ? sanitizeInput(pageContext, { maxLength: 1000 }) : undefined,
-      currentPage: page
-    })
+    let systemPrompt
+    try {
+      systemPrompt = buildDynamicSystemPrompt({
+        enhancedContext,
+        conversationMemory,
+        sentimentResult,
+        pageContext: pageContext ? sanitizeInput(pageContext, { maxLength: 1000 }) : undefined,
+        currentPage: page
+      })
+    } catch (promptError) {
+      console.error("[v0] Prompt building error:", promptError)
+      // Fall back to basic prompt
+      systemPrompt = `You are TradeGPT, an expert AI trading coach and mentor. Help the user with their trading questions.`
+    }
 
-    console.log("[v0] Enhanced context built - Trades:", enhancedContext.tradingContext.performance.totalTrades)
+    console.log("[v0] Enhanced context built - Trades:", enhancedContext?.tradingContext?.performance?.totalTrades || 0)
     console.log("[v0] Sentiment:", sentimentResult?.sentiment, "Urgency:", sentimentResult?.urgency)
 
     // Save user message to conversation history (async, don't await)

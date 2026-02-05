@@ -139,11 +139,11 @@ SheetContent.displayName = SheetPrimitive.Content.displayName
 const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-slate-200 shadow-xl rounded-lg p-3">
-        <p className="text-xs font-bold text-slate-400 mb-1">{label}</p>
+      <div className="bg-slate-900 border border-slate-700 shadow-2xl rounded-lg p-3 backdrop-blur-sm">
+        <p className="text-xs font-semibold text-slate-300 mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm font-mono font-medium text-slate-700 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+          <p key={index} className="text-sm font-mono font-medium text-white flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
             {entry.name}: {prefix}{typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
           </p>
         ))}
@@ -214,7 +214,7 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                    className={cn(
                      "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
                      isActive
-                       ? "bg-indigo-50 text-indigo-600"
+                       ? "bg-blue-50 text-blue-600"
                        : "hover:bg-white text-slate-600"
                    )}
                  >
@@ -235,14 +235,14 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               numberOfMonths={2}
               className="rounded-md border-0"
               classNames={{
-                day_selected: "bg-indigo-600 text-white hover:bg-indigo-600 focus:bg-indigo-600",
+                day_selected: "bg-blue-600 text-white hover:bg-blue-600 focus:bg-blue-600",
                 day_today: "bg-slate-100 text-slate-900",
-                day_range_middle: "aria-selected:bg-indigo-50 aria-selected:text-indigo-900",
+                day_range_middle: "aria-selected:bg-blue-50 aria-selected:text-blue-900",
               }}
             />
             <div className="flex items-center justify-end pt-4 border-t border-slate-100 mt-2 gap-2">
                <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
-               <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
+               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
             </div>
           </div>
         </div>
@@ -305,7 +305,7 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
         <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
            <div className="flex items-center gap-2 mt-auto">
-             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100">
+             <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100">
                 {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
              </Badge>
            </div>
@@ -522,8 +522,8 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
 const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => (
   <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 hover:shadow-md transition-all duration-300">
     <div className="flex items-start justify-between mb-4">
-      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:bg-indigo-50 transition-colors">
-         <Icon className="h-4 w-4 text-slate-500 group-hover:text-indigo-600" />
+      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:bg-blue-50 transition-colors">
+         <Icon className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
       </div>
       {change && (
            <div className={cn(
@@ -796,7 +796,7 @@ export default function AnalyticsPage() {
     Object.entries(analytics.setupDistribution).map(([key, val]) => ({
       name: key,
       value: val.count,
-      color: "#6366f1"
+      color: "#3b82f6"
     }))
   , [analytics])
 
@@ -812,7 +812,7 @@ export default function AnalyticsPage() {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           
           <div className="flex items-center gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
               <LayoutDashboard className="h-4 w-4" />
             </div>
             <div>
@@ -833,8 +833,8 @@ export default function AnalyticsPage() {
                 size="sm" 
                 onClick={() => setShowFilters(!showFilters)} 
                 className={cn(
-                  "h-9 rounded-md px-3 text-slate-500 hover:text-indigo-600 hover:bg-slate-50",
-                  showFilters && "bg-slate-100 text-indigo-600"
+                  "h-9 rounded-md px-3 text-slate-500 hover:text-blue-600 hover:bg-slate-50",
+                  showFilters && "bg-slate-100 text-blue-600"
                 )}
               >
                 <Filter className="h-4 w-4" />
@@ -900,13 +900,13 @@ export default function AnalyticsPage() {
             <TabsList className="bg-transparent p-0 gap-6 h-auto">
               <TabsTrigger 
                 value="overview" 
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-indigo-600 data-[state=active]:bg-transparent data-[state=active]:text-indigo-600 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="intelligence" 
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-purple-600 data-[state=active]:bg-transparent data-[state=active]:text-purple-600 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 <Sparkles className="w-3 h-3 mr-2" />
                 Intelligence
@@ -954,7 +954,7 @@ export default function AnalyticsPage() {
                 subtitle="Cumulative Performance" 
                 className="lg:col-span-2 h-[350px]" 
                 action={
-                   <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600"><Download className="h-4 w-4" /></Button>
+                   <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-600"><Download className="h-4 w-4" /></Button>
                 }
               >
                 <div className="h-full w-full">
@@ -962,8 +962,8 @@ export default function AnalyticsPage() {
                     <AreaChart data={analytics.dailyData}>
                       <defs>
                         <linearGradient id="colorPnL" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -986,8 +986,8 @@ export default function AnalyticsPage() {
                       <Area 
                         type="monotone" 
                         dataKey="cumulative" 
-                        stroke="#6366f1" 
-                        strokeWidth={2}
+                        stroke="#3b82f6" 
+                        strokeWidth={2.5}
                         fillOpacity={1} 
                         fill="url(#colorPnL)" 
                       />
@@ -1051,7 +1051,7 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                         <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                         <RechartsTooltip cursor={{fill: '#f1f5f9'}} content={<CustomTooltip />} />
-                        <Bar dataKey="value" fill="#818cf8" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="value" fill="#60a5fa" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -1063,10 +1063,10 @@ export default function AnalyticsPage() {
                 <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl h-full">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                      <Brain className="w-4 h-4 text-indigo-500" />
+                      <Brain className="w-4 h-4 text-blue-500" />
                       Trader DNA
                     </CardTitle>
-                    <Badge variant="outline" className="font-mono text-indigo-600 bg-indigo-50 border-indigo-100">
+                    <Badge variant="outline" className="font-mono text-blue-600 bg-blue-50 border-blue-100">
                       {analytics.overallScore}/100
                     </Badge>
                   </CardHeader>
@@ -1096,7 +1096,7 @@ export default function AnalyticsPage() {
             
             {/* Header & AI Summary */}
             <div className="space-y-6">
-              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-indigo-50 via-white to-white rounded-xl border border-indigo-100 shadow-sm">
+              <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-blue-50 via-white to-white rounded-xl border border-blue-100 shadow-sm">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-indigo-500" />
@@ -1286,7 +1286,7 @@ export default function AnalyticsPage() {
                     <Card className="bg-white border border-slate-200">
                       <CardContent className="p-3">
                         <p className="text-[10px] text-slate-500 uppercase">Kelly Criterion</p>
-                        <p className="text-lg font-mono font-bold text-indigo-600">
+                        <p className="text-lg font-mono font-bold text-blue-600">
                           {riskAnalysis.kellyCriterion.kellyPercent.toFixed(1)}%
                         </p>
                       </CardContent>
@@ -1327,7 +1327,7 @@ export default function AnalyticsPage() {
       <div className="fixed bottom-6 right-6 md:hidden z-50">
           <Sheet>
             <SheetTrigger asChild>
-                <Button size="icon" className="h-14 w-14 rounded-full bg-indigo-600 text-white shadow-xl hover:bg-indigo-700 transition-transform hover:scale-105">
+                <Button size="icon" className="h-14 w-14 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 transition-transform hover:scale-105">
                     <CalendarIcon className="h-6 w-6" />
                 </Button>
             </SheetTrigger>

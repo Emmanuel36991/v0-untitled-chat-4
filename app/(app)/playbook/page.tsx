@@ -565,25 +565,8 @@ export default function PlaybookPage() {
               </div>
            </div>
 
-           {/* SECTION 2: VISUAL MAP */}
+           {/* SECTION 2: STRATEGY CARDS */}
            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                 <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-indigo-500" />
-                    Ecosystem Map
-                 </h2>
-              </div>
-              {/* Enhanced Visual Map with Strategy Merging */}
-              <EnhancedVisualMap strategies={strategies} />
-              
-              {/* Original Visual Map */}
-              <div className="mt-8">
-                <VisualMap className="w-full shadow-lg border-border/60" />
-              </div>
-           </div>
-
-           {/* SECTION 3: STRATEGY CARDS */}
-           <div className="space-y-4 pt-4">
               <h2 className="text-lg font-bold tracking-tight">Active Strategies</h2>
               
               {isLoading ? (
@@ -668,9 +651,26 @@ export default function PlaybookPage() {
                  </div>
               )}
            </div>
+
+           {/* SECTION 3: VISUAL MAP */}
+           <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                 <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-indigo-500" />
+                    Ecosystem Map
+                 </h2>
+              </div>
+              {/* Enhanced Visual Map with Strategy Merging */}
+              <EnhancedVisualMap strategies={strategies} />
+              
+              {/* Original Visual Map */}
+              <div className="mt-8">
+                <VisualMap className="w-full shadow-lg border-border/60" />
+              </div>
+           </div>
       </div>
 
-      <StrategyEngine 
+      <StrategyEngine
          open={isBuilderOpen} 
          onOpenChange={setIsBuilderOpen} 
          onSave={handleSave} 

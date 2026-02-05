@@ -31,22 +31,22 @@ interface Props {
   stats: PsychologyStats | null
 }
 
-const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-emerald-400 dark:text-emerald-400" }: any) => (
-  <Card className="bg-slate-50 dark:bg-zinc-900/50 backdrop-blur-md border-slate-200 dark:border-zinc-800 shadow-lg relative overflow-hidden group hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-300">
-    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-emerald-600 dark:text-emerald-400" }: any) => (
+  <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur-md border-slate-200 dark:border-zinc-800 shadow-lg relative overflow-hidden group hover:border-blue-300 dark:hover:border-zinc-700 transition-all duration-300">
+    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 dark:from-indigo-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     <CardContent className="p-5">
       <div className="flex justify-between items-start mb-2">
-        <span className="text-slate-500 dark:text-zinc-500 text-[10px] font-mono font-medium uppercase tracking-widest">{label}</span>
-        <Icon className="w-4 h-4 text-indigo-500 dark:text-indigo-500/80" />
+        <span className="text-slate-600 dark:text-zinc-500 text-[10px] font-mono font-medium uppercase tracking-widest">{label}</span>
+        <Icon className="w-4 h-4 text-blue-600 dark:text-indigo-500/80" />
       </div>
       <div className="flex items-baseline gap-2">
         <span className="text-2xl font-bold text-slate-900 dark:text-zinc-100 tracking-tight font-mono">{value}</span>
-        {subtext && <span className="text-xs text-slate-500 dark:text-zinc-500 font-medium">{subtext}</span>}
+        {subtext && <span className="text-xs text-slate-600 dark:text-zinc-500 font-medium">{subtext}</span>}
       </div>
       {trend && (
         <div className="mt-2 flex items-center text-xs font-mono">
-          <span className={`${trendColor} font-medium bg-slate-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded border border-slate-200 dark:border-zinc-700/50`}>{trend}</span>
-          <span className="text-slate-400 dark:text-zinc-600 ml-2">vs 7d avg</span>
+          <span className={`${trendColor} font-medium bg-slate-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded border border-slate-300 dark:border-zinc-700/50`}>{trend}</span>
+          <span className="text-slate-500 dark:text-zinc-600 ml-2">vs 7d avg</span>
         </div>
       )}
     </CardContent>
@@ -99,7 +99,7 @@ export default function PsychologyPageClient({ stats }: Props) {
             subtext="DAYS"
             icon={Zap} 
             trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
-            trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-400 dark:text-emerald-400" : "text-amber-500 dark:text-amber-500"}
+            trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-500"}
           />
           <HUDCard 
             label="Focus Score" 
@@ -107,7 +107,7 @@ export default function PsychologyPageClient({ stats }: Props) {
             subtext="/ 10.0"
             icon={Target} 
             trend={stats && stats.focusScore >= 7 ? "Excellent" : stats && stats.focusScore >= 5 ? "Good" : "Improve"}
-            trendColor={stats && stats.focusScore >= 7 ? "text-emerald-400 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-indigo-400 dark:text-indigo-400" : "text-amber-500 dark:text-amber-500"}
+            trendColor={stats && stats.focusScore >= 7 ? "text-emerald-600 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-blue-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-500"}
           />
           <HUDCard 
             label="Risk Alert" 
@@ -115,7 +115,7 @@ export default function PsychologyPageClient({ stats }: Props) {
             subtext={stats?.riskAlert && stats.riskAlert !== "None" ? "DETECTED" : "CLEAR"}
             icon={ShieldAlert} 
             trend={stats?.riskAlert && stats.riskAlert !== "None" ? "High Risk" : "Low Risk"}
-            trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-400 dark:text-rose-400" : "text-emerald-400 dark:text-emerald-400"}
+            trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}
           />
           <HUDCard 
             label="Total Entries" 
@@ -123,7 +123,7 @@ export default function PsychologyPageClient({ stats }: Props) {
             subtext="LOGS"
             icon={CalendarDays} 
             trend={stats && stats.totalJournalEntries >= 30 ? "+30 Logs" : stats && stats.totalJournalEntries > 0 ? `+${stats.totalJournalEntries}` : "No Data"}
-            trendColor="text-indigo-400 dark:text-indigo-400"
+            trendColor="text-blue-600 dark:text-indigo-400"
           />
         </motion.div>
 

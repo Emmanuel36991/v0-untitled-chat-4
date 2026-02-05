@@ -266,11 +266,11 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
 
   if (trades.length === 0) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-center text-slate-400">
-        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
-          <Layers className="w-8 h-8 opacity-20 text-slate-500" />
+      <div className="h-[60vh] flex flex-col items-center justify-center text-slate-400 dark:text-zinc-500">
+        <div className="w-16 h-16 bg-slate-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 dark:border-zinc-800">
+          <Layers className="w-8 h-8 opacity-20 text-slate-500 dark:text-zinc-600" />
         </div>
-        <p className="text-sm font-medium text-slate-600">No trading activity</p>
+        <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">No trading activity</p>
         <p className="text-xs opacity-60">This day is empty.</p>
       </div>
     )
@@ -282,30 +282,30 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
         <div className={cn(
           "p-6 rounded-xl border flex flex-col justify-between h-28 shadow-sm transition-all",
           stats.pnl >= 0
-            ? "bg-emerald-50/50 border-emerald-100"
-            : "bg-rose-50/50 border-rose-100"
+            ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30"
+            : "bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30"
         )}>
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Net PnL</span>
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Net PnL</span>
            <span className={cn(
              "text-3xl font-mono font-medium tracking-tight",
-             stats.pnl >= 0 ? "text-emerald-700" : "text-rose-700"
+             stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
            )}>
              {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
            </span>
         </div>
 
-        <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
+        <div className="p-6 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between h-28">
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Win Rate</span>
            <div className="flex items-baseline gap-2">
-             <span className="text-3xl font-mono font-medium text-slate-900">{stats.winRate.toFixed(0)}%</span>
-             <span className="text-xs text-slate-400 font-medium">{stats.count} Trades</span>
+             <span className="text-3xl font-mono font-medium text-slate-900 dark:text-zinc-100">{stats.winRate.toFixed(0)}%</span>
+             <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">{stats.count} Trades</span>
            </div>
         </div>
 
-        <div className="p-6 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between h-28">
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
+        <div className="p-6 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between h-28">
+           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Best Setup</span>
            <div className="flex items-center gap-2 mt-auto">
-             <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-100">
+             <Badge variant="secondary" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 border-blue-100 dark:border-blue-900/50">
                 {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
              </Badge>
            </div>
@@ -314,46 +314,46 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
 
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <div className="h-6 w-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+          <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400">
             <Clock className="w-3.5 h-3.5" />
           </div>
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Session Log</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">Session Log</h3>
         </div>
 
-        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200">
+        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200 dark:before:bg-zinc-800">
           {trades.map((trade) => (
             <div key={trade.id} className="relative pl-12 group">
               <div className={cn(
-                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white z-10 box-content shadow-sm",
+                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white dark:border-zinc-900 z-10 box-content shadow-sm",
                 trade.pnl >= 0 ? "bg-emerald-500" : "bg-rose-500"
               )} />
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-white hover:shadow-md hover:border-slate-300 transition-all cursor-pointer">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700 transition-all cursor-pointer">
                 <div className="flex items-center gap-4">
                   <div className={cn(
                     "w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs border shadow-sm",
                     trade.direction === "long"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                      : "bg-rose-50 text-rose-700 border-rose-100"
+                      ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50"
+                      : "bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/50"
                   )}>
                     {trade.direction === "long" ? "L" : "S"}
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-sm text-slate-900">{trade.instrument}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium border border-slate-200">
+                      <span className="font-bold text-sm text-slate-900 dark:text-zinc-100">{trade.instrument}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-medium border border-slate-200 dark:border-zinc-700">
                         {trade.setup_name || "No Setup"}
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">{format(new Date(trade.date), "HH:mm:ss")}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">{format(new Date(trade.date), "HH:mm:ss")}</span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
                     {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                   </p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">
+                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono mt-0.5">
                     {trade.entry_price} → {trade.exit_price}
                   </p>
                 </div>
@@ -520,16 +520,16 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
 
 // --- 6. METRIC CARDS ---
 const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => (
-  <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 hover:shadow-md transition-all duration-300">
+  <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-zinc-900/50 p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-zinc-800 hover:shadow-md transition-all duration-300">
     <div className="flex items-start justify-between mb-4">
-      <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 group-hover:bg-blue-50 transition-colors">
-         <Icon className="h-4 w-4 text-slate-500 group-hover:text-blue-600" />
+      <div className="p-2 rounded-lg bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/30 transition-colors">
+         <Icon className="h-4 w-4 text-slate-500 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
       </div>
       {change && (
            <div className={cn(
              "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border",
-             trend === "up" ? "text-emerald-700 bg-emerald-50 border-emerald-100" : "",
-             trend === "down" ? "text-rose-700 bg-rose-50 border-rose-100" : "text-slate-600 bg-slate-100 border-slate-200",
+             trend === "up" ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/50" : "",
+             trend === "down" ? "text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900/50" : "text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700",
            )}>
            {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
            {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
@@ -538,19 +538,19 @@ const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any)
       )}
     </div>
     <div>
-       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 font-feature-settings-zero">{value}</h3>
-       <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">{title}</p>
+       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 dark:text-zinc-100 font-feature-settings-zero">{value}</h3>
+       <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mt-1">{title}</p>
     </div>
   </div>
 ))
 
 const ChartCard = ({ title, subtitle, children, action, className }: any) => (
-  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white rounded-xl", className)}>
-    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100">
+  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-900/50 rounded-xl", className)}>
+    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
       <div className="flex items-center gap-3">
         <div className="space-y-0.5">
-          <CardTitle className="text-sm font-bold text-slate-900 tracking-wide uppercase">{title}</CardTitle>
-          {subtitle && <CardDescription className="text-xs text-slate-400">{subtitle}</CardDescription>}
+          <CardTitle className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-wide uppercase">{title}</CardTitle>
+          {subtitle && <CardDescription className="text-xs text-slate-400 dark:text-zinc-500">{subtitle}</CardDescription>}
         </div>
       </div>
       {action}
@@ -560,10 +560,10 @@ const ChartCard = ({ title, subtitle, children, action, className }: any) => (
 )
 
 const DashboardSkeleton = () => (
-  <div className="w-full min-h-screen bg-slate-50 p-8 space-y-8 animate-pulse">
-    <div className="h-16 w-full border-b border-slate-200" />
+  <div className="w-full min-h-screen bg-slate-50 dark:bg-zinc-950 p-8 space-y-8 animate-pulse">
+    <div className="h-16 w-full border-b border-slate-200 dark:border-zinc-800" />
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
-       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 rounded-xl" />)}
+       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-zinc-800 rounded-xl" />)}
     </div>
   </div>
 )
@@ -805,26 +805,26 @@ export default function AnalyticsPage() {
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-20 font-sans text-slate-900 dark:text-zinc-100 transition-colors duration-500">
       
       {/* --- HEADER --- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
           
           <div className="flex items-center gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 dark:bg-blue-600 text-white shadow-sm">
               <LayoutDashboard className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-none">ANALYTICS</h1>
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-zinc-100 leading-none">ANALYTICS</h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-slate-400 font-medium">Performance & Insights</span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Performance & Insights</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-sm">
+            <div className="hidden md:flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-sm">
               <div className="w-[200px] border-r border-slate-100">
                 <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
               </div>
@@ -843,11 +843,11 @@ export default function AnalyticsPage() {
 
             <Sheet>
                <SheetTrigger asChild>
-                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors rounded-lg shadow-sm">
+                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors rounded-lg shadow-sm">
                     <CalendarIcon className="h-4 w-4" />
                  </Button>
                </SheetTrigger>
-               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50">
+               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-zinc-950/50">
                   <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
                </SheetContent>
             </Sheet>
@@ -861,14 +861,14 @@ export default function AnalyticsPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-slate-100 bg-slate-50/50"
+              className="overflow-hidden border-t border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50"
             >
               <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Instrument</Label>
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-500">Instrument</Label>
                     <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white border-slate-200 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
+                      <SelectTrigger className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Instruments</SelectItem>
                         {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
@@ -876,9 +876,9 @@ export default function AnalyticsPage() {
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Setup</Label>
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-500">Setup</Label>
                       <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white border-slate-200 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
+                      <SelectTrigger className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Setups</SelectItem>
                         {Array.from(new Set(trades.map(t => t.setup_name).filter(Boolean))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -896,7 +896,7 @@ export default function AnalyticsPage() {
         
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
           
-          <div className="flex border-b border-slate-200">
+          <div className="flex border-b border-slate-200 dark:border-zinc-800">
             <TabsList className="bg-transparent p-0 gap-6 h-auto">
               <TabsTrigger 
                 value="overview" 
@@ -966,17 +966,17 @@ export default function AnalyticsPage() {
                           <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-zinc-800" />
                       <XAxis 
                         dataKey="date" 
                         tickFormatter={(str) => format(new Date(str), "MMM d")}
-                        stroke="#94a3b8" 
+                        className="fill-slate-500 dark:fill-zinc-500"
                         fontSize={10} 
                         tickLine={false} 
                         axisLine={false} 
                       />
                       <YAxis 
-                        stroke="#94a3b8" 
+                        className="fill-slate-500 dark:fill-zinc-500"
                         fontSize={10} 
                         tickLine={false} 
                         axisLine={false}

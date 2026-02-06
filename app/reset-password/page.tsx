@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
+
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -136,12 +136,10 @@ export default function ResetPasswordPage() {
                   </div>
 
                   <div className="text-center">
-                    <Link href="/login">
-                      <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 font-sans">
+                      <Button onClick={() => router.push('/login')} className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 font-sans">
                         Continue to Sign In
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
-                    </Link>
                   </div>
                 </CardContent>
               </Card>
@@ -289,14 +287,13 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="text-center">
-                  <Link href="/login">
                     <Button
                       variant="outline"
                       className="w-full h-12 border-2 hover:bg-slate-50 bg-transparent font-sans"
+                      onClick={() => router.push('/login')}
                     >
                       Back to Sign In
                     </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>

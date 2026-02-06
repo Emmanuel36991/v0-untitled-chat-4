@@ -251,9 +251,7 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="text-center mt-4">
-                  <Link href="/login">
-                    <Button variant="ghost" className="w-full text-slate-600 hover:text-purple-600">Already have an account? Sign In</Button>
-                  </Link>
+                    <Button variant="ghost" className="w-full text-slate-600 hover:text-purple-600" onClick={() => router.push('/login')}>Already have an account? Sign In</Button>
                 </div>
               </CardContent>
             </Card>

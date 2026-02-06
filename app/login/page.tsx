@@ -211,9 +211,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-center mt-4">
-                  <Link href="/signup">
-                    <Button variant="ghost" className="w-full text-slate-600">Don&apos;t have an account? Sign Up</Button>
-                  </Link>
+                    <Button variant="ghost" className="w-full text-slate-600" onClick={() => router.push('/signup')}>Don&apos;t have an account? Sign Up</Button>
                 </div>
               </CardContent>
             </Card>

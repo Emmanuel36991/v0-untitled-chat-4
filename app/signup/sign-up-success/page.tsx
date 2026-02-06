@@ -70,11 +70,11 @@ export default function SignUpSuccessPage() {
                 </div>
 
                 <div className="pt-2">
-                  <Link href="/login" className="block">
-                    <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200">
+                  <Button asChild className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Link href="/login">
                       Go to Login
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
 
                 <div className="text-center text-sm text-slate-500">

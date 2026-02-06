@@ -85,8 +85,9 @@ export default function LoginPage() {
     })
   }
 
+  // Return early to prevent hydration mismatch - renders minimal placeholder on server
   if (!mounted) {
-    return null
+    return <div className="min-h-screen bg-white" />
   }
 
   return (

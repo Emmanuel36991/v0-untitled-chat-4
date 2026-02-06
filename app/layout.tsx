@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Concentrade - Advanced Trading Journal",
-  description: "Professional trading journal with advanced analytics, AI-powered insights, and comprehensive trade tracking for better trading decisions.",
+  description: "Professional trading journal with advanced analytics.",
   generator: 'v0.app'
 }
 
@@ -20,22 +20,24 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    // 1. Block Google Translate (common crash cause)
-    <html lang="en" className="notranslate" translate="no" suppressHydrationWarning>
-      
-      {/* 2. Suppress warnings on body */}
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        
-        {/* 3. THE MAGIC FIX: The Buffer Div */}
-        {/* React manages THIS div, not the body. Extensions can mess up body all they want. */}
-        <div id="app-root"> 
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+        {/* CRITICAL FIX: The "Buffer Div"
+           This isolates your app code from browser extensions that inject 
+           elements into the body tag.
+        */}
+        <div id="app-root">
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="light" 
+            enableSystem={false} 
+            disableTransitionOnChange
+          >
             {children}
             <Toaster />
             <AccessibilityToolbar />
           </ThemeProvider>
         </div>
-        
       </body>
     </html>
   )

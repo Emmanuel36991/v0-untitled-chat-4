@@ -46,9 +46,7 @@ export default function ForgotPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-        <AnimatedTradingBackground />
-
+      <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
         <div className="relative z-10 container mx-auto px-6 py-12">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
             {/* Left Side - Branding */}
@@ -126,21 +124,20 @@ export default function ForgotPasswordPage() {
                         <ArrowLeft className="mr-2 h-5 w-5" />
                         Back to Sign In
                       </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
+      <AnimatedTradingBackground />
+    </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <AnimatedTradingBackground />
-
+    <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -311,6 +308,7 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
+      <AnimatedTradingBackground />
     </div>
   )
 }

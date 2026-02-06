@@ -7,9 +7,7 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 
 export default function SignUpSuccessPage() {
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <AnimatedTradingBackground />
-
+    <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="flex min-h-screen items-center justify-center">
           <div className="w-full max-w-lg">
@@ -92,6 +90,7 @@ export default function SignUpSuccessPage() {
           </div>
         </div>
       </div>
+      <AnimatedTradingBackground />
     </div>
   )
 }

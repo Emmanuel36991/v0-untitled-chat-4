@@ -79,9 +79,7 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-        <AnimatedTradingBackground />
-
+      <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
         <div className="relative z-10 container mx-auto px-6 py-12">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
             {/* Left Side - Branding */}
@@ -150,14 +148,13 @@ export default function ResetPasswordPage() {
             </div>
           </div>
         </div>
+        <AnimatedTradingBackground />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <AnimatedTradingBackground />
-
+    <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -306,6 +303,7 @@ export default function ResetPasswordPage() {
           </div>
         </div>
       </div>
+      <AnimatedTradingBackground />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Github, AlertCircle } from "lucide-react"
@@ -25,12 +25,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { setTheme } = useTheme()
 
-  React.useEffect(() => {
-    setMounted(true)
+  // 1. Safe Theme Force (Prevents conflicts with system theme)
+  useEffect(() => {
     setTheme('light')
   }, [setTheme])
 
@@ -75,7 +74,7 @@ export default function LoginPage() {
     const supabase = createClient()
     const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`
-      : `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=/dashboard`
+      : `${window.location.origin}/auth/callback?next=/dashboard`
     
     await supabase.auth.signInWithOAuth({
       provider,
@@ -85,14 +84,10 @@ export default function LoginPage() {
     })
   }
 
-  // Return early to prevent hydration mismatch - renders minimal placeholder on server
-  if (!mounted) {
-    return <div className="min-h-screen bg-white" />
-  }
-
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
-      {/* Content Layer */}
+    // 2. Outer Suppression to catch any stray extension injections
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900" suppressHydrationWarning>
+      
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side */}
@@ -138,7 +133,8 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
+                    {/* 3. CRITICAL FIX: Suppress Hydration Warning on Input Wrapper */}
+                    <div className="relative" suppressHydrationWarning>
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input 
                         id="email" 
@@ -155,7 +151,8 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <div className="relative">
+                    {/* 3. CRITICAL FIX: Suppress Hydration Warning on Input Wrapper */}
+                    <div className="relative" suppressHydrationWarning>
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input 
                         id="password" 
@@ -215,7 +212,14 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-center mt-4">
-                  <Button variant="ghost" className="w-full text-slate-600" onClick={() => router.push('/signup')}>Don&apos;t have an account? Sign Up</Button>
+                  {/* 4. CRITICAL FIX: Use onClick instead of wrapping Button in Link */}
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-slate-600" 
+                    onClick={() => router.push('/signup')}
+                  >
+                    Don&apos;t have an account? Sign Up
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -223,8 +227,8 @@ export default function LoginPage() {
         </div>
       </div>
       
-      {/* Background - persistent container at end of DOM */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+      {/* 5. MOVED TO BOTTOM: Background component is isolated here */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <AnimatedTradingBackground />
       </div>
     </div>

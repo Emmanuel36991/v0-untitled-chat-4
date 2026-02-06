@@ -157,7 +157,7 @@ export default function SignUpPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
                       <Input
                         id="email"
@@ -174,7 +174,7 @@ export default function SignUpPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
                       <Input
                         id="password"
@@ -209,7 +209,7 @@ export default function SignUpPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
                       <Input
                         id="confirmPassword"
@@ -258,7 +258,10 @@ export default function SignUpPage() {
           </div>
         </div>
       </div>
-      <AnimatedTradingBackground />
+      {/* Background wrapped in persistent container */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AnimatedTradingBackground />
+      </div>
     </div>
   )
 }

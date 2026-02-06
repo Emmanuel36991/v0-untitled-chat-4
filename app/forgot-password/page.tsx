@@ -129,7 +129,9 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
-      <AnimatedTradingBackground />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AnimatedTradingBackground />
+      </div>
     </div>
     )
   }
@@ -247,7 +249,7 @@ export default function ForgotPasswordPage() {
                     <Label htmlFor="email" className="text-sm font-medium text-slate-700 font-sans">
                       Email Address
                     </Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="email"
@@ -305,7 +307,9 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
-      <AnimatedTradingBackground />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AnimatedTradingBackground />
+      </div>
     </div>
   )
 }

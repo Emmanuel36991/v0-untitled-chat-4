@@ -90,7 +90,9 @@ export default function SignUpSuccessPage() {
           </div>
         </div>
       </div>
-      <AnimatedTradingBackground />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AnimatedTradingBackground />
+      </div>
     </div>
   )
 }

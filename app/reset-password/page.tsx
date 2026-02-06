@@ -146,7 +146,9 @@ export default function ResetPasswordPage() {
             </div>
           </div>
         </div>
-        <AnimatedTradingBackground />
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <AnimatedTradingBackground />
+        </div>
       </div>
     )
   }
@@ -210,7 +212,7 @@ export default function ResetPasswordPage() {
                     <Label htmlFor="password" className="text-sm font-medium text-slate-700 font-sans">
                       New Password
                     </Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="password"
@@ -236,7 +238,7 @@ export default function ResetPasswordPage() {
                     <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700 font-sans">
                       Confirm New Password
                     </Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="confirmPassword"
@@ -300,7 +302,9 @@ export default function ResetPasswordPage() {
           </div>
         </div>
       </div>
-      <AnimatedTradingBackground />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AnimatedTradingBackground />
+      </div>
     </div>
   )
 }

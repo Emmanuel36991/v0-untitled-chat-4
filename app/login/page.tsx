@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -29,7 +28,6 @@ export default function LoginPage() {
   const router = useRouter()
   const { setTheme } = useTheme()
 
-  // Force light mode on mount using next-themes
   React.useEffect(() => {
     setTheme('light')
   }, [setTheme])
@@ -73,8 +71,6 @@ export default function LoginPage() {
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     const supabase = createClient()
-    
-    // Use production URL or fallback to current origin
     const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`
       : `${window.location.origin}/auth/callback?next=/dashboard`
@@ -89,9 +85,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-white text-slate-900" suppressHydrationWarning>
+      {/* Content Layer */}
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
-          {/* Left Side - Branding */}
+          {/* Left Side */}
           <div className="hidden lg:block space-y-8">
             <div className="space-y-6">
               <div className="flex items-center">
@@ -113,7 +110,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Right Side - Login Form */}
+          {/* Right Side */}
           <div className="flex justify-center lg:justify-end">
             <Card className="w-full max-w-md bg-white/90 backdrop-blur-xl border-0 shadow-2xl">
               <CardHeader className="space-y-4 pb-6">
@@ -134,7 +131,7 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input 
                         id="email" 
@@ -151,7 +148,7 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <div className="relative">
+                    <div className="relative" suppressHydrationWarning>
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input 
                         id="password" 
@@ -211,14 +208,18 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-center mt-4">
-                    <Button variant="ghost" className="w-full text-slate-600" onClick={() => router.push('/signup')}>Don&apos;t have an account? Sign Up</Button>
+                  <Button variant="ghost" className="w-full text-slate-600" onClick={() => router.push('/signup')}>Don&apos;t have an account? Sign Up</Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-      <AnimatedTradingBackground />
+      
+      {/* Background wrapped in persistent container */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <AnimatedTradingBackground />
+      </div>
     </div>
   )
 }

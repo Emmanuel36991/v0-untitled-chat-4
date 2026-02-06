@@ -516,7 +516,7 @@ export default function SimplePsychologyJournal() {
                   return (
                     <Card 
                       key={entry.id} 
-                      className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-all group overflow-hidden"
+                      className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-zinc-700 transition-all group overflow-hidden shadow-sm"
                     >
                       <div className={`h-1 w-full bg-gradient-to-r ${moodData?.color.split(' ')[0].replace('bg-', 'from-').replace('/20', '')} to-transparent opacity-50`} />
                       <CardContent className="p-4">
@@ -527,18 +527,18 @@ export default function SimplePsychologyJournal() {
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <div className="font-bold text-zinc-200 text-sm">{moodData?.label}</div>
+                                <div className="font-bold text-slate-900 dark:text-zinc-200 text-sm">{moodData?.label}</div>
                                 {(entry as any).trades && (
-                                  <Badge className="text-[9px] px-1.5 py-0 bg-indigo-500/10 text-indigo-400 border-indigo-500/30">
+                                  <Badge className="text-[9px] px-1.5 py-0 bg-blue-100 dark:bg-indigo-500/10 text-blue-600 dark:text-indigo-400 border-blue-200 dark:border-indigo-500/30">
                                     Trade: {(entry as any).trades.instrument}
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-[10px] text-zinc-500 font-mono flex items-center gap-2">
+                              <div className="text-[10px] text-slate-600 dark:text-zinc-500 font-mono flex items-center gap-2">
                                 <Calendar className="w-3 h-3" />
                                 {new Date(entry.created_at).toLocaleDateString()}
                                 {(entry as any).trades && (
-                                  <span className={(entry as any).trades.pnl > 0 ? "text-emerald-400" : "text-rose-400"}>
+                                  <span className={(entry as any).trades.pnl > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                                     {(entry as any).trades.pnl > 0 ? "+" : ""}{(entry as any).trades.pnl?.toFixed(2)}
                                   </span>
                                 )}
@@ -546,10 +546,10 @@ export default function SimplePsychologyJournal() {
                             </div>
                           </div>
                           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-zinc-400 hover:text-indigo-400" onClick={() => setViewingEntry(entry)}>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-indigo-400" onClick={() => setViewingEntry(entry)}>
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-zinc-400 hover:text-rose-400" onClick={() => deleteEntry(entry.id)}>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400" onClick={() => deleteEntry(entry.id)}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -559,12 +559,12 @@ export default function SimplePsychologyJournal() {
                         {entry.emotions && entry.emotions.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-3">
                             {entry.emotions.slice(0, 3).map((e, i) => (
-                              <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50">
+                              <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700/50">
                                 {getEmotionLabel(e)}
                               </span>
                             ))}
                             {entry.emotions.length > 3 && (
-                              <span className="text-[10px] px-1.5 py-0.5 text-zinc-600">+{entry.emotions.length - 3}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 text-slate-500 dark:text-zinc-600">+{entry.emotions.length - 3}</span>
                             )}
                           </div>
                         )}

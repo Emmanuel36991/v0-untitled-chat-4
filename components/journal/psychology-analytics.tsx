@@ -627,13 +627,13 @@ export default function PsychologyAnalytics({
         </Card>
 
         {/* Behavioral Patterns */}
-        <Card className="bg-zinc-900/50 backdrop-blur border-zinc-800 shadow-xl overflow-hidden">
+        <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-zinc-100">
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-zinc-100">
               <BarChart3 className="h-5 w-5 text-amber-500" />
               Top Triggers
             </CardTitle>
-            <CardDescription className="text-zinc-500">Identified emotional triggers (Frequency)</CardDescription>
+            <CardDescription className="text-slate-600 dark:text-zinc-500">Identified emotional triggers (Frequency)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -641,22 +641,22 @@ export default function PsychologyAnalytics({
                 analytics.topTriggers.map((trigger, i) => (
                   <div key={i} className="flex items-center justify-between group">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-zinc-600 w-4">0{i + 1}</span>
-                      <span className="text-sm font-medium text-zinc-300 group-hover:text-amber-400 transition-colors">{trigger.name}</span>
+                      <span className="text-xs font-mono text-slate-500 dark:text-zinc-600 w-4">0{i + 1}</span>
+                      <span className="text-sm font-medium text-slate-700 dark:text-zinc-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{trigger.name}</span>
                     </div>
                     <div className="flex items-center gap-3 w-1/2">
-                        <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                             <div 
                                 className="h-full bg-amber-500/60 rounded-full" 
                                 style={{ width: `${Math.min(100, (trigger.count / analytics.totalEntries) * 100 * 2)}%` }}
                             />
                         </div>
-                        <span className="text-xs font-mono text-zinc-500">{trigger.count}</span>
+                        <span className="text-xs font-mono text-slate-600 dark:text-zinc-500">{trigger.count}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-10 text-zinc-600 italic">No triggers recorded yet.</div>
+                <div className="text-center py-10 text-slate-500 dark:text-zinc-600 italic">No triggers recorded yet.</div>
               )}
             </div>
           </CardContent>
@@ -664,13 +664,13 @@ export default function PsychologyAnalytics({
       </div>
 
       {/* AI Insights - Redesigned */}
-      <Card className="bg-gradient-to-br from-indigo-950/20 via-zinc-900/50 to-purple-950/20 border-indigo-500/20">
+      <Card className="bg-gradient-to-br from-blue-50 via-white to-violet-50 dark:from-indigo-950/20 dark:via-zinc-900/50 dark:to-purple-950/20 border-blue-200 dark:border-indigo-500/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-indigo-100">
-            <Sparkles className="h-5 w-5 text-indigo-400" />
+          <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-indigo-100">
+            <Sparkles className="h-5 w-5 text-violet-600 dark:text-indigo-400" />
             AI Advisor Protocol
           </CardTitle>
-          <CardDescription className="text-indigo-400/50">Personalized trading psychology recommendations</CardDescription>
+          <CardDescription className="text-slate-600 dark:text-indigo-400/50">Personalized trading psychology recommendations</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -679,34 +679,34 @@ export default function PsychologyAnalytics({
               return (
                 <div
                   key={index}
-                  className={`p-4 rounded-xl border transition-all hover:bg-zinc-900/80 ${
+                  className={`p-4 rounded-xl border transition-all ${
                     insight.type === "positive"
-                      ? "bg-emerald-950/10 border-emerald-500/20 hover:border-emerald-500/40"
+                      ? "bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-500/20 hover:border-emerald-300 dark:hover:border-emerald-500/40 hover:bg-emerald-100 dark:hover:bg-zinc-900/80"
                       : insight.type === "warning"
-                      ? "bg-amber-950/10 border-amber-500/20 hover:border-amber-500/40"
-                      : "bg-indigo-950/10 border-indigo-500/20 hover:border-indigo-500/40"
+                      ? "bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-500/20 hover:border-amber-300 dark:hover:border-amber-500/40 hover:bg-amber-100 dark:hover:bg-zinc-900/80"
+                      : "bg-blue-50 dark:bg-indigo-950/10 border-blue-200 dark:border-indigo-500/20 hover:border-blue-300 dark:hover:border-indigo-500/40 hover:bg-blue-100 dark:hover:bg-zinc-900/80"
                   }`}
                 >
                   <div className="flex items-start gap-4">
                     <div
                       className={`p-2 rounded-lg shrink-0 ${
                         insight.type === "positive"
-                          ? "bg-emerald-500/10 text-emerald-400"
+                          ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                           : insight.type === "warning"
-                          ? "bg-amber-500/10 text-amber-400"
-                          : "bg-indigo-500/10 text-indigo-400"
+                          ? "bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          : "bg-blue-100 dark:bg-indigo-500/10 text-blue-600 dark:text-indigo-400"
                       }`}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 space-y-1">
                       <h4 className={`font-semibold text-sm ${
-                         insight.type === "positive" ? "text-emerald-100" : 
-                         insight.type === "warning" ? "text-amber-100" : "text-indigo-100"
+                         insight.type === "positive" ? "text-emerald-700 dark:text-emerald-100" : 
+                         insight.type === "warning" ? "text-amber-700 dark:text-amber-100" : "text-blue-700 dark:text-indigo-100"
                       }`}>
                         {insight.title}
                       </h4>
-                      <p className="text-xs text-zinc-400 leading-relaxed">{insight.description}</p>
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">{insight.description}</p>
                     </div>
                   </div>
                 </div>
@@ -718,55 +718,55 @@ export default function PsychologyAnalytics({
 
       {/* Metrics Row (Bottom) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800">
             <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Entries Logged</p>
-                        <p className="text-2xl font-bold text-zinc-100 mt-1">{analytics.totalEntries}</p>
+                        <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Entries Logged</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{analytics.totalEntries}</p>
                     </div>
-                    <div className="p-2 bg-purple-500/10 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-purple-500" />
+                    <div className="p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-500" />
                     </div>
                 </div>
             </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800">
             <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Avg Mood</p>
-                        <p className="text-2xl font-bold text-zinc-100 mt-1">{analytics.avgMood.toFixed(1)} <span className="text-sm font-normal text-zinc-500">/ 10</span></p>
+                        <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Avg Mood</p>
+                        <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{analytics.avgMood.toFixed(1)} <span className="text-sm font-normal text-slate-600 dark:text-zinc-500">/ 10</span></p>
                     </div>
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                        <Activity className="w-5 h-5 text-blue-500" />
+                    <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg">
+                        <Activity className="w-5 h-5 text-blue-600 dark:text-blue-500" />
                     </div>
                 </div>
             </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800">
             <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Recent Trend</p>
+                        <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Recent Trend</p>
                         <div className="flex items-center gap-2 mt-1">
-                            <p className="text-2xl font-bold text-zinc-100 capitalize">{analytics.moodTrendDirection}</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 capitalize">{analytics.moodTrendDirection}</p>
                             {analytics.moodTrendDirection === 'improving' ? (
-                                <ArrowUpRight className="w-5 h-5 text-emerald-500" />
+                                <ArrowUpRight className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
                             ) : analytics.moodTrendDirection === 'declining' ? (
-                                <ArrowDownRight className="w-5 h-5 text-rose-500" />
+                                <ArrowDownRight className="w-5 h-5 text-rose-600 dark:text-rose-500" />
                             ) : (
-                                <Activity className="w-5 h-5 text-zinc-500" />
+                                <Activity className="w-5 h-5 text-slate-500 dark:text-zinc-500" />
                             )}
                         </div>
                     </div>
                     <div className={`p-2 rounded-lg ${
-                        analytics.moodTrendDirection === 'improving' ? 'bg-emerald-500/10' : 
-                        analytics.moodTrendDirection === 'declining' ? 'bg-rose-500/10' : 'bg-zinc-500/10'
+                        analytics.moodTrendDirection === 'improving' ? 'bg-emerald-100 dark:bg-emerald-500/10' : 
+                        analytics.moodTrendDirection === 'declining' ? 'bg-rose-100 dark:bg-rose-500/10' : 'bg-slate-100 dark:bg-zinc-500/10'
                     }`}>
                         <TrendingUp className={`w-5 h-5 ${
-                             analytics.moodTrendDirection === 'improving' ? 'text-emerald-500' : 
-                             analytics.moodTrendDirection === 'declining' ? 'text-rose-500' : 'text-zinc-500'
+                             analytics.moodTrendDirection === 'improving' ? 'text-emerald-600 dark:text-emerald-500' : 
+                             analytics.moodTrendDirection === 'declining' ? 'text-rose-600 dark:text-rose-500' : 'text-slate-600 dark:text-zinc-500'
                         }`} />
                     </div>
                 </div>

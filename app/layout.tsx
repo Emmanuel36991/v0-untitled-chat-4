@@ -2,16 +2,12 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import { AccessibilityToolbar } from "@/components/layout/accessibility-toolbar"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Concentrade - Advanced Trading Journal",
-  description: "Professional trading journal with advanced analytics.",
-  generator: 'v0.app'
+  title: "Concentrade - Safe Mode",
+  description: "Trading Journal",
 }
 
 export default function RootLayout({
@@ -20,15 +16,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="notranslate" translate="no" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        {/* The Buffer Div: Isolates React from Browser Extensions */}
+        {/* The Buffer Div - Crucial for hydration stability */}
         <div id="app-root">
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
             {children}
-            <Toaster />
-            <AccessibilityToolbar />
-          </ThemeProvider>
         </div>
       </body>
     </html>

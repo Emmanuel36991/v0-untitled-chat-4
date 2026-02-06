@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,12 +21,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const router = useRouter()
-
-  useState(() => {
-    setMounted(true)
-  })
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,7 +31,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${typeof window !== 'undefined' ? window.location.origin : ''}/reset-password`,
+        redirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/reset-password`,
       })
 
       if (error) throw error
@@ -49,13 +44,11 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  if (!mounted) {
-    return null
-  }
-
   if (success) {
     return (
       <div className="min-h-screen relative overflow-hidden">
+        <AnimatedTradingBackground />
+
         <div className="relative z-10 container mx-auto px-6 py-12">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
             {/* Left Side - Branding */}
@@ -128,18 +121,17 @@ export default function ForgotPasswordPage() {
                       Try Different Email
                     </Button>
 
-                    <Button onClick={() => router.push('/login')} className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 font-sans">
-                      <ArrowLeft className="mr-2 h-5 w-5" />
-                      Back to Sign In
-                    </Button>
+                    <Link href="/login">
+                      <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 font-sans">
+                        <ArrowLeft className="mr-2 h-5 w-5" />
+                        Back to Sign In
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
             </div>
           </div>
-        </div>
-        <div className="fixed inset-0 pointer-events-none z-0">
-          <AnimatedTradingBackground />
         </div>
       </div>
     )
@@ -147,6 +139,8 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <AnimatedTradingBackground />
+
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -302,22 +296,20 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="text-center">
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 border-2 hover:bg-slate-50 bg-transparent font-sans"
-                    onClick={() => router.push('/login')}
-                  >
-                    <ArrowLeft className="mr-2 h-5 w-5" />
-                    Back to Sign In
-                  </Button>
+                  <Link href="/login">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 border-2 hover:bg-slate-50 bg-transparent font-sans"
+                    >
+                      <ArrowLeft className="mr-2 h-5 w-5" />
+                      Back to Sign In
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <AnimatedTradingBackground />
       </div>
     </div>
   )

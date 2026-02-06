@@ -8,6 +8,8 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 export default function SignUpSuccessPage() {
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <AnimatedTradingBackground />
+
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="flex min-h-screen items-center justify-center">
           <div className="w-full max-w-lg">
@@ -70,11 +72,11 @@ export default function SignUpSuccessPage() {
                 </div>
 
                 <div className="pt-2">
-                  <Button asChild className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Link href="/login">
+                  <Link href="/login" className="block">
+                    <Button className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200">
                       Go to Login
-                    </Link>
-                  </Button>
+                    </Button>
+                  </Link>
                 </div>
 
                 <div className="text-center text-sm text-slate-500">
@@ -89,9 +91,6 @@ export default function SignUpSuccessPage() {
             </Card>
           </div>
         </div>
-      </div>
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <AnimatedTradingBackground />
       </div>
     </div>
   )

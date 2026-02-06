@@ -4,13 +4,13 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Github, AlertCircle } from "lucide-react"
-import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -25,14 +25,16 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const { setTheme } = useTheme()
 
+  // Force light mode on mount
   React.useEffect(() => {
-    setMounted(true)
-    setTheme('light')
-  }, [setTheme])
+    document.documentElement.classList.add('light')
+    document.documentElement.classList.remove('dark')
+    return () => {
+      document.documentElement.classList.remove('light')
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,9 +75,11 @@ export default function LoginPage() {
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     const supabase = createClient()
+    
+    // Use production URL or fallback to current origin
     const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`
-      : `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=/dashboard`
+      : `${window.location.origin}/auth/callback?next=/dashboard`
     
     await supabase.auth.signInWithOAuth({
       provider,
@@ -85,17 +89,13 @@ export default function LoginPage() {
     })
   }
 
-  // Return early to prevent hydration mismatch - renders minimal placeholder on server
-  if (!mounted) {
-    return <div className="min-h-screen bg-white" />
-  }
-
   return (
     <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
-      {/* Content Layer */}
+      <AnimatedTradingBackground />
+
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
-          {/* Left Side */}
+          {/* Left Side - Branding */}
           <div className="hidden lg:block space-y-8">
             <div className="space-y-6">
               <div className="flex items-center">
@@ -117,7 +117,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Right Side */}
+          {/* Right Side - Login Form */}
           <div className="flex justify-center lg:justify-end">
             <Card className="w-full max-w-md bg-white/90 backdrop-blur-xl border-0 shadow-2xl">
               <CardHeader className="space-y-4 pb-6">
@@ -215,17 +215,14 @@ export default function LoginPage() {
                 </div>
 
                 <div className="text-center mt-4">
-                  <Button variant="ghost" className="w-full text-slate-600" onClick={() => router.push('/signup')}>Don&apos;t have an account? Sign Up</Button>
+                  <Link href="/signup">
+                    <Button variant="ghost" className="w-full text-slate-600">Don&apos;t have an account? Sign Up</Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
-      </div>
-      
-      {/* Background - persistent container at end of DOM */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <AnimatedTradingBackground />
       </div>
     </div>
   )

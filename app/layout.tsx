@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "Concentrade - Advanced Trading Journal",
-  description: "Professional trading journal with advanced analytics, AI-powered insights, and comprehensive trade tracking for better trading decisions.",
+  description: "Professional trading journal with advanced analytics, AI insights, and comprehensive trade tracking.",
     generator: 'v0.app'
 }
 

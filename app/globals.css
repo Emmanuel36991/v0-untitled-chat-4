@@ -190,7 +190,60 @@ select {
   transition-duration: 150ms;
 }
 
+/* Keyframe animations for AnimatedTradingBackground component */
+@keyframes slideLeftToRight {
+  from {
+    transform: translateX(-300px);
+  }
+  to {
+    transform: translateX(calc(100vw + 300px));
+  }
+}
 
+@keyframes slideRightToLeft {
+  from {
+    transform: translateX(calc(100vw + 300px));
+  }
+  to {
+    transform: translateX(-300px);
+  }
+}
+
+@keyframes slideTopToBottom {
+  from {
+    transform: translateY(-200px);
+  }
+  to {
+    transform: translateY(calc(100vh + 200px));
+  }
+}
+
+@keyframes slideBottomToTop {
+  from {
+    transform: translateY(calc(100vh + 200px));
+  }
+  to {
+    transform: translateY(-200px);
+  }
+}
+
+@keyframes slideDiagonalTLBR {
+  from {
+    transform: translateX(-300px) translateY(-100px);
+  }
+  to {
+    transform: translateX(calc(100vw + 300px)) translateY(calc(100vh + 100px));
+  }
+}
+
+@keyframes slideDiagonalTRBL {
+  from {
+    transform: translateX(calc(100vw + 300px)) translateY(-100px);
+  }
+  to {
+    transform: translateX(-300px) translateY(calc(100vh + 100px));
+  }
+}
 
 /* Custom component classes */
 .professional-card {

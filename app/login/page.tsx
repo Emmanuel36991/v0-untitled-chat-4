@@ -23,13 +23,24 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  
+  // 1. NEW: Add a mounted state
+  const [isMounted, setIsMounted] = useState(false)
+  
   const router = useRouter()
   const { setTheme } = useTheme()
 
-  // Safe theme enforcement (prevents hydration mismatch)
   useEffect(() => {
+    // 2. NEW: Set mounted to true only after the component loads in the browser
+    setIsMounted(true)
     setTheme("light")
   }, [setTheme])
+
+  // 3. NEW: If not mounted yet, render NOTHING (or a simple loading state)
+  // This prevents the Hydration Mismatch because there is no HTML to mismatch against.
+  if (!isMounted) {
+    return <div className="min-h-screen bg-slate-50" />
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -102,7 +113,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              {/* CRITICAL: suppressHydrationWarning added here */}
+              {/* Keep this protection as a second layer of defense */}
               <div className="relative" suppressHydrationWarning>
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input 
@@ -130,7 +141,6 @@ export default function LoginPage() {
                   Forgot password?
                 </Button>
               </div>
-              {/* CRITICAL: suppressHydrationWarning added here */}
               <div className="relative" suppressHydrationWarning>
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input 
@@ -193,7 +203,6 @@ export default function LoginPage() {
         <CardFooter className="flex justify-center pb-8">
           <p className="text-sm text-slate-600">
             Don&apos;t have an account?{" "}
-            {/* CRITICAL FIX: Using onClick instead of Link wrapper */}
             <button 
               onClick={() => router.push('/signup')} 
               className="font-medium text-purple-600 hover:text-purple-500 hover:underline transition-colors"

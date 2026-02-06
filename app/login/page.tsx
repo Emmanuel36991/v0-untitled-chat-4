@@ -30,27 +30,17 @@ export default function LoginPage() {
   const { setTheme } = useTheme()
 
   useEffect(() => {
-    // 2. Safe Effect: Runs once on mount
-    const init = () => {
-      try {
-        setTheme("light")
-      } catch (e) {
-        console.error("Theme setting failed", e)
-      }
-      // Delay slightly to ensure browser painting catches up
-      setTimeout(() => setIsMounted(true), 10)
-    }
-    init()
-  }, []) // Empty dependency array = run only once
+    // 2. Safe Theme Force
+    setTheme("light")
+    // 3. Signal that component is ready
+    setIsMounted(true)
+  }, [setTheme])
 
-  // 3. Loading State
+  // 4. PREVENT CRASH: Show visual loading instead of empty div
   if (!isMounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 bg-slate-200 rounded-full mb-4"></div>
-          <div className="h-4 w-32 bg-slate-200 rounded"></div>
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     )
   }

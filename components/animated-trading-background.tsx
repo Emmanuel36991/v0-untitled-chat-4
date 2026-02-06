@@ -155,33 +155,6 @@ const AnimatedTradingBackground = () => {
       {/* Clean gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/25 to-purple-900/35"></div>
 
-      {/* Sparse Financial Elements */}
-      {animationConfigs.map((config) => (
-        <div key={config.id} className="absolute whitespace-nowrap" style={getElementStyle(config)}>
-          {/* Simple text-based financial element */}
-          <div className="flex items-center gap-3 text-white/80 font-mono">
-            {/* Type label */}
-            <span className="text-xs font-bold text-white/60 tracking-wider">{config.type}</span>
-
-            {/* Symbol */}
-            <span className="text-lg font-bold text-white drop-shadow-lg">{config.symbol}</span>
-
-            {/* Price */}
-            <span className="text-sm font-semibold text-white/90 drop-shadow-sm">{config.price}</span>
-
-            {/* Change with arrow */}
-            <span
-              className={`text-sm font-bold flex items-center gap-1 drop-shadow-sm ${
-                config.isPositive ? "text-emerald-300" : "text-red-300"
-              }`}
-            >
-              {config.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-              {config.change}
-            </span>
-          </div>
-        </div>
-      ))}
-
       {/* Minimal ambient particles for depth */}
       <div className="absolute inset-0">
         {fixedPositions.map((pos, i) => (

@@ -2,12 +2,14 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { Providers } from "@/components/providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Concentrade - Safe Mode",
-  description: "Trading Journal",
+  title: "Concentrade - Advanced Trading Journal",
+  description: "Professional trading journal with advanced analytics.",
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -16,11 +18,19 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="notranslate" translate="no" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        {/* The Buffer Div - Crucial for hydration stability */}
+        {/* The Buffer Div isolates the app from browser extensions */}
         <div id="app-root">
+          <Providers 
+            attribute="class" 
+            defaultTheme="light" 
+            enableSystem={false} 
+            disableTransitionOnChange
+            forcedTheme={undefined} // Allow pages to override if needed
+          >
             {children}
+          </Providers>
         </div>
       </body>
     </html>

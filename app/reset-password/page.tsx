@@ -23,10 +23,13 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    setMounted(true)
+
     // Handle the auth callback from the email link
     const handleAuthCallback = async () => {
       const supabase = createClient()
@@ -77,9 +80,13 @@ export default function ResetPasswordPage() {
     }
   }
 
+  if (!mounted) {
+    return null
+  }
+
   if (success) {
     return (
-      <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
+      <div className="min-h-screen relative overflow-hidden">
         <div className="relative z-10 container mx-auto px-6 py-12">
           <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
             {/* Left Side - Branding */}
@@ -136,10 +143,10 @@ export default function ResetPasswordPage() {
                   </div>
 
                   <div className="text-center">
-                      <Button onClick={() => router.push('/login')} className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 font-sans">
-                        Continue to Sign In
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
+                    <Button onClick={() => router.push('/login')} className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 font-sans">
+                      Continue to Sign In
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -154,7 +161,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" suppressHydrationWarning>
+    <div className="min-h-screen relative overflow-hidden">
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -179,9 +186,9 @@ export default function ResetPasswordPage() {
                   <span className="font-semibold text-white font-sans">Security Tips</span>
                 </div>
                 <ul className="text-sm text-white/95 font-sans leading-relaxed space-y-1">
-                  <li>• Use at least 6 characters</li>
-                  <li>• Include numbers and special characters</li>
-                  <li>• Avoid common words or personal information</li>
+                  <li>Use at least 6 characters</li>
+                  <li>Include numbers and special characters</li>
+                  <li>Avoid common words or personal information</li>
                 </ul>
               </div>
             </div>
@@ -212,7 +219,7 @@ export default function ResetPasswordPage() {
                     <Label htmlFor="password" className="text-sm font-medium text-slate-700 font-sans">
                       New Password
                     </Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="password"
@@ -238,7 +245,7 @@ export default function ResetPasswordPage() {
                     <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700 font-sans">
                       Confirm New Password
                     </Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="confirmPassword"
@@ -289,13 +296,13 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="text-center">
-                    <Button
-                      variant="outline"
-                      className="w-full h-12 border-2 hover:bg-slate-50 bg-transparent font-sans"
-                      onClick={() => router.push('/login')}
-                    >
-                      Back to Sign In
-                    </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 border-2 hover:bg-slate-50 bg-transparent font-sans"
+                    onClick={() => router.push('/login')}
+                  >
+                    Back to Sign In
+                  </Button>
                 </div>
               </CardContent>
             </Card>

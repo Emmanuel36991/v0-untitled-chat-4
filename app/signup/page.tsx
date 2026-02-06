@@ -8,10 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { AlertCircle, Mail, Lock, Eye, EyeOff, ArrowRight, Github, Check, X } from "lucide-react"
-import Link from "next/link"
+import { AlertCircle, Mail, Lock, Eye, EyeOff, ArrowRight, Github } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { AnimatedTradingBackground } from "@/components/animated-trading-background"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
@@ -36,12 +34,13 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [strength, setStrength] = useState(0)
+  const [mounted, setMounted] = useState(false)
   
   const router = useRouter()
   const { setTheme } = useTheme()
 
-  // Force light mode on mount using next-themes
   React.useEffect(() => {
+    setMounted(true)
     setTheme('light')
   }, [setTheme])
 
@@ -73,8 +72,7 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          // Redirect to paywall after signup
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/get-started`,
+          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=/get-started`,
         },
       })
 
@@ -92,11 +90,9 @@ export default function SignUpPage() {
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     const supabase = createClient()
-    
-    // Use production URL or fallback to current origin
     const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`
-      : `${window.location.origin}/auth/callback?next=/dashboard`
+      : `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=/dashboard`
     
     await supabase.auth.signInWithOAuth({
       provider,
@@ -106,8 +102,12 @@ export default function SignUpPage() {
     })
   }
 
+  if (!mounted) {
+    return null
+  }
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900" suppressHydrationWarning>
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -157,7 +157,7 @@ export default function SignUpPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
                       <Input
                         id="email"
@@ -174,7 +174,7 @@ export default function SignUpPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
                       <Input
                         id="password"
@@ -209,7 +209,7 @@ export default function SignUpPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 z-10 pointer-events-none" />
                       <Input
                         id="confirmPassword"
@@ -251,14 +251,14 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="text-center mt-4">
-                    <Button variant="ghost" className="w-full text-slate-600 hover:text-purple-600" onClick={() => router.push('/login')}>Already have an account? Sign In</Button>
+                  <Button variant="ghost" className="w-full text-slate-600 hover:text-purple-600" onClick={() => router.push('/login')}>Already have an account? Sign In</Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-      {/* Background wrapped in persistent container */}
+      {/* Background - persistent container at end of DOM */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <AnimatedTradingBackground />
       </div>

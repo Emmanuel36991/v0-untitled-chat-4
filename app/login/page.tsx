@@ -25,10 +25,12 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { setTheme } = useTheme()
 
   React.useEffect(() => {
+    setMounted(true)
     setTheme('light')
   }, [setTheme])
 
@@ -73,7 +75,7 @@ export default function LoginPage() {
     const supabase = createClient()
     const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/dashboard`
-      : `${window.location.origin}/auth/callback?next=/dashboard`
+      : `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=/dashboard`
     
     await supabase.auth.signInWithOAuth({
       provider,
@@ -83,8 +85,12 @@ export default function LoginPage() {
     })
   }
 
+  if (!mounted) {
+    return null
+  }
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900" suppressHydrationWarning>
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
       {/* Content Layer */}
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
@@ -131,7 +137,7 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input 
                         id="email" 
@@ -148,7 +154,7 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <div className="relative" suppressHydrationWarning>
+                    <div className="relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input 
                         id="password" 
@@ -216,7 +222,7 @@ export default function LoginPage() {
         </div>
       </div>
       
-      {/* Background wrapped in persistent container */}
+      {/* Background - persistent container at end of DOM */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <AnimatedTradingBackground />
       </div>

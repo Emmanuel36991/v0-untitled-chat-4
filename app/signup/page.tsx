@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -37,15 +38,12 @@ export default function SignUpPage() {
   const [strength, setStrength] = useState(0)
   
   const router = useRouter()
+  const { setTheme } = useTheme()
 
-  // Force light mode on mount
+  // Force light mode on mount using next-themes
   React.useEffect(() => {
-    document.documentElement.classList.add('light')
-    document.documentElement.classList.remove('dark')
-    return () => {
-      document.documentElement.classList.remove('light')
-    }
-  }, [])
+    setTheme('light')
+  }, [setTheme])
 
   useEffect(() => {
     setStrength(calculatePasswordStrength(password))
@@ -109,9 +107,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
-      <AnimatedTradingBackground />
-
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900" suppressHydrationWarning>
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -264,6 +260,7 @@ export default function SignUpPage() {
           </div>
         </div>
       </div>
+      <AnimatedTradingBackground />
     </div>
   )
 }

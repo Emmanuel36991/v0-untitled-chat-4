@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Github, AlertCircle } from "lucide-react"
+import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,15 +27,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const { setTheme } = useTheme()
 
-  // Force light mode on mount
+  // Force light mode on mount using next-themes
   React.useEffect(() => {
-    document.documentElement.classList.add('light')
-    document.documentElement.classList.remove('dark')
-    return () => {
-      document.documentElement.classList.remove('light')
-    }
-  }, [])
+    setTheme('light')
+  }, [setTheme])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,9 +88,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900">
-      <AnimatedTradingBackground />
-
+    <div className="min-h-screen relative overflow-hidden bg-white text-slate-900" suppressHydrationWarning>
       <div className="relative z-10 container mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen">
           {/* Left Side - Branding */}
@@ -224,6 +220,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      <AnimatedTradingBackground />
     </div>
   )
 }

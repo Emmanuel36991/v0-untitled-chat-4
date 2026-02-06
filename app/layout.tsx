@@ -20,19 +20,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="notranslate" translate="no" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        {/* CRITICAL FIX: The "Buffer Div"
-           This isolates your app code from browser extensions that inject 
-           elements into the body tag.
-        */}
+        {/* The Buffer Div: Isolates React from Browser Extensions */}
         <div id="app-root">
-          <ThemeProvider 
-            attribute="class" 
-            defaultTheme="light" 
-            enableSystem={false} 
-            disableTransitionOnChange
-          >
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
             {children}
             <Toaster />
             <AccessibilityToolbar />

@@ -1,5 +1,3 @@
-"use client"
-
 const fixedPositions = [
   { left: "25%", top: "20%" },
   { left: "45%", top: "35%" },
@@ -13,7 +11,7 @@ const fixedPositions = [
 
 const AnimatedTradingBackground = () => {
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {/* Clean gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-blue-900/25 to-purple-900/35"></div>
 

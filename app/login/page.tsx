@@ -227,7 +227,7 @@ export default function LoginPage() {
         </div>
       </div>
       
-      {/* 5. MOVED TO BOTTOM: Background component is isolated here */}
+      {}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <AnimatedTradingBackground />
       </div>

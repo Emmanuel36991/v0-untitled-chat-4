@@ -61,7 +61,7 @@
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
     "mathjs": "latest",
-    "next": "14.2.35",
+    "next": "15.5.10",
     "next-themes": "latest",
     "papaparse": "latest",
     "react": "^19",

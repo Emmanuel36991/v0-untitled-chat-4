@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Shield,
   Award,
+  Minus,
 } from "lucide-react"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { Button } from "@/components/ui/button"

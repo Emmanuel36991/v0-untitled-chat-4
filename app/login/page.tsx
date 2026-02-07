@@ -82,9 +82,14 @@ export default function LoginPage() {
     })
   }
 
-  // Prevent hydration mismatch by showing a clean loading state until mounted
+  // 2. Return a loading spinner if not mounted. 
+  // This PREVENTS the white screen crash caused by theme mismatch.
   if (!isMounted) {
-    return <div className="min-h-screen bg-slate-50" />
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    )
   }
 
   return (

@@ -36,16 +36,26 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [strength, setStrength] = useState(0)
   
+  const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
   const { setTheme } = useTheme()
 
   useEffect(() => {
+    setIsMounted(true)
     setTheme("light")
   }, [setTheme])
 
   useEffect(() => {
     setStrength(calculatePasswordStrength(password))
   }, [password])
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    )
+  }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()

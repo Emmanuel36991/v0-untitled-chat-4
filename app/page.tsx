@@ -27,6 +27,14 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 text-center relative overflow-hidden">
+        {/* Background image with candles and market */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3")'
+          }}
+        ></div>
+        
         {/* Background decoration */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 blur-3xl"></div>
         

@@ -13,6 +13,7 @@ import {
   Shield,
   Award,
   Minus,
+  X,
 } from "lucide-react"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { Button } from "@/components/ui/button"
@@ -672,19 +673,19 @@ export default function HomePage() {
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li>
-                  <button onClick={() => scrollToSection("features")} className="hover:text-indigo-400 transition-colors">
+                  <Link href="#features" className="hover:text-indigo-400 transition-colors">
                     Features
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button onClick={() => scrollToSection("pricing")} className="hover:text-indigo-400 transition-colors">
+                  <Link href="#pricing" className="hover:text-indigo-400 transition-colors">
                     Pricing
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button onClick={() => scrollToSection("demo")} className="hover:text-indigo-400 transition-colors">
+                  <Link href="#demo" className="hover:text-indigo-400 transition-colors">
                     Demo
-                  </button>
+                  </Link>
                 </li>
                 <li>
                   <Link href="/signup" className="hover:text-indigo-400 transition-colors">

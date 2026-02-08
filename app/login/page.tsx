@@ -104,48 +104,7 @@ export default function LoginPage() {
           <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl animate-pulse delay-500"></div>
         </div>
 
-        {/* Floating Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Fractal Yin Yang Logo with Glassmorphism */}
-          <div className="absolute top-[20%] left-1/2 -translate-x-1/2 animate-float">
-            <div className="relative">
-              {/* Glassmorphism backdrop */}
-              <div className="absolute inset-0 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl transform scale-110"></div>
-              {/* Logo */}
-              <div className="relative p-8">
-                <img
-                  src="/fractal-yin-yang.svg"
-                  alt="Concentrade Logo"
-                  className="w-32 h-32 opacity-90"
-                />
-              </div>
-            </div>
-          </div>
 
-          {/* Social Proof Testimonial Card */}
-          <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 max-w-md animate-float-delayed">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-2xl">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-violet-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-lg">
-                  A
-                </div>
-                <div className="flex-1">
-                  <p className="text-white/90 text-sm leading-relaxed mb-3">
-                    "Concentrade helped me identify my psychology leaks and increased my RR by 2.5x."
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-white/70 text-xs font-medium">Alex Thompson</p>
-                    <span className="text-white/40">•</span>
-                    <p className="text-emerald-400 text-xs flex items-center gap-1">
-                      <Shield className="w-3 h-3" />
-                      Verified Trader
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Main Content */}
         <div className="relative z-10 flex flex-col justify-center px-16 py-12">
@@ -160,20 +119,7 @@ export default function LoginPage() {
             </span>
           </h1>
 
-          <p className="text-lg text-white/70 mb-10 max-w-md leading-relaxed">
-            Join thousands of traders who use Concentrade to analyze their performance,
-            identify patterns, and consistently improve their results.
-          </p>
 
-          <div className="flex items-center gap-6">
-            <div className="flex -space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 border-2 border-slate-900 flex items-center justify-center text-white text-sm font-medium">JD</div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-slate-900 flex items-center justify-center text-white text-sm font-medium">MK</div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 border-2 border-slate-900 flex items-center justify-center text-white text-sm font-medium">SL</div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-slate-900 flex items-center justify-center text-white text-sm font-medium">+5k</div>
-            </div>
-            <p className="text-white/60 text-sm">Trusted by 5,000+ traders worldwide</p>
-          </div>
         </div>
       </div>
 

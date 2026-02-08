@@ -63,13 +63,7 @@ import { useAIAdvisor } from "@/hooks/use-ai-advisor"
 import { AdvisorPanel } from "@/components/ai/advisor-panel"
 import { EnhancedHexagram } from "@/components/charts/enhanced-hexagram"
 import { TimingAnalyticsDashboard } from "@/components/charts/timing-analytics-dashboard"
-import { SetupScatterChart } from "@/components/insights/setup-scatter-chart"
-import { AiSummaryCard } from "@/components/analytics/ai-summary-card"
 
-// Import Insight Analyzers
-import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
-import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
-import { analyzeAndCalculateRisk } from "@/lib/insights/risk-calculator"
 
 // --- OKLCH COLOR PALETTE (Premium Design Spec) ---
 const COLORS = {
@@ -127,6 +121,7 @@ interface ProcessedAnalytics {
   instrumentDistribution: Record<string, { count: number; pnl: number; winRate: number }>
   outcomeDistribution: { wins: number; losses: number; breakeven: number }
   metricsList: Array<{ name: string; value: number }>
+  filteredTrades: Trade[]
 }
 
 // --- 2. UI COMPONENTS (Light Mode Only) ---
@@ -683,7 +678,7 @@ export default function AnalyticsPage() {
       totalTrades: 0, wins: 0, losses: 0, breakeven: 0, totalPnL: 0, avgPnL: 0, winRate: 0, profitFactor: 0,
       maxDrawdown: 0, consistencyScore: 0, adaptabilityScore: 0, executionScore: 0, riskManagementScore: 0, efficiencyScore: 0, overallScore: 0,
       monthlyData: [], dailyData: [], setupDistribution: {}, instrumentDistribution: {}, outcomeDistribution: { wins: 0, losses: 0, breakeven: 0 },
-      metricsList: []
+      metricsList: [], filteredTrades: []
     }
 
     if (!trades.length) return emptyStats
@@ -810,28 +805,13 @@ export default function AnalyticsPage() {
       setupDistribution: setupDist,
       instrumentDistribution: instrumentDist,
       outcomeDistribution: { wins, losses, breakeven },
-      metricsList
+      metricsList,
+      filteredTrades
     }
   }, [trades, filters])
 
-  // Intelligence Analytics
-  const setupAnalysis = useMemo(() => analyzeSetupPatterns(trades), [trades])
-  const psychologyAnalysis = useMemo(() => analyzePsychologyPatterns(trades), [trades])
-  const riskAnalysis = useMemo(() => analyzeAndCalculateRisk(trades), [trades])
-
   // Prepare Recharts Data
-  const scatterData = useMemo(() => {
-    const top = setupAnalysis.topSetups || []
-    const bottom = setupAnalysis.bottomSetups || []
-    return [
-      ...top.map(s => ({
-        name: s.setupName, x: s.winRate * 100, y: 2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 2
-      })),
-      ...bottom.map(s => ({
-        name: s.setupName, x: s.winRate * 100, y: 1.2, volume: s.totalTrades, pnl: s.totalPnL, winRate: s.winRate * 100, rrr: 1.2
-      }))
-    ]
-  }, [setupAnalysis])
+
 
   const outcomeData = useMemo(() => [
     { name: "Wins", value: analytics.wins, color: "#10b981" },
@@ -855,7 +835,7 @@ export default function AnalyticsPage() {
     }))
     , [analytics])
 
-  const personalEdge = setupAnalysis.personalEdge
+
 
   if (loading) return <DashboardSkeleton />
 
@@ -1149,272 +1129,14 @@ export default function AnalyticsPage() {
 
           {/* --- INTELLIGENCE TAB --- */}
           <TabsContent value="intelligence" className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-500">
-
-            {/* Header & AI Summary */}
-            <div className="space-y-8">
-              <div className="relative flex flex-col md:flex-row justify-between items-center p-8 bg-gradient-to-br from-violet-50 via-purple-50/30 to-white dark:from-violet-950/20 dark:via-purple-950/10 dark:to-[oklch(0.14_0.025_264)] rounded-2xl border border-violet-100 dark:border-violet-900/30 shadow-lg overflow-hidden">
-                {/* Decorative blur */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-                <div className="relative z-10">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-3">
-                    <div className="p-2 bg-violet-100 dark:bg-violet-900/30 rounded-lg">
-                      <Sparkles className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-                    </div>
-                    Trading Intelligence
-                  </h2>
-                  <p className="text-sm text-slate-600 dark:text-zinc-400 mt-2 ml-14">
-                    AI-powered insights and behavioral pattern recognition
-                  </p>
-                </div>
-                <div className="flex gap-3 mt-6 md:mt-0 w-full md:w-auto relative z-10">
-                  <Button
-                    onClick={handleGenerateAIReport}
-                    disabled={isGeneratingAI || !!aiReport}
-                    className="w-full md:w-auto bg-violet-600 hover:bg-violet-700 text-white shadow-lg font-semibold px-6"
-                  >
-                    {isGeneratingAI ? (
-                      <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
-                    ) : aiReport ? (
-                      <><CheckCircle2 className="mr-2 h-4 w-4" /> Report Ready</>
-                    ) : (
-                      <><Brain className="mr-2 h-4 w-4" /> Generate Report</>
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="animate-in slide-in-from-top-2 fade-in duration-500 delay-100">
-                <AiSummaryCard />
-              </div>
-
-              {aiReport && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="p-6 bg-white dark:bg-[oklch(0.14_0.025_264)] rounded-xl border border-violet-200 dark:border-violet-900/30 shadow-lg relative overflow-hidden"
-                >
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-violet-500 to-purple-600" />
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-violet-50 dark:bg-violet-950/30 rounded-lg shrink-0">
-                      <Brain className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-slate-900 dark:text-zinc-100 text-sm uppercase tracking-wide">Executive Summary</h3>
-                      <p className="text-slate-600 dark:text-zinc-400 leading-relaxed text-sm">
-                        {aiReport}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Bento Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-              <motion.div
-                className="lg:col-span-2 space-y-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-3">
-                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    Trading DNA
-                  </h3>
-                </div>
-
-                <Card className="border border-slate-200 dark:border-slate-700/50 shadow-xl dark:shadow-black/40 bg-gradient-to-br from-white via-slate-50/50 to-white dark:from-[oklch(0.14_0.025_264)] dark:via-slate-950/20 dark:to-[oklch(0.14_0.025_264)] overflow-hidden relative">
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-                  <CardHeader className="pb-6">
-                    <div className="flex justify-between items-start relative z-10">
-                      <div>
-                        <CardTitle className="text-2xl font-bold">Your Personal Edge</CardTitle>
-                        <CardDescription className="text-base mt-2">Highest probability configurations based on historical performance</CardDescription>
-                      </div>
-                      {personalEdge && (
-                        <Badge className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50 px-3 py-1 text-xs font-semibold">
-                          {personalEdge.winRate > 0.6 ? "High Probability" : "Moderate Probability"}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-6 relative z-10">
-                    {personalEdge ? (
-                      <>
-                        <div className="grid grid-cols-3 gap-5">
-                          <div className="p-5 bg-white dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-md hover:shadow-lg transition-shadow">
-                            <p className="text-xs text-slate-500 dark:text-zinc-500 mb-2 font-semibold uppercase tracking-wider">Top Setup</p>
-                            <p className="text-xl font-bold text-slate-900 dark:text-zinc-100 truncate" title={personalEdge.setupName}>{personalEdge.setupName}</p>
-                          </div>
-                          <div className="p-5 bg-white dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-md hover:shadow-lg transition-shadow">
-                            <p className="text-xs text-slate-500 dark:text-zinc-500 mb-2 font-semibold uppercase tracking-wider">Win Rate</p>
-                            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{(personalEdge.winRate * 100).toFixed(1)}%</p>
-                          </div>
-                          <div className="p-5 bg-white dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-md hover:shadow-lg transition-shadow">
-                            <p className="text-xs text-slate-500 dark:text-zinc-500 mb-2 font-semibold uppercase tracking-wider">Optimal R:R</p>
-                            <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400">1:{personalEdge.optimalRRR.toFixed(1)}</p>
-                          </div>
-                        </div>
-
-                        <div className="h-[280px] w-full bg-slate-50/50 dark:bg-zinc-900/30 rounded-xl p-5 border border-slate-200 dark:border-zinc-800">
-                          <SetupScatterChart data={scatterData} />
-                        </div>
-                      </>
-                    ) : (
-                      <div className="h-[250px] flex items-center justify-center text-slate-400 dark:text-zinc-500 text-sm">
-                        Not enough data to determine edge
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                className="space-y-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div>
-                  <h3 className="text-base font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-3 mb-6">
-                    <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                      <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    Psychology
-                  </h3>
-
-                  <div className="space-y-5">
-                    {/* Good Habits Card */}
-                    <Card className="border-2 border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-br from-emerald-50 to-emerald-50/30 dark:from-emerald-950/30 dark:to-emerald-950/10 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-5">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Good Habits</span>
-                          <CheckCircle className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                        </div>
-                        <div className="space-y-3">
-                          {psychologyAnalysis.goodHabits.slice(0, 2).map((habit, i) => (
-                            <div key={i} className="flex justify-between items-center text-sm bg-white/50 dark:bg-zinc-900/30 p-2 rounded-lg">
-                              <span className="text-slate-700 dark:text-zinc-300 truncate max-w-[140px] font-medium">{habit.factor}</span>
-                              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-base">
-                                {habit.impact >= 0 ? '+' : ''}{habit.impact.toFixed(0)}%
-                              </span>
-                            </div>
-                          ))}
-                          {psychologyAnalysis.goodHabits.length === 0 && (
-                            <span className="text-xs text-slate-400 dark:text-zinc-500 italic">No good habits logged yet</span>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Bad Habits Card */}
-                    <Card className="border-2 border-rose-200 dark:border-rose-800/50 bg-gradient-to-br from-rose-50 to-rose-50/30 dark:from-rose-950/30 dark:to-rose-950/10 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-5">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">Bad Habits</span>
-                          <AlertTriangle className="w-4 h-4 text-rose-500 dark:text-rose-400" />
-                        </div>
-                        <div className="space-y-3">
-                          {psychologyAnalysis.topKillers.slice(0, 2).map((factor, i) => (
-                            <div key={i} className="flex justify-between items-center text-sm bg-white/50 dark:bg-zinc-900/30 p-2 rounded-lg">
-                              <span className="text-slate-700 dark:text-zinc-300 truncate max-w-[140px] font-medium">{factor.factor}</span>
-                              <span className="font-mono font-bold text-rose-600 dark:text-rose-400 text-base">{factor.impact.toFixed(0)}%</span>
-                            </div>
-                          ))}
-                          {psychologyAnalysis.topKillers.length === 0 && (
-                            <span className="text-xs text-slate-400 dark:text-zinc-500 italic">No bad habits logged yet</span>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-base font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-3 mb-6">
-                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    Risk Assessment
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="bg-white dark:bg-zinc-900/50 border-2 border-slate-200 dark:border-zinc-800 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-5">
-                        <p className="text-[10px] text-slate-500 dark:text-zinc-500 uppercase font-bold tracking-wider mb-2">Max Drawdown</p>
-                        <p className="text-2xl font-mono font-bold text-rose-600 dark:text-rose-400">
-                          {riskAnalysis.drawdownMetrics.maxDrawdown.toFixed(1)}%
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-white dark:bg-zinc-900/50 border-2 border-slate-200 dark:border-zinc-800 shadow-md hover:shadow-lg transition-shadow">
-                      <CardContent className="p-5">
-                        <p className="text-[10px] text-slate-500 dark:text-zinc-500 uppercase font-bold tracking-wider mb-2">Kelly Criterion</p>
-                        <p className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400">
-                          {riskAnalysis.kellyCriterion.kellyPercent.toFixed(1)}%
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-              </motion.div>
-            </div>
-
-            {/* Metrics Strip - Redesigned */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="mb-6">
-                <h3 className="text-base font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-3">
-                  <div className="p-1.5 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-                    <BarChart3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  </div>
-                  Performance Metrics
-                </h3>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                {analytics.metricsList.map((metric, i) => (
-                  <Card key={i} className="border-2 border-slate-200 dark:border-zinc-800 shadow-lg bg-white dark:bg-zinc-900/50 hover:shadow-xl transition-shadow">
-                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                      <span className="text-xs font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest mb-3">{metric.name}</span>
-                      <span className={cn(
-                        "text-4xl font-mono font-bold",
-                        metric.value >= 70 ? "text-emerald-600 dark:text-emerald-400" : metric.value >= 40 ? "text-amber-500 dark:text-amber-400" : "text-rose-500 dark:text-rose-400"
-                      )}>
-                        {metric.value.toFixed(0)}
-                      </span>
-                      <div className={cn(
-                        "mt-3 h-1.5 w-full rounded-full overflow-hidden bg-slate-100 dark:bg-zinc-800"
-                      )}>
-                        <div
-                          className={cn(
-                            "h-full rounded-full transition-all",
-                            metric.value >= 70 ? "bg-emerald-500" : metric.value >= 40 ? "bg-amber-500" : "bg-rose-500"
-                          )}
-                          style={{ width: `${metric.value}%` }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </motion.div>
-
+            <InsightsView trades={analytics.filteredTrades} isLoading={loading} />
           </TabsContent>
-        </Tabs>
-      </main>
+
+        </Tabs >
+      </main >
 
       {/* Mobile Calendar FAB */}
-      <div className="fixed bottom-6 right-6 md:hidden z-50">
+      < div className="fixed bottom-6 right-6 md:hidden z-50" >
         <Sheet>
           <SheetTrigger asChild>
             <Button size="icon" className="h-14 w-14 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 transition-transform hover:scale-105">
@@ -1430,7 +1152,7 @@ export default function AnalyticsPage() {
             </div>
           </SheetContent>
         </Sheet>
-      </div>
+      </div >
 
       {advisorProps && (
         <AdvisorPanel
@@ -1442,7 +1164,7 @@ export default function AnalyticsPage() {
           context={advisorProps.context}
         />
       )}
-    </div>
+    </div >
   )
 }
 

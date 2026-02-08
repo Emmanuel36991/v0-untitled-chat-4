@@ -20,6 +20,7 @@ export interface RiskAnalysis {
   profitFactor: number
   currentAvgRiskPercent: number
   currentAvgRiskReward: number
+  expectancy: number
   kellyCriterion: KellyCriterionResult
   drawdownMetrics: {
     maxDrawdown: number
@@ -38,6 +39,7 @@ export function analyzeAndCalculateRisk(trades: Trade[]): RiskAnalysis {
       profitFactor: 1,
       currentAvgRiskPercent: 0,
       currentAvgRiskReward: 1,
+      expectancy: 0,
       kellyCriterion: calculateKellyCriterion(0, 0, 0),
       drawdownMetrics: { maxDrawdown: 0, currentDrawdown: 0, recoveryTrades: 0 },
       recommendations: [],
@@ -61,6 +63,10 @@ export function analyzeAndCalculateRisk(trades: Trade[]): RiskAnalysis {
   const currentAvgRiskPercent = calculateAverageRiskPercent(trades)
   const currentAvgRiskReward = avgLoss !== 0 ? avgWin / avgLoss : 1
 
+  // Expectancy = (Win Rate * Avg Win) - (Loss Rate * Avg Loss)
+  const lossRate = 1 - currentWinRate
+  const expectancy = (currentWinRate * avgWin) - (lossRate * avgLoss)
+
   const kellyCriterion = calculateKellyCriterion(currentWinRate, avgWin, avgLoss)
   const drawdownMetrics = calculateDrawdownMetrics(trades)
 
@@ -73,6 +79,7 @@ export function analyzeAndCalculateRisk(trades: Trade[]): RiskAnalysis {
     profitFactor,
     currentAvgRiskPercent,
     currentAvgRiskReward,
+    expectancy,
     kellyCriterion,
     drawdownMetrics,
     recommendations,

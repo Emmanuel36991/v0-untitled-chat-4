@@ -9,7 +9,7 @@ export interface InstrumentConfig {
   displayDecimals: number
 }
 
-export type PnLDisplayFormat = "dollars" | "points" | "pips" | "percentage"
+export type PnLDisplayFormat = "dollars" | "points" | "pips" | "ticks" | "percentage"
 
 export interface PnLCalculationResult {
   rawPnL: number // Basic price difference * size
@@ -522,6 +522,15 @@ export function formatPnLDisplay(
       }
       // For futures/other instruments, show as points
       return `${pipsSign}${pnlResult.pips.toFixed(2)} pts`
+
+    case "ticks":
+      const ticksSign = pnlResult.points >= 0 ? '+' : ''
+      if (config?.tickSize) {
+        const numTicks = pnlResult.points / config.tickSize
+        return `${ticksSign}${numTicks.toFixed(1)} ticks`
+      }
+      // Fallback to points if tick size not defined
+      return `${ticksSign}${pnlResult.points.toFixed(2)} ticks`
 
     case "percentage":
       const percentSign = pnlResult.percentage >= 0 ? '+' : ''

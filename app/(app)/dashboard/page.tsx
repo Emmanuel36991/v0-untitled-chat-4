@@ -15,6 +15,7 @@ import {
 } from "date-fns"
 import { getTrades } from "@/app/actions/trade-actions"
 import { useUserConfig } from "@/hooks/use-user-config"
+import { useCurrencyConversion } from "@/hooks/use-currency-conversion"
 import type { Trade } from "@/types"
 
 // --- UI Components (Shadcn) ---
@@ -89,6 +90,10 @@ import {
   Bar,
   ReferenceLine,
 } from "recharts"
+
+import { CurrencySelector } from "@/components/currency-selector"
+import { formatPnLEnhanced } from "@/lib/format-pnl-enhanced"
+import { formatCurrencyValue } from "@/lib/currency-config"
 
 // ==========================================
 // 1. DATA MODELS & TYPES
@@ -208,43 +213,53 @@ const AnimatedTitle = React.memo<{ children: React.ReactNode; className?: string
 )
 
 // --- Custom Chart Tooltip ---
-const CustomChartTooltip = ({ active, payload, label, currency = false }: any) => {
+const CustomChartTooltip = ({
+  active,
+  payload,
+  label,
+  currency = false,
+  currencyCode = "USD",
+  convertFn,
+}: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-3 rounded-xl shadow-xl z-50">
         <p className="text-xs font-medium text-muted-foreground mb-2 border-b border-gray-100 dark:border-gray-800 pb-1">
           {label}
         </p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center justify-between gap-4 py-1">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
-                {entry.name === "cumulativePnl" ? "Net P&L" : entry.name}
+        {payload.map((entry: any, index: number) => {
+          const value = typeof entry.value === "number" && convertFn
+            ? convertFn(entry.value)
+            : entry.value
+
+          return (
+            <div key={index} className="flex items-center justify-between gap-4 py-1">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
+                  {entry.name === "cumulativePnl" ? "Net P&L" : entry.name}
+                </p>
+              </div>
+              <p
+                className={cn(
+                  "text-xs font-bold font-mono",
+                  typeof value === "number" && value > 0
+                    ? "text-green-600 dark:text-green-400"
+                    : typeof value === "number" && value < 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-gray-900 dark:text-gray-100"
+                )}
+              >
+                {typeof value === "number"
+                  ? formatCurrencyValue(value, currencyCode as any, { showSign: true })
+                  : value}
               </p>
             </div>
-            <p
-              className={cn(
-                "text-xs font-bold font-mono",
-                typeof entry.value === "number" && entry.value > 0
-                  ? "text-green-600 dark:text-green-400"
-                  : typeof entry.value === "number" && entry.value < 0
-                    ? "text-red-600 dark:text-red-400"
-                    : "text-gray-900 dark:text-gray-100"
-              )}
-            >
-              {currency && typeof entry.value === "number"
-                ? (entry.value < 0 ? "-" : "") + "$"
-                : ""}
-              {typeof entry.value === "number"
-                ? Math.abs(entry.value).toFixed(2)
-                : entry.value}
-            </p>
-          </div>
-        ))}
+          )
+        })}
       </div>
     )
   }
@@ -507,6 +522,15 @@ export default function DashboardPage() {
   // --- Load user config ---
   const { config: userConfig, isLoaded: isConfigLoaded } = useUserConfig()
 
+  // --- Currency conversion ---
+  const {
+    selectedCurrency,
+    displayFormat,
+    setCurrency,
+    setDisplayFormat,
+    convert,
+  } = useCurrencyConversion()
+
   // --- Load Trades from Database ---
   const loadTrades = useCallback(async (showLoading = true) => {
     if (!isConfigLoaded) return
@@ -755,6 +779,14 @@ export default function DashboardPage() {
               ))}
             </div>
 
+            {/* Currency Selector */}
+            <CurrencySelector
+              selectedCurrency={selectedCurrency}
+              displayFormat={displayFormat}
+              onCurrencyChange={setCurrency}
+              onFormatChange={setDisplayFormat}
+            />
+
             <Separator
               orientation="vertical"
               className="h-8 hidden xl:block mx-1 bg-gray-200 dark:bg-gray-800"
@@ -790,10 +822,15 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Net P&L"
-            value={`$${stats.totalPnL.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`}
+            value={
+              displayFormat === "dollars"
+                ? formatCurrencyValue(convert(stats.totalPnL), selectedCurrency, { showSign: false })
+                : displayFormat === "percentage"
+                  ? `${stats.totalPnL >= 0 ? "+" : ""}${((stats.totalPnL / (stats.totalTrades || 1)) * 100).toFixed(2)}%`
+                  : displayFormat === "privacy"
+                    ? stats.totalPnL > 0 ? "+•••" : stats.totalPnL < 0 ? "-•••" : "•••"
+                    : formatCurrencyValue(convert(stats.totalPnL), selectedCurrency, { showSign: false })
+            }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
             icon={Wallet}
@@ -997,11 +1034,21 @@ export default function DashboardPage() {
                               axisLine={false}
                               tickLine={false}
                               tick={{ fontSize: 11, fill: "#6b7280" }}
-                              tickFormatter={(value) => `$${value}`}
+                              tickFormatter={(value) => {
+                                if (displayFormat === "dollars") {
+                                  const symbol = selectedCurrency === "USD" ? "$" : selectedCurrency === "EUR" ? "€" : selectedCurrency === "GBP" ? "£" : selectedCurrency === "JPY" ? "¥" : "$"
+                                  return `${symbol}${convert(value).toFixed(0)}`
+                                } else if (displayFormat === "percentage") {
+                                  return `${value.toFixed(1)}%`
+                                } else if (displayFormat === "privacy") {
+                                  return "•••"
+                                }
+                                return `$${value.toFixed(0)}`
+                              }}
                               width={60}
                             />
                             <RechartsTooltip
-                              content={<CustomChartTooltip currency />}
+                              content={<CustomChartTooltip currency currencyCode={selectedCurrency} convertFn={convert} />}
                               cursor={{
                                 stroke: "#3b82f6",
                                 strokeWidth: 1,

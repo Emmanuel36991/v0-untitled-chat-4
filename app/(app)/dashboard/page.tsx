@@ -1382,7 +1382,7 @@ export default function DashboardPage() {
                 { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
                 { label: "Import", icon: Download, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
                 { label: "Playbook", icon: BookOpen, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
-                { label: "AI Insights", icon: Zap, href: "/insights", color: "bg-rose-600", desc: "Analysis" },
+                { label: "AI Insights", icon: Zap, href: "/analytics?tab=intelligence", color: "bg-rose-600", desc: "Analysis" },
               ].map((action) => (
                 <Link
                   key={action.label}
@@ -1460,7 +1460,7 @@ export default function DashboardPage() {
                   className="w-full bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg font-bold border-0"
                   asChild
                 >
-                  <Link href="/insights">
+                  <Link href="/analytics?tab=intelligence">
                     View All Insights
                   </Link>
                 </Button>

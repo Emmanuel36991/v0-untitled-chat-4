@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   Area,
   AreaChart,
@@ -63,6 +64,7 @@ import { useAIAdvisor } from "@/hooks/use-ai-advisor"
 import { AdvisorPanel } from "@/components/ai/advisor-panel"
 import { EnhancedHexagram } from "@/components/charts/enhanced-hexagram"
 import { TimingAnalyticsDashboard } from "@/components/charts/timing-analytics-dashboard"
+import { InsightsView } from "@/components/analytics/insights-view"
 
 
 // --- OKLCH COLOR PALETTE (Premium Design Spec) ---
@@ -625,7 +627,9 @@ export default function AnalyticsPage() {
   const [confluenceStats, setConfluenceStats] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
-  const [mainTab, setMainTab] = useState("overview")
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get("tab")
+  const [mainTab, setMainTab] = useState(initialTab === "intelligence" ? "intelligence" : "overview")
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [aiReport, setAiReport] = useState<string | null>(null)
 

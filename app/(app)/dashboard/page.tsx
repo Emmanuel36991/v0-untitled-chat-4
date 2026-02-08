@@ -94,6 +94,7 @@ import {
 import { CurrencySelector } from "@/components/currency-selector"
 import { formatPnLEnhanced } from "@/lib/format-pnl-enhanced"
 import { formatCurrencyValue } from "@/lib/currency-config"
+import { generateAIInsights } from "@/lib/ai-insights-generator"
 
 // ==========================================
 // 1. DATA MODELS & TYPES
@@ -717,6 +718,14 @@ export default function DashboardPage() {
       .sort((a, b) => b.pnl - a.pnl)
       .slice(0, 5) // Top 5
   }, [filteredTrades])
+
+  // Generate AI Insights
+  const aiInsights = useMemo(() => {
+    return generateAIInsights(filteredTrades, [], 30) // TODO: Pass actual playbook strategies when available
+  }, [filteredTrades])
+
+  // Pick top insight to display
+  const topInsight = aiInsights[0] || null
 
   // --- Render ---
 
@@ -1425,25 +1434,34 @@ export default function DashboardPage() {
                   <span className="text-[10px] font-medium opacity-70">Just now</span>
                 </div>
                 <CardTitle className="text-lg font-bold tracking-tight">
-                  Pattern Detected
+                  {topInsight ? topInsight.title : 'AI Insights'}
                 </CardTitle>
               </CardHeader>
               <CardContent className="relative z-10 space-y-4">
-                <p className="text-sm text-indigo-50 font-medium leading-relaxed opacity-90">
-                  Your win rate on{" "}
-                  <span className="text-white font-bold bg-white/10 px-1 rounded">
-                    Long
-                  </span>{" "}
-                  trades in the morning session is{" "}
-                  <span className="text-green-300 font-bold">15% higher</span>. Consider
-                  increasing size before 11:00 AM.
-                </p>
+                {topInsight ? (
+                  <>
+                    <p className={cn(
+                      "text-sm font-medium leading-relaxed opacity-90",
+                      topInsight.severity === 'positive' && "text-indigo-50",
+                      topInsight.severity === 'warning' && "text-yellow-100",
+                      topInsight.severity === 'critical' && "text-rose-100",
+                      topInsight.severity === 'neutral' && "text-indigo-50"
+                    )}>
+                      {topInsight.message}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-indigo-50 font-medium leading-relaxed opacity-90">
+                    Keep trading to unlock AI insights... Trade data will be analyzed to identify patterns and opportunities.
+                  </p>
+                )}
                 <Button
                   variant="secondary"
                   className="w-full bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg font-bold border-0"
                   asChild
                 >
                   <Link href="/insights">
+                    View All Insights
                   </Link>
                 </Button>
               </CardContent>

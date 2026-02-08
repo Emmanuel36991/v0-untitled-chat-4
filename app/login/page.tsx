@@ -132,8 +132,8 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Welcome back</h2>
-            <p className="text-slate-500">Enter your credentials to access your account</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Welcome back to Concentrade</h2>
+            <p className="text-slate-600">Continue your journey to trading mastery</p>
           </div>
 
           {error && (
@@ -254,13 +254,7 @@ export default function LoginPage() {
                 )}
               </Button>
 
-              {/* Security Badge */}
-              <div className="flex items-center justify-center gap-2 mt-3">
-                <Shield className="w-4 h-4 text-slate-400" />
-                <p className="text-xs text-slate-500">
-                  Bank-grade encryption & 256-bit security
-                </p>
-              </div>
+
             </motion.div>
           </form>
 

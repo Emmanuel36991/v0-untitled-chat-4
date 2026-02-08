@@ -171,8 +171,8 @@ export default function SignUpPage() {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h2>
-            <p className="text-slate-500">Start your 14-day free trial. No credit card required.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Begin Your Trading Evolution</h2>
+            <p className="text-slate-600">Join Concentrade and unlock your full trading potential</p>
           </div>
 
           {error && (
@@ -334,13 +334,7 @@ export default function SignUpPage() {
                 )}
               </Button>
 
-              {/* Security Badge */}
-              <div className="flex items-center justify-center gap-2 mt-3">
-                <Shield className="w-4 h-4 text-slate-400" />
-                <p className="text-xs text-slate-500">
-                  Bank-grade encryption & 256-bit security
-                </p>
-              </div>
+
 
               <p className="text-xs text-center text-slate-500 mt-3">
                 By creating an account, you agree to our{" "}

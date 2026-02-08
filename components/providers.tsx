@@ -13,16 +13,17 @@ export function Providers({ children, ...props }: ThemeProviderProps) {
     setMounted(true)
   }, [])
 
-  // Prevent hydration mismatch by not rendering providers until client is mounted
-  if (!mounted) {
-    return <>{children}</>
-  }
-
+  // Always render the provider structure to avoid conditional hook calls
+  // but control visibility of theme-dependent components
   return (
     <NextThemesProvider {...props}>
       {children}
-      <Toaster />
-      <AccessibilityToolbar />
+      {mounted && (
+        <>
+          <Toaster />
+          <AccessibilityToolbar />
+        </>
+      )}
     </NextThemesProvider>
   )
 }

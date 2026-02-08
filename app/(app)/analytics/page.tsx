@@ -1,19 +1,19 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import { 
-  Area, 
-  AreaChart, 
-  Bar, 
-  BarChart, 
-  CartesianGrid, 
-  Cell, 
-  Pie, 
-  PieChart, 
-  ResponsiveContainer, 
-  Tooltip as RechartsTooltip, 
-  XAxis, 
-  YAxis 
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -50,7 +50,8 @@ import {
   Layers,
   Shield,
   AlertTriangle,
-  Zap
+  Zap,
+  Check
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
@@ -69,6 +70,30 @@ import { AiSummaryCard } from "@/components/analytics/ai-summary-card"
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
 import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
 import { analyzeAndCalculateRisk } from "@/lib/insights/risk-calculator"
+
+// --- OKLCH COLOR PALETTE (Premium Design Spec) ---
+const COLORS = {
+  // Data Visualization - Emerald (Wins/Profit)
+  emerald: {
+    light: '#10B981',
+    medium: '#059669',
+    strong: '#047857',
+  },
+  // Data Visualization - Rose (Losses/Negative)
+  rose: {
+    light: '#EF4444',
+    medium: '#DC2626',
+    strong: '#B91C1C',
+  },
+  // Chart 5-Color Palette
+  chartPalette: [
+    '#8B5CF6', // Purple
+    '#EC4899', // Pink
+    '#06B6D4', // Cyan
+    '#10B981', // Emerald
+    '#F59E0B', // Amber
+  ]
+}
 
 // --- 1. TYPES ---
 interface AnalyticsFilters {
@@ -135,17 +160,22 @@ const SheetContent = React.forwardRef<
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
-// --- 3. CUSTOM RECHARTS TOOLTIP ---
+// --- 3. PREMIUM GLASSMORPHISM TOOLTIP ---
 const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900 border border-slate-700 shadow-2xl rounded-lg p-3 backdrop-blur-sm">
-        <p className="text-xs font-semibold text-slate-300 mb-2">{label}</p>
+      <div className="bg-[oklch(0.14_0.025_264)]/95 dark:bg-[oklch(0.14_0.025_264)]/98 backdrop-blur-xl border border-slate-300 dark:border-slate-700/70 shadow-2xl dark:shadow-black/60 rounded-xl p-4">
+        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-3 uppercase tracking-[0.1em]">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm font-mono font-medium text-white flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-            {entry.name}: {prefix}{typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
-          </p>
+          <div key={index} className="flex items-center justify-between gap-4 mb-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full shadow-md" style={{ backgroundColor: entry.color }} />
+              <span className="text-xs text-slate-600 dark:text-slate-300">{entry.name}</span>
+            </div>
+            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white tabular-nums">
+              {prefix}{typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
+            </span>
+          </div>
         ))}
       </div>
     )
@@ -199,30 +229,30 @@ function DatePickerWithRange({ className, date, setDate }: any) {
       <PopoverContent className="w-auto p-0 border-0 shadow-xl rounded-xl overflow-hidden ring-1 ring-slate-200" align="start">
         <div className="flex flex-col sm:flex-row bg-white">
           <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50/50 sm:w-[160px]">
-             <div className="px-2 py-1.5 mb-1">
-               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Select</span>
-             </div>
-             {presets.map((preset) => {
-               const isActive = isPresetActive(preset.getValue())
-               return (
-                 <button
-                   key={preset.label}
-                   onClick={() => {
-                     setDate(preset.getValue())
-                     setOpen(false)
-                   }}
-                   className={cn(
-                     "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
-                     isActive
-                       ? "bg-blue-50 text-blue-600"
-                       : "hover:bg-white text-slate-600"
-                   )}
-                 >
-                   {preset.label}
-                   {isActive && <Check className="w-3 h-3" />}
-                 </button>
-               )
-             })}
+            <div className="px-2 py-1.5 mb-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Select</span>
+            </div>
+            {presets.map((preset) => {
+              const isActive = isPresetActive(preset.getValue())
+              return (
+                <button
+                  key={preset.label}
+                  onClick={() => {
+                    setDate(preset.getValue())
+                    setOpen(false)
+                  }}
+                  className={cn(
+                    "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
+                    isActive
+                      ? "bg-blue-50 text-blue-600"
+                      : "hover:bg-white text-slate-600"
+                  )}
+                >
+                  {preset.label}
+                  {isActive && <Check className="w-3 h-3" />}
+                </button>
+              )
+            })}
           </div>
 
           <div className="p-4">
@@ -241,8 +271,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               }}
             />
             <div className="flex items-center justify-end pt-4 border-t border-slate-100 mt-2 gap-2">
-               <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
-               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
+              <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
             </div>
           </div>
         </div>
@@ -285,30 +315,30 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
             ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30"
             : "bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30"
         )}>
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Net PnL</span>
-           <span className={cn(
-             "text-3xl font-mono font-medium tracking-tight",
-             stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
-           )}>
-             {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
-           </span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Net PnL</span>
+          <span className={cn(
+            "text-3xl font-mono font-medium tracking-tight",
+            stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+          )}>
+            {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
+          </span>
         </div>
 
         <div className="p-6 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between h-28">
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Win Rate</span>
-           <div className="flex items-baseline gap-2">
-             <span className="text-3xl font-mono font-medium text-slate-900 dark:text-zinc-100">{stats.winRate.toFixed(0)}%</span>
-             <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">{stats.count} Trades</span>
-           </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Win Rate</span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-mono font-medium text-slate-900 dark:text-zinc-100">{stats.winRate.toFixed(0)}%</span>
+            <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">{stats.count} Trades</span>
+          </div>
         </div>
 
         <div className="p-6 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between h-28">
-           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Best Setup</span>
-           <div className="flex items-center gap-2 mt-auto">
-             <Badge variant="secondary" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 border-blue-100 dark:border-blue-900/50">
-                {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
-             </Badge>
-           </div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Best Setup</span>
+          <div className="flex items-center gap-2 mt-auto">
+            <Badge variant="secondary" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 border-blue-100 dark:border-blue-900/50">
+              {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
+            </Badge>
+          </div>
         </div>
       </div>
 
@@ -454,8 +484,8 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
                         "relative aspect-square rounded-lg border flex flex-col items-center justify-center gap-1 transition-all shadow-sm group",
                         isToday ? "ring-2 ring-indigo-500 ring-offset-2 z-10" : "hover:border-indigo-300 hover:shadow-md",
                         !data ? "bg-white border-slate-100" :
-                        data.pnl > 0 ? "bg-emerald-50/30 border-emerald-100" :
-                        "bg-rose-50/30 border-rose-100"
+                          data.pnl > 0 ? "bg-emerald-50/30 border-emerald-100" :
+                            "bg-rose-50/30 border-rose-100"
                       )}
                     >
                       <span className={cn(
@@ -469,7 +499,7 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
                             "text-xs font-mono font-medium tracking-tight",
                             data.pnl > 0 ? "text-emerald-700" : "text-rose-700"
                           )}>
-                            {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl/1000).toFixed(1)}k` : data.pnl.toFixed(0)}
+                            {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl / 1000).toFixed(1)}k` : data.pnl.toFixed(0)}
                           </span>
                           <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50">
                             {data.trades}
@@ -520,37 +550,37 @@ function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: an
 
 // --- 6. METRIC CARDS ---
 const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => (
-  <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-zinc-900/50 p-6 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-zinc-800 hover:shadow-md transition-all duration-300">
+  <div className="group relative overflow-hidden rounded-xl bg-white dark:bg-[oklch(0.14_0.025_264)] p-6 shadow-xl dark:shadow-black/40 border border-slate-200 dark:border-slate-700/50 hover:shadow-2xl transition-all duration-300">
     <div className="flex items-start justify-between mb-4">
       <div className="p-2 rounded-lg bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/30 transition-colors">
-         <Icon className="h-4 w-4 text-slate-500 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+        <Icon className="h-4 w-4 text-slate-500 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
       </div>
       {change && (
-           <div className={cn(
-             "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border",
-             trend === "up" ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/50" : "",
-             trend === "down" ? "text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900/50" : "text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700",
-           )}>
-           {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
-           {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
-           {change}
-         </div>
+        <div className={cn(
+          "flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border",
+          trend === "up" ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/50" : "",
+          trend === "down" ? "text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border-rose-100 dark:border-rose-900/50" : "text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700",
+        )}>
+          {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
+          {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
+          {change}
+        </div>
       )}
     </div>
     <div>
-       <h3 className="text-2xl font-mono font-semibold tracking-tight text-slate-900 dark:text-zinc-100 font-feature-settings-zero">{value}</h3>
-       <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mt-1">{title}</p>
+      <h3 className="text-4xl font-mono font-bold tracking-tight text-slate-900 dark:text-zinc-100 tabular-nums">{value}</h3>
+      <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mt-1">{title}</p>
     </div>
   </div>
 ))
 
 const ChartCard = ({ title, subtitle, children, action, className }: any) => (
-  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] bg-white dark:bg-zinc-900/50 rounded-xl", className)}>
-    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-zinc-800">
+  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700/50 shadow-lg dark:shadow-black/40 bg-white dark:bg-[oklch(0.14_0.025_264)] rounded-xl", className)}>
+    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
       <div className="flex items-center gap-3">
         <div className="space-y-0.5">
           <CardTitle className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-wide uppercase">{title}</CardTitle>
-          {subtitle && <CardDescription className="text-xs text-slate-400 dark:text-zinc-500">{subtitle}</CardDescription>}
+          {subtitle && <CardDescription className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</CardDescription>}
         </div>
       </div>
       {action}
@@ -563,7 +593,7 @@ const DashboardSkeleton = () => (
   <div className="w-full min-h-screen bg-slate-50 dark:bg-zinc-950 p-8 space-y-8 animate-pulse">
     <div className="h-16 w-full border-b border-slate-200 dark:border-zinc-800" />
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
-       {[1,2,3,4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-zinc-800 rounded-xl" />)}
+      {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-zinc-800 rounded-xl" />)}
     </div>
   </div>
 )
@@ -590,7 +620,7 @@ export default function AnalyticsPage() {
     timeframe: "daily",
   })
 
-  const { openAdvisor, isOpen, close, advisorData } = useAIAdvisor()
+  const { openAdvisor, isOpen, closeAdvisor, advisorProps } = useAIAdvisor()
 
   const handleGenerateAIReport = () => {
     setIsGeneratingAI(true)
@@ -625,10 +655,10 @@ export default function AnalyticsPage() {
   // --- MEMOIZED ANALYTICS ---
   const analytics = useMemo((): ProcessedAnalytics => {
     const emptyStats: ProcessedAnalytics = {
-        totalTrades: 0, wins: 0, losses: 0, breakeven: 0, totalPnL: 0, avgPnL: 0, winRate: 0, profitFactor: 0,
-        maxDrawdown: 0, consistencyScore: 0, adaptabilityScore: 0, executionScore: 0, riskManagementScore: 0, efficiencyScore: 0, overallScore: 0,
-        monthlyData: [], dailyData: [], setupDistribution: {}, instrumentDistribution: {}, outcomeDistribution: { wins: 0, losses: 0, breakeven: 0 },
-        metricsList: []
+      totalTrades: 0, wins: 0, losses: 0, breakeven: 0, totalPnL: 0, avgPnL: 0, winRate: 0, profitFactor: 0,
+      maxDrawdown: 0, consistencyScore: 0, adaptabilityScore: 0, executionScore: 0, riskManagementScore: 0, efficiencyScore: 0, overallScore: 0,
+      monthlyData: [], dailyData: [], setupDistribution: {}, instrumentDistribution: {}, outcomeDistribution: { wins: 0, losses: 0, breakeven: 0 },
+      metricsList: []
     }
 
     if (!trades.length) return emptyStats
@@ -663,26 +693,26 @@ export default function AnalyticsPage() {
     const monthlyMap = new Map<string, { profit: number; trades: number }>()
 
     filteredTrades.forEach((t) => {
-        const dateStr = format(new Date(t.date), "yyyy-MM-dd")
-        const dCurr = dailyMap.get(dateStr) || { pnl: 0, trades: 0 }
-        dailyMap.set(dateStr, { pnl: dCurr.pnl + Number(t.pnl), trades: dCurr.trades + 1 })
+      const dateStr = format(new Date(t.date), "yyyy-MM-dd")
+      const dCurr = dailyMap.get(dateStr) || { pnl: 0, trades: 0 }
+      dailyMap.set(dateStr, { pnl: dCurr.pnl + Number(t.pnl), trades: dCurr.trades + 1 })
 
-        const monthStr = format(new Date(t.date), "MMM yyyy")
-        const mCurr = monthlyMap.get(monthStr) || { profit: 0, trades: 0 }
-        monthlyMap.set(monthStr, { profit: mCurr.profit + Number(t.pnl), trades: mCurr.trades + 1 })
+      const monthStr = format(new Date(t.date), "MMM yyyy")
+      const mCurr = monthlyMap.get(monthStr) || { profit: 0, trades: 0 }
+      monthlyMap.set(monthStr, { profit: mCurr.profit + Number(t.pnl), trades: mCurr.trades + 1 })
     })
 
     let cumulative = 0
     const dailyData = Array.from(dailyMap.entries())
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([date, data]) => {
-            cumulative += data.pnl
-            return { date, ...data, cumulative }
-        })
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([date, data]) => {
+        cumulative += data.pnl
+        return { date, ...data, cumulative }
+      })
 
     const monthlyData = Array.from(monthlyMap.entries())
-        .map(([month, data]) => ({ month, ...data }))
-        .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
+      .map(([month, data]) => ({ month, ...data }))
+      .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
 
     // Metrics Scores Calculation
     const monthlyReturns = monthlyData.map(m => m.profit)
@@ -695,9 +725,9 @@ export default function AnalyticsPage() {
     let peak = -Infinity
     let maxDD = 0
     dailyData.forEach(day => {
-        if (day.cumulative > peak) peak = day.cumulative
-        const dd = peak - day.cumulative
-        if (dd > maxDD) maxDD = dd
+      if (day.cumulative > peak) peak = day.cumulative
+      const dd = peak - day.cumulative
+      if (dd > maxDD) maxDD = dd
     })
     const totalEquity = Math.abs(totalPnL) + 1000
     const ddPercentage = maxDD / totalEquity
@@ -710,40 +740,40 @@ export default function AnalyticsPage() {
     const efficiencyScore = Math.max(0, Math.min(100, (profitFactor) * 33))
 
     const overallScore = Math.round(
-        consistencyScore * 0.2 +
-        riskManagementScore * 0.25 +
-        executionScore * 0.2 +
-        efficiencyScore * 0.2 +
-        adaptabilityScore * 0.15
+      consistencyScore * 0.2 +
+      riskManagementScore * 0.25 +
+      executionScore * 0.2 +
+      efficiencyScore * 0.2 +
+      adaptabilityScore * 0.15
     )
 
     const setupDist: Record<string, any> = {}
     const instrumentDist: Record<string, any> = {}
 
     filteredTrades.forEach(t => {
-        const s = t.setup_name || "No Setup"
-        if (!setupDist[s]) setupDist[s] = { count: 0, pnl: 0, wins: 0 }
-        setupDist[s].count++
-        setupDist[s].pnl += t.pnl
-        if (t.pnl > 0) setupDist[s].wins++
+      const s = t.setup_name || "No Setup"
+      if (!setupDist[s]) setupDist[s] = { count: 0, pnl: 0, wins: 0 }
+      setupDist[s].count++
+      setupDist[s].pnl += t.pnl
+      if (t.pnl > 0) setupDist[s].wins++
 
-        const i = t.instrument
-        if (!instrumentDist[i]) instrumentDist[i] = { count: 0, pnl: 0, wins: 0 }
-        instrumentDist[i].count++
-        instrumentDist[i].pnl += t.pnl
-        if (t.pnl > 0) instrumentDist[i].wins++
+      const i = t.instrument
+      if (!instrumentDist[i]) instrumentDist[i] = { count: 0, pnl: 0, wins: 0 }
+      instrumentDist[i].count++
+      instrumentDist[i].pnl += t.pnl
+      if (t.pnl > 0) instrumentDist[i].wins++
     })
 
     Object.keys(setupDist).forEach(k => setupDist[k].winRate = (setupDist[k].wins / setupDist[k].count) * 100)
     Object.keys(instrumentDist).forEach(k => instrumentDist[k].winRate = (instrumentDist[k].wins / instrumentDist[k].count) * 100)
 
     const metricsList = [
-        { name: "Win Rate", value: executionScore },
-        { name: "Risk Control", value: riskManagementScore },
-        { name: "Consistency", value: consistencyScore },
-        { name: "Adaptability", value: adaptabilityScore },
-        { name: "Profit Factor", value: efficiencyScore },
-        { name: "Risk/Reward", value: Math.min(profitFactor * 20, 100) }
+      { name: "Win Rate", value: executionScore },
+      { name: "Risk Control", value: riskManagementScore },
+      { name: "Consistency", value: consistencyScore },
+      { name: "Adaptability", value: adaptabilityScore },
+      { name: "Profit Factor", value: efficiencyScore },
+      { name: "Risk/Reward", value: Math.min(profitFactor * 20, 100) }
     ]
 
     return {
@@ -784,33 +814,33 @@ export default function AnalyticsPage() {
     { name: "Breakeven", value: analytics.breakeven, color: "#94a3b8" }
   ], [analytics])
 
-  const instrumentData = useMemo(() => 
+  const instrumentData = useMemo(() =>
     Object.entries(analytics.instrumentDistribution).map(([key, val]) => ({
       name: key,
       value: val.pnl,
       color: val.pnl >= 0 ? "#10b981" : "#ef4444"
     }))
-  , [analytics])
+    , [analytics])
 
-  const setupData = useMemo(() => 
+  const setupData = useMemo(() =>
     Object.entries(analytics.setupDistribution).map(([key, val]) => ({
       name: key,
       value: val.count,
       color: "#3b82f6"
     }))
-  , [analytics])
+    , [analytics])
 
   const personalEdge = setupAnalysis.personalEdge
 
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-20 font-sans text-slate-900 dark:text-zinc-100 transition-colors duration-500">
-      
+    <div className="min-h-screen bg-[oklch(0.96_0.002_264)] dark:bg-[oklch(0.08_0.018_264)] pb-20 font-sans text-slate-900 dark:text-zinc-100 transition-colors duration-500">
+
       {/* --- HEADER --- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700/50 bg-white/80 dark:bg-[oklch(0.14_0.025_264)]/80 backdrop-blur-lg shadow-sm dark:shadow-black/20">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          
+
           <div className="flex items-center gap-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 dark:bg-blue-600 text-white shadow-sm">
               <LayoutDashboard className="h-4 w-4" />
@@ -828,10 +858,10 @@ export default function AnalyticsPage() {
               <div className="w-[200px] border-r border-slate-100">
                 <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
               </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowFilters(!showFilters)} 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
                 className={cn(
                   "h-9 rounded-md px-3 text-slate-500 hover:text-blue-600 hover:bg-slate-50",
                   showFilters && "bg-slate-100 text-blue-600"
@@ -842,14 +872,14 @@ export default function AnalyticsPage() {
             </div>
 
             <Sheet>
-               <SheetTrigger asChild>
-                 <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors rounded-lg shadow-sm">
-                    <CalendarIcon className="h-4 w-4" />
-                 </Button>
-               </SheetTrigger>
-               <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-zinc-950/50">
-                  <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
-               </SheetContent>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors rounded-lg shadow-sm">
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-zinc-950/50">
+                <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
+              </SheetContent>
             </Sheet>
           </div>
         </div>
@@ -857,7 +887,7 @@ export default function AnalyticsPage() {
         {/* Filter Drawer */}
         <AnimatePresence>
           {showFilters && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -876,8 +906,8 @@ export default function AnalyticsPage() {
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-500">Setup</Label>
-                      <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-500">Setup</Label>
+                    <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
                       <SelectTrigger className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Setups</SelectItem>
@@ -893,19 +923,19 @@ export default function AnalyticsPage() {
       </header>
 
       <main className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-        
+
         <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
-          
+
           <div className="flex border-b border-slate-200 dark:border-zinc-800">
             <TabsList className="bg-transparent p-0 gap-6 h-auto">
-              <TabsTrigger 
-                value="overview" 
+              <TabsTrigger
+                value="overview"
                 className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 Overview
               </TabsTrigger>
-              <TabsTrigger 
-                value="intelligence" 
+              <TabsTrigger
+                value="intelligence"
                 className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 font-medium text-slate-500 transition-all hover:text-slate-700"
               >
                 <Sparkles className="w-3 h-3 mr-2" />
@@ -917,44 +947,44 @@ export default function AnalyticsPage() {
           <TabsContent value="overview" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {/* --- 1. KPI CARDS --- */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <MetricCard 
-                title="Net P&L" 
-                value={`$${analytics.totalPnL.toLocaleString()}`} 
-                change={`${analytics.totalPnL > 0 ? "+" : ""}${((analytics.totalPnL / (Math.abs(analytics.totalPnL - 500) || 1)) * 10).toFixed(1)}%`} 
-                trend={analytics.totalPnL >= 0 ? "up" : "down"} 
-                icon={DollarSign} 
+              <MetricCard
+                title="Net P&L"
+                value={`$${analytics.totalPnL.toLocaleString()}`}
+                change={`${analytics.totalPnL > 0 ? "+" : ""}${((analytics.totalPnL / (Math.abs(analytics.totalPnL - 500) || 1)) * 10).toFixed(1)}%`}
+                trend={analytics.totalPnL >= 0 ? "up" : "down"}
+                icon={DollarSign}
               />
-              <MetricCard 
-                title="Win Rate" 
-                value={`${analytics.winRate.toFixed(1)}%`} 
-                change={analytics.winRate > 50 ? "Healthy" : "Weak"} 
-                trend={analytics.winRate > 50 ? "up" : "down"} 
-                icon={Target} 
+              <MetricCard
+                title="Win Rate"
+                value={`${analytics.winRate.toFixed(1)}%`}
+                change={analytics.winRate > 50 ? "Healthy" : "Weak"}
+                trend={analytics.winRate > 50 ? "up" : "down"}
+                icon={Target}
               />
-              <MetricCard 
-                title="Profit Factor" 
-                value={analytics.profitFactor.toFixed(2)} 
-                trend="neutral" 
-                change="Ratio" 
-                icon={Activity} 
+              <MetricCard
+                title="Profit Factor"
+                value={analytics.profitFactor.toFixed(2)}
+                trend="neutral"
+                change="Ratio"
+                icon={Activity}
               />
-              <MetricCard 
-                title="Total Volume" 
-                value={analytics.totalTrades} 
-                change={`$${analytics.avgPnL.toFixed(0)} avg`} 
-                icon={BarChart3} 
+              <MetricCard
+                title="Total Volume"
+                value={analytics.totalTrades}
+                change={`$${analytics.avgPnL.toFixed(0)} avg`}
+                icon={BarChart3}
               />
             </div>
 
             {/* --- 2. MAIN CHARTS (RECHARTS) --- */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* EQUITY CURVE */}
-              <ChartCard 
-                title="Equity Curve" 
-                subtitle="Cumulative Performance" 
-                className="lg:col-span-2 h-[350px]" 
+              <ChartCard
+                title="Equity Curve"
+                subtitle="Cumulative Performance"
+                className="lg:col-span-2 h-[350px]"
                 action={
-                   <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-600"><Download className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-600"><Download className="h-4 w-4" /></Button>
                 }
               >
                 <div className="h-full w-full">
@@ -962,34 +992,34 @@ export default function AnalyticsPage() {
                     <AreaChart data={analytics.dailyData}>
                       <defs>
                         <linearGradient id="colorPnL" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-zinc-800" />
-                      <XAxis 
-                        dataKey="date" 
+                      <XAxis
+                        dataKey="date"
                         tickFormatter={(str) => format(new Date(str), "MMM d")}
                         className="fill-slate-500 dark:fill-zinc-500"
-                        fontSize={10} 
-                        tickLine={false} 
-                        axisLine={false} 
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
                       />
-                      <YAxis 
+                      <YAxis
                         className="fill-slate-500 dark:fill-zinc-500"
-                        fontSize={10} 
-                        tickLine={false} 
+                        fontSize={10}
+                        tickLine={false}
                         axisLine={false}
                         tickFormatter={(val) => `$${val}`}
                       />
                       <RechartsTooltip content={<CustomTooltip />} />
-                      <Area 
-                        type="monotone" 
-                        dataKey="cumulative" 
-                        stroke="#3b82f6" 
+                      <Area
+                        type="monotone"
+                        dataKey="cumulative"
+                        stroke="#3b82f6"
                         strokeWidth={2.5}
-                        fillOpacity={1} 
-                        fill="url(#colorPnL)" 
+                        fillOpacity={1}
+                        fill="url(#colorPnL)"
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -1016,8 +1046,8 @@ export default function AnalyticsPage() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
-                     <span className="text-3xl font-mono font-bold text-slate-900">{analytics.totalTrades}</span>
-                     <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Trades</span>
+                    <span className="text-3xl font-mono font-bold text-slate-900">{analytics.totalTrades}</span>
+                    <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Trades</span>
                   </div>
                 </div>
               </ChartCard>
@@ -1025,75 +1055,75 @@ export default function AnalyticsPage() {
 
             {/* --- 3. BREAKDOWNS (RECHARTS) --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ChartCard title="By Instrument" subtitle="P&L Distribution">
-                  <div className="h-[200px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={instrumentData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`}/>
-                        <RechartsTooltip cursor={{fill: '#f1f5f9'}} content={<CustomTooltip prefix="$" />} />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {instrumentData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </ChartCard>
-                
-                <ChartCard title="By Strategy" subtitle="Setup Frequency">
-                  <div className="h-[200px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={setupData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                        <RechartsTooltip cursor={{fill: '#f1f5f9'}} content={<CustomTooltip />} />
-                        <Bar dataKey="value" fill="#60a5fa" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </ChartCard>
+              <ChartCard title="By Instrument" subtitle="P&L Distribution">
+                <div className="h-[200px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={instrumentData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                      <RechartsTooltip cursor={{ fill: '#f1f5f9' }} content={<CustomTooltip prefix="$" />} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {instrumentData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+
+              <ChartCard title="By Strategy" subtitle="Setup Frequency">
+                <div className="h-[200px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={setupData}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                      <RechartsTooltip cursor={{ fill: '#f1f5f9' }} content={<CustomTooltip />} />
+                      <Bar dataKey="value" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
             </div>
 
             {/* --- 4. INTELLIGENCE MODULES --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl h-full">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                      <Brain className="w-4 h-4 text-blue-500" />
-                      Trader DNA
-                    </CardTitle>
-                    <Badge variant="outline" className="font-mono text-blue-600 bg-blue-50 border-blue-100">
-                      {analytics.overallScore}/100
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="h-[300px] flex items-center justify-center">
-                      <EnhancedHexagram
-                        winPercentage={analytics.winRate}
-                        consistency={analytics.consistencyScore}
-                        maxDrawdown={analytics.riskManagementScore}
-                        recoveryFactor={analytics.adaptabilityScore}
-                        profitFactor={Math.min(analytics.profitFactor, 5)}
-                        avgWinLoss={analytics.efficiencyScore}
-                        totalScore={analytics.overallScore}
-                      />
-                  </CardContent>
-                </Card>
+              <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl h-full">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-blue-500" />
+                    Trader DNA
+                  </CardTitle>
+                  <Badge variant="outline" className="font-mono text-blue-600 bg-blue-50 border-blue-100">
+                    {analytics.overallScore}/100
+                  </Badge>
+                </CardHeader>
+                <CardContent className="h-[300px] flex items-center justify-center">
+                  <EnhancedHexagram
+                    winPercentage={analytics.winRate}
+                    consistency={analytics.consistencyScore}
+                    maxDrawdown={analytics.riskManagementScore}
+                    recoveryFactor={analytics.adaptabilityScore}
+                    profitFactor={Math.min(analytics.profitFactor, 5)}
+                    avgWinLoss={analytics.efficiencyScore}
+                    totalScore={analytics.overallScore}
+                  />
+                </CardContent>
+              </Card>
 
-                <TimingAnalyticsDashboard
-                  trades={trades}
-                  className="rounded-xl bg-white border border-slate-200 shadow-sm h-full"
-                />
+              <TimingAnalyticsDashboard
+                trades={trades}
+                className="rounded-xl bg-white border border-slate-200 shadow-sm h-full"
+              />
             </div>
 
           </TabsContent>
 
           {/* --- INTELLIGENCE TAB --- */}
           <TabsContent value="intelligence" className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-500">
-            
+
             {/* Header & AI Summary */}
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row justify-between items-center p-6 bg-gradient-to-br from-blue-50 via-white to-white rounded-xl border border-blue-100 shadow-sm">
@@ -1107,8 +1137,8 @@ export default function AnalyticsPage() {
                   </p>
                 </div>
                 <div className="flex gap-3 mt-4 md:mt-0 w-full md:w-auto">
-                  <Button 
-                    onClick={handleGenerateAIReport} 
+                  <Button
+                    onClick={handleGenerateAIReport}
                     disabled={isGeneratingAI || !!aiReport}
                     className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white shadow-md font-medium"
                   >
@@ -1126,9 +1156,9 @@ export default function AnalyticsPage() {
               <div className="animate-in slide-in-from-top-2 fade-in duration-500 delay-100">
                 <AiSummaryCard />
               </div>
-              
+
               {aiReport && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   className="p-6 bg-white rounded-xl border border-indigo-100 shadow-sm relative overflow-hidden"
@@ -1136,7 +1166,7 @@ export default function AnalyticsPage() {
                   <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
                   <div className="flex items-start gap-4">
                     <div className="p-3 bg-indigo-50 rounded-lg shrink-0">
-                       <Brain className="w-5 h-5 text-indigo-600" />
+                      <Brain className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div className="space-y-1">
                       <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">Executive Summary</h3>
@@ -1151,8 +1181,8 @@ export default function AnalyticsPage() {
 
             {/* Bento Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
-              <motion.div 
+
+              <motion.div
                 className="lg:col-span-2 space-y-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1166,7 +1196,7 @@ export default function AnalyticsPage() {
 
                 <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-slate-50 border border-slate-200 overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                  
+
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
@@ -1180,7 +1210,7 @@ export default function AnalyticsPage() {
                       )}
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="space-y-8">
                     {personalEdge ? (
                       <>
@@ -1198,9 +1228,9 @@ export default function AnalyticsPage() {
                             <p className="text-lg font-bold text-indigo-600">1:{personalEdge.optimalRRR.toFixed(1)}</p>
                           </div>
                         </div>
-                        
+
                         <div className="h-[250px] w-full mt-4 bg-slate-50/50 rounded-xl p-4 border border-slate-100">
-                           <SetupScatterChart data={scatterData} />
+                          <SetupScatterChart data={scatterData} />
                         </div>
                       </>
                     ) : (
@@ -1212,7 +1242,7 @@ export default function AnalyticsPage() {
                 </Card>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="space-y-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1222,7 +1252,7 @@ export default function AnalyticsPage() {
                   <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4" /> Psychology
                   </h3>
-                  
+
                   <div className="space-y-3">
                     {/* Good Habits Card */}
                     <Card className="border border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-950/20">
@@ -1301,22 +1331,22 @@ export default function AnalyticsPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }} 
+              transition={{ delay: 0.3 }}
               className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
             >
-               {analytics.metricsList.map((metric, i) => (
-                 <Card key={i} className="border-0 shadow-sm bg-slate-50">
-                   <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{metric.name}</span>
-                      <span className={cn(
-                        "text-xl font-mono font-bold",
-                        metric.value >= 70 ? "text-emerald-600" : metric.value >= 40 ? "text-amber-500" : "text-rose-500"
-                      )}>
-                        {metric.value.toFixed(0)}
-                      </span>
-                   </CardContent>
-                 </Card>
-               ))}
+              {analytics.metricsList.map((metric, i) => (
+                <Card key={i} className="border-0 shadow-sm bg-slate-50">
+                  <CardContent className="p-4 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{metric.name}</span>
+                    <span className={cn(
+                      "text-xl font-mono font-bold",
+                      metric.value >= 70 ? "text-emerald-600" : metric.value >= 40 ? "text-amber-500" : "text-rose-500"
+                    )}>
+                      {metric.value.toFixed(0)}
+                    </span>
+                  </CardContent>
+                </Card>
+              ))}
             </motion.div>
 
           </TabsContent>
@@ -1325,33 +1355,34 @@ export default function AnalyticsPage() {
 
       {/* Mobile Calendar FAB */}
       <div className="fixed bottom-6 right-6 md:hidden z-50">
-          <Sheet>
-            <SheetTrigger asChild>
-                <Button size="icon" className="h-14 w-14 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 transition-transform hover:scale-105">
-                    <CalendarIcon className="h-6 w-6" />
-                </Button>
-            </SheetTrigger>
-            <SheetContent className="w-full h-full p-0 bg-white">
-                <div className="px-6 py-6 border-b border-slate-100 bg-white sticky top-0 z-10">
-                    <h2 className="text-lg font-bold text-slate-900">Trading Journal</h2>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6">
-                    <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
-                </div>
-            </SheetContent>
-          </Sheet>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button size="icon" className="h-14 w-14 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 transition-transform hover:scale-105">
+              <CalendarIcon className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="w-full h-full p-0 bg-white">
+            <div className="px-6 py-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+              <h2 className="text-lg font-bold text-slate-900">Trading Journal</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6">
+              <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
-      {advisorData && (
+      {advisorProps && (
         <AdvisorPanel
           isOpen={isOpen}
-          onClose={close}
-          title={advisorData.title}
-          type={advisorData.type}
-          data={advisorData.data}
-          context={advisorData.context}
+          onClose={closeAdvisor}
+          title={advisorProps.title}
+          type={advisorProps.type}
+          data={advisorProps.data}
+          context={advisorProps.context}
         />
       )}
     </div>
   )
 }
+

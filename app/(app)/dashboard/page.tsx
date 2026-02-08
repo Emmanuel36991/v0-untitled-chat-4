@@ -1398,31 +1398,207 @@ export default function DashboardPage() {
                 >
                   <Link href="/insights">
                     View Analysis <ArrowRight className="ml-2 w-4 h-4" />
+                    ? trade.pnl 
+                    : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+
+                return (
+                  <div
+                    key={trade.id}
+                    className="flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-all border-b last:border-0 border-gray-100 dark:border-gray-800/50 group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-5">
+                      <div
+                        className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm border transition-colors",
+                          isWin
+                            ? "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
+                            : "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400"
+                        )}
+                      >
+                        {isLong ? (
+                          <ArrowUpRight className="w-6 h-6" />
+                        ) : (
+                          <ArrowDownRight className="w-6 h-6" />
+                        )}
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-bold text-gray-900 dark:text-gray-100 text-base">
+                            {trade.instrument}
+                          </span>
+                          <Badge
+                            variant={isLong ? "default" : "destructive"}
+                            className={cn(
+                              "text-[10px] px-1.5 py-0 h-5 font-bold uppercase tracking-wide opacity-80",
+                              isLong ? "bg-blue-600" : "bg-orange-600"
+                            )}
+                          >
+                            {trade.direction}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(trade.date), "MMM dd • HH:mm")}
+                          </span>
+                          <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
+                          <span className="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-400">
+                            <StrategyIcon className="w-3 h-3" />
+                            {trade.setup_name || "Discretionary"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-8">
+                      <div className="hidden md:block text-right space-y-1">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                          Prices
+                        </p>
+                        <p className="text-xs font-mono font-medium text-gray-700 dark:text-gray-300">
+                          <span className="opacity-60">
+                            {trade.entry_price}
+                          </span>{" "}
+                          <span className="mx-1">→</span>{" "}
+                          <span>{trade.exit_price}</span>
+                        </p>
+                      </div>
+
+                      <div className="text-right min-w-[90px] space-y-1">
+                        <p
+                          className={cn(
+                            "font-bold text-base font-mono",
+                            isWin
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-rose-600 dark:text-rose-400"
+                          )}
+                        >
+                          {tradePnl > 0 ? "+" : ""}
+                          ${tradePnl.toFixed(2)}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[9px] h-4 px-1.5 border-0 uppercase font-bold",
+                            isWin
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20"
+                              : "bg-rose-100 text-rose-700 dark:bg-rose-500/20"
+                          )}
+                        >
+                          {trade.outcome}
+                        </Badge>
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-muted-foreground"
+                        asChild
+                      >
+                        <Link href={`/trade-details/${trade.id}`}>
+                          <ChevronRight className="w-5 h-5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+
+              {filteredTrades.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                  <Filter className="w-8 h-8 opacity-20 mb-4" />
+                  <p className="font-medium">No trading data found</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions & AI Insight */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
+                { label: "Import", icon: Download, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
+                { label: "Playbook", icon: BookOpen, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
+                { label: "AI Insights", icon: Zap, href: "/insights", color: "bg-rose-600", desc: "Analysis" },
+              ].map((action) => (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                >
+                  <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
+                    <div
+                      className={cn(
+                        "p-2.5 rounded-xl shadow-lg text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0",
+                        action.color
+                      )}
+                    >
+                      <action.icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                        {action.label}
+                      </h4>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
+                        {action.desc}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Hover Effect */}
+                  <div
+                    className={cn(
+                      "absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity",
+                      action.color.replace("bg-", "bg-text-")
+                    )}
+                  />
+                </Link>
+              ))}
+            </div>
+
+            {/* AI Insight Card */}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative overflow-hidden rounded-2xl">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-[0.08] rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-500 opacity-20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
+
+              <CardHeader className="relative z-10 pb-2">
+                <div className="flex items-center justify-between mb-1">
+                  <Badge
+                    variant="secondary"
+                    className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md px-3 py-1"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" /> AI Insight
+                  </Badge>
+                  <span className="text-[10px] font-medium opacity-70">Just now</span>
+                </div>
+                <CardTitle className="text-lg font-bold tracking-tight">
+                  Pattern Detected
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10 space-y-4">
+                <p className="text-sm text-indigo-50 font-medium leading-relaxed opacity-90">
+                  Your win rate on{" "}
+                  <span className="text-white font-bold bg-white/10 px-1 rounded">
+                    Long
+                  </span>{" "}
+                  trades in the morning session is{" "}
+                  <span className="text-green-300 font-bold">15% higher</span>. Consider
+                  increasing size before 11:00 AM.
+                </p>
+                <Button
+                  variant="secondary"
+                  className="w-full bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg font-bold border-0"
+                  asChild
+                >
+                  <Link href="/insights">
+                    View Analysis <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Market Status */}
-            <div className="bg-gray-900 dark:bg-black rounded-2xl p-5 flex items-center justify-between text-white shadow-lg ring-1 ring-white/10">
-              <div className="flex items-center gap-4">
-                <div className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">
-                    Market Status
-                  </p>
-                  <p className="text-sm font-bold tracking-tight">
-                    Session Active
-                  </p>
-                </div>
-              </div>
-              <div className="h-10 w-10 bg-gray-800 rounded-full flex items-center justify-center">
-                <Timer className="w-5 h-5 text-gray-400" />
-              </div>
-            </div>
+
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import type React from "react"
 import { Navbar } from "@/components/layout/navbar"
+import { AppFooter } from "@/components/layout/app-footer"
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from "@/lib/utils"
 
@@ -37,8 +38,9 @@ export default async function AppLayout({
       <main className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 overflow-x-hidden relative">
         {children}
       </main>
+      <AppFooter />
       <Toaster />
-      
+
       {/* Floating AI Chat Assistant */}
       <TradingAssistant initialContext={aiContext} />
     </div>

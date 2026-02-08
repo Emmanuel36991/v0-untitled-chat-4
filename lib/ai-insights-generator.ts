@@ -426,6 +426,20 @@ export function generateAIInsights(
         analyzeInstrumentPreference(recentTrades),
     ].filter((insight): insight is AIInsight => insight !== null)
 
+    // Fallback: If no deep insights yet, provide a welcome/progress insight
+    if (allInsights.length === 0 && recentTrades.length > 0) {
+        return [{
+            id: 'welcome-insight',
+            category: 'strategy',
+            title: 'Data Collection Active',
+            message: `You've logged ${recentTrades.length} trade${recentTrades.length === 1 ? '' : 's'} recently. Detailed patterns for win rate, session performance, and psychology will unlock automatically as you log more data (aim for 5-10 trades).`,
+            severity: 'positive',
+            confidence: 100,
+            actionable: true,
+            generatedAt: new Date()
+        }]
+    }
+
     // Prioritize and return
     return prioritizeInsights(allInsights)
 }

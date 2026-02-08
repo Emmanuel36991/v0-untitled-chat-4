@@ -163,10 +163,10 @@ const calculateInstrumentPnL = (
   // Simple multiplier logic for common instruments
   if (["NQ", "MNQ", "ES", "MES"].includes(instrument)) multiplier = 20 // Approx futures multiplier (simplified)
   if (["EURUSD", "GBPUSD"].includes(instrument)) multiplier = 100000 // Forex lot
-  
+
   const diff = direction === "long" ? exit - entry : entry - exit
   const rawPnL = diff * size * multiplier
-  
+
   // Return adjusted PnL (rounded to 2 decimals)
   return { adjustedPnL: Math.round(rawPnL * 100) / 100 }
 }
@@ -232,8 +232,8 @@ const CustomChartTooltip = ({ active, payload, label, currency = false }: any) =
                 typeof entry.value === "number" && entry.value > 0
                   ? "text-green-600 dark:text-green-400"
                   : typeof entry.value === "number" && entry.value < 0
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-gray-900 dark:text-gray-100"
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-gray-900 dark:text-gray-100"
               )}
             >
               {currency && typeof entry.value === "number"
@@ -290,11 +290,11 @@ const MetricCard = React.memo<MetricCardProps>(
               className={cn(
                 "font-mono text-[10px] px-2 py-0.5 border-0",
                 changeType === "positive" &&
-                  "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10",
+                "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10",
                 changeType === "negative" &&
-                  "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10",
+                "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10",
                 changeType === "neutral" &&
-                  "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
+                "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
               )}
             >
               {changeType === "positive" ? (
@@ -343,8 +343,8 @@ const MetricCard = React.memo<MetricCardProps>(
                     changeType === "positive"
                       ? "text-green-500"
                       : changeType === "negative"
-                      ? "text-red-500"
-                      : "text-gray-500"
+                        ? "text-red-500"
+                        : "text-gray-500"
                   }
                 />
               </AreaChart>
@@ -377,12 +377,12 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
           t.pnl !== undefined
             ? t.pnl
             : calculateInstrumentPnL(
-                t.instrument,
-                t.direction,
-                t.entry_price,
-                t.exit_price,
-                t.size
-              ).adjustedPnL
+              t.instrument,
+              t.direction,
+              t.entry_price,
+              t.exit_price,
+              t.size
+            ).adjustedPnL
         return acc + val
       }, 0)
       return { day, pnl, count: dayTrades.length }
@@ -415,7 +415,7 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
                 if (data.pnl > 0) bgClass = "bg-emerald-500"
                 else if (data.pnl < 0) bgClass = "bg-rose-500"
                 else bgClass = "bg-amber-400"
-                
+
                 // Dynamic opacity based on PnL size (capped at 1000 for max opacity)
                 opacity = Math.min(Math.abs(data.pnl) / 1000, 1) * 0.6 + 0.4
               }
@@ -505,11 +505,11 @@ export default function DashboardPage() {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date())
 
   // --- Load user config ---
-  const { config: userConfig, isLoading: isConfigLoading } = useUserConfig()
+  const { config: userConfig, isLoaded: isConfigLoaded } = useUserConfig()
 
   // --- Load Trades from Database ---
   const loadTrades = useCallback(async (showLoading = true) => {
-    if (isConfigLoading) return
+    if (!isConfigLoaded) return
     if (showLoading) setIsLoading(true)
     else setIsRefreshing(true)
     setError(null)
@@ -528,7 +528,7 @@ export default function DashboardPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [isConfigLoading])
+  }, [isConfigLoaded])
 
   useEffect(() => {
     loadTrades()
@@ -579,8 +579,8 @@ export default function DashboardPage() {
 
     // Ensure PnL exists on all trades
     const processedTrades = filteredTrades.map((trade) => {
-      const pnl = trade.pnl !== undefined 
-        ? trade.pnl 
+      const pnl = trade.pnl !== undefined
+        ? trade.pnl
         : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
       return { ...trade, adjustedPnL: pnl }
     })
@@ -654,8 +654,8 @@ export default function DashboardPage() {
 
     let cumulative = 0
     return sorted.map((trade) => {
-      const pnl = trade.pnl !== undefined 
-        ? trade.pnl 
+      const pnl = trade.pnl !== undefined
+        ? trade.pnl
         : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
       cumulative += pnl
       return {
@@ -677,10 +677,10 @@ export default function DashboardPage() {
       const name = trade.setup_name || "Discretionary"
       const current = map.get(name) || { name, pnl: 0, wins: 0, total: 0 }
 
-      const pnl = trade.pnl !== undefined 
-        ? trade.pnl 
+      const pnl = trade.pnl !== undefined
+        ? trade.pnl
         : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
-      
+
       current.pnl += pnl
       current.total += 1
       if (pnl > 0) current.wins += 1
@@ -700,8 +700,8 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0B0D12] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-           <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-           <p className="text-muted-foreground font-medium">Loading trading data...</p>
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground font-medium">Loading trading data...</p>
         </div>
       </div>
     )
@@ -710,7 +710,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-[#0B0D12] text-foreground transition-colors duration-300">
       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-        
+
         {/* Header Section */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
           <div className="space-y-1 relative">
@@ -810,13 +810,13 @@ export default function DashboardPage() {
               stats.winRate > 50
                 ? "positive"
                 : stats.winRate > 40
-                ? "neutral"
-                : "negative"
+                  ? "neutral"
+                  : "negative"
             }
             icon={Target}
             iconColor="text-purple-600 dark:text-purple-400"
             trendData={[
-                {value: 45}, {value: 48}, {value: 52}, {value: stats.winRate}
+              { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
             ]} // Simple trend simulation
             subtitle={`Current Streak: ${stats.consecutiveWins} Wins`}
           />
@@ -829,8 +829,8 @@ export default function DashboardPage() {
               stats.profitFactor >= 1.5
                 ? "positive"
                 : stats.profitFactor >= 1
-                ? "neutral"
-                : "negative"
+                  ? "neutral"
+                  : "negative"
             }
             icon={Award}
             iconColor="text-emerald-600 dark:text-emerald-400"
@@ -851,7 +851,7 @@ export default function DashboardPage() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Equity Chart (Left, 2/3 width) */}
           <div className="lg:col-span-2 space-y-6">
             <Card
@@ -1175,7 +1175,7 @@ export default function DashboardPage() {
 
         {/* Recent Trades & Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
-          
+
           {/* Recent Trade List */}
           <Card className="lg:col-span-2 border-0 shadow-lg dark:shadow-2xl overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
             <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10 py-5">
@@ -1202,9 +1202,9 @@ export default function DashboardPage() {
                 const isWin = trade.outcome === "win"
                 const isLong = trade.direction === "long"
                 const StrategyIcon = getStrategyIcon(trade.setup_name || "")
-                const tradePnl = trade.pnl !== undefined 
-                    ? trade.pnl 
-                    : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+                const tradePnl = trade.pnl !== undefined
+                  ? trade.pnl
+                  : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
 
                 return (
                   <div
@@ -1397,211 +1397,14 @@ export default function DashboardPage() {
                   asChild
                 >
                   <Link href="/insights">
-                    View Analysis <ArrowRight className="ml-2 w-4 h-4" />
-                    ? trade.pnl 
-                    : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
-
-                return (
-                  <div
-                    key={trade.id}
-                    className="flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-all border-b last:border-0 border-gray-100 dark:border-gray-800/50 group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-5">
-                      <div
-                        className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm border transition-colors",
-                          isWin
-                            ? "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
-                            : "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400"
-                        )}
-                      >
-                        {isLong ? (
-                          <ArrowUpRight className="w-6 h-6" />
-                        ) : (
-                          <ArrowDownRight className="w-6 h-6" />
-                        )}
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-bold text-gray-900 dark:text-gray-100 text-base">
-                            {trade.instrument}
-                          </span>
-                          <Badge
-                            variant={isLong ? "default" : "destructive"}
-                            className={cn(
-                              "text-[10px] px-1.5 py-0 h-5 font-bold uppercase tracking-wide opacity-80",
-                              isLong ? "bg-blue-600" : "bg-orange-600"
-                            )}
-                          >
-                            {trade.direction}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(trade.date), "MMM dd • HH:mm")}
-                          </span>
-                          <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
-                          <span className="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-400">
-                            <StrategyIcon className="w-3 h-3" />
-                            {trade.setup_name || "Discretionary"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-8">
-                      <div className="hidden md:block text-right space-y-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                          Prices
-                        </p>
-                        <p className="text-xs font-mono font-medium text-gray-700 dark:text-gray-300">
-                          <span className="opacity-60">
-                            {trade.entry_price}
-                          </span>{" "}
-                          <span className="mx-1">→</span>{" "}
-                          <span>{trade.exit_price}</span>
-                        </p>
-                      </div>
-
-                      <div className="text-right min-w-[90px] space-y-1">
-                        <p
-                          className={cn(
-                            "font-bold text-base font-mono",
-                            isWin
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
-                          )}
-                        >
-                          {tradePnl > 0 ? "+" : ""}
-                          ${tradePnl.toFixed(2)}
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-[9px] h-4 px-1.5 border-0 uppercase font-bold",
-                            isWin
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20"
-                              : "bg-rose-100 text-rose-700 dark:bg-rose-500/20"
-                          )}
-                        >
-                          {trade.outcome}
-                        </Badge>
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-muted-foreground"
-                        asChild
-                      >
-                        <Link href={`/trade-details/${trade.id}`}>
-                          <ChevronRight className="w-5 h-5" />
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })}
-
-              {filteredTrades.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                  <Filter className="w-8 h-8 opacity-20 mb-4" />
-                  <p className="font-medium">No trading data found</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions & AI Insight */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
-                { label: "Import", icon: Download, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
-                { label: "Playbook", icon: BookOpen, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
-                { label: "AI Insights", icon: Zap, href: "/insights", color: "bg-rose-600", desc: "Analysis" },
-              ].map((action) => (
-                <Link
-                  key={action.label}
-                  href={action.href}
-                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
-                >
-                  <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
-                    <div
-                      className={cn(
-                        "p-2.5 rounded-xl shadow-lg text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0",
-                        action.color
-                      )}
-                    >
-                      <action.icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">
-                        {action.label}
-                      </h4>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
-                        {action.desc}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Hover Effect */}
-                  <div
-                    className={cn(
-                      "absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity",
-                      action.color.replace("bg-", "bg-text-")
-                    )}
-                  />
-                </Link>
-              ))}
-            </div>
-
-            {/* AI Insight Card */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative overflow-hidden rounded-2xl">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-[0.08] rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-500 opacity-20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
-
-              <CardHeader className="relative z-10 pb-2">
-                <div className="flex items-center justify-between mb-1">
-                  <Badge
-                    variant="secondary"
-                    className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md px-3 py-1"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" /> AI Insight
-                  </Badge>
-                  <span className="text-[10px] font-medium opacity-70">Just now</span>
-                </div>
-                <CardTitle className="text-lg font-bold tracking-tight">
-                  Pattern Detected
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="relative z-10 space-y-4">
-                <p className="text-sm text-indigo-50 font-medium leading-relaxed opacity-90">
-                  Your win rate on{" "}
-                  <span className="text-white font-bold bg-white/10 px-1 rounded">
-                    Long
-                  </span>{" "}
-                  trades in the morning session is{" "}
-                  <span className="text-green-300 font-bold">15% higher</span>. Consider
-                  increasing size before 11:00 AM.
-                </p>
-                <Button
-                  variant="secondary"
-                  className="w-full bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg font-bold border-0"
-                  asChild
-                >
-                  <Link href="/insights">
-                    View Analysis <ArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
               </CardContent>
             </Card>
-
-
           </div>
         </div>
       </div>
     </div>
   )
 }
+

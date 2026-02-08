@@ -521,7 +521,7 @@ export function formatPnLDisplay(
         return `${pipsSign}${pnlResult.pips.toFixed(1)} pips`
       }
       // For futures/other instruments, show as points
-      return `${pipsSign}${pnlResult.pips.toFixed(decimals ?? 2)} pts`
+      return `${pipsSign}${pnlResult.pips.toFixed(2)} pts`
 
     case "percentage":
       const percentSign = pnlResult.percentage >= 0 ? '+' : ''

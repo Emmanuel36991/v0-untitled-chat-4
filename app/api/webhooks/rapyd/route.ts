@@ -1,4 +1,4 @@
-"use server"
+
 
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
@@ -27,7 +27,7 @@ function verifyWebhookSignature(
     .createHmac('sha256', RAPYD_WEBHOOK_SECRET)
     .update(toVerify)
     .digest('hex')
-  
+
   return signature === expectedSignature
 }
 
@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
         // Payment successful - could be initial payment or recurring
         const subscriptionId = eventData.subscription_id
         const customerId = eventData.customer_id
-        
+
         console.log(`[v0] Payment succeeded for subscription: ${subscriptionId}`)
-        
+
         if (subscriptionId) {
           // Update subscription status to active
           const { error } = await supabaseAdmin
@@ -86,13 +86,13 @@ export async function POST(request: NextRequest) {
 
       case "CUSTOMER_SUBSCRIPTION_CREATED": {
         const subscription = eventData
-        
+
         console.log(`[v0] Subscription created: ${subscription.id}`)
-        
+
         // Determine tier from plan amount
         const planAmount = subscription.subscription_items?.data?.[0]?.plan?.amount || 0
         let tier = "free"
-        
+
         if (planAmount === 1999) {
           tier = "pro"
         } else if (planAmount === 4999) {
@@ -129,13 +129,13 @@ export async function POST(request: NextRequest) {
 
       case "SUBSCRIPTION_UPDATED": {
         const subscription = eventData
-        
+
         console.log(`[v0] Subscription updated: ${subscription.id}`)
-        
+
         // Determine tier from plan amount
         const planAmount = subscription.subscription_items?.data?.[0]?.plan?.amount || 0
         let tier = "free"
-        
+
         if (planAmount === 1999) {
           tier = "pro"
         } else if (planAmount === 4999) {
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
 
       case "SUBSCRIPTION_CANCELED": {
         const subscription = eventData
-        
+
         console.log(`[v0] Subscription canceled: ${subscription.id}`)
 
         const { error } = await supabaseAdmin
@@ -181,12 +181,12 @@ export async function POST(request: NextRequest) {
         break
       }
 
-      case "INVOICE_PAYMENT_FAILED": 
+      case "INVOICE_PAYMENT_FAILED":
       case "PAYMENT_FAILED": {
         const subscriptionId = eventData.subscription_id
-        
+
         console.log(`[v0] Payment failed for subscription: ${subscriptionId}`)
-        
+
         if (subscriptionId) {
           const { error } = await supabaseAdmin
             .from("subscriptions")
@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
 
       case "SUBSCRIPTION_PAST_DUE": {
         const subscription = eventData
-        
+
         console.log(`[v0] Subscription past due: ${subscription.id}`)
 
         const { error } = await supabaseAdmin
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
 
       case "SUBSCRIPTION_UNPAID": {
         const subscription = eventData
-        
+
         console.log(`[v0] Subscription unpaid: ${subscription.id}`)
 
         const { error } = await supabaseAdmin

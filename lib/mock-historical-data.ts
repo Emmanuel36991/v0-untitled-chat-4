@@ -27,6 +27,7 @@ function generatePriceWalk(
       high,
       low,
       close,
+      volume: 0,
     })
 
     lastClose = close

@@ -10,7 +10,7 @@ export const generateMockCandlestickData = (count = 100): CandlestickData[] => {
     const close = open + (Math.random() - 0.5) * 10
     const high = Math.max(open, close) + Math.random() * 5
     const low = Math.min(open, close) - Math.random() * 5
-    data.push({ time: currentTime, open, high, low, close })
+    data.push({ time: currentTime, open, high, low, close, volume: 0 })
     lastClose = close
     currentTime += 60 * 60 * 24 // Add one day
   }

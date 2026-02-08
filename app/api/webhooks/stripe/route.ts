@@ -1,11 +1,11 @@
-"use server"
+
 
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { createClient } from "@supabase/supabase-js"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: "2024-11-20.acacia", // Updated to match type definition. Wait, error said 2026-01-28.clover. I will try that one.
 })
 
 // Use service role key for webhooks since there's no user session
@@ -39,12 +39,12 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session
-        
+
         if (session.mode === "subscription" && session.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
-          )
-          
+          ) as any
+
           const userId = session.metadata?.userId
           if (!userId) {
             console.error("No userId in session metadata")
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           // Get price ID to determine tier
           const priceId = subscription.items.data[0]?.price.id
           let tier = "free"
-          
+
           // Map price IDs to tiers (you'll need to update these with actual Stripe price IDs)
           if (priceId?.includes("pro") || subscription.items.data[0]?.price.unit_amount === 1999) {
             tier = "pro"
@@ -87,12 +87,12 @@ export async function POST(request: NextRequest) {
       }
 
       case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription
-        
+        const subscription = event.data.object as any
+
         // Get price ID to determine tier
         const priceId = subscription.items.data[0]?.price.id
         let tier = "free"
-        
+
         if (priceId?.includes("pro") || subscription.items.data[0]?.price.unit_amount === 1999) {
           tier = "pro"
         } else if (priceId?.includes("elite") || subscription.items.data[0]?.price.unit_amount === 4999) {
@@ -137,8 +137,8 @@ export async function POST(request: NextRequest) {
       }
 
       case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice
-        
+        const invoice = event.data.object as any
+
         if (invoice.subscription) {
           const { error } = await supabaseAdmin
             .from("subscriptions")

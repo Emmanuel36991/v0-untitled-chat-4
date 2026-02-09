@@ -24,11 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarPrimitive } from "@/components/ui/calendar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  X,
   DollarSign,
   Target,
   BarChart3,
@@ -40,72 +37,24 @@ import {
   Filter,
   Download,
   Brain,
-  CheckCircle,
   Sparkles,
-  RefreshCw,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  ArrowLeft,
-  Layers,
-  Shield,
-  AlertTriangle,
-  Zap,
   Check
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"
 import { DateRange } from "react-day-picker"
-import { format, subDays, endOfDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay } from "date-fns"
+import { format, subDays, endOfDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, isSameDay } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useAIAdvisor } from "@/hooks/use-ai-advisor"
 import { AdvisorPanel } from "@/components/ai/advisor-panel"
 import { EnhancedHexagram } from "@/components/charts/enhanced-hexagram"
 import { TimingAnalyticsDashboard } from "@/components/charts/timing-analytics-dashboard"
 import { InsightsView } from "@/components/analytics/insights-view"
+import { RedesignedCalendarHeatmap } from "@/components/analytics/redesigned-calendar-heatmap"
 
 
-// --- OKLCH COLOR PALETTE (Premium Design Spec) ---
-const COLORS = {
-  // Background Colors
-  bgBase: 'oklch(0.96 0.002 264)', // Light mode base
-  bgBaseDark: 'oklch(0.08 0.018 264)', // Dark mode base
-  cardSurface: 'oklch(0.14 0.025 264)', // Elevated dark surface
-  primaryAccent: 'oklch(0.65 0.28 270)', // Vibrant purple-blue
-
-  // Data Visualization - Emerald (Wins/Profit)
-  emerald: {
-    light: '#10B981',
-    medium: '#059669',
-    strong: '#047857',
-    glow: 'rgba(16, 185, 129, 0.2)',
-  },
-  // Data Visualization - Rose (Losses/Negative)
-  rose: {
-    light: '#EF4444',
-    medium: '#DC2626',
-    strong: '#B91C1C',
-    glow: 'rgba(239, 68, 68, 0.2)',
-  },
-  // Neutral/Info - Slate spectrum
-  slate: {
-    muted: '#64748B',
-    borders: '#334155',
-    text: '#94A3B8',
-  },
-  // Chart 5-Color Palette (OKLCH)
-  chartPalette: [
-    'oklch(0.70 0.30 270)', // Purple
-    'oklch(0.72 0.26 320)', // Magenta
-    'oklch(0.74 0.24 200)', // Cyan
-    'oklch(0.76 0.22 140)', // Green
-    'oklch(0.73 0.28 40)',  // Amber
-  ]
-}
-
-// --- 1. TYPES ---
+// --- TYPES ---
 interface AnalyticsFilters {
   dateRange: DateRange | undefined
   instruments: string[]
@@ -126,64 +75,19 @@ interface ProcessedAnalytics {
   filteredTrades: Trade[]
 }
 
-// --- 2. UI COMPONENTS (Light Mode Only) ---
-
-const Sheet = SheetPrimitive.Root
-const SheetTrigger = SheetPrimitive.Trigger
-const SheetPortal = SheetPrimitive.Portal
-
-const SheetOverlay = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Overlay
-    className={cn(
-      "fixed inset-0 z-50 bg-slate-900/10 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    )}
-    {...props}
-    ref={ref}
-  />
-))
-SheetOverlay.displayName = SheetPrimitive.Overlay.displayName
-
-const SheetContent = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay />
-    <SheetPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed z-50 gap-4 bg-white shadow-2xl transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-full border-l border-slate-200 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-xl lg:max-w-4xl p-0",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      <SheetPrimitive.Close className="absolute right-6 top-6 rounded-md p-2 bg-transparent hover:bg-slate-100 transition-colors z-50">
-        <X className="h-4 w-4 text-slate-500" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
-    </SheetPrimitive.Content>
-  </SheetPortal>
-))
-SheetContent.displayName = SheetPrimitive.Content.displayName
-
-// --- 3. PREMIUM GLASSMORPHISM TOOLTIP ---
+// --- PREMIUM GLASS TOOLTIP ---
 const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[oklch(0.14_0.025_264)]/95 dark:bg-[oklch(0.14_0.025_264)]/98 backdrop-blur-xl border border-slate-300 dark:border-slate-700/70 shadow-2xl dark:shadow-black/60 rounded-xl p-4">
-        <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-3 uppercase tracking-[0.1em]">{label}</p>
+      <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-700/50 shadow-2xl shadow-black/60 rounded-lg p-3">
+        <p className="text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-[0.12em] font-mono">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center justify-between gap-4 mb-1.5">
+          <div key={index} className="flex items-center justify-between gap-4 mb-1">
             <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full shadow-md" style={{ backgroundColor: entry.color }} />
-              <span className="text-xs text-slate-600 dark:text-slate-300">{entry.name}</span>
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color, boxShadow: `0 0 6px ${entry.color}40` }} />
+              <span className="text-[11px] text-zinc-400">{entry.name}</span>
             </div>
-            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white tabular-nums">
+            <span className="text-sm font-mono font-bold text-white tabular-nums">
               {prefix}{typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
             </span>
           </div>
@@ -194,7 +98,7 @@ const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
   return null
 }
 
-// --- 4. FIXED DATE PICKER ---
+// --- DATE PICKER ---
 function DatePickerWithRange({ className, date, setDate }: any) {
   const [open, setOpen] = useState(false)
   const presets = [
@@ -218,12 +122,12 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           variant={"ghost"}
           size="sm"
           className={cn(
-            "h-9 w-full justify-start text-left font-normal text-slate-600 hover:bg-slate-50 px-3",
+            "h-9 w-full justify-start text-left font-normal text-zinc-400 hover:text-zinc-200 hover:bg-white/5 px-3",
             !date && "text-muted-foreground",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 text-slate-400" />
+          <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500" />
           {date?.from ? (
             date.to ? (
               <span className="text-xs font-mono font-medium">
@@ -237,11 +141,11 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-0 shadow-xl rounded-xl overflow-hidden ring-1 ring-slate-200" align="start">
-        <div className="flex flex-col sm:flex-row bg-white">
-          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50/50 sm:w-[160px]">
+      <PopoverContent className="w-auto p-0 border-0 shadow-2xl shadow-black/40 rounded-xl overflow-hidden ring-1 ring-zinc-700/50" align="start">
+        <div className="flex flex-col sm:flex-row bg-zinc-900">
+          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-zinc-800 bg-zinc-950/50 sm:w-[160px]">
             <div className="px-2 py-1.5 mb-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Select</span>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Quick Select</span>
             </div>
             {presets.map((preset) => {
               const isActive = isPresetActive(preset.getValue())
@@ -255,8 +159,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                   className={cn(
                     "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
                     isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "hover:bg-white text-slate-600"
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "hover:bg-white/5 text-zinc-400"
                   )}
                 >
                   {preset.label}
@@ -276,14 +180,14 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               numberOfMonths={2}
               className="rounded-md border-0"
               classNames={{
-                day_selected: "bg-blue-600 text-white hover:bg-blue-600 focus:bg-blue-600",
-                day_today: "bg-slate-100 text-slate-900",
-                day_range_middle: "aria-selected:bg-blue-50 aria-selected:text-blue-900",
+                day_selected: "bg-emerald-500 text-white hover:bg-emerald-500 focus:bg-emerald-500",
+                day_today: "bg-zinc-800 text-zinc-100",
+                day_range_middle: "aria-selected:bg-emerald-500/10 aria-selected:text-emerald-300",
               }}
             />
-            <div className="flex items-center justify-end pt-4 border-t border-slate-100 mt-2 gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
+            <div className="flex items-center justify-end pt-4 border-t border-zinc-800 mt-2 gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs text-zinc-400 hover:text-white">Cancel</Button>
+              <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
             </div>
           </div>
         </div>
@@ -292,335 +196,115 @@ function DatePickerWithRange({ className, date, setDate }: any) {
   )
 }
 
-// --- 5. CALENDAR COMPONENTS ---
 
-function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
-  const stats = useMemo(() => {
-    const pnl = trades.reduce((a, b) => a + b.pnl, 0)
-    const wins = trades.filter(t => t.pnl > 0).length
-    return {
-      pnl,
-      count: trades.length,
-      winRate: trades.length ? (wins / trades.length) * 100 : 0
-    }
-  }, [trades])
-
-  if (trades.length === 0) {
-    return (
-      <div className="h-[60vh] flex flex-col items-center justify-center text-slate-400 dark:text-zinc-500">
-        <div className="w-16 h-16 bg-slate-50 dark:bg-zinc-900 rounded-2xl flex items-center justify-center mb-4 border border-slate-100 dark:border-zinc-800">
-          <Layers className="w-8 h-8 opacity-20 text-slate-500 dark:text-zinc-600" />
-        </div>
-        <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">No trading activity</p>
-        <p className="text-xs opacity-60">This day is empty.</p>
-      </div>
-    )
-  }
+// --- MINI SPARKLINE ---
+const MiniSparkline = ({ data, color = "#34d399" }: { data: number[]; color?: string }) => {
+  if (!data.length) return null
+  const points = data.slice(-7)
+  const min = Math.min(...points)
+  const max = Math.max(...points)
+  const range = max - min || 1
+  const w = 60
+  const h = 20
+  const path = points
+    .map((v, i) => {
+      const x = (i / (points.length - 1)) * w
+      const y = h - ((v - min) / range) * h
+      return `${i === 0 ? "M" : "L"}${x},${y}`
+    })
+    .join(" ")
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className={cn(
-          "p-6 rounded-xl border flex flex-col justify-between h-28 shadow-sm transition-all",
-          stats.pnl >= 0
-            ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30"
-            : "bg-rose-50/50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30"
-        )}>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Net PnL</span>
-          <span className={cn(
-            "text-3xl font-mono font-medium tracking-tight",
-            stats.pnl >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
-          )}>
-            {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
-          </span>
-        </div>
-
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between h-28">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Win Rate</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-mono font-medium text-slate-900 dark:text-zinc-100">{stats.winRate.toFixed(0)}%</span>
-            <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium">{stats.count} Trades</span>
-          </div>
-        </div>
-
-        <div className="p-6 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm flex flex-col justify-between h-28">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-500">Best Setup</span>
-          <div className="flex items-center gap-2 mt-auto">
-            <Badge variant="secondary" className="bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/50 border-blue-100 dark:border-blue-900/50">
-              {trades.length > 0 ? trades.reduce((a, b) => (a.pnl > b.pnl ? a : b)).setup_name || "Discretionary" : "N/A"}
-            </Badge>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400">
-            <Clock className="w-3.5 h-3.5" />
-          </div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">Session Log</h3>
-        </div>
-
-        <div className="space-y-3 relative before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-slate-200 dark:before:bg-zinc-800">
-          {trades.map((trade) => (
-            <div key={trade.id} className="relative pl-12 group">
-              <div className={cn(
-                "absolute left-[15px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-[3px] border-white dark:border-zinc-900 z-10 box-content shadow-sm",
-                trade.pnl >= 0 ? "bg-emerald-500" : "bg-rose-500"
-              )} />
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700 transition-all cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs border shadow-sm",
-                    trade.direction === "long"
-                      ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50"
-                      : "bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/50"
-                  )}>
-                    {trade.direction === "long" ? "L" : "S"}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-bold text-sm text-slate-900 dark:text-zinc-100">{trade.instrument}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 font-medium border border-slate-200 dark:border-zinc-700">
-                        {trade.setup_name || "No Setup"}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">{format(new Date(trade.date), "HH:mm:ss")}</span>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <p className={cn("font-mono font-medium text-sm", trade.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
-                    {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
-                  </p>
-                  <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono mt-0.5">
-                    {trade.entry_price} → {trade.exit_price}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <svg width={w} height={h} className="opacity-60">
+      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
 
-function JournalCalendar({ trades, dailyData }: { trades: Trade[], dailyData: any[] }) {
-  const [currentMonth, setCurrentMonth] = useState(new Date())
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null)
-  const [view, setView] = useState<"month" | "day">("month")
-
-  const monthStats = useMemo(() => {
-    const monthKey = format(currentMonth, "yyyy-MM")
-    const days = dailyData.filter(d => d.date.startsWith(monthKey))
-    const totalPnL = days.reduce((acc, d) => acc + d.pnl, 0)
-    const winRate = days.length ? (days.filter(d => d.pnl > 0).length / days.length) * 100 : 0
-    return { totalPnL, winRate }
-  }, [currentMonth, dailyData])
-
-  const calendarGrid = useMemo(() => {
-    const start = startOfMonth(currentMonth)
-    const end = endOfMonth(currentMonth)
-    const days = eachDayOfInterval({ start, end })
-    return { days, padding: Array(getDay(start)).fill(null) }
-  }, [currentMonth])
-
-  const handleDaySelect = (day: Date) => {
-    setSelectedDay(day)
-    setView("day")
-  }
-
-  const handleBack = () => {
-    setView("month")
-    setTimeout(() => setSelectedDay(null), 300)
-  }
-
-  return (
-    <div className="flex flex-col h-full bg-slate-50/50 relative overflow-hidden">
-      <AnimatePresence mode="wait">
-
-        {view === "month" && (
-          <motion.div
-            key="month-view"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col h-full"
-          >
-            <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-                    <ChevronLeft className="w-4 h-4 text-slate-500" />
-                  </Button>
-                  <span className="text-sm font-bold w-28 text-center text-slate-800 font-mono">{format(currentMonth, "MMMM yyyy")}</span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-slate-50" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex gap-6 text-right">
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Net PnL</p>
-                  <p className={cn("text-sm font-mono font-bold", monthStats.totalPnL >= 0 ? "text-emerald-600" : "text-rose-600")}>
-                    {monthStats.totalPnL >= 0 ? "+" : ""}${monthStats.totalPnL.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <ScrollArea className="flex-1 p-6">
-              <div className="grid grid-cols-7 gap-3 max-w-5xl mx-auto">
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-                  <div key={day} className="text-center text-[10px] uppercase font-bold text-slate-400 pb-2 tracking-wider">{day}</div>
-                ))}
-
-                {calendarGrid.padding.map((_, i) => <div key={`pad-${i}`} className="aspect-square" />)}
-
-                {calendarGrid.days.map((day) => {
-                  const dateStr = format(day, "yyyy-MM-dd")
-                  const data = dailyData.find(d => d.date === dateStr)
-                  const isToday = isSameDay(day, new Date())
-
-                  return (
-                    <motion.button
-                      key={day.toISOString()}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleDaySelect(day)}
-                      className={cn(
-                        "relative aspect-square rounded-lg border flex flex-col items-center justify-center gap-1 transition-all shadow-sm group",
-                        isToday ? "ring-2 ring-indigo-500 ring-offset-2 z-10" : "hover:border-indigo-300 hover:shadow-md",
-                        !data ? "bg-white border-slate-100" :
-                          data.pnl > 0 ? "bg-emerald-50/30 border-emerald-100" :
-                            "bg-rose-50/30 border-rose-100"
-                      )}
-                    >
-                      <span className={cn(
-                        "text-[10px] font-bold absolute top-2 left-2",
-                        !data ? "text-slate-300" : "text-slate-500"
-                      )}>{format(day, "d")}</span>
-
-                      {data ? (
-                        <>
-                          <span className={cn(
-                            "text-xs font-mono font-medium tracking-tight",
-                            data.pnl > 0 ? "text-emerald-700" : "text-rose-700"
-                          )}>
-                            {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl / 1000).toFixed(1)}k` : data.pnl.toFixed(0)}
-                          </span>
-                          <span className="text-[9px] text-slate-400 font-medium px-1.5 rounded-full bg-slate-50">
-                            {data.trades}
-                          </span>
-                        </>
-                      ) : (
-                        <div className="w-1 h-1 rounded-full bg-slate-100 group-hover:bg-indigo-200 transition-colors" />
-                      )}
-                    </motion.button>
-                  )
-                })}
-              </div>
-            </ScrollArea>
-          </motion.div>
-        )}
-
-        {view === "day" && selectedDay && (
-          <motion.div
-            key="day-view"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="flex flex-col h-full bg-white"
-          >
-            <div className="flex items-center gap-4 px-6 py-6 border-b border-slate-200 sticky top-0 bg-white/80 backdrop-blur-md z-10">
-              <Button variant="ghost" size="sm" onClick={handleBack} className="group pl-2 pr-4 rounded-md hover:bg-slate-100 text-slate-600">
-                <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform text-slate-400" />
-                Back
-              </Button>
-              <div className="h-4 w-px bg-slate-200" />
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                {format(selectedDay, "MMMM do, yyyy")}
-              </h2>
-            </div>
-
-            <ScrollArea className="flex-1">
-              <DailyDossier
-                date={selectedDay}
-                trades={trades.filter(t => isSameDay(new Date(t.date), selectedDay))}
-              />
-            </ScrollArea>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-// --- 6. METRIC CARDS ---
-const MetricCard = React.memo(({ title, value, change, trend, icon: Icon }: any) => {
-  const gradientClass = trend === "up"
-    ? "bg-gradient-to-br from-emerald-50/50 via-white to-white dark:from-emerald-950/20 dark:via-[oklch(0.14_0.025_264)] dark:to-[oklch(0.14_0.025_264)]"
+// --- HUD METRIC CARD ---
+const MetricCard = React.memo(({ title, value, change, trend, icon: Icon, sparkData }: any) => {
+  const trendColor = trend === "up"
+    ? "text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]"
     : trend === "down"
-      ? "bg-gradient-to-br from-rose-50/50 via-white to-white dark:from-rose-950/20 dark:via-[oklch(0.14_0.025_264)] dark:to-[oklch(0.14_0.025_264)]"
-      : "bg-gradient-to-br from-slate-50/50 via-white to-white dark:from-slate-950/20 dark:via-[oklch(0.14_0.025_264)] dark:to-[oklch(0.14_0.025_264)]"
+      ? "text-rose-500"
+      : "text-zinc-400"
 
   return (
     <div className={cn(
-      "group relative overflow-hidden rounded-xl p-6 shadow-xl dark:shadow-black/40 border border-slate-200 dark:border-slate-700/50 hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300",
-      gradientClass
+      "group relative overflow-hidden rounded-xl p-5",
+      "bg-white dark:bg-white/[0.04] backdrop-blur-md",
+      "border border-slate-200 dark:border-white/[0.08]",
+      "hover:dark:border-white/[0.15] hover:border-slate-300",
+      "transition-all duration-300"
     )}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="p-2.5 rounded-lg bg-white/60 dark:bg-zinc-800/60 backdrop-blur-sm border border-slate-200 dark:border-zinc-700 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/50 group-hover:border-blue-200 dark:group-hover:border-blue-800 transition-all">
-          <Icon className="h-5 w-5 text-slate-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] via-transparent to-transparent pointer-events-none" />
+
+      <div className="relative flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-[10px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-[0.12em] mb-3 font-mono">{title}</p>
+          <h3 className={cn("text-3xl font-mono font-bold tracking-tight tabular-nums", trendColor)}>
+            {value}
+          </h3>
+          {change && (
+            <div className="flex items-center gap-1.5 mt-2">
+              {trend === "up" && <ArrowUpRight className="h-3 w-3 text-emerald-400" />}
+              {trend === "down" && <ArrowDownRight className="h-3 w-3 text-rose-500" />}
+              <span className={cn(
+                "text-[10px] font-mono font-medium",
+                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-rose-500" : "text-zinc-500"
+              )}>
+                {change}
+              </span>
+            </div>
+          )}
         </div>
-        {change && (
-          <div className={cn(
-            "flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full border shadow-sm",
-            trend === "up" ? "text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/50" : "",
-            trend === "down" ? "text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/50" : "text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700",
-          )}>
-            {trend === "up" && <ArrowUpRight className="mr-1 h-3 w-3" />}
-            {trend === "down" && <ArrowDownRight className="mr-1 h-3 w-3" />}
-            {change}
+        <div className="flex flex-col items-end gap-2">
+          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08]">
+            <Icon className="h-4 w-4 text-slate-500 dark:text-zinc-500" />
           </div>
-        )}
-      </div>
-      <div>
-        <h3 className="text-4xl font-mono font-bold tracking-tight text-slate-900 dark:text-zinc-100 tabular-nums">{value}</h3>
-        <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-wider mt-1.5">{title}</p>
+          {sparkData && <MiniSparkline data={sparkData} color={trend === "down" ? "#f43f5e" : "#34d399"} />}
+        </div>
       </div>
     </div>
   )
 })
 
+// --- GLASS CHART CARD ---
 const ChartCard = ({ title, subtitle, children, action, className }: any) => (
-  <Card className={cn("flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700/50 shadow-lg dark:shadow-black/40 bg-white dark:bg-[oklch(0.14_0.025_264)] rounded-xl", className)}>
-    <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
-      <div className="flex items-center gap-3">
-        <div className="space-y-0.5">
-          <CardTitle className="text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-wide uppercase">{title}</CardTitle>
-          {subtitle && <CardDescription className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</CardDescription>}
-        </div>
+  <div className={cn(
+    "flex flex-col overflow-hidden rounded-xl",
+    "bg-white dark:bg-white/[0.04] backdrop-blur-md",
+    "border border-slate-200 dark:border-white/[0.08]",
+    className
+  )}>
+    <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.06]">
+      <div>
+        <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 tracking-wide uppercase font-mono">{title}</h3>
+        {subtitle && <p className="text-[10px] text-slate-500 dark:text-zinc-500 mt-0.5">{subtitle}</p>}
       </div>
       {action}
-    </CardHeader>
-    <CardContent className="flex-1 p-6 relative">{children}</CardContent>
-  </Card>
+    </div>
+    <div className="flex-1 p-5 relative">{children}</div>
+  </div>
 )
 
+// --- SKELETON ---
 const DashboardSkeleton = () => (
   <div className="w-full min-h-screen bg-slate-50 dark:bg-zinc-950 p-8 space-y-8 animate-pulse">
-    <div className="h-16 w-full border-b border-slate-200 dark:border-zinc-800" />
+    <div className="h-14 w-full border-b border-slate-200 dark:border-zinc-800" />
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
-      {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-slate-200 dark:bg-zinc-800 rounded-xl" />)}
+      {[1, 2, 3, 4].map(i => <div key={i} className="h-28 bg-slate-200 dark:bg-zinc-800/50 rounded-xl" />)}
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      <div className="lg:col-span-2 h-[400px] bg-slate-200 dark:bg-zinc-800/50 rounded-xl" />
+      <div className="h-[400px] bg-slate-200 dark:bg-zinc-800/50 rounded-xl" />
     </div>
   </div>
 )
 
-// --- 7. MAIN PAGE LOGIC ---
+
+// ======= MAIN PAGE =======
 
 export default function AnalyticsPage() {
   const [trades, setTrades] = useState<Trade[]>([])
@@ -630,8 +314,6 @@ export default function AnalyticsPage() {
   const searchParams = useSearchParams()
   const initialTab = searchParams.get("tab")
   const [mainTab, setMainTab] = useState(initialTab === "intelligence" ? "intelligence" : "overview")
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
-  const [aiReport, setAiReport] = useState<string | null>(null)
 
   const [filters, setFilters] = useState<AnalyticsFilters>({
     dateRange: {
@@ -645,14 +327,6 @@ export default function AnalyticsPage() {
   })
 
   const { openAdvisor, isOpen, closeAdvisor, advisorProps } = useAIAdvisor()
-
-  const handleGenerateAIReport = () => {
-    setIsGeneratingAI(true)
-    setTimeout(() => {
-      setAiReport("Based on your last 50 trades, your 'Silver Bullet' setup has a 75% win rate in the AM session but drops to 30% in the PM. I recommend implementing a time-based rule to stop trading this setup after 11:00 AM EST. Additionally, your risk of ruin has increased slightly due to larger sizing on losing streaks.")
-      setIsGeneratingAI(false)
-    }, 2500)
-  }
 
   // --- DATA FETCHING ---
   useEffect(() => {
@@ -689,7 +363,6 @@ export default function AnalyticsPage() {
 
     let filteredTrades = trades.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
-    // Filtering
     if (filters.dateRange?.from) {
       const from = filters.dateRange.from.getTime()
       const to = filters.dateRange.to ? endOfDay(filters.dateRange.to).getTime() : endOfDay(new Date()).getTime()
@@ -738,7 +411,6 @@ export default function AnalyticsPage() {
       .map(([month, data]) => ({ month, ...data }))
       .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
 
-    // Metrics Scores Calculation
     const monthlyReturns = monthlyData.map(m => m.profit)
     const avgMonthly = monthlyReturns.reduce((a, b) => a + b, 0) / (monthlyReturns.length || 1)
     const variance = monthlyReturns.reduce((a, b) => a + Math.pow(b - avgMonthly, 2), 0) / (monthlyReturns.length || 1)
@@ -815,19 +487,17 @@ export default function AnalyticsPage() {
   }, [trades, filters])
 
   // Prepare Recharts Data
-
-
   const outcomeData = useMemo(() => [
-    { name: "Wins", value: analytics.wins, color: "#10b981" },
-    { name: "Losses", value: analytics.losses, color: "#ef4444" },
-    { name: "Breakeven", value: analytics.breakeven, color: "#94a3b8" }
+    { name: "Wins", value: analytics.wins, color: "#34d399" },
+    { name: "Losses", value: analytics.losses, color: "#f43f5e" },
+    { name: "Breakeven", value: analytics.breakeven, color: "#52525b" }
   ], [analytics])
 
   const instrumentData = useMemo(() =>
     Object.entries(analytics.instrumentDistribution).map(([key, val]) => ({
       name: key,
       value: val.pnl,
-      color: val.pnl >= 0 ? "#10b981" : "#ef4444"
+      color: val.pnl >= 0 ? "#34d399" : "#f43f5e"
     }))
     , [analytics])
 
@@ -835,36 +505,39 @@ export default function AnalyticsPage() {
     Object.entries(analytics.setupDistribution).map(([key, val]) => ({
       name: key,
       value: val.count,
-      color: "#3b82f6"
+      color: "#818cf8"
     }))
     , [analytics])
 
-
+  // Sparkline data from dailyData
+  const pnlSparkData = useMemo(() => analytics.dailyData.map(d => d.cumulative), [analytics])
+  const winRateSparkData = useMemo(() => {
+    let w = 0, total = 0
+    return analytics.dailyData.map(d => { total += d.trades; w += d.pnl > 0 ? 1 : 0; return total > 0 ? (w / total) * 100 : 0 })
+  }, [analytics])
 
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-[oklch(0.96_0.002_264)] dark:bg-[oklch(0.08_0.018_264)] pb-20 font-sans text-slate-900 dark:text-zinc-100 transition-colors duration-500">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-20 font-sans text-slate-900 dark:text-zinc-100 transition-colors duration-500">
 
       {/* --- HEADER --- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-slate-700/50 bg-white/80 dark:bg-[oklch(0.14_0.025_264)]/80 backdrop-blur-lg shadow-sm dark:shadow-black/20">
+      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 
           <div className="flex items-center gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 dark:bg-blue-600 text-white shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-[0_0_12px_rgba(52,211,153,0.3)]">
               <LayoutDashboard className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-zinc-100 leading-none">ANALYTICS</h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Performance & Insights</span>
-              </div>
+              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-zinc-100 leading-none font-mono uppercase">Analytics</h1>
+              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Performance & Insights</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-sm">
-              <div className="w-[200px] border-r border-slate-100">
+            <div className="hidden md:flex items-center bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-lg p-0.5">
+              <div className="w-[200px] border-r border-slate-100 dark:border-white/[0.06]">
                 <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
               </div>
               <Button
@@ -872,24 +545,13 @@ export default function AnalyticsPage() {
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
                 className={cn(
-                  "h-9 rounded-md px-3 text-slate-500 hover:text-blue-600 hover:bg-slate-50",
-                  showFilters && "bg-slate-100 text-blue-600"
+                  "h-9 rounded-md px-3 text-slate-500 dark:text-zinc-400 hover:text-emerald-500 hover:bg-slate-50 dark:hover:bg-white/5",
+                  showFilters && "bg-slate-100 dark:bg-white/[0.08] text-emerald-500"
                 )}
               >
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
-
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors rounded-lg shadow-sm">
-                  <CalendarIcon className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="p-0 flex flex-col h-full bg-slate-50/50 dark:bg-zinc-950/50">
-                <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
-              </SheetContent>
-            </Sheet>
           </div>
         </div>
 
@@ -900,7 +562,7 @@ export default function AnalyticsPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50"
+              className="overflow-hidden border-t border-slate-100 dark:border-zinc-800/60 bg-slate-50/50 dark:bg-zinc-900/50"
             >
               <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -939,13 +601,13 @@ export default function AnalyticsPage() {
             <TabsList className="bg-transparent p-0 gap-6 h-auto">
               <TabsTrigger
                 value="overview"
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 font-medium text-slate-500 dark:text-zinc-500 transition-all hover:text-slate-700 dark:hover:text-zinc-300 font-mono uppercase text-xs tracking-wider"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="intelligence"
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-violet-600 data-[state=active]:bg-transparent data-[state=active]:text-violet-600 font-medium text-slate-500 transition-all hover:text-slate-700"
+                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:text-violet-400 font-medium text-slate-500 dark:text-zinc-500 transition-all hover:text-slate-700 dark:hover:text-zinc-300 font-mono uppercase text-xs tracking-wider"
               >
                 <Sparkles className="w-3 h-3 mr-2" />
                 Intelligence
@@ -953,22 +615,25 @@ export default function AnalyticsPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="overview" className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            {/* --- 1. KPI CARDS --- */}
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <TabsContent value="overview" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+
+            {/* ====== SECTION A: HEADLINES - KPI CARDS ====== */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard
                 title="Net P&L"
                 value={`$${analytics.totalPnL.toLocaleString()}`}
                 change={`${analytics.totalPnL > 0 ? "+" : ""}${((analytics.totalPnL / (Math.abs(analytics.totalPnL - 500) || 1)) * 10).toFixed(1)}%`}
                 trend={analytics.totalPnL >= 0 ? "up" : "down"}
                 icon={DollarSign}
+                sparkData={pnlSparkData}
               />
               <MetricCard
                 title="Win Rate"
                 value={`${analytics.winRate.toFixed(1)}%`}
-                change={analytics.winRate > 50 ? "Healthy" : "Weak"}
+                change={analytics.winRate > 50 ? "Healthy" : "Needs Improvement"}
                 trend={analytics.winRate > 50 ? "up" : "down"}
                 icon={Target}
+                sparkData={winRateSparkData}
               />
               <MetricCard
                 title="Profit Factor"
@@ -986,94 +651,105 @@ export default function AnalyticsPage() {
               />
             </div>
 
-            {/* --- 2. MAIN CHARTS (RECHARTS) --- */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {/* EQUITY CURVE */}
+            {/* ====== SECTION B: THE PULSE - Equity Curve + Calendar ====== */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* LEFT 2/3: Equity Curve */}
               <ChartCard
                 title="Equity Curve"
                 subtitle="Cumulative Performance"
-                className="lg:col-span-2 h-[350px]"
+                className="lg:col-span-2 h-[420px]"
                 action={
-                  <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-blue-600"><Download className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-zinc-500 hover:text-emerald-400 dark:hover:text-emerald-400"><Download className="h-3.5 w-3.5" /></Button>
                 }
               >
                 <div className="h-full w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={analytics.dailyData}>
                       <defs>
-                        <linearGradient id="colorPnL" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#34d399" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-zinc-800" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-zinc-800" strokeOpacity={0.3} />
                       <XAxis
                         dataKey="date"
                         tickFormatter={(str) => format(new Date(str), "MMM d")}
-                        className="fill-slate-500 dark:fill-zinc-500"
+                        className="fill-slate-400 dark:fill-zinc-600"
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
-                        className="fill-slate-500 dark:fill-zinc-500"
+                        className="fill-slate-400 dark:fill-zinc-600"
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
                         tickFormatter={(val) => `$${val}`}
                       />
-                      <RechartsTooltip content={<CustomTooltip />} />
+                      <RechartsTooltip content={<CustomTooltip prefix="$" />} />
                       <Area
                         type="monotone"
                         dataKey="cumulative"
-                        stroke="#3b82f6"
-                        strokeWidth={2.5}
+                        stroke="#34d399"
+                        strokeWidth={2}
                         fillOpacity={1}
-                        fill="url(#colorPnL)"
+                        fill="url(#equityGradient)"
+                        name="Equity"
                       />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </ChartCard>
 
-              {/* WIN/LOSS DONUT */}
-              <ChartCard title="Outcomes" subtitle="Win / Loss Ratio" className="h-[350px]">
+              {/* RIGHT 1/3: Calendar Heatmap - ALWAYS VISIBLE */}
+              <div className="lg:col-span-1 h-[420px]">
+                <RedesignedCalendarHeatmap
+                  dailyData={analytics.dailyData}
+                  trades={analytics.filteredTrades}
+                />
+              </div>
+            </div>
+
+            {/* ====== SECTION C: THE BREAKDOWN - Bento Grid ====== */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+              {/* Win/Loss Donut */}
+              <ChartCard title="Outcomes" subtitle="Win / Loss Ratio" className="h-[280px]">
                 <div className="h-full w-full relative">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={outcomeData}
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={5}
+                        innerRadius={45}
+                        outerRadius={70}
+                        paddingAngle={4}
                         dataKey="value"
                       >
                         {outcomeData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                         ))}
                       </Pie>
-                      <RechartsTooltip />
+                      <RechartsTooltip content={<CustomTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-4">
-                    <span className="text-3xl font-mono font-bold text-slate-900">{analytics.totalTrades}</span>
-                    <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Trades</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2">
+                    <span className="text-2xl font-mono font-bold text-slate-800 dark:text-zinc-100">{analytics.totalTrades}</span>
+                    <span className="text-[9px] uppercase text-slate-400 dark:text-zinc-500 font-bold tracking-widest">Trades</span>
                   </div>
                 </div>
               </ChartCard>
-            </div>
 
-            {/* --- 3. BREAKDOWNS (RECHARTS) --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ChartCard title="By Instrument" subtitle="P&L Distribution">
-                <div className="h-[200px] w-full">
+              {/* Instrument P&L */}
+              <ChartCard title="By Instrument" subtitle="P&L Distribution" className="h-[280px]">
+                <div className="h-full w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={instrumentData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
-                      <RechartsTooltip cursor={{ fill: '#f1f5f9' }} content={<CustomTooltip prefix="$" />} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-zinc-800" strokeOpacity={0.2} />
+                      <XAxis dataKey="name" stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                      <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} content={<CustomTooltip prefix="$" />} />
+                      <Bar dataKey="value" radius={[3, 3, 0, 0]}>
                         {instrumentData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
@@ -1083,34 +759,37 @@ export default function AnalyticsPage() {
                 </div>
               </ChartCard>
 
-              <ChartCard title="By Strategy" subtitle="Setup Frequency">
-                <div className="h-[200px] w-full">
+              {/* Strategy Frequency */}
+              <ChartCard title="By Strategy" subtitle="Setup Frequency" className="h-[280px]">
+                <div className="h-full w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={setupData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                      <RechartsTooltip cursor={{ fill: '#f1f5f9' }} content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-zinc-800" strokeOpacity={0.2} />
+                      <XAxis dataKey="name" stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} />
+                      <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} content={<CustomTooltip />} />
+                      <Bar dataKey="value" fill="#818cf8" radius={[3, 3, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </ChartCard>
-            </div>
 
-            {/* --- 4. INTELLIGENCE MODULES --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden rounded-xl h-full">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-blue-500" />
-                    Trader DNA
-                  </CardTitle>
-                  <Badge variant="outline" className="font-mono text-blue-600 bg-blue-50 border-blue-100">
+              {/* Trader DNA */}
+              <div className={cn(
+                "flex flex-col overflow-hidden rounded-xl h-[280px]",
+                "bg-white dark:bg-white/[0.04] backdrop-blur-md",
+                "border border-slate-200 dark:border-white/[0.08]"
+              )}>
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.06]">
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-3.5 h-3.5 text-emerald-400" />
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 tracking-wide uppercase font-mono">Trader DNA</h3>
+                  </div>
+                  <Badge variant="outline" className="font-mono text-[10px] text-emerald-500 bg-emerald-500/10 border-emerald-500/20">
                     {analytics.overallScore}/100
                   </Badge>
-                </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
+                </div>
+                <div className="flex-1 flex items-center justify-center p-2">
                   <EnhancedHexagram
                     winPercentage={analytics.winRate}
                     consistency={analytics.consistencyScore}
@@ -1120,14 +799,15 @@ export default function AnalyticsPage() {
                     avgWinLoss={analytics.efficiencyScore}
                     totalScore={analytics.overallScore}
                   />
-                </CardContent>
-              </Card>
-
-              <TimingAnalyticsDashboard
-                trades={trades}
-                className="rounded-xl bg-white border border-slate-200 shadow-sm h-full"
-              />
+                </div>
+              </div>
             </div>
+
+            {/* Timing Analytics - Full Width */}
+            <TimingAnalyticsDashboard
+              trades={trades}
+              className="rounded-xl bg-white dark:bg-white/[0.04] backdrop-blur-md border border-slate-200 dark:border-white/[0.08]"
+            />
 
           </TabsContent>
 
@@ -1136,27 +816,8 @@ export default function AnalyticsPage() {
             <InsightsView trades={analytics.filteredTrades} isLoading={loading} />
           </TabsContent>
 
-        </Tabs >
-      </main >
-
-      {/* Mobile Calendar FAB */}
-      < div className="fixed bottom-6 right-6 md:hidden z-50" >
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button size="icon" className="h-14 w-14 rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700 transition-transform hover:scale-105">
-              <CalendarIcon className="h-6 w-6" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-full h-full p-0 bg-white">
-            <div className="px-6 py-6 border-b border-slate-100 bg-white sticky top-0 z-10">
-              <h2 className="text-lg font-bold text-slate-900">Trading Journal</h2>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6">
-              <JournalCalendar trades={trades} dailyData={analytics.dailyData} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div >
+        </Tabs>
+      </main>
 
       {advisorProps && (
         <AdvisorPanel
@@ -1168,7 +829,6 @@ export default function AnalyticsPage() {
           context={advisorProps.context}
         />
       )}
-    </div >
+    </div>
   )
 }
-

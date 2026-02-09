@@ -22,12 +22,12 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         {/* The Buffer Div isolates the app from browser extensions */}
         <div id="app-root">
-          <Providers 
-            attribute="class" 
-            defaultTheme="light" 
-            enableSystem={false} 
+          <Providers
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
             disableTransitionOnChange
-            forcedTheme={undefined} // Allow pages to override if needed
+            storageKey="concentrade-theme"
           >
             {children}
           </Providers>

@@ -714,7 +714,7 @@ export default function DashboardPage() {
     })
 
     return Array.from(map.values())
-      .map((s) => ({ ...s, winRate: (s.wins / s.total) * 100 }))
+      .map((s) => ({ ...s, winRate: (s.wins / s.total) * 100, chartValue: s.total }))
       .sort((a, b) => b.pnl - a.pnl)
       .slice(0, 5) // Top 5
   }, [filteredTrades])
@@ -1162,7 +1162,7 @@ export default function DashboardPage() {
                         innerRadius={65}
                         outerRadius={85}
                         paddingAngle={4}
-                        dataKey="pnl"
+                        dataKey="chartValue"
                         cornerRadius={4}
                       >
                         {strategyData.map((entry, index) => (
@@ -1195,17 +1195,17 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={strategy.name}
-                        className="flex items-center justify-between text-sm group p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div
-                            className={`w-2.5 h-2.5 rounded-full ${color.bg}`}
+                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${color.bg}`}
                           />
-                          <span className="font-medium text-gray-700 dark:text-gray-300">
+                          <span className="font-medium text-gray-700 dark:text-gray-300 truncate" title={strategy.name}>
                             {strategy.name}
                           </span>
                         </div>
-                        <div className="text-right flex items-center gap-3">
+                        <div className="text-right flex items-center gap-3 shrink-0">
                           <span className="text-xs text-muted-foreground font-medium">
                             {strategy.winRate.toFixed(0)}% WR
                           </span>

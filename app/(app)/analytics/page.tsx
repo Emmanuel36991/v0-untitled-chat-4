@@ -14,30 +14,47 @@ import {
   ResponsiveContainer,
   Tooltip as RechartsTooltip,
   XAxis,
-  YAxis
+  YAxis,
+  ReferenceLine
 } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarPrimitive } from "@/components/ui/calendar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  DollarSign,
+  TrendingUp,
+  TrendingDown,
   Target,
   BarChart3,
   Activity,
   ArrowUpRight,
   ArrowDownRight,
   Calendar as CalendarIcon,
-  LayoutDashboard,
   Filter,
   Download,
   Brain,
   Sparkles,
+  MoreHorizontal,
+  AlertCircle,
+  Wallet,
+  RefreshCw,
   Check
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
@@ -75,21 +92,58 @@ interface ProcessedAnalytics {
   filteredTrades: Trade[]
 }
 
-// --- PREMIUM GLASS TOOLTIP ---
-const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
+interface MetricCardProps {
+  title: string
+  value: string | number
+  change?: string
+  changeType?: "positive" | "negative" | "neutral"
+  icon: React.ElementType
+  iconColor: string
+  trendData?: any[]
+  subtitle?: string
+}
+
+
+// ==========================================
+// SUB-COMPONENTS — matching dashboard exactly
+// ==========================================
+
+// --- Custom Chart Tooltip (Dashboard Style) ---
+const CustomChartTooltip = ({
+  active,
+  payload,
+  label,
+  prefix = "",
+}: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-700/50 shadow-2xl shadow-black/60 rounded-lg p-3">
-        <p className="text-[10px] font-bold text-zinc-400 mb-2 uppercase tracking-[0.12em] font-mono">{label}</p>
+      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-3 rounded-xl shadow-xl z-50">
+        <p className="text-xs font-medium text-muted-foreground mb-2 border-b border-gray-100 dark:border-gray-800 pb-1">
+          {label}
+        </p>
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center justify-between gap-4 mb-1">
+          <div key={index} className="flex items-center justify-between gap-4 py-1">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color, boxShadow: `0 0 6px ${entry.color}40` }} />
-              <span className="text-[11px] text-zinc-400">{entry.name}</span>
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
+                {entry.name}
+              </p>
             </div>
-            <span className="text-sm font-mono font-bold text-white tabular-nums">
-              {prefix}{typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
-            </span>
+            <p
+              className={cn(
+                "text-xs font-bold font-mono",
+                typeof entry.value === "number" && entry.value > 0
+                  ? "text-green-600 dark:text-green-400"
+                  : typeof entry.value === "number" && entry.value < 0
+                    ? "text-red-600 dark:text-red-400"
+                    : "text-gray-900 dark:text-gray-100"
+              )}
+            >
+              {prefix}{typeof entry.value === "number" ? entry.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : entry.value}
+            </p>
           </div>
         ))}
       </div>
@@ -98,12 +152,114 @@ const CustomTooltip = ({ active, payload, label, prefix = "" }: any) => {
   return null
 }
 
-// --- DATE PICKER ---
+
+// --- Metric Card (Dashboard Style) ---
+const MetricCard = React.memo<MetricCardProps>(
+  ({
+    title,
+    value,
+    change,
+    changeType = "neutral",
+    icon: Icon,
+    iconColor,
+    trendData,
+    subtitle,
+  }) => (
+    <Card
+      className={cn(
+        "relative overflow-hidden border border-gray-200/60 dark:border-gray-800/60 shadow-sm transition-all duration-300 group cursor-pointer",
+        "bg-white dark:bg-gray-900/40 backdrop-blur-xl",
+        "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5"
+      )}
+    >
+      <CardContent className="p-6 relative z-10">
+        <div className="flex justify-between items-start mb-3">
+          <div
+            className={cn(
+              "p-2.5 rounded-xl transition-all duration-300 group-hover:scale-110",
+              iconColor,
+              "bg-opacity-10 dark:bg-opacity-20"
+            )}
+          >
+            <Icon className="h-5 w-5" />
+          </div>
+          {change && (
+            <Badge
+              variant="secondary"
+              className={cn(
+                "font-mono text-[10px] px-2 py-0.5 border-0",
+                changeType === "positive" &&
+                "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10",
+                changeType === "negative" &&
+                "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10",
+                changeType === "neutral" &&
+                "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
+              )}
+            >
+              {changeType === "positive" ? (
+                <TrendingUp className="h-3 w-3 mr-1 inline" />
+              ) : changeType === "negative" ? (
+                <TrendingDown className="h-3 w-3 mr-1 inline" />
+              ) : (
+                <MoreHorizontal className="h-3 w-3 mr-1 inline" />
+              )}
+              {change}
+            </Badge>
+          )}
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            {title}
+          </div>
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-2xl font-bold tracking-tight text-foreground font-mono">
+              {value}
+            </h3>
+          </div>
+          {subtitle && (
+            <p className="text-[11px] text-muted-foreground/80 font-medium pt-1">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* Sparkline Background */}
+        {trendData && trendData.length > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trendData}>
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  fill="currentColor"
+                  className={
+                    changeType === "positive"
+                      ? "text-green-500"
+                      : changeType === "negative"
+                        ? "text-red-500"
+                        : "text-gray-500"
+                  }
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+)
+
+
+// --- Date Picker with Presets (Dashboard Style) ---
 function DatePickerWithRange({ className, date, setDate }: any) {
   const [open, setOpen] = useState(false)
   const presets = [
     { label: "Last 7 Days", getValue: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
     { label: "Last 30 Days", getValue: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
+    { label: "Last 90 Days", getValue: () => ({ from: subDays(new Date(), 90), to: new Date() }) },
     { label: "This Month", getValue: () => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) }) },
     { label: "This Week", getValue: () => ({ from: startOfWeek(new Date()), to: endOfWeek(new Date()) }) },
     { label: "Year to Date", getValue: () => ({ from: startOfYear(new Date()), to: new Date() }) },
@@ -119,33 +275,33 @@ function DatePickerWithRange({ className, date, setDate }: any) {
       <PopoverTrigger asChild>
         <Button
           id="date"
-          variant={"ghost"}
+          variant="outline"
           size="sm"
           className={cn(
-            "h-9 w-full justify-start text-left font-normal text-zinc-400 hover:text-zinc-200 hover:bg-white/5 px-3",
+            "h-9 justify-start text-left font-normal border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800",
             !date && "text-muted-foreground",
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500" />
+          <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
           {date?.from ? (
             date.to ? (
-              <span className="text-xs font-mono font-medium">
-                {format(date.from, "MMM dd")} - {format(date.to, "MMM dd")}
+              <span className="text-xs font-medium">
+                {format(date.from, "MMM dd")} – {format(date.to, "MMM dd")}
               </span>
             ) : (
-              format(date.from, "MMM dd, yyyy")
+              <span className="text-xs">{format(date.from, "MMM dd, yyyy")}</span>
             )
           ) : (
-            <span>Pick a date range</span>
+            <span className="text-xs">Pick a date range</span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-0 shadow-2xl shadow-black/40 rounded-xl overflow-hidden ring-1 ring-zinc-700/50" align="start">
-        <div className="flex flex-col sm:flex-row bg-zinc-900">
-          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-zinc-800 bg-zinc-950/50 sm:w-[160px]">
+      <PopoverContent className="w-auto p-0 border border-gray-200 dark:border-gray-800 shadow-xl rounded-xl overflow-hidden" align="start">
+        <div className="flex flex-col sm:flex-row bg-white dark:bg-gray-950">
+          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 sm:w-[160px]">
             <div className="px-2 py-1.5 mb-1">
-              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Quick Select</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quick Select</span>
             </div>
             {presets.map((preset) => {
               const isActive = isPresetActive(preset.getValue())
@@ -159,8 +315,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                   className={cn(
                     "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
                     isActive
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "hover:bg-white/5 text-zinc-400"
+                      ? "bg-primary/10 text-primary"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-800 text-muted-foreground"
                   )}
                 >
                   {preset.label}
@@ -179,15 +335,10 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               onSelect={setDate}
               numberOfMonths={2}
               className="rounded-md border-0"
-              classNames={{
-                day_selected: "bg-emerald-500 text-white hover:bg-emerald-500 focus:bg-emerald-500",
-                day_today: "bg-zinc-800 text-zinc-100",
-                day_range_middle: "aria-selected:bg-emerald-500/10 aria-selected:text-emerald-300",
-              }}
             />
-            <div className="flex items-center justify-end pt-4 border-t border-zinc-800 mt-2 gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs text-zinc-400 hover:text-white">Cancel</Button>
-              <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600 text-white h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
+            <div className="flex items-center justify-end pt-4 border-t border-gray-100 dark:border-gray-800 mt-2 gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
             </div>
           </div>
         </div>
@@ -197,108 +348,16 @@ function DatePickerWithRange({ className, date, setDate }: any) {
 }
 
 
-// --- MINI SPARKLINE ---
-const MiniSparkline = ({ data, color = "#34d399" }: { data: number[]; color?: string }) => {
-  if (!data.length) return null
-  const points = data.slice(-7)
-  const min = Math.min(...points)
-  const max = Math.max(...points)
-  const range = max - min || 1
-  const w = 60
-  const h = 20
-  const path = points
-    .map((v, i) => {
-      const x = (i / (points.length - 1)) * w
-      const y = h - ((v - min) / range) * h
-      return `${i === 0 ? "M" : "L"}${x},${y}`
-    })
-    .join(" ")
-
-  return (
-    <svg width={w} height={h} className="opacity-60">
-      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-// --- HUD METRIC CARD ---
-const MetricCard = React.memo(({ title, value, change, trend, icon: Icon, sparkData }: any) => {
-  const trendColor = trend === "up"
-    ? "text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.4)]"
-    : trend === "down"
-      ? "text-rose-500"
-      : "text-zinc-400"
-
-  return (
-    <div className={cn(
-      "group relative overflow-hidden rounded-xl p-5",
-      "bg-white dark:bg-white/[0.04] backdrop-blur-md",
-      "border border-slate-200 dark:border-white/[0.08]",
-      "hover:dark:border-white/[0.15] hover:border-slate-300",
-      "transition-all duration-300"
-    )}>
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] via-transparent to-transparent pointer-events-none" />
-
-      <div className="relative flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-[10px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-[0.12em] mb-3 font-mono">{title}</p>
-          <h3 className={cn("text-3xl font-mono font-bold tracking-tight tabular-nums", trendColor)}>
-            {value}
-          </h3>
-          {change && (
-            <div className="flex items-center gap-1.5 mt-2">
-              {trend === "up" && <ArrowUpRight className="h-3 w-3 text-emerald-400" />}
-              {trend === "down" && <ArrowDownRight className="h-3 w-3 text-rose-500" />}
-              <span className={cn(
-                "text-[10px] font-mono font-medium",
-                trend === "up" ? "text-emerald-400" : trend === "down" ? "text-rose-500" : "text-zinc-500"
-              )}>
-                {change}
-              </span>
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="p-2 rounded-lg bg-slate-100 dark:bg-white/[0.06] border border-slate-200 dark:border-white/[0.08]">
-            <Icon className="h-4 w-4 text-slate-500 dark:text-zinc-500" />
-          </div>
-          {sparkData && <MiniSparkline data={sparkData} color={trend === "down" ? "#f43f5e" : "#34d399"} />}
-        </div>
-      </div>
-    </div>
-  )
-})
-
-// --- GLASS CHART CARD ---
-const ChartCard = ({ title, subtitle, children, action, className }: any) => (
-  <div className={cn(
-    "flex flex-col overflow-hidden rounded-xl",
-    "bg-white dark:bg-white/[0.04] backdrop-blur-md",
-    "border border-slate-200 dark:border-white/[0.08]",
-    className
-  )}>
-    <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.06]">
-      <div>
-        <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 tracking-wide uppercase font-mono">{title}</h3>
-        {subtitle && <p className="text-[10px] text-slate-500 dark:text-zinc-500 mt-0.5">{subtitle}</p>}
-      </div>
-      {action}
-    </div>
-    <div className="flex-1 p-5 relative">{children}</div>
-  </div>
-)
-
-// --- SKELETON ---
+// --- Loading Skeleton (Dashboard Style) ---
 const DashboardSkeleton = () => (
-  <div className="w-full min-h-screen bg-slate-50 dark:bg-zinc-950 p-8 space-y-8 animate-pulse">
-    <div className="h-14 w-full border-b border-slate-200 dark:border-zinc-800" />
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-7xl mx-auto mt-8">
-      {[1, 2, 3, 4].map(i => <div key={i} className="h-28 bg-slate-200 dark:bg-zinc-800/50 rounded-xl" />)}
+  <div className="w-full min-h-screen bg-gray-50/50 dark:bg-[#0B0D12] p-8 space-y-8 animate-pulse">
+    <div className="h-14 w-full" />
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-4 max-w-[1600px] mx-auto mt-8">
+      {[1, 2, 3, 4].map(i => <div key={i} className="h-28 bg-gray-200 dark:bg-gray-800/50 rounded-xl" />)}
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-      <div className="lg:col-span-2 h-[400px] bg-slate-200 dark:bg-zinc-800/50 rounded-xl" />
-      <div className="h-[400px] bg-slate-200 dark:bg-zinc-800/50 rounded-xl" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
+      <div className="lg:col-span-2 h-[400px] bg-gray-200 dark:bg-gray-800/50 rounded-xl" />
+      <div className="h-[400px] bg-gray-200 dark:bg-gray-800/50 rounded-xl" />
     </div>
   </div>
 )
@@ -488,16 +547,16 @@ export default function AnalyticsPage() {
 
   // Prepare Recharts Data
   const outcomeData = useMemo(() => [
-    { name: "Wins", value: analytics.wins, color: "#34d399" },
+    { name: "Wins", value: analytics.wins, color: "#10b981" },
     { name: "Losses", value: analytics.losses, color: "#f43f5e" },
-    { name: "Breakeven", value: analytics.breakeven, color: "#52525b" }
+    { name: "Breakeven", value: analytics.breakeven, color: "#6b7280" }
   ], [analytics])
 
   const instrumentData = useMemo(() =>
     Object.entries(analytics.instrumentDistribution).map(([key, val]) => ({
       name: key,
       value: val.pnl,
-      color: val.pnl >= 0 ? "#34d399" : "#f43f5e"
+      color: val.pnl >= 0 ? "#10b981" : "#f43f5e"
     }))
     , [analytics])
 
@@ -509,49 +568,67 @@ export default function AnalyticsPage() {
     }))
     , [analytics])
 
-  // Sparkline data from dailyData
-  const pnlSparkData = useMemo(() => analytics.dailyData.map(d => d.cumulative), [analytics])
+  // Sparkline data
+  const pnlSparkData = useMemo(() => analytics.dailyData.map(d => ({ value: d.cumulative })), [analytics])
   const winRateSparkData = useMemo(() => {
     let w = 0, total = 0
-    return analytics.dailyData.map(d => { total += d.trades; w += d.pnl > 0 ? 1 : 0; return total > 0 ? (w / total) * 100 : 0 })
+    return analytics.dailyData.map(d => { total += d.trades; w += d.pnl > 0 ? 1 : 0; return { value: total > 0 ? (w / total) * 100 : 0 } })
   }, [analytics])
 
   if (loading) return <DashboardSkeleton />
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-20 font-sans text-slate-900 dark:text-zinc-100 transition-colors duration-500">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-[#0B0D12] text-foreground transition-colors duration-300">
+      <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
 
-      {/* --- HEADER --- */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 dark:border-zinc-800/60 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-
-          <div className="flex items-center gap-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-[0_0_12px_rgba(52,211,153,0.3)]">
-              <LayoutDashboard className="h-4 w-4" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900 dark:text-zinc-100 leading-none font-mono uppercase">Analytics</h1>
-              <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">Performance & Insights</span>
-            </div>
+        {/* ======= HEADER ======= */}
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
+          <div className="space-y-1">
+            <h1
+              className={cn(
+                "text-3xl sm:text-4xl font-extrabold tracking-tight",
+                "bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-slate-700 to-gray-900 dark:from-white dark:via-slate-200 dark:to-white"
+              )}
+            >
+              Analytics
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Performance insights and breakdown analysis
+            </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden md:flex items-center bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-lg p-0.5">
-              <div className="w-[200px] border-r border-slate-100 dark:border-white/[0.06]">
-                <DatePickerWithRange date={filters.dateRange} setDate={(date: any) => setFilters({ ...filters, dateRange: date })} />
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className={cn(
-                  "h-9 rounded-md px-3 text-slate-500 dark:text-zinc-400 hover:text-emerald-500 hover:bg-slate-50 dark:hover:bg-white/5",
-                  showFilters && "bg-slate-100 dark:bg-white/[0.08] text-emerald-500"
-                )}
-              >
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
+          {/* Tab Switcher + Filter */}
+          <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+            <Tabs value={mainTab} onValueChange={setMainTab} className="w-auto">
+              <TabsList className="h-9 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <TabsTrigger
+                  value="overview"
+                  className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm font-semibold"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger
+                  value="intelligence"
+                  className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm font-semibold"
+                >
+                  <Sparkles className="w-3 h-3 mr-1.5" />
+                  Intelligence
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className={cn(
+                "h-9 rounded-lg px-3 border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800",
+                showFilters && "bg-primary/10 border-primary/30 text-primary"
+              )}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              <span className="text-xs font-semibold">Filters</span>
+            </Button>
           </div>
         </div>
 
@@ -562,234 +639,330 @@ export default function AnalyticsPage() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-slate-100 dark:border-zinc-800/60 bg-slate-50/50 dark:bg-zinc-900/50"
+              className="overflow-hidden"
             >
-              <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-500">Instrument</Label>
-                    <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Instruments</SelectItem>
-                        {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+              <Card className="border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-gray-900/40">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Instrument</Label>
+                      <Select onValueChange={(v) => setFilters(p => ({ ...p, instruments: v === "all" ? [] : [v] }))}>
+                        <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 h-9 text-xs"><SelectValue placeholder="All Instruments" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Instruments</SelectItem>
+                          {Array.from(new Set(trades.map(t => t.instrument))).map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Setup</Label>
+                      <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
+                        <SelectTrigger className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Setups</SelectItem>
+                          {Array.from(new Set(trades.map(t => t.setup_name).filter((s): s is string => Boolean(s)))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-500">Setup</Label>
-                    <Select onValueChange={(v) => setFilters(p => ({ ...p, setups: v === "all" ? [] : [v] }))}>
-                      <SelectTrigger className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 h-9 text-xs"><SelectValue placeholder="All Setups" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Setups</SelectItem>
-                        {Array.from(new Set(trades.map(t => t.setup_name).filter((s): s is string => Boolean(s)))).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </motion.div>
           )}
         </AnimatePresence>
-      </header>
 
-      <main className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-8 space-y-8">
 
-        <Tabs value={mainTab} onValueChange={setMainTab} className="w-full space-y-8">
+        {/* ======= OVERVIEW TAB CONTENT ======= */}
+        {mainTab === "overview" && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-          <div className="flex border-b border-slate-200 dark:border-zinc-800">
-            <TabsList className="bg-transparent p-0 gap-6 h-auto">
-              <TabsTrigger
-                value="overview"
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-emerald-500 font-medium text-slate-500 dark:text-zinc-500 transition-all hover:text-slate-700 dark:hover:text-zinc-300 font-mono uppercase text-xs tracking-wider"
-              >
-                Overview
-              </TabsTrigger>
-              <TabsTrigger
-                value="intelligence"
-                className="rounded-none border-b-2 border-transparent px-0 py-2 data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:text-violet-400 font-medium text-slate-500 dark:text-zinc-500 transition-all hover:text-slate-700 dark:hover:text-zinc-300 font-mono uppercase text-xs tracking-wider"
-              >
-                <Sparkles className="w-3 h-3 mr-2" />
-                Intelligence
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="overview" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-
-            {/* ====== SECTION A: HEADLINES - KPI CARDS ====== */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {/* ====== SECTION A: KEY METRICS ====== */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
                 title="Net P&L"
-                value={`$${analytics.totalPnL.toLocaleString()}`}
-                change={`${analytics.totalPnL > 0 ? "+" : ""}${((analytics.totalPnL / (Math.abs(analytics.totalPnL - 500) || 1)) * 10).toFixed(1)}%`}
-                trend={analytics.totalPnL >= 0 ? "up" : "down"}
-                icon={DollarSign}
-                sparkData={pnlSparkData}
+                value={`$${analytics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                change={`${analytics.totalTrades} Executions`}
+                changeType={analytics.totalPnL >= 0 ? "positive" : "negative"}
+                icon={Wallet}
+                iconColor="text-blue-600 dark:text-blue-400"
+                trendData={pnlSparkData}
+                subtitle="Net profit after commissions"
               />
               <MetricCard
                 title="Win Rate"
                 value={`${analytics.winRate.toFixed(1)}%`}
-                change={analytics.winRate > 50 ? "Healthy" : "Needs Improvement"}
-                trend={analytics.winRate > 50 ? "up" : "down"}
+                change={`${analytics.wins}W – ${analytics.losses}L`}
+                changeType={
+                  analytics.winRate > 50
+                    ? "positive"
+                    : analytics.winRate > 40
+                      ? "neutral"
+                      : "negative"
+                }
                 icon={Target}
-                sparkData={winRateSparkData}
+                iconColor="text-purple-600 dark:text-purple-400"
+                trendData={winRateSparkData}
+                subtitle={`Best streak available in DNA`}
               />
               <MetricCard
                 title="Profit Factor"
                 value={analytics.profitFactor.toFixed(2)}
-                trend="neutral"
-                change="Ratio"
+                change={`Exp: $${analytics.avgPnL.toFixed(2)}`}
+                changeType={
+                  analytics.profitFactor >= 1.5
+                    ? "positive"
+                    : analytics.profitFactor >= 1
+                      ? "neutral"
+                      : "negative"
+                }
                 icon={Activity}
+                iconColor="text-emerald-600 dark:text-emerald-400"
+                subtitle="Gross Profit / Gross Loss"
               />
               <MetricCard
-                title="Total Volume"
-                value={analytics.totalTrades}
-                change={`$${analytics.avgPnL.toFixed(0)} avg`}
-                trend="neutral"
+                title="Avg Return"
+                value={`$${analytics.avgPnL.toFixed(2)}`}
+                change={`DD: -$${Math.abs(analytics.maxDrawdown).toFixed(0)}`}
+                changeType={analytics.avgPnL > 0 ? "positive" : "negative"}
                 icon={BarChart3}
+                iconColor="text-amber-600 dark:text-amber-400"
+                trendData={analytics.dailyData.map(d => ({ value: d.pnl }))}
+                subtitle="Average P&L per trade"
               />
             </div>
 
-            {/* ====== SECTION B: THE PULSE - Equity Curve + Calendar ====== */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* LEFT 2/3: Equity Curve */}
-              <ChartCard
-                title="Equity Curve"
-                subtitle="Cumulative Performance"
-                className="lg:col-span-2 h-[420px]"
-                action={
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-zinc-500 hover:text-emerald-400 dark:hover:text-emerald-400"><Download className="h-3.5 w-3.5" /></Button>
-                }
-              >
-                <div className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={analytics.dailyData}>
-                      <defs>
-                        <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#34d399" stopOpacity={0.3} />
-                          <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-zinc-800" strokeOpacity={0.3} />
-                      <XAxis
-                        dataKey="date"
-                        tickFormatter={(str) => format(new Date(str), "MMM d")}
-                        className="fill-slate-400 dark:fill-zinc-600"
-                        fontSize={10}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        className="fill-slate-400 dark:fill-zinc-600"
-                        fontSize={10}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(val) => `$${val}`}
-                      />
-                      <RechartsTooltip content={<CustomTooltip prefix="$" />} />
-                      <Area
-                        type="monotone"
-                        dataKey="cumulative"
-                        stroke="#34d399"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#equityGradient)"
-                        name="Equity"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </ChartCard>
 
-              {/* RIGHT 1/3: Calendar Heatmap - ALWAYS VISIBLE */}
-              <div className="lg:col-span-1 h-[420px]">
+            {/* ====== SECTION B: EQUITY CURVE ====== */}
+            <Card
+              className={cn(
+                "border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800",
+                "h-[500px]"
+              )}
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Equity Curve
+                  </CardTitle>
+                  <CardDescription>
+                    Cumulative P&L over selected period
+                  </CardDescription>
+                </div>
+                <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="flex-1 pt-6 pl-0 h-[400px]">
+                {analytics.dailyData.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center px-6">
+                    <BarChart3 className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      No Trading Data
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Add trades to see your equity curve</p>
+                  </div>
+                ) : (
+                  <div className="w-full h-full px-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart
+                        data={analytics.dailyData}
+                        margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient id="colorPnLAnalytics" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          vertical={false}
+                          stroke="#e5e7eb"
+                          opacity={0.2}
+                        />
+                        <XAxis
+                          dataKey="date"
+                          tickFormatter={(str) => format(new Date(str), "MMM d")}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
+                          minTickGap={40}
+                          dy={10}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 11, fill: "#6b7280" }}
+                          tickFormatter={(value) => `$${value.toFixed(0)}`}
+                          width={60}
+                        />
+                        <RechartsTooltip
+                          content={<CustomChartTooltip prefix="$" />}
+                          cursor={{
+                            stroke: "#3b82f6",
+                            strokeWidth: 1,
+                            strokeDasharray: "4 4",
+                          }}
+                        />
+                        <ReferenceLine
+                          y={0}
+                          stroke="#9ca3af"
+                          strokeDasharray="3 3"
+                          opacity={0.5}
+                        />
+                        <Area
+                          name="Cumulative P&L"
+                          type="monotone"
+                          dataKey="cumulative"
+                          stroke="#3b82f6"
+                          strokeWidth={2.5}
+                          fillOpacity={1}
+                          fill="url(#colorPnLAnalytics)"
+                          animationDuration={1500}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+
+            {/* ====== SECTION C: CALENDAR HEATMAP — Full width, prominent ====== */}
+            <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden ring-1 ring-gray-200 dark:ring-gray-800">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5 text-primary" />
+                    Trading Calendar
+                  </CardTitle>
+                  <CardDescription>
+                    Daily P&L heatmap — hover for details
+                  </CardDescription>
+                </div>
+
+                {/* Time span filter right next to the calendar */}
+                <DatePickerWithRange
+                  date={filters.dateRange}
+                  setDate={(date: any) => setFilters({ ...filters, dateRange: date })}
+                  className="w-auto"
+                />
+              </CardHeader>
+              <CardContent className="p-6">
                 <RedesignedCalendarHeatmap
                   dailyData={analytics.dailyData}
                   trades={analytics.filteredTrades}
                 />
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {/* ====== SECTION C: THE BREAKDOWN - Bento Grid ====== */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            {/* ====== SECTION D: BREAKDOWN GRID ====== */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
               {/* Win/Loss Donut */}
-              <ChartCard title="Outcomes" subtitle="Win / Loss Ratio" className="h-[280px]">
-                <div className="h-full w-full relative">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={outcomeData}
-                        innerRadius={45}
-                        outerRadius={70}
-                        paddingAngle={4}
-                        dataKey="value"
-                      >
-                        {outcomeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pb-2">
-                    <span className="text-2xl font-mono font-bold text-slate-800 dark:text-zinc-100">{analytics.totalTrades}</span>
-                    <span className="text-[9px] uppercase text-slate-400 dark:text-zinc-500 font-bold tracking-widest">Trades</span>
+              <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm h-[320px]">
+                <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2">
+                    Outcomes
+                  </CardTitle>
+                  <CardDescription className="text-xs">Win / Loss Ratio</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center flex-1 p-6">
+                  <div className="relative w-full h-[180px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={outcomeData}
+                          innerRadius={55}
+                          outerRadius={75}
+                          paddingAngle={4}
+                          dataKey="value"
+                          cornerRadius={4}
+                        >
+                          {outcomeData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip content={<CustomChartTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-2xl font-bold tracking-tighter text-gray-900 dark:text-white">
+                        {analytics.totalTrades}
+                      </span>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">
+                        Trades
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </ChartCard>
+                </CardContent>
+              </Card>
 
               {/* Instrument P&L */}
-              <ChartCard title="By Instrument" subtitle="P&L Distribution" className="h-[280px]">
-                <div className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={instrumentData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-zinc-800" strokeOpacity={0.2} />
-                      <XAxis dataKey="name" stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
-                      <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} content={<CustomTooltip prefix="$" />} />
-                      <Bar dataKey="value" radius={[3, 3, 0, 0]}>
-                        {instrumentData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </ChartCard>
+              <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm h-[320px]">
+                <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+                  <CardTitle className="text-sm font-bold">By Instrument</CardTitle>
+                  <CardDescription className="text-xs">P&L Distribution</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 p-4">
+                  <div className="h-[220px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={instrumentData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.2} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6b7280" }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6b7280" }} tickFormatter={(val) => `$${val}`} />
+                        <RechartsTooltip cursor={{ fill: "transparent" }} content={<CustomChartTooltip prefix="$" />} />
+                        <ReferenceLine y={0} stroke="#9ca3af" opacity={0.5} />
+                        <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                          {instrumentData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} fillOpacity={0.9} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Strategy Frequency */}
-              <ChartCard title="By Strategy" subtitle="Setup Frequency" className="h-[280px]">
-                <div className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={setupData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-zinc-800" strokeOpacity={0.2} />
-                      <XAxis dataKey="name" stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#71717a" fontSize={9} tickLine={false} axisLine={false} />
-                      <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.03)' }} content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill="#818cf8" radius={[3, 3, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </ChartCard>
+              <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm h-[320px]">
+                <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+                  <CardTitle className="text-sm font-bold">By Strategy</CardTitle>
+                  <CardDescription className="text-xs">Setup Frequency</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 p-4">
+                  <div className="h-[220px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={setupData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.2} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6b7280" }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#6b7280" }} />
+                        <RechartsTooltip cursor={{ fill: "transparent" }} content={<CustomChartTooltip />} />
+                        <Bar dataKey="value" fill="#818cf8" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Trader DNA */}
-              <div className={cn(
-                "flex flex-col overflow-hidden rounded-xl h-[280px]",
-                "bg-white dark:bg-white/[0.04] backdrop-blur-md",
-                "border border-slate-200 dark:border-white/[0.08]"
-              )}>
-                <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.06]">
-                  <div className="flex items-center gap-2">
-                    <Brain className="w-3.5 h-3.5 text-emerald-400" />
-                    <h3 className="text-xs font-bold text-slate-800 dark:text-zinc-200 tracking-wide uppercase font-mono">Trader DNA</h3>
+              <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm h-[320px]">
+                <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+                  <div className="flex items-center justify-between w-full">
+                    <div>
+                      <CardTitle className="text-sm font-bold flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-purple-500" />
+                        Trader DNA
+                      </CardTitle>
+                    </div>
+                    <Badge variant="secondary" className="font-mono text-[10px] bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-0">
+                      {analytics.overallScore}/100
+                    </Badge>
                   </div>
-                  <Badge variant="outline" className="font-mono text-[10px] text-emerald-500 bg-emerald-500/10 border-emerald-500/20">
-                    {analytics.overallScore}/100
-                  </Badge>
-                </div>
-                <div className="flex-1 flex items-center justify-center p-2">
+                </CardHeader>
+                <CardContent className="flex-1 flex items-center justify-center p-2">
                   <EnhancedHexagram
                     winPercentage={analytics.winRate}
                     consistency={analytics.consistencyScore}
@@ -799,25 +972,28 @@ export default function AnalyticsPage() {
                     avgWinLoss={analytics.efficiencyScore}
                     totalScore={analytics.overallScore}
                   />
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Timing Analytics - Full Width */}
             <TimingAnalyticsDashboard
               trades={trades}
-              className="rounded-xl bg-white dark:bg-white/[0.04] backdrop-blur-md border border-slate-200 dark:border-white/[0.08]"
+              className="rounded-xl border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm ring-1 ring-gray-200 dark:ring-gray-800"
             />
 
-          </TabsContent>
+          </div>
+        )}
 
-          {/* --- INTELLIGENCE TAB --- */}
-          <TabsContent value="intelligence" className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-500">
+
+        {/* ======= INTELLIGENCE TAB CONTENT ======= */}
+        {mainTab === "intelligence" && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-500">
             <InsightsView trades={analytics.filteredTrades} isLoading={loading} />
-          </TabsContent>
+          </div>
+        )}
 
-        </Tabs>
-      </main>
+      </div>
 
       {advisorProps && (
         <AdvisorPanel

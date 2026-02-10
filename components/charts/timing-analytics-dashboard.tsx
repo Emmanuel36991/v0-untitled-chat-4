@@ -51,18 +51,31 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
       }
     }
 
+    // --- Helper: extract hour from timestamp or time string ---
+    const extractHour = (raw: string | null | undefined): number | null => {
+      if (!raw || typeof raw !== "string") return null
+      // Try ISO timestamp first (e.g. "2025-01-15T14:30:00+00:00")
+      const d = new Date(raw)
+      if (!isNaN(d.getTime())) return d.getHours()
+      // Fallback: "HH:MM" or "HH:MM:SS"
+      if (raw.includes(":")) {
+        const hour = parseInt(raw.split(":")[0], 10)
+        if (!isNaN(hour) && hour >= 0 && hour <= 23) return hour
+      }
+      return null
+    }
+
     // --- Most Active Trading Hour (only from trade_start_time, no fallback) ---
     const tradesWithTime = trades.filter(
-      (t) => t.trade_start_time && typeof t.trade_start_time === "string" && t.trade_start_time.includes(":")
+      (t) => extractHour(t.trade_start_time) !== null
     )
 
     let mostActivePeriod = "N/A"
     if (tradesWithTime.length > 0) {
       const hourCounts: Record<number, number> = {}
       tradesWithTime.forEach((trade) => {
-        const parts = trade.trade_start_time!.split(":")
-        const hour = parseInt(parts[0], 10)
-        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+        const hour = extractHour(trade.trade_start_time)
+        if (hour !== null) {
           hourCounts[hour] = (hourCounts[hour] || 0) + 1
         }
       })
@@ -122,9 +135,8 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
     if (tradesWithTime.length > 0) {
       const hourStats: Record<number, { wins: number; total: number }> = {}
       tradesWithTime.forEach((t) => {
-        const parts = t.trade_start_time!.split(":")
-        const hour = parseInt(parts[0], 10)
-        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+        const hour = extractHour(t.trade_start_time)
+        if (hour !== null) {
           if (!hourStats[hour]) hourStats[hour] = { wins: 0, total: 0 }
           hourStats[hour].total++
           if (t.outcome === "win" || t.pnl > 0) hourStats[hour].wins++

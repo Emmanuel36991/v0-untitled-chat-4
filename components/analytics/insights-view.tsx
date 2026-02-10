@@ -90,9 +90,26 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
     const personalEdge = setupAnalysis.personalEdge
 
     return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 text-center bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                <Microscope className="w-12 h-12 text-slate-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Intelligence Coming Soon</h1>
+            <p className="text-slate-500 max-w-md mb-8">
+                Advanced AI-powered insights and trading intelligence features are currently in development. Check back soon for deep analysis of your trading patterns, psychology, and risk profile.
+            </p>
+            <Button asChild variant="outline">
+                <a href="/analytics">Back to Analytics</a>
+            </Button>
+        </div>
+    )
+
+    // Original content preserved below for future restoration
+    /*
+    return (
         <div className="space-y-8 pb-10">
 
-            {/* --- 1. HERO SECTION (INTEGRATED) --- */}
+            {/* --- 1. HERO SECTION (INTEGRATED) --- *}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -136,7 +153,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                     </div>
                 </div>
 
-                {/* AI Report Card */}
+                {/* AI Report Card *}
                 {aiReport && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -159,7 +176,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                 )}
             </div>
 
-            {/* --- 2. MAIN CONTENT --- */}
+            {/* --- 2. MAIN CONTENT --- *}
             <div>
 
                 <Tabs defaultValue="setups" className="space-y-8">
@@ -176,11 +193,11 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                         </TabsTrigger>
                     </TabsList>
 
-                    {/* --- TAB: SETUPS --- */}
+                    {/* --- TAB: SETUPS --- *}
                     <TabsContent value="setups" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                            {/* Chart Card */}
+                            {/* Chart Card *}
                             <Card className="lg:col-span-2 border-0 shadow-xl bg-white dark:bg-slate-900">
                                 <CardHeader>
                                     <CardTitle>Setup Performance Matrix</CardTitle>
@@ -197,9 +214,9 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                                 </CardContent>
                             </Card>
 
-                            {/* Best/Worst Card */}
+                            {/* Best/Worst Card *}
                             <div className="space-y-6">
-                                {/* SAFE GUARD: Check if personalEdge exists */}
+                                {/* SAFE GUARD: Check if personalEdge exists *}
                                 <Card className="border-l-4 border-l-emerald-500 shadow-md bg-white dark:bg-slate-900">
                                     <CardHeader className="pb-2">
                                         <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Top Performer</p>
@@ -247,11 +264,11 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                         </div>
                     </TabsContent>
 
-                    {/* --- TAB: PSYCHOLOGY --- */}
+                    {/* --- TAB: PSYCHOLOGY --- *}
                     <TabsContent value="psychology" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            {/* Enablers */}
+                            {/* Enablers *}
                             <Card className="border-0 shadow-lg overflow-hidden bg-white dark:bg-slate-900">
                                 <div className="h-1.5 w-full bg-emerald-500" />
                                 <CardHeader>
@@ -277,7 +294,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                                 </CardContent>
                             </Card>
 
-                            {/* Killers */}
+                            {/* Killers *}
                             <Card className="border-0 shadow-lg overflow-hidden bg-white dark:bg-slate-900">
                                 <div className="h-1.5 w-full bg-rose-500" />
                                 <CardHeader>
@@ -306,10 +323,10 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                         </div>
                     </TabsContent>
 
-                    {/* --- TAB: RISK --- */}
+                    {/* --- TAB: RISK --- *}
                     <TabsContent value="risk" className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Kelly Card */}
+                            {/* Kelly Card *}
                             <Card className="md:col-span-2 border-0 shadow-lg bg-gradient-to-br from-slate-900 to-slate-800 text-white">
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">

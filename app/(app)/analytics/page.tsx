@@ -548,16 +548,16 @@ export default function AnalyticsPage() {
         {mainTab === "overview" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-            {/* ====== CALENDAR HEATMAP — Full width, prominent ====== */}
-            <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden ring-1 ring-gray-200 dark:ring-gray-800">
-              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5 text-primary" />
+            {/* ====== CALENDAR HEATMAP — Compact size ====== */}
+            <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden ring-1 ring-gray-200 dark:ring-gray-800 max-w-4xl">
+              <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800/50">
+                <div className="space-y-0.5">
+                  <CardTitle className="text-base font-bold flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-primary" />
                     Trading Calendar
                   </CardTitle>
-                  <CardDescription>
-                    Daily P&L heatmap — hover for details
+                  <CardDescription className="text-xs">
+                    Daily P&L heatmap
                   </CardDescription>
                 </div>
 
@@ -568,7 +568,7 @@ export default function AnalyticsPage() {
                   className="w-auto"
                 />
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <RedesignedCalendarHeatmap
                   dailyData={analytics.dailyData}
                   trades={analytics.filteredTrades}
@@ -667,8 +667,8 @@ export default function AnalyticsPage() {
               </Card>
 
               {/* Trader DNA */}
-              <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm h-[320px]">
-                <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+              <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm h-[320px] flex flex-col">
+                <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50 shrink-0">
                   <div className="flex items-center justify-between w-full">
                     <div>
                       <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -681,16 +681,18 @@ export default function AnalyticsPage() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 flex items-center justify-center p-2">
-                  <EnhancedHexagram
-                    winPercentage={analytics.winRate}
-                    consistency={analytics.consistencyScore}
-                    maxDrawdown={analytics.riskManagementScore}
-                    recoveryFactor={analytics.adaptabilityScore}
-                    profitFactor={Math.min(analytics.profitFactor, 5)}
-                    avgWinLoss={analytics.efficiencyScore}
-                    totalScore={analytics.overallScore}
-                  />
+                <CardContent className="flex-1 flex items-center justify-center p-4 min-h-0">
+                  <div className="w-full h-full flex items-center justify-center">
+                    <EnhancedHexagram
+                      winPercentage={analytics.winRate}
+                      consistency={analytics.consistencyScore}
+                      maxDrawdown={analytics.riskManagementScore}
+                      recoveryFactor={analytics.adaptabilityScore}
+                      profitFactor={Math.min(analytics.profitFactor, 5)}
+                      avgWinLoss={analytics.efficiencyScore}
+                      totalScore={analytics.overallScore}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </div>

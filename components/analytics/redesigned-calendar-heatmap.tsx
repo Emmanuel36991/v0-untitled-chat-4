@@ -46,7 +46,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
   }, [dailyData])
 
   const getHeatmapStyle = (pnl: number, tradeCount: number): string => {
-    if (tradeCount === 0) return "bg-gray-100 dark:bg-gray-800/50"
+    if (tradeCount === 0) return "bg-muted/60"
     const intensity = Math.min(Math.abs(pnl) / maxPnl, 1)
     if (pnl > 0) {
       if (intensity > 0.75) return "bg-emerald-500"
@@ -78,7 +78,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
             variant="outline"
             size="sm"
             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-            className="h-8 px-3 border-gray-200 dark:border-gray-800"
+            className="h-8 px-3 border-border"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -99,7 +99,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
             variant="outline"
             size="sm"
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="h-8 px-3 border-gray-200 dark:border-gray-800"
+            className="h-8 px-3 border-border"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -111,7 +111,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
             <span className="text-muted-foreground font-medium">Month P&L</span>
             <span className={cn(
               "font-mono font-bold",
-              monthStats.totalPnL >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+              monthStats.totalPnL >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
             )}>
               {monthStats.totalPnL >= 0 ? "+" : ""}${monthStats.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
@@ -160,13 +160,13 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
             const CellContent = (
               <div
                 onClick={() => onDayClick?.(dateStr)}
-                className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 dark:ring-offset-gray-950"
+                className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 ring-offset-background"
               >
                 <div
                   className={cn(
                     "absolute inset-0 rounded-md transition-colors duration-300",
                     getHeatmapStyle(pnl, tradeCount),
-                    isToday && "ring-2 ring-primary ring-offset-1 dark:ring-offset-gray-950"
+                    isToday && "ring-2 ring-primary ring-offset-1 ring-offset-background"
                   )}
                   style={tradeCount > 0 ? { opacity: Math.min(Math.abs(pnl) / maxPnl, 1) * 0.6 + 0.4 } : undefined}
                 />
@@ -176,7 +176,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
                       "text-[10px] font-medium transition-colors",
                       tradeCount > 0
                         ? "text-white/90"
-                        : "text-gray-400 dark:text-gray-600"
+                        : "text-muted-foreground/60"
                     )}
                   >
                     {format(day, "d")}
@@ -190,8 +190,8 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
                 <Tooltip key={day.toISOString()}>
                   <TooltipTrigger asChild>{CellContent}</TooltipTrigger>
                   <TooltipContent side="top" className="p-0 border-0 bg-transparent shadow-none">
-                    <div className="p-3 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl text-xs min-w-[180px]">
-                      <p className="font-semibold mb-2 pb-1.5 border-b border-gray-100 dark:border-gray-800">
+                    <div className="p-3 bg-card border border-border rounded-lg shadow-xl text-xs min-w-[180px]">
+                      <p className="font-semibold mb-2 pb-1.5 border-b border-border text-foreground">
                         {format(day, "MMM dd, yyyy")}
                       </p>
                       <div className="space-y-1.5">
@@ -200,7 +200,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
                           <span
                             className={cn(
                               "font-mono font-bold",
-                              pnl >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                              pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                             )}
                           >
                             {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
@@ -240,7 +240,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
           <div className="w-3.5 h-3.5 rounded-[3px] bg-rose-500/70" />
           <div className="w-3.5 h-3.5 rounded-[3px] bg-rose-500" />
         </div>
-        <div className="w-3.5 h-3.5 rounded-[3px] bg-gray-100 dark:bg-gray-800/50" />
+        <div className="w-3.5 h-3.5 rounded-[3px] bg-muted/60" />
         <div className="flex gap-1">
           <div className="w-3.5 h-3.5 rounded-[3px] bg-emerald-500/25" />
           <div className="w-3.5 h-3.5 rounded-[3px] bg-emerald-500/70" />

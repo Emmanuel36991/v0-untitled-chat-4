@@ -69,11 +69,11 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
   }
 
   return (
-    <Card className="border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-gray-900/40 shadow-sm">
-      <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800/50">
+    <Card className="border border-border bg-card shadow-sm">
+      <CardHeader className="pb-3 border-b border-border">
         <CardTitle className="flex items-center gap-2 text-sm font-bold">
-          <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20">
-            <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <div className="p-1.5 rounded-lg bg-blue-500/10">
+            <Clock className="h-4 w-4 text-blue-500" />
           </div>
           Top 3 Entry Time Performance
         </CardTitle>
@@ -83,7 +83,7 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
           <p className="text-sm text-muted-foreground text-center py-4">No time data available</p>
         ) : (
           topTimes.map((item, index) => (
-            <div key={item.hour} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50">
+            <div key={item.hour} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
               <div className="flex items-center gap-3">
                 <div
                   className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold", getRankColor(index))}

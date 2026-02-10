@@ -103,7 +103,7 @@ export default function MarketingPage() {
           <div className="mb-6">
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-full text-sm font-medium text-accent">
               <ConcentradeLogo size={16} variant="icon" />
-              Join 15,000+ profitable traders
+              Join thousands of traders worldwide
             </span>
           </div>
 
@@ -132,12 +132,12 @@ export default function MarketingPage() {
 
           <div className="stats-container mt-16">
             <div className="stat-item">
-              <span className="stat-number">15,000+</span>
+              <span className="stat-number">1,000+</span>
               <span className="stat-label">Active Traders</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">+127%</span>
-              <span className="stat-label">Avg Profit Improvement</span>
+              <span className="stat-number">14 Days</span>
+              <span className="stat-label">Free Trial</span>
             </div>
             <div className="stat-item flex items-center justify-center gap-2">
               <Shield className="h-6 w-6 text-accent" />
@@ -149,8 +149,8 @@ export default function MarketingPage() {
             <div className="stat-item flex items-center justify-center gap-2">
               <Award className="h-6 w-6 text-accent" />
               <div>
-                <span className="stat-number text-lg">SOC 2</span>
-                <span className="stat-label">Compliant</span>
+                <span className="stat-number text-lg">Bank-Level</span>
+                <span className="stat-label">Security</span>
               </div>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function MarketingPage() {
               Are You Tired of <span className="text-red-gradient">Losing Money</span> to the Same Mistakes?
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              95% of retail traders fail because they can't identify patterns in their losses. Sound familiar?
+              Many retail traders struggle because they can't identify patterns in their losses. Sound familiar?
             </p>
           </div>
 
@@ -179,7 +179,7 @@ export default function MarketingPage() {
                 Trading notes across multiple spreadsheets, apps, and sticky notes make it impossible to spot profitable
                 patterns.
               </p>
-              <div className="text-error font-bold text-lg">Average Loss: -$2,847/month</div>
+              <div className="text-error font-bold text-lg">Can't track performance</div>
             </div>
 
             <div className="problem-card animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
@@ -190,7 +190,7 @@ export default function MarketingPage() {
               <p className="text-gray-300 mb-6">
                 Fear and greed drive your trades instead of data, leading to revenge trading and blown accounts.
               </p>
-              <div className="text-error font-bold text-lg">Emotional Cost: -$4,231/month</div>
+              <div className="text-error font-bold text-lg">Costly emotional mistakes</div>
             </div>
 
             <div className="problem-card animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
@@ -201,7 +201,7 @@ export default function MarketingPage() {
               <p className="text-gray-300 mb-6">
                 Without proper analysis, you keep making the same costly errors that drain your account.
               </p>
-              <div className="text-error font-bold text-lg">Repeat Losses: -$3,156/month</div>
+              <div className="text-error font-bold text-lg">Same mistakes repeated</div>
             </div>
           </div>
 
@@ -334,20 +334,21 @@ export default function MarketingPage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">Real Traders, Real Results</h2>
             <p className="text-xl text-gray-300">See how Concentrade transformed their trading</p>
+            <p className="text-sm text-gray-400 mt-2">Individual results may vary. Past performance is not indicative of future results.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="testimonial-card">
               <div className="testimonial-quote">
-                "Concentrade helped me identify my emotional trading patterns. I've reduced my losses by 60% and my win
-                rate improved from 45% to 72%. Best $29/month I've ever spent."
+                "Concentrade helped me identify my emotional trading patterns. I've significantly reduced my losses and 
+                improved my win rate. The insights have been invaluable for my trading discipline."
               </div>
               <div className="testimonial-author">
                 <div className="testimonial-avatar">MC</div>
                 <div>
                   <div className="font-semibold">Mike Chen</div>
                   <div className="text-sm text-gray-400">Day Trader, 3 years</div>
-                  <div className="text-sm text-accent">+$18,500 this quarter</div>
+                  <div className="text-sm text-accent">Improved trading consistency</div>
                 </div>
               </div>
             </div>
@@ -355,14 +356,14 @@ export default function MarketingPage() {
             <div className="testimonial-card">
               <div className="testimonial-quote">
                 "The analytics are incredible. I discovered I was overtrading on Fridays and losing money consistently.
-                Fixed that one issue and gained $15K this quarter."
+                Identifying that pattern helped me improve my strategy significantly."
               </div>
               <div className="testimonial-author">
                 <div className="testimonial-avatar">SR</div>
                 <div>
                   <div className="font-semibold">Sarah Rodriguez</div>
                   <div className="text-sm text-gray-400">Swing Trader, 5 years</div>
-                  <div className="text-sm text-accent">+$15,000 this quarter</div>
+                  <div className="text-sm text-accent">Better pattern recognition</div>
                 </div>
               </div>
             </div>
@@ -370,14 +371,14 @@ export default function MarketingPage() {
             <div className="testimonial-card">
               <div className="testimonial-quote">
                 "Tax season used to be a nightmare. Now I generate my reports in seconds. The automated wash sale
-                detection saved me thousands in penalties."
+                detection helps me stay compliant and organized."
               </div>
               <div className="testimonial-author">
                 <div className="testimonial-avatar">DJ</div>
                 <div>
                   <div className="font-semibold">David Johnson</div>
                   <div className="text-sm text-gray-400">Options Trader, 7 years</div>
-                  <div className="text-sm text-accent">Saved $3,200 in taxes</div>
+                  <div className="text-sm text-accent">Streamlined tax reporting</div>
                 </div>
               </div>
             </div>
@@ -387,30 +388,30 @@ export default function MarketingPage() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="testimonial-card">
               <div className="testimonial-quote">
-                "I was bleeding money for months until I started using Concentrade. The emotional tracking showed me I
-                was revenge trading after losses. Now I'm profitable 3 months straight."
+                "I was struggling for months until I started using Concentrade. The emotional tracking showed me I
+                was revenge trading after losses. Understanding my patterns has helped me trade more consistently."
               </div>
               <div className="testimonial-author">
                 <div className="testimonial-avatar">AL</div>
                 <div>
                   <div className="font-semibold">Alex Liu</div>
                   <div className="text-sm text-gray-400">Forex Trader, 2 years</div>
-                  <div className="text-sm text-accent">+$22,800 in 3 months</div>
+                  <div className="text-sm text-accent">More consistent results</div>
                 </div>
               </div>
             </div>
 
             <div className="testimonial-card">
               <div className="testimonial-quote">
-                "The ROI tracking is game-changing. I can see exactly which strategies work and which don't. My Sharpe
-                ratio improved from 0.8 to 2.1 in just 4 months."
+                "The ROI tracking is game-changing. I can see exactly which strategies work and which don't. The data-driven
+                insights have significantly improved my risk-adjusted returns."
               </div>
               <div className="testimonial-author">
                 <div className="testimonial-avatar">JM</div>
                 <div>
                   <div className="font-semibold">Jessica Martinez</div>
                   <div className="text-sm text-gray-400">Crypto Trader, 4 years</div>
-                  <div className="text-sm text-accent">163% Sharpe improvement</div>
+                  <div className="text-sm text-accent">Improved risk management</div>
                 </div>
               </div>
             </div>

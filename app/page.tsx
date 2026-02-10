@@ -42,7 +42,7 @@ export default function HomePage() {
           <div className="mb-6">
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-sm font-medium text-indigo-300">
               <ConcentradeLogo size={16} variant="icon" />
-              Join 15,000+ profitable traders
+              Join thousands of traders worldwide
             </span>
           </div>
 
@@ -90,12 +90,12 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
-              <div className="text-3xl font-bold text-indigo-400 mb-2">15,000+</div>
+              <div className="text-3xl font-bold text-indigo-400 mb-2">1,000+</div>
               <div className="text-sm text-slate-400">Active Traders</div>
             </div>
             <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
-              <div className="text-3xl font-bold text-indigo-400 mb-2">+127%</div>
-              <div className="text-sm text-slate-400">Avg Profit Improvement</div>
+              <div className="text-3xl font-bold text-indigo-400 mb-2">14 Days</div>
+              <div className="text-sm text-slate-400">Free Trial</div>
             </div>
             <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50 flex flex-col items-center justify-center">
               <Shield className="h-6 w-6 text-indigo-400 mb-2" />
@@ -103,7 +103,7 @@ export default function HomePage() {
             </div>
             <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50 flex flex-col items-center justify-center">
               <Award className="h-6 w-6 text-indigo-400 mb-2" />
-              <div className="text-xs text-slate-400">SOC 2 Compliant</div>
+              <div className="text-xs text-slate-400">Bank-Level Security</div>
             </div>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function HomePage() {
               to the Same Mistakes?
             </h2>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              95% of retail traders fail because they can't identify patterns in their losses. Sound familiar?
+              Many retail traders struggle because they can't identify patterns in their losses. Sound familiar?
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export default function HomePage() {
                 Trading notes across multiple spreadsheets, apps, and sticky notes make it impossible to spot
                 profitable patterns.
               </p>
-              <div className="text-red-500 font-bold text-lg text-center">Average Loss: -$2,847/month</div>
+              <div className="text-red-500 font-bold text-lg text-center">Can't track performance</div>
             </div>
 
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
@@ -146,7 +146,7 @@ export default function HomePage() {
               <p className="text-slate-300 mb-6 text-center">
                 Fear and greed drive your trades instead of data, leading to revenge trading and blown accounts.
               </p>
-              <div className="text-red-500 font-bold text-lg text-center">Emotional Cost: -$4,231/month</div>
+              <div className="text-red-500 font-bold text-lg text-center">Costly emotional mistakes</div>
             </div>
 
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
@@ -157,7 +157,7 @@ export default function HomePage() {
               <p className="text-slate-300 mb-6 text-center">
                 Without proper analysis, you keep making the same costly errors that drain your account.
               </p>
-              <div className="text-red-500 font-bold text-lg text-center">Repeat Losses: -$3,156/month</div>
+              <div className="text-red-500 font-bold text-lg text-center">Same mistakes repeated</div>
             </div>
           </div>
 
@@ -312,13 +312,14 @@ export default function HomePage() {
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Real Traders, Real Results</h2>
             <p className="text-xl text-slate-300">See how Concentrade transformed their trading</p>
+            <p className="text-sm text-slate-400 mt-2">Individual results may vary. Past performance is not indicative of future results.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "Concentrade helped me identify my emotional trading patterns. I've reduced my losses by 60% and my
-                win rate improved from 45% to 72%. Best $29/month I've ever spent."
+                "Concentrade helped me identify my emotional trading patterns. I've significantly reduced my losses and 
+                improved my win rate. The insights have been invaluable for my trading discipline."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
@@ -327,7 +328,7 @@ export default function HomePage() {
                 <div>
                   <div className="font-semibold">Mike Chen</div>
                   <div className="text-sm text-slate-400">Day Trader, 3 years</div>
-                  <div className="text-sm text-indigo-400">+$18,500 this quarter</div>
+                  <div className="text-sm text-indigo-400">Improved trading consistency</div>
                 </div>
               </div>
             </div>
@@ -335,7 +336,7 @@ export default function HomePage() {
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <p className="text-lg text-slate-200 mb-6 leading-relaxed">
                 "The analytics are incredible. I discovered I was overtrading on Fridays and losing money
-                consistently. Fixed that one issue and gained $15K this quarter."
+                consistently. Identifying that pattern helped me improve my strategy significantly."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
@@ -344,7 +345,7 @@ export default function HomePage() {
                 <div>
                   <div className="font-semibold">Sarah Rodriguez</div>
                   <div className="text-sm text-slate-400">Swing Trader, 5 years</div>
-                  <div className="text-sm text-indigo-400">+$15,000 this quarter</div>
+                  <div className="text-sm text-indigo-400">Better pattern recognition</div>
                 </div>
               </div>
             </div>
@@ -352,7 +353,7 @@ export default function HomePage() {
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <p className="text-lg text-slate-200 mb-6 leading-relaxed">
                 "Tax season used to be a nightmare. Now I generate my reports in seconds. The automated wash sale
-                detection saved me thousands in penalties."
+                detection helps me stay compliant and organized."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
@@ -361,7 +362,7 @@ export default function HomePage() {
                 <div>
                   <div className="font-semibold">David Johnson</div>
                   <div className="text-sm text-slate-400">Options Trader, 7 years</div>
-                  <div className="text-sm text-indigo-400">Saved $3,200 in taxes</div>
+                  <div className="text-sm text-indigo-400">Streamlined tax reporting</div>
                 </div>
               </div>
             </div>
@@ -370,8 +371,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "I was bleeding money for months until I started using Concentrade. The emotional tracking showed me I
-                was revenge trading after losses. Now I'm profitable 3 months straight."
+                "I was struggling for months until I started using Concentrade. The emotional tracking showed me I
+                was revenge trading after losses. Understanding my patterns has helped me trade more consistently."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
@@ -380,15 +381,15 @@ export default function HomePage() {
                 <div>
                   <div className="font-semibold">Alex Liu</div>
                   <div className="text-sm text-slate-400">Forex Trader, 2 years</div>
-                  <div className="text-sm text-indigo-400">+$22,800 in 3 months</div>
+                  <div className="text-sm text-indigo-400">More consistent results</div>
                 </div>
               </div>
             </div>
 
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "The ROI tracking is game-changing. I can see exactly which strategies work and which don't. My Sharpe
-                ratio improved from 0.8 to 2.1 in just 4 months."
+                "The ROI tracking is game-changing. I can see exactly which strategies work and which don't. The data-driven
+                insights have significantly improved my risk-adjusted returns."
               </p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
@@ -397,7 +398,7 @@ export default function HomePage() {
                 <div>
                   <div className="font-semibold">Jessica Martinez</div>
                   <div className="text-sm text-slate-400">Crypto Trader, 4 years</div>
-                  <div className="text-sm text-indigo-400">163% Sharpe improvement</div>
+                  <div className="text-sm text-indigo-400">Improved risk management</div>
                 </div>
               </div>
             </div>

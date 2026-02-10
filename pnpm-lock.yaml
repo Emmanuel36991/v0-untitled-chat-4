@@ -98,6 +98,9 @@ importers:
       '@supabase/supabase-js':
         specifier: latest
         version: 2.93.3
+      '@types/papaparse':
+        specifier: ^5.5.2
+        version: 5.5.2
       '@vercel/analytics':
         specifier: ^1.1.1
         version: 1.6.1(next@14.2.35(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)
@@ -1168,6 +1171,9 @@ packages:
 
   '@types/node@22.19.7':
     resolution: {integrity: sha512-MciR4AKGHWl7xwxkBa6xUGxQJ4VBOmPTF7sL+iGzuahOFaO0jHCsuEfS80pan1ef4gWId1oWOweIhrDEYLuaOw==}
+
+  '@types/papaparse@5.5.2':
+    resolution: {integrity: sha512-gFnFp/JMzLHCwRf7tQHrNnfhN4eYBVYYI897CGX4MY1tzY9l2aLkVyx2IlKZ/SAqDbB3I1AOZW5gTMGGsqWliA==}
 
   '@types/phoenix@1.6.7':
     resolution: {integrity: sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==}
@@ -2826,6 +2832,10 @@ snapshots:
   '@types/node@22.19.7':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/papaparse@5.5.2':
+    dependencies:
+      '@types/node': 22.19.7
 
   '@types/phoenix@1.6.7': {}
 

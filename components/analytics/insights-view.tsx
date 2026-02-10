@@ -392,4 +392,5 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
             </div>
         </div>
     )
+    */
 }

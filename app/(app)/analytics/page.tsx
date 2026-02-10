@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -39,23 +37,11 @@ import {
 } from "@/components/ui/tooltip"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  TrendingUp,
-  TrendingDown,
-  Target,
-  BarChart3,
-  Activity,
-  ArrowUpRight,
-  ArrowDownRight,
   Calendar as CalendarIcon,
   Filter,
-  Download,
   Brain,
   Sparkles,
-  MoreHorizontal,
-  AlertCircle,
-  Wallet,
-  RefreshCw,
-  Check
+  Check,
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
@@ -92,21 +78,6 @@ interface ProcessedAnalytics {
   filteredTrades: Trade[]
 }
 
-interface MetricCardProps {
-  title: string
-  value: string | number
-  change?: string
-  changeType?: "positive" | "negative" | "neutral"
-  icon: React.ElementType
-  iconColor: string
-  trendData?: any[]
-  subtitle?: string
-}
-
-
-// ==========================================
-// SUB-COMPONENTS — matching dashboard exactly
-// ==========================================
 
 // --- Custom Chart Tooltip (Dashboard Style) ---
 const CustomChartTooltip = ({
@@ -151,106 +122,6 @@ const CustomChartTooltip = ({
   }
   return null
 }
-
-
-// --- Metric Card (Dashboard Style) ---
-const MetricCard = React.memo<MetricCardProps>(
-  ({
-    title,
-    value,
-    change,
-    changeType = "neutral",
-    icon: Icon,
-    iconColor,
-    trendData,
-    subtitle,
-  }) => (
-    <Card
-      className={cn(
-        "relative overflow-hidden border border-gray-200/60 dark:border-gray-800/60 shadow-sm transition-all duration-300 group cursor-pointer",
-        "bg-white dark:bg-gray-900/40 backdrop-blur-xl",
-        "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5"
-      )}
-    >
-      <CardContent className="p-6 relative z-10">
-        <div className="flex justify-between items-start mb-3">
-          <div
-            className={cn(
-              "p-2.5 rounded-xl transition-all duration-300 group-hover:scale-110",
-              iconColor,
-              "bg-opacity-10 dark:bg-opacity-20"
-            )}
-          >
-            <Icon className="h-5 w-5" />
-          </div>
-          {change && (
-            <Badge
-              variant="secondary"
-              className={cn(
-                "font-mono text-[10px] px-2 py-0.5 border-0",
-                changeType === "positive" &&
-                "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10",
-                changeType === "negative" &&
-                "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10",
-                changeType === "neutral" &&
-                "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
-              )}
-            >
-              {changeType === "positive" ? (
-                <TrendingUp className="h-3 w-3 mr-1 inline" />
-              ) : changeType === "negative" ? (
-                <TrendingDown className="h-3 w-3 mr-1 inline" />
-              ) : (
-                <MoreHorizontal className="h-3 w-3 mr-1 inline" />
-              )}
-              {change}
-            </Badge>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-            {title}
-          </div>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold tracking-tight text-foreground font-mono">
-              {value}
-            </h3>
-          </div>
-          {subtitle && (
-            <p className="text-[11px] text-muted-foreground/80 font-medium pt-1">
-              {subtitle}
-            </p>
-          )}
-        </div>
-
-        {/* Sparkline Background */}
-        {trendData && trendData.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  fill="currentColor"
-                  className={
-                    changeType === "positive"
-                      ? "text-green-500"
-                      : changeType === "negative"
-                        ? "text-red-500"
-                        : "text-gray-500"
-                  }
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-)
 
 
 // --- Date Picker with Presets (Dashboard Style) ---
@@ -676,160 +547,7 @@ export default function AnalyticsPage() {
         {mainTab === "overview" && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
 
-            {/* ====== SECTION A: KEY METRICS ====== */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <MetricCard
-                title="Net P&L"
-                value={`$${analytics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                change={`${analytics.totalTrades} Executions`}
-                changeType={analytics.totalPnL >= 0 ? "positive" : "negative"}
-                icon={Wallet}
-                iconColor="text-blue-600 dark:text-blue-400"
-                trendData={pnlSparkData}
-                subtitle="Net profit after commissions"
-              />
-              <MetricCard
-                title="Win Rate"
-                value={`${analytics.winRate.toFixed(1)}%`}
-                change={`${analytics.wins}W – ${analytics.losses}L`}
-                changeType={
-                  analytics.winRate > 50
-                    ? "positive"
-                    : analytics.winRate > 40
-                      ? "neutral"
-                      : "negative"
-                }
-                icon={Target}
-                iconColor="text-purple-600 dark:text-purple-400"
-                trendData={winRateSparkData}
-                subtitle={`Best streak available in DNA`}
-              />
-              <MetricCard
-                title="Profit Factor"
-                value={analytics.profitFactor.toFixed(2)}
-                change={`Exp: $${analytics.avgPnL.toFixed(2)}`}
-                changeType={
-                  analytics.profitFactor >= 1.5
-                    ? "positive"
-                    : analytics.profitFactor >= 1
-                      ? "neutral"
-                      : "negative"
-                }
-                icon={Activity}
-                iconColor="text-emerald-600 dark:text-emerald-400"
-                subtitle="Gross Profit / Gross Loss"
-              />
-              <MetricCard
-                title="Avg Return"
-                value={`$${analytics.avgPnL.toFixed(2)}`}
-                change={`DD: -$${Math.abs(analytics.maxDrawdown).toFixed(0)}`}
-                changeType={analytics.avgPnL > 0 ? "positive" : "negative"}
-                icon={BarChart3}
-                iconColor="text-amber-600 dark:text-amber-400"
-                trendData={analytics.dailyData.map(d => ({ value: d.pnl }))}
-                subtitle="Average P&L per trade"
-              />
-            </div>
-
-
-            {/* ====== SECTION B: EQUITY CURVE ====== */}
-            <Card
-              className={cn(
-                "border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800",
-                "h-[500px]"
-              )}
-            >
-              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-primary" />
-                    Equity Curve
-                  </CardTitle>
-                  <CardDescription>
-                    Cumulative P&L over selected period
-                  </CardDescription>
-                </div>
-                <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </CardHeader>
-              <CardContent className="flex-1 pt-6 pl-0 h-[400px]">
-                {analytics.dailyData.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                    <BarChart3 className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      No Trading Data
-                    </h3>
-                    <p className="text-sm text-muted-foreground">Add trades to see your equity curve</p>
-                  </div>
-                ) : (
-                  <div className="w-full h-full px-6">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={analytics.dailyData}
-                        margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient id="colorPnLAnalytics" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          vertical={false}
-                          stroke="#e5e7eb"
-                          opacity={0.2}
-                        />
-                        <XAxis
-                          dataKey="date"
-                          tickFormatter={(str) => format(new Date(str), "MMM d")}
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 11, fill: "#6b7280" }}
-                          minTickGap={40}
-                          dy={10}
-                        />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 11, fill: "#6b7280" }}
-                          tickFormatter={(value) => `$${value.toFixed(0)}`}
-                          width={60}
-                        />
-                        <RechartsTooltip
-                          content={<CustomChartTooltip prefix="$" />}
-                          cursor={{
-                            stroke: "#3b82f6",
-                            strokeWidth: 1,
-                            strokeDasharray: "4 4",
-                          }}
-                        />
-                        <ReferenceLine
-                          y={0}
-                          stroke="#9ca3af"
-                          strokeDasharray="3 3"
-                          opacity={0.5}
-                        />
-                        <Area
-                          name="Cumulative P&L"
-                          type="monotone"
-                          dataKey="cumulative"
-                          stroke="#3b82f6"
-                          strokeWidth={2.5}
-                          fillOpacity={1}
-                          fill="url(#colorPnLAnalytics)"
-                          animationDuration={1500}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-
-            {/* ====== SECTION C: CALENDAR HEATMAP — Full width, prominent ====== */}
+            {/* ====== CALENDAR HEATMAP — Full width, prominent ====== */}
             <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden ring-1 ring-gray-200 dark:ring-gray-800">
               <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
                 <div className="space-y-1">

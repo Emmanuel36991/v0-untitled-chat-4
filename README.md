@@ -28,3 +28,17 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+## Development
+
+To run this project locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view your app in the browser.

@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 import { useUserConfig } from "@/hooks/use-user-config"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  CheckCircle2, TrendingUp, Shield, 
-  Bell, UserIcon, Eye, ChevronRight, ChevronLeft, Search, 
-  List, Check, AlertCircle, Terminal, Zap, Globe, 
+import {
+  CheckCircle2, TrendingUp, Shield,
+  Bell, UserIcon, Eye, ChevronRight, ChevronLeft, Search,
+  List, Check, AlertCircle, Terminal, Zap, Globe,
   LayoutGrid, Loader2, CheckSquare, Square
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -29,8 +30,8 @@ import { ReviewConfirmationStep } from "@/components/profile-setup/review-confir
 
 // Import Icons
 import {
-  ESFuturesIcon, BTCUSDIcon, EURUSDIcon, AAPLIcon, 
-  GOLDIcon, SPYIcon, 
+  ESFuturesIcon, BTCUSDIcon, EURUSDIcon, AAPLIcon,
+  GOLDIcon, SPYIcon,
 } from "@/components/updated-trading-icons"
 
 // --- CONFIGURATION ---
@@ -120,7 +121,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
 
   return (
     <div className={cn(
-      "relative flex items-center group py-3 px-3 mb-1 rounded-md transition-all duration-300", 
+      "relative flex items-center group py-3 px-3 mb-1 rounded-md transition-all duration-300",
       isActive ? "bg-card/80 border-l-2 border-primary pl-[10px]" : "hover:bg-muted/40 border-l-2 border-transparent"
     )}>
       <div className="flex items-center gap-3 w-full">
@@ -138,7 +139,7 @@ const SidebarStep = ({ step, currentStep }: { step: any; currentStep: number }) 
         </div>
         <div className="flex flex-col min-w-0">
           <span className={cn(
-            "text-xs font-bold uppercase tracking-wider transition-colors", 
+            "text-xs font-bold uppercase tracking-wider transition-colors",
             isActive ? "text-foreground" : "text-muted-foreground"
           )}>
             {step.title}
@@ -154,8 +155,8 @@ const MarketCard = ({ category, isSelected, onClick }: any) => (
     onClick={onClick}
     className={cn(
       "flex flex-col items-center justify-center p-6 rounded-xl border cursor-pointer transition-all duration-200",
-      isSelected 
-        ? "border-primary bg-primary/20 shadow-lg shadow-primary/10" 
+      isSelected
+        ? "border-primary bg-primary/20 shadow-lg shadow-primary/10"
         : "border-border bg-card/40 hover:bg-muted/60 hover:border-border"
     )}
   >
@@ -173,22 +174,22 @@ const TickerCard = ({ instrument, isSelected, onSelect }: any) => {
       onClick={() => onSelect(instrument.symbol)}
       className={cn(
         "flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all backdrop-blur-sm",
-        isSelected 
-          ? "border-primary/60 bg-primary/20" 
+        isSelected
+          ? "border-primary/60 bg-primary/20"
           : "border-border bg-card/40 hover:bg-muted/60"
       )}
     >
-       <div className={cn(
-         "w-8 h-8 rounded flex items-center justify-center font-mono text-[10px] font-bold border transition-colors", 
-         isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"
-       )}>
-          {instrument.symbol.substring(0,2)}
-       </div>
-       <div className="overflow-hidden">
-         <div className="text-sm font-bold truncate text-foreground">{instrument.symbol}</div>
-         <div className="text-[10px] text-muted-foreground truncate">{instrument.name}</div>
-       </div>
-       {isSelected && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
+      <div className={cn(
+        "w-8 h-8 rounded flex items-center justify-center font-mono text-[10px] font-bold border transition-colors",
+        isSelected ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-muted-foreground"
+      )}>
+        {instrument.symbol.substring(0, 2)}
+      </div>
+      <div className="overflow-hidden">
+        <div className="text-sm font-bold truncate text-foreground">{instrument.symbol}</div>
+        <div className="text-[10px] text-muted-foreground truncate">{instrument.name}</div>
+      </div>
+      {isSelected && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
     </div>
   )
 }
@@ -198,6 +199,7 @@ function ProfileSetupContent() {
   const searchParams = useSearchParams()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const { toast } = useToast()
 
   const {
     config,
@@ -259,7 +261,13 @@ function ProfileSetupContent() {
     // Step 1: Markets (Must select at least one)
     if (step === 1) {
       if (!config.tradingPreferences.primaryInstruments || config.tradingPreferences.primaryInstruments.length === 0) {
-        setSaveError("Please select at least one market to continue.")
+        const errorMsg = "Please select at least one market to continue."
+        setSaveError(errorMsg)
+        toast({
+          title: "Market Selection Required",
+          description: errorMsg,
+          variant: "destructive"
+        })
         return false
       }
     }
@@ -268,7 +276,13 @@ function ProfileSetupContent() {
     if (step === 3) {
       // @ts-ignore - Check for fullName
       if (!config.userProfile?.fullName || config.userProfile.fullName.trim().length < 3) {
-        setSaveError("Please enter your full name.")
+        const errorMsg = "Please enter your full name (at least 3 characters)."
+        setSaveError(errorMsg)
+        toast({
+          title: "Profile Information Required",
+          description: errorMsg,
+          variant: "destructive"
+        })
         return false
       }
     }
@@ -277,7 +291,13 @@ function ProfileSetupContent() {
     if (step === 6) {
       const { termsAccepted, privacyPolicyAccepted, dataCollectionConsent } = config.privacyPreferences
       if (!termsAccepted || !privacyPolicyAccepted || !dataCollectionConsent) {
-        setSaveError("You must accept all mandatory agreements to proceed.")
+        const errorMsg = "You must accept all mandatory agreements to proceed."
+        setSaveError(errorMsg)
+        toast({
+          title: "Legal Agreements Required",
+          description: errorMsg,
+          variant: "destructive"
+        })
         return false
       }
     }
@@ -336,7 +356,7 @@ function ProfileSetupContent() {
 
   const filteredInstruments = getAvailableSpecificInstruments().filter((instrument) => {
     return instrument.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           instrument.name.toLowerCase().includes(searchQuery.toLowerCase())
+      instrument.name.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
   // --- STEP 4 LOGIC ---
@@ -375,7 +395,7 @@ function ProfileSetupContent() {
   return (
     <TooltipProvider>
       <div className="flex h-screen bg-background text-foreground font-sans selection:bg-primary/20">
-        
+
         {/* SIDEBAR */}
         <aside className="hidden lg:flex w-64 flex-col border-r border-border bg-card/50 backdrop-blur-xl h-full z-20">
           <div className="p-6 border-b border-border">
@@ -390,7 +410,7 @@ function ProfileSetupContent() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto py-6 px-3">
             {stepConfig.map((step) => (
               <SidebarStep key={step.id} step={step} currentStep={currentStep} />
@@ -398,265 +418,265 @@ function ProfileSetupContent() {
           </div>
 
           <div className="p-6 border-t border-border bg-card/80">
-             <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-wider">
-                <span>Initialization</span>
-                <span>{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
-             </div>
-             <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-primary transition-all duration-500 shadow-[0_0_10px] shadow-primary/50" style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }} />
-             </div>
+            <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground mb-2 tracking-wider">
+              <span>Initialization</span>
+              <span>{Math.round(((currentStep - 1) / TOTAL_STEPS) * 100)}%</span>
+            </div>
+            <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-primary transition-all duration-500 shadow-[0_0_10px] shadow-primary/50" style={{ width: `${((currentStep - 1) / TOTAL_STEPS) * 100}%` }} />
+            </div>
           </div>
         </aside>
 
         {/* MAIN TERMINAL AREA */}
         <main className="flex-1 flex flex-col h-full relative bg-background">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-          
+
           <header className="h-14 border-b border-border flex items-center justify-between px-6 lg:hidden bg-card/80 backdrop-blur-md sticky top-0 z-50">
-             <div className="flex items-center gap-2 font-bold text-foreground"><ConcentradeLogo size={24} variant="icon"/> Setup</div>
-             <Badge variant="outline">Step {currentStep}</Badge>
+            <div className="flex items-center gap-2 font-bold text-foreground"><ConcentradeLogo size={24} variant="icon" /> Setup</div>
+            <Badge variant="outline">Step {currentStep}</Badge>
           </header>
 
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto relative z-10 scroll-smooth">
-             <div className="max-w-4xl mx-auto px-6 py-12">
-                
-                <motion.div 
-                   initial={{ opacity: 0, y: 10 }} 
-                   animate={{ opacity: 1, y: 0 }} 
-                   key={`header-${currentStep}`}
-                   className="mb-10"
-                >
-                   <div className="flex items-center gap-2 text-primary mb-3">
-                      <currentStepConfig.icon className="w-5 h-5" />
-                      <span className="text-xs font-bold uppercase tracking-[0.2em]">{currentStepConfig.subtitle}</span>
-                   </div>
-                   <h1 className="text-4xl font-bold tracking-tight mb-3 text-foreground">{currentStepConfig.title}</h1>
-                   <p className="text-muted-foreground text-lg max-w-2xl">{currentStepConfig.description}</p>
-                </motion.div>
+            <div className="max-w-4xl mx-auto px-6 py-12">
 
-                <motion.div
-                   initial={{ opacity: 0, x: 10 }}
-                   animate={{ opacity: 1, x: 0 }}
-                   transition={{ delay: 0.1 }}
-                   key={`content-${currentStep}`}
-                   className="min-h-[400px]"
-                >
-                   {currentStep === 1 && (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                         {premiumInstrumentCategories.map(cat => (
-                            <MarketCard 
-                               key={cat.id} 
-                               category={cat}
-                               isSelected={selectedPrimaryInstruments.includes(cat.id)}
-                               onClick={() => handleMultiSelectChange("primaryInstruments", cat.id)}
-                            />
-                         ))}
-                      </div>
-                   )}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                key={`header-${currentStep}`}
+                className="mb-10"
+              >
+                <div className="flex items-center gap-2 text-primary mb-3">
+                  <currentStepConfig.icon className="w-5 h-5" />
+                  <span className="text-xs font-bold uppercase tracking-[0.2em]">{currentStepConfig.subtitle}</span>
+                </div>
+                <h1 className="text-4xl font-bold tracking-tight mb-3 text-foreground">{currentStepConfig.title}</h1>
+                <p className="text-muted-foreground text-lg max-w-2xl">{currentStepConfig.description}</p>
+              </motion.div>
 
-                   {currentStep === 2 && (
-                      <div className="space-y-6">
-                        <div className="relative flex gap-3">
-                           <div className="relative flex-1">
-                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                             <Input 
-                                placeholder="Search tickers..." 
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-muted/50 h-11 focus-visible:ring-primary/50"
-                             />
-                           </div>
-                           <div className="flex border border-border rounded-md overflow-hidden bg-card">
-                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-muted", instrumentLayout === 'grid' && "bg-muted")}><LayoutGrid className="w-4 h-4"/></Button>
-                              <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-muted", instrumentLayout === 'list' && "bg-muted")}><List className="w-4 h-4"/></Button>
-                           </div>
-                        </div>
-                        {selectedPrimaryInstruments.length === 0 ? (
-                           <div className="text-center py-16 border border-dashed border-border rounded-xl bg-card/20">
-                              <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                              <h3 className="text-lg font-semibold text-foreground">Feed Offline</h3>
-                              <p className="text-muted-foreground mb-6">Select a market class to initialize the feed.</p>
-                              <Button variant="outline" onClick={handleBack}>Return to Markets</Button>
-                           </div>
-                        ) : (
-                           <div className={cn("grid gap-3", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
-                              {filteredInstruments.map(inst => (
-                                 <TickerCard 
-                                    key={inst.symbol}
-                                    instrument={inst}
-                                    isSelected={selectedSpecificInstruments.includes(inst.symbol)}
-                                    onSelect={(sym: string) => handleMultiSelectChange("specificInstruments", sym)}
-                                 />
-                              ))}
-                           </div>
-                        )}
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+                key={`content-${currentStep}`}
+                className="min-h-[400px]"
+              >
+                {currentStep === 1 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {premiumInstrumentCategories.map(cat => (
+                      <MarketCard
+                        key={cat.id}
+                        category={cat}
+                        isSelected={selectedPrimaryInstruments.includes(cat.id)}
+                        onClick={() => handleMultiSelectChange("primaryInstruments", cat.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="space-y-6">
+                    <div className="relative flex gap-3">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search tickers..."
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          className="pl-10 bg-muted/50 h-11 focus-visible:ring-primary/50"
+                        />
                       </div>
-                   )}
-                   
-                   {currentStep === 3 && (
-                      <div className="max-w-xl bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm shadow-sm">
-                         <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
+                      <div className="flex border border-border rounded-md overflow-hidden bg-card">
+                        <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('grid')} className={cn("rounded-none h-11 w-11 hover:bg-muted", instrumentLayout === 'grid' && "bg-muted")}><LayoutGrid className="w-4 h-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => setInstrumentLayout('list')} className={cn("rounded-none h-11 w-11 hover:bg-muted", instrumentLayout === 'list' && "bg-muted")}><List className="w-4 h-4" /></Button>
                       </div>
-                   )}
-                   
-                   {currentStep === 4 && (
-                      <div className="space-y-6">
-                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
-                            <div className="flex flex-wrap gap-2">
-                               {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-muted-foreground">No markets configured.</span>}
-                               {selectedPrimaryInstruments.map(catId => (
-                                  <button
-                                     key={catId}
-                                     onClick={() => setActiveLayoutTab(catId)}
-                                     className={cn(
-                                        "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all",
-                                        activeLayoutTab === catId 
-                                           ? "bg-primary/10 text-primary border-primary/50" 
-                                           : "bg-card/50 text-muted-foreground border-transparent hover:border-border hover:text-foreground"
-                                     )}
-                                  >
-                                     {catId}
-                                  </button>
-                               ))}
-                            </div>
-                            
-                            {activeLayoutTab && (
-                               <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={() => toggleAllVisibility(activeLayoutTab, !isAllVisibleInTab)}
-                                  className="h-8 text-xs"
-                               >
-                                  {isAllVisibleInTab ? <Square className="w-3 h-3 mr-2" /> : <CheckSquare className="w-3 h-3 mr-2" />}
-                                  {isAllVisibleInTab ? "Disable All" : "Enable All"}
-                               </Button>
+                    </div>
+                    {selectedPrimaryInstruments.length === 0 ? (
+                      <div className="text-center py-16 border border-dashed border-border rounded-xl bg-card/20">
+                        <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-foreground">Feed Offline</h3>
+                        <p className="text-muted-foreground mb-6">Select a market class to initialize the feed.</p>
+                        <Button variant="outline" onClick={handleBack}>Return to Markets</Button>
+                      </div>
+                    ) : (
+                      <div className={cn("grid gap-3", instrumentLayout === 'grid' ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1")}>
+                        {filteredInstruments.map(inst => (
+                          <TickerCard
+                            key={inst.symbol}
+                            instrument={inst}
+                            isSelected={selectedSpecificInstruments.includes(inst.symbol)}
+                            onSelect={(sym: string) => handleMultiSelectChange("specificInstruments", sym)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="max-w-xl bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm shadow-sm">
+                    <ProfileInfoStep userProfile={config.userProfile} onUpdate={updateUserProfile} />
+                  </div>
+                )}
+
+                {currentStep === 4 && (
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border">
+                      <div className="flex flex-wrap gap-2">
+                        {selectedPrimaryInstruments.length === 0 && <span className="text-sm text-muted-foreground">No markets configured.</span>}
+                        {selectedPrimaryInstruments.map(catId => (
+                          <button
+                            key={catId}
+                            onClick={() => setActiveLayoutTab(catId)}
+                            className={cn(
+                              "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all",
+                              activeLayoutTab === catId
+                                ? "bg-primary/10 text-primary border-primary/50"
+                                : "bg-card/50 text-muted-foreground border-transparent hover:border-border hover:text-foreground"
                             )}
-                         </div>
+                          >
+                            {catId}
+                          </button>
+                        ))}
+                      </div>
 
-                         {activeLayoutTab ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                               {activeCategoryInstruments.map((inst) => {
-                                  const isVisible = visibleInstruments.includes(inst.symbol)
-                                  return (
-                                     <div
-                                        key={inst.symbol}
-                                        onClick={() => toggleVisibility(inst.symbol)}
-                                        className={cn(
-                                           "relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between",
-                                           isVisible 
-                                              ? "bg-primary/10 border-primary/40 shadow-lg shadow-primary/10" 
-                                              : "bg-card/40 border-border hover:bg-muted/50 hover:border-border opacity-70 hover:opacity-100"
-                                        )}
-                                     >
-                                        <div>
-                                           <div className={cn("font-bold text-sm", isVisible ? "text-primary" : "text-foreground")}>{inst.symbol}</div>
-                                           <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">{inst.name}</div>
-                                        </div>
-                                        <div className={cn(
-                                           "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                                           isVisible ? "bg-primary border-primary" : "border-border bg-muted"
-                                        )}>
-                                           {isVisible && <Check className="w-3 h-3 text-primary-foreground" />}
-                                        </div>
-                                     </div>
-                                  )
-                               })}
+                      {activeLayoutTab && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleAllVisibility(activeLayoutTab, !isAllVisibleInTab)}
+                          className="h-8 text-xs"
+                        >
+                          {isAllVisibleInTab ? <Square className="w-3 h-3 mr-2" /> : <CheckSquare className="w-3 h-3 mr-2" />}
+                          {isAllVisibleInTab ? "Disable All" : "Enable All"}
+                        </Button>
+                      )}
+                    </div>
+
+                    {activeLayoutTab ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {activeCategoryInstruments.map((inst) => {
+                          const isVisible = visibleInstruments.includes(inst.symbol)
+                          return (
+                            <div
+                              key={inst.symbol}
+                              onClick={() => toggleVisibility(inst.symbol)}
+                              className={cn(
+                                "relative p-4 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between",
+                                isVisible
+                                  ? "bg-primary/10 border-primary/40 shadow-lg shadow-primary/10"
+                                  : "bg-card/40 border-border hover:bg-muted/50 hover:border-border opacity-70 hover:opacity-100"
+                              )}
+                            >
+                              <div>
+                                <div className={cn("font-bold text-sm", isVisible ? "text-primary" : "text-foreground")}>{inst.symbol}</div>
+                                <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">{inst.name}</div>
+                              </div>
+                              <div className={cn(
+                                "w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                                isVisible ? "bg-primary border-primary" : "border-border bg-muted"
+                              )}>
+                                {isVisible && <Check className="w-3 h-3 text-primary-foreground" />}
+                              </div>
                             </div>
-                         ) : (
-                            <div className="py-20 text-center text-muted-foreground">Select a market category above to configure feeds.</div>
-                         )}
+                          )
+                        })}
                       </div>
-                   )}
-                   
-                   {currentStep === 5 && (
-                      <div className="space-y-4">
-                         <div className="flex justify-end">
-                            <Button variant="outline" size="sm" onClick={enableAllNotifications} className="gap-2">
-                               <CheckSquare className="w-4 h-4"/> Activate All
-                            </Button>
-                         </div>
-                         <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
-                            <NotificationsStep notificationPreferences={config.notificationPreferences} onUpdate={updateNotificationPreferences} />
-                         </div>
+                    ) : (
+                      <div className="py-20 text-center text-muted-foreground">Select a market category above to configure feeds.</div>
+                    )}
+                  </div>
+                )}
+
+                {currentStep === 5 && (
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <Button variant="outline" size="sm" onClick={enableAllNotifications} className="gap-2">
+                        <CheckSquare className="w-4 h-4" /> Activate All
+                      </Button>
+                    </div>
+                    <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
+                      <NotificationsStep notificationPreferences={config.notificationPreferences} onUpdate={updateNotificationPreferences} />
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 6 && (
+                  <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
+                    <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
+                  </div>
+                )}
+
+                {currentStep === 7 && (
+                  <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
+                    <ReviewConfirmationStep config={config} />
+                  </div>
+                )}
+
+                {currentStep === 8 && (
+                  <div className="flex flex-col items-center justify-center py-24 text-center">
+                    <div className="relative mb-8">
+                      <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
+                        <Terminal className="w-10 h-10" />
                       </div>
-                   )}
-                   
-                   {currentStep === 6 && (
-                      <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
-                         <LegalPrivacyStep privacyPreferences={config.privacyPreferences} onUpdate={updatePrivacyPreferences} />
-                      </div>
-                   )}
-                   
-                   {currentStep === 7 && (
-                      <div className="bg-card/50 border border-border rounded-xl p-6 backdrop-blur-sm">
-                         <ReviewConfirmationStep config={config} />
-                      </div>
-                   )}
-                   
-                   {currentStep === 8 && (
-                      <div className="flex flex-col items-center justify-center py-24 text-center">
-                         <div className="relative mb-8">
-                            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
-                               <Terminal className="w-10 h-10" />
-                            </div>
-                            <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-[spin_8s_linear_infinite]" />
-                            <div className="absolute inset-2 border border-primary/10 rounded-full animate-[spin_4s_linear_infinite_reverse]" />
-                         </div>
-                         <h2 className="text-3xl font-bold mb-3 tracking-tight text-foreground">System Initialized</h2>
-                         <p className="text-muted-foreground max-w-md mb-8 leading-relaxed">
-                            Your environment is ready for deployment.
-                         </p>
-                      </div>
-                   )}
-                </motion.div>
-             </div>
+                      <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-[spin_8s_linear_infinite]" />
+                      <div className="absolute inset-2 border border-primary/10 rounded-full animate-[spin_4s_linear_infinite_reverse]" />
+                    </div>
+                    <h2 className="text-3xl font-bold mb-3 tracking-tight text-foreground">System Initialized</h2>
+                    <p className="text-muted-foreground max-w-md mb-8 leading-relaxed">
+                      Your environment is ready for deployment.
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </div>
           </div>
 
           <div className="h-24 border-t border-border bg-background/95 backdrop-blur-md flex items-center justify-between px-6 lg:px-12 sticky bottom-0 z-20">
-             <div className="flex items-center gap-4 flex-1">
-               <Button 
-                  variant="ghost" 
-                  onClick={handleBack} 
-                  disabled={isTransitioning}
-               >
-                  <ChevronLeft className="w-4 h-4 mr-2" /> Back
-               </Button>
-               
-               <AnimatePresence>
-                 {saveError && (
-                   <motion.div 
-                     initial={{ opacity: 0, x: -10 }}
-                     animate={{ opacity: 1, x: 0 }}
-                     exit={{ opacity: 0 }}
-                     className="hidden md:flex items-center gap-2 text-destructive text-sm font-medium bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-md"
-                   >
-                     <AlertCircle className="w-4 h-4" />
-                     {saveError}
-                   </motion.div>
-                 )}
-               </AnimatePresence>
-             </div>
-             
-             <div className="flex gap-4 items-center">
-                {saveError && (
-                   <div className="md:hidden absolute top-2 left-0 w-full px-6 flex justify-center">
-                     <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded">{saveError}</div>
-                   </div>
-                )}
+            <div className="flex items-center gap-4 flex-1">
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                disabled={isTransitioning}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" /> Back
+              </Button>
 
-                <Button 
-                   size="lg"
-                   onClick={handleNext} 
-                   disabled={isTransitioning} 
-                   className={cn(
-                     "min-w-[160px] font-bold tracking-wide transition-all",
-                     saveError ? "animate-shake bg-primary/90" : "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground"
-                   )}
-                >
-                   {isTransitioning ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === TOTAL_STEPS ? "Enter Terminal" : "Continue"}
-                   {currentStep !== TOTAL_STEPS && !isTransitioning && <ChevronRight className="w-4 h-4 ml-2" />}
-                </Button>
-             </div>
+              <AnimatePresence>
+                {saveError && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="hidden md:flex items-center gap-2 text-destructive text-sm font-medium bg-destructive/10 border border-destructive/20 px-3 py-1.5 rounded-md"
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    {saveError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="flex gap-4 items-center">
+              {saveError && (
+                <div className="md:hidden absolute top-2 left-0 w-full px-6 flex justify-center">
+                  <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 px-2 py-1 rounded">{saveError}</div>
+                </div>
+              )}
+
+              <Button
+                size="lg"
+                onClick={handleNext}
+                disabled={isTransitioning}
+                className={cn(
+                  "min-w-[160px] font-bold tracking-wide transition-all",
+                  saveError ? "animate-shake bg-primary/90" : "shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground"
+                )}
+              >
+                {isTransitioning ? <Loader2 className="w-4 h-4 animate-spin" /> : currentStep === TOTAL_STEPS ? "Enter Terminal" : "Continue"}
+                {currentStep !== TOTAL_STEPS && !isTransitioning && <ChevronRight className="w-4 h-4 ml-2" />}
+              </Button>
+            </div>
           </div>
         </main>
       </div>

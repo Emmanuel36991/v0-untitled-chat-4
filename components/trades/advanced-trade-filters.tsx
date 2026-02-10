@@ -32,8 +32,16 @@ export interface TradeFilters {
   dateTo?: string
   minPnL?: string
   maxPnL?: string
-  outcome?: "win" | "loss" | ""
+  // Alternate properties for backward compatibility
+  minPnl?: number
+  maxPnl?: number
+  outcome?: "win" | "loss" | "any" | ""
   setupName?: string
+  instrument?: string
+  dateRange?: {
+    from?: Date
+    to?: Date
+  }
 }
 
 interface AdvancedTradeFiltersProps {

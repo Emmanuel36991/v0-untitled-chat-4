@@ -42,6 +42,7 @@ import {
   Brain,
   Sparkles,
   Check,
+  Download,
 } from "lucide-react"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
@@ -699,6 +700,77 @@ export default function AnalyticsPage() {
               trades={trades}
               className="rounded-xl border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm ring-1 ring-gray-200 dark:ring-gray-800"
             />
+
+            {/* ====== DATA EXPORT SECTION ====== */}
+            <Card className="border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm ring-1 ring-gray-200 dark:ring-gray-800">
+              <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Download className="w-5 h-5 text-primary" />
+                      Export Analytics Data
+                    </CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                      Download your filtered trading data securely
+                    </CardDescription>
+                  </div>
+                  <Badge variant="secondary" className="font-mono text-xs">
+                    {analytics.filteredTrades.length} {analytics.filteredTrades.length === 1 ? 'trade' : 'trades'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex flex-wrap gap-4">
+                  <Button
+                    onClick={() => {
+                      const csvContent = [
+                        ['Date', 'Instrument', 'Direction', 'Entry', 'Exit', 'Size', 'PnL', 'Setup', 'Outcome'].join(','),
+                        ...analytics.filteredTrades.map(t => [
+                          format(new Date(t.date), 'yyyy-MM-dd'),
+                          t.instrument,
+                          t.direction,
+                          t.entry_price,
+                          t.exit_price,
+                          t.size,
+                          t.pnl,
+                          t.setup_name || '',
+                          t.outcome || ''
+                        ].join(','))
+                      ].join('\n')
+                      const blob = new Blob([csvContent], { type: 'text/csv' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `trading-analytics-${format(new Date(), 'yyyy-MM-dd')}.csv`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }}
+                    variant="outline"
+                    className="gap-2 hover:bg-primary/5 hover:border-primary/50"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export as CSV
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const jsonContent = JSON.stringify(analytics.filteredTrades, null, 2)
+                      const blob = new Blob([jsonContent], { type: 'application/json' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `trading-analytics-${format(new Date(), 'yyyy-MM-dd')}.json`
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }}
+                    variant="outline"
+                    className="gap-2 hover:bg-primary/5 hover:border-primary/50"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export as JSON
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
           </div>
         )}

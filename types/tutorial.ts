@@ -1,12 +1,15 @@
-export interface TutorialStep {
+export type GuideCategory = "Getting Started" | "The Psychology Engine" | "Advanced Features" | "Other"
+
+export interface Guide {
     id: string
+    slug: string
     title: string
-    description: string
-    targetSelector?: string // CSS selector for the element to highlight
-    position?: "top" | "bottom" | "left" | "right" | "center"
+    content: string // Markdown content
+    category: GuideCategory
+    imageUrl?: string
+    readTime?: number // Minutes
+    difficulty?: "beginner" | "intermediate" | "advanced"
+    featured?: boolean
+    description?: string // Short summary for card
 }
 
-export interface Tutorial {
-    id: string
-    steps: TutorialStep[]
-}

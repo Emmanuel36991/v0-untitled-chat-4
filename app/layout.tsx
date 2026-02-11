@@ -10,7 +10,16 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Concentrade - Advanced Trading Journal",
   description: "Professional trading journal with advanced analytics.",
-  generator: 'v0.app'
+  generator: "v0.app",
+  applicationName: "Concentrade",
+  appleWebApp: {
+    title: "Concentrade",
+    capable: true,
+    statusBarStyle: "default",
+  },
+  other: {
+    "msapplication-TileColor": "#7C3AED",
+  },
 }
 
 export default function RootLayout({

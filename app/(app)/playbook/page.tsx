@@ -4,9 +4,10 @@ import React, { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Plus, Search, Trash2, Edit2, MoreHorizontal,
-  Loader2, X, TrendingUp, Trophy, Layers, BookOpen,
-  Clock, CandlestickChart, Activity, Globe, Ban, 
-  Zap, Database, GitBranch, Check, ArrowRight, LayoutGrid
+  Loader2, TrendingUp, Trophy, Layers, BookOpen,
+  Clock, CandlestickChart, Activity, Zap, Database,
+  GitBranch, Check, ArrowRight, LayoutGrid, BarChart3,
+  ChevronRight, Target, Sparkles
 } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer } from "recharts"
 
@@ -39,39 +40,40 @@ import {
 import { VisualMap } from "@/components/playbook/visual-map"
 import { EnhancedVisualMap } from "@/components/playbook/enhanced-visual-map"
 
-// --- CONSTANTS ---
+// ---------- CONSTANTS ----------
 const CONFLUENCE_CATEGORIES = [
-  { id: "price", label: "Price Action", icon: CandlestickChart, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-  { id: "time", label: "Time/Session", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-  { id: "indicator", label: "Indicator", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  { id: "structure", label: "Structure", icon: Layers, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+  { id: "price", label: "Price Action", icon: CandlestickChart, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", dot: "bg-emerald-500" },
+  { id: "time", label: "Time / Session", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", dot: "bg-amber-500" },
+  { id: "indicator", label: "Indicator", icon: Activity, color: "text-sky-400", bg: "bg-sky-500/10", border: "border-sky-500/20", dot: "bg-sky-500" },
+  { id: "structure", label: "Structure", icon: Layers, color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/20", dot: "bg-violet-500" },
 ]
 
-// --- SPARKLINE CHART ---
-const Sparkline = ({ data, color }: { data: number[]; color: string }) => {
+// ---------- SPARKLINE ----------
+function MiniEquityCurve({ data, positive }: { data: number[]; positive: boolean }) {
   const chartData = useMemo(() => {
-    if (!data || data.length === 0) return [{ val: 0 }, { val: 0 }]
-    return data.map((val, i) => ({ i, val }))
+    if (!data || data.length < 2) return [{ v: 0 }, { v: 1 }]
+    return data.map((v) => ({ v }))
   }, [data])
+  const color = positive ? "#10b981" : "#ef4444"
 
   return (
-    <div className="h-full w-full absolute inset-0 opacity-[0.06] pointer-events-none z-0 mix-blend-multiply dark:mix-blend-screen">
+    <div className="absolute inset-0 opacity-[0.07] pointer-events-none">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData}>
           <defs>
-            <linearGradient id={`grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.5} />
+            <linearGradient id={`eq-${positive}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.6} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="val" stroke={color} strokeWidth={2} fill={`url(#grad-${color})`} isAnimationActive={false} />
+          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} fill={`url(#eq-${positive})`} isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-// --- STRATEGY ENGINE (The Builder) ---
+// ---------- STRATEGY ENGINE (Sheet Builder) ----------
 function StrategyEngine({
   open,
   onOpenChange,
@@ -84,118 +86,65 @@ function StrategyEngine({
   initialData?: PlaybookStrategy | null
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  // Strategy Identity
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  
-  // 1. The Confluence Pool (Ingredients)
   const [confluences, setConfluences] = useState<StrategyRule[]>([])
   const [newConfluenceText, setNewConfluenceText] = useState("")
   const [newConfluenceType, setNewConfluenceType] = useState("price")
-
-  // 2. The Setups (Recipes)
   const [setups, setSetups] = useState<StrategySetup[]>([])
   const [newSetupName, setNewSetupName] = useState("")
 
-  // Load Data
   useEffect(() => {
     if (open) {
       if (initialData) {
         setName(initialData.name)
-        // Clean description if it contains JSON artifacts
         let desc = initialData.description || ""
-        if (desc.trim().startsWith("{")) desc = "" 
+        if (desc.trim().startsWith("{")) desc = ""
         setDescription(desc)
-        
         setConfluences(initialData.rules || [])
         setSetups(initialData.setups || [])
       } else {
-        setName("")
-        setDescription("")
-        setConfluences([])
-        setSetups([])
+        setName(""); setDescription(""); setConfluences([]); setSetups([])
       }
     }
   }, [open, initialData])
 
-  // --- ACTIONS: CONFLUENCE POOL ---
   const addConfluence = () => {
     if (!newConfluenceText.trim()) return
-    
-    // Generate UUID locally for temporary use
-    const newId = Math.random().toString(36).substr(2, 9)
-    
-    const newRuleObj: StrategyRule = {
-      id: newId,
-      text: newConfluenceText,
-      phase: "setup", 
-      required: true,
-    }
-    // Attach category for UI rendering
-    Object.assign(newRuleObj, { category: newConfluenceType })
-
-    setConfluences(prev => [...prev, newRuleObj])
+    const newRule: StrategyRule = { id: Math.random().toString(36).substr(2, 9), text: newConfluenceText, phase: "setup", required: true }
+    Object.assign(newRule, { category: newConfluenceType })
+    setConfluences((p) => [...p, newRule])
     setNewConfluenceText("")
   }
 
   const removeConfluence = (id: string) => {
-    setConfluences(prev => prev.filter(r => r.id !== id))
-    // Also remove from any setups using it to keep integrity
-    setSetups(prev => prev.map(s => ({
-      ...s,
-      activeConfluences: s.activeConfluences.filter(cid => cid !== id)
-    })))
+    setConfluences((p) => p.filter((r) => r.id !== id))
+    setSetups((p) => p.map((s) => ({ ...s, activeConfluences: s.activeConfluences.filter((cid) => cid !== id) })))
   }
 
-  // --- ACTIONS: SETUPS ---
   const addSetup = () => {
     if (!newSetupName.trim()) return
-    
-    const newSetupId = Math.random().toString(36).substr(2, 9)
-    const newSetup: StrategySetup = {
-      id: newSetupId,
-      name: newSetupName,
-      activeConfluences: []
-    }
-    setSetups(prev => [...prev, newSetup])
+    setSetups((p) => [...p, { id: Math.random().toString(36).substr(2, 9), name: newSetupName, activeConfluences: [] }])
     setNewSetupName("")
   }
 
-  const toggleConfluenceInSetup = (setupId: string, confluenceId: string) => {
-    setSetups(prev => prev.map(s => {
+  const toggleConfluenceInSetup = (setupId: string, ruleId: string) => {
+    setSetups((p) => p.map((s) => {
       if (s.id !== setupId) return s
-      const isActive = s.activeConfluences.includes(confluenceId)
-      return {
-        ...s,
-        activeConfluences: isActive 
-          ? s.activeConfluences.filter(id => id !== confluenceId)
-          : [...s.activeConfluences, confluenceId]
-      }
+      const has = s.activeConfluences.includes(ruleId)
+      return { ...s, activeConfluences: has ? s.activeConfluences.filter((x) => x !== ruleId) : [...s.activeConfluences, ruleId] }
     }))
   }
 
-  const removeSetup = (id: string) => {
-    setSetups(prev => prev.filter(s => s.id !== id))
-  }
+  const removeSetup = (id: string) => setSetups((p) => p.filter((s) => s.id !== id))
 
-  // --- SAVE ---
   const handleSaveInternal = async () => {
-    if (!name) return toast({ title: "Name Required", description: "Name your strategy.", variant: "destructive" })
+    if (!name) return toast({ title: "Name Required", description: "Give your strategy a name.", variant: "destructive" })
     setIsSubmitting(true)
-    
-    const strategyData: Partial<PlaybookStrategy> = {
-      id: initialData?.id,
-      name,
-      description,
-      rules: confluences,
-      setups: setups
-    }
-
     try {
-      await onSave(strategyData)
+      await onSave({ id: initialData?.id, name, description, rules: confluences, setups })
       onOpenChange(false)
-    } catch (e) {
+    } catch {
       toast({ title: "Error", description: "Failed to save strategy.", variant: "destructive" })
     } finally {
       setIsSubmitting(false)
@@ -205,259 +154,313 @@ function StrategyEngine({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="max-w-[95vw] md:max-w-[1400px] w-full flex flex-col bg-background p-0 border-l border-border shadow-2xl">
-        
-        {/* HEADER */}
-        <div className="px-8 py-6 border-b bg-background sticky top-0 z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-             <div className="p-3 bg-primary/10 rounded-xl text-primary">
-               <GitBranch className="w-6 h-6"/>
-             </div>
-             <div>
-                <SheetTitle className="text-2xl font-bold tracking-tight">
-                  Strategy Engine
-                </SheetTitle>
-                <p className="text-sm text-muted-foreground">Define your strategy's vocabulary (left), then build setups (right).</p>
-             </div>
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-border bg-card/50 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
+              <GitBranch className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <SheetTitle className="text-xl font-bold tracking-tight">Strategy Engine</SheetTitle>
+              <p className="text-xs text-muted-foreground truncate">Define confluences, then combine them into actionable setups.</p>
+            </div>
           </div>
-          <div className="flex gap-2">
-             <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-             <Button onClick={handleSaveInternal} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 w-32 font-bold shadow-lg shadow-primary/20">
-               {isSubmitting ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : "Save Engine"}
-             </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleSaveInternal} disabled={isSubmitting} className="gap-1.5 font-semibold shadow-sm">
+              {isSubmitting ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
+              Save
+            </Button>
           </div>
         </div>
 
-        {/* WORKSPACE - SPLIT VIEW */}
+        {/* Split workspace */}
         <div className="flex-1 flex overflow-hidden">
-            
-           {/* LEFT PANEL: CONFLUENCE POOL (THE LIBRARY) */}
-           <div className="w-[450px] border-r border-border/40 bg-card/20 flex flex-col">
-              <div className="p-6 border-b border-border/40 bg-muted/10">
-                 <div className="space-y-4">
-                    <div className="space-y-2">
-                       <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Strategy Name</Label>
-                       <Input 
-                          value={name} 
-                          onChange={e => setName(e.target.value)}
-                          placeholder="e.g. ICT Concepts" 
-                          className="font-black text-xl h-12 bg-background border-border/60"
-                       />
-                    </div>
-                    <Textarea 
-                       value={description}
-                       onChange={e => setDescription(e.target.value)}
-                       placeholder="Core philosophy (e.g. Algo delivery based on time & price)"
-                       className="bg-background min-h-[60px] resize-none text-xs"
-                    />
-                 </div>
+          {/* LEFT: Confluence Pool */}
+          <div className="w-full md:w-[420px] border-r border-border flex flex-col bg-card/30">
+            {/* Identity */}
+            <div className="p-5 border-b border-border space-y-3">
+              <div>
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Strategy Name</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. ICT Silver Bullet" className="font-bold text-base h-10 bg-background" />
               </div>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Core thesis or philosophy..." className="bg-background min-h-[48px] resize-none text-xs leading-relaxed" />
+            </div>
 
-              <div className="flex-1 flex flex-col min-h-0">
-                 <div className="p-4 border-b border-border/40 flex justify-between items-center bg-background/50">
-                    <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                       <Database className="w-4 h-4 text-primary" /> Confluence Pool
-                    </h3>
-                    <Badge variant="outline">{confluences.length} Factors</Badge>
-                 </div>
+            {/* Pool header */}
+            <div className="px-5 py-3 border-b border-border flex justify-between items-center">
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-primary" /> Confluence Pool
+              </h3>
+              <Badge variant="secondary" className="text-[10px] font-mono h-5">{confluences.length}</Badge>
+            </div>
 
-                 {/* ADD CONFLUENCE INPUT */}
-                 <div className="p-4 border-b border-border/40 bg-background">
-                    <div className="flex gap-2 mb-2">
-                       <Select value={newConfluenceType} onValueChange={setNewConfluenceType}>
-                          <SelectTrigger className="w-[120px] h-9 text-xs font-bold bg-muted/50 border-border/60">
-                             <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                             {CONFLUENCE_CATEGORIES.map(c => (
-                                <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
-                             ))}
-                          </SelectContent>
-                       </Select>
-                       <div className="flex-1 relative">
-                          <Input 
-                             value={newConfluenceText}
-                             onChange={e => setNewConfluenceText(e.target.value)}
-                             onKeyDown={e => e.key === 'Enter' && addConfluence()}
-                             placeholder="Add factor (e.g. 9:30 Open)"
-                             className="h-9 text-xs pr-8"
-                          />
-                          <Button 
-                             size="icon" 
-                             onClick={addConfluence} 
-                             className="h-7 w-7 absolute right-1 top-1 bg-primary/20 text-primary hover:bg-primary hover:text-white"
-                          >
-                             <Plus className="w-4 h-4"/>
-                          </Button>
-                       </div>
+            {/* Add confluence */}
+            <div className="p-4 border-b border-border bg-background/50">
+              <div className="flex gap-1.5">
+                <Select value={newConfluenceType} onValueChange={setNewConfluenceType}>
+                  <SelectTrigger className="w-[110px] h-8 text-[11px] font-semibold bg-card border-border">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONFLUENCE_CATEGORIES.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <span className="flex items-center gap-1.5">
+                          <span className={cn("w-1.5 h-1.5 rounded-full", c.dot)} />
+                          {c.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex-1 relative">
+                  <Input value={newConfluenceText} onChange={(e) => setNewConfluenceText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addConfluence()} placeholder="Add factor..." className="h-8 text-xs pr-8 bg-card" />
+                  <Button size="icon" onClick={addConfluence} className="h-6 w-6 absolute right-1 top-1 bg-primary/15 text-primary hover:bg-primary hover:text-primary-foreground rounded-md">
+                    <Plus className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Confluence list */}
+            <ScrollArea className="flex-1">
+              <div className="p-4 space-y-1.5">
+                <AnimatePresence>
+                  {confluences.map((rule) => {
+                    const cat = CONFLUENCE_CATEGORIES.find((c) => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
+                    return (
+                      <motion.div key={rule.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }} className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm group hover:border-primary/30 transition-colors", cat.border, "bg-card/60")}>
+                        <span className={cn("w-2 h-2 rounded-full shrink-0", cat.dot)} />
+                        <span className="flex-1 font-medium truncate text-foreground/90 text-xs">{rule.text}</span>
+                        <button onClick={() => removeConfluence(rule.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </motion.div>
+                    )
+                  })}
+                </AnimatePresence>
+                {confluences.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="p-3 rounded-xl bg-muted/50 mb-3">
+                      <Layers className="w-6 h-6 text-muted-foreground/30" />
                     </div>
-                 </div>
+                    <p className="text-xs font-medium text-muted-foreground">No confluences yet</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-0.5">Add your raw trading concepts above</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
 
-                 {/* CONFLUENCE LIST */}
-                 <ScrollArea className="flex-1 p-4">
-                    <div className="space-y-2">
-                       <AnimatePresence>
-                          {confluences.map(rule => {
-                             const type = CONFLUENCE_CATEGORIES.find(c => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
-                             return (
-                                <motion.div 
-                                   key={rule.id}
-                                   initial={{ opacity: 0, x: -10 }}
-                                   animate={{ opacity: 1, x: 0 }}
-                                   exit={{ opacity: 0, height: 0 }}
-                                   className={cn("flex items-center gap-3 p-2.5 rounded-lg border bg-card text-sm group select-none hover:border-primary/30 transition-all", type.border)}
-                                >
-                                   <div className={cn("p-1.5 rounded-md", type.bg, type.color)}>
-                                      <type.icon className="w-3.5 h-3.5" />
-                                   </div>
-                                   <span className="flex-1 font-medium truncate" title={rule.text}>{rule.text}</span>
-                                   <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                      <Button variant="ghost" size="icon" onClick={() => removeConfluence(rule.id)} className="h-6 w-6 text-muted-foreground hover:text-destructive">
-                                         <Trash2 className="w-3.5 h-3.5" />
-                                      </Button>
-                                   </div>
-                                </motion.div>
-                             )
-                          })}
-                       </AnimatePresence>
-                       {confluences.length === 0 && (
-                          <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border/40 rounded-xl bg-muted/5">
-                             <Layers className="w-8 h-8 text-muted-foreground/20 mb-2" />
-                             <p className="text-xs text-muted-foreground font-medium">Pool Empty</p>
-                             <p className="text-[10px] text-muted-foreground/60">Add raw concepts here.</p>
+          {/* RIGHT: Setup Builder */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="px-6 py-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" /> Setups
+                </h2>
+                <p className="text-xs text-muted-foreground">Combine confluences into actionable trade setups.</p>
+              </div>
+              <div className="flex gap-2">
+                <Input value={newSetupName} onChange={(e) => setNewSetupName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addSetup()} placeholder="e.g. Silver Bullet" className="w-52 h-8 text-xs bg-card" />
+                <Button size="sm" onClick={addSetup} className="gap-1.5 h-8 text-xs shrink-0">
+                  <Plus className="w-3.5 h-3.5" /> Add
+                </Button>
+              </div>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <AnimatePresence>
+                  {setups.map((setup) => (
+                    <motion.div key={setup.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col bg-card border border-border rounded-xl overflow-hidden">
+                      <div className="px-4 py-3 border-b border-border flex justify-between items-center">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="p-1.5 bg-primary/10 text-primary rounded-lg shrink-0">
+                            <Target className="w-3.5 h-3.5" />
                           </div>
-                       )}
-                    </div>
-                 </ScrollArea>
-              </div>
-           </div>
-
-           {/* RIGHT PANEL: SETUP BUILDER (THE FACTORY) */}
-           <div className="flex-1 flex flex-col bg-muted/5">
-              <div className="p-6 border-b border-border/40">
-                 <div className="flex items-center justify-between mb-6">
-                    <div>
-                       <h2 className="text-xl font-bold tracking-tight">Setups</h2>
-                       <p className="text-sm text-muted-foreground">Construct actionable setups by enabling confluences.</p>
-                    </div>
-                    <div className="flex gap-2">
-                       <Input 
-                          value={newSetupName}
-                          onChange={e => setNewSetupName(e.target.value)}
-                          onKeyDown={e => e.key === 'Enter' && addSetup()}
-                          placeholder="New Setup Name (e.g. Silver Bullet)"
-                          className="w-64 bg-background shadow-sm"
-                       />
-                       <Button onClick={addSetup} className="gap-2 shadow-sm">
-                          <Plus className="w-4 h-4" /> Create Setup
-                       </Button>
-                    </div>
-                 </div>
-              </div>
-
-              <ScrollArea className="flex-1 p-8">
-                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    <AnimatePresence>
-                       {setups.map(setup => (
-                          <motion.div 
-                             key={setup.id}
-                             initial={{ opacity: 0, scale: 0.95 }}
-                             animate={{ opacity: 1, scale: 1 }}
-                             className="flex flex-col bg-card border border-border/60 rounded-xl shadow-sm overflow-hidden"
-                          >
-                             {/* Setup Header */}
-                             <div className="p-4 border-b border-border/40 bg-muted/20 flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                   <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                                      <Zap className="w-4 h-4" />
-                                   </div>
-                                   <span className="font-bold">{setup.name}</span>
+                          <span className="font-bold text-sm truncate">{setup.name}</span>
+                          {setup.activeConfluences.length > 0 && (
+                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] h-5 shrink-0">{setup.activeConfluences.length} active</Badge>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => removeSetup(setup.id)} className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                      <div className="p-3 space-y-1">
+                        {confluences.length === 0 ? (
+                          <div className="text-center py-6 text-xs text-muted-foreground/60 italic">Add confluences to the pool first</div>
+                        ) : (
+                          confluences.map((rule) => {
+                            const isActive = setup.activeConfluences.includes(rule.id)
+                            const cat = CONFLUENCE_CATEGORIES.find((c) => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
+                            return (
+                              <div key={rule.id} onClick={() => toggleConfluenceInSetup(setup.id, rule.id)} className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all select-none text-xs", isActive ? "bg-primary/5 border-primary/30" : "bg-transparent border-transparent hover:bg-muted/50 opacity-50 hover:opacity-80")}>
+                                <div className={cn("w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors", isActive ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/25")}>
+                                  {isActive && <Check className="w-2.5 h-2.5" />}
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => removeSetup(setup.id)} className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                                   <Trash2 className="w-4 h-4" />
-                                </Button>
-                             </div>
+                                <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", cat.dot)} />
+                                <span className={cn("font-medium truncate", isActive ? "text-foreground" : "text-muted-foreground")}>{rule.text}</span>
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
-                             {/* Setup Body - Confluence Selector */}
-                             <div className="p-4 flex-1">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-                                   <ArrowRight className="w-3 h-3" /> Select Required Factors
-                                </p>
-                                
-                                {confluences.length === 0 ? (
-                                   <div className="text-center py-8 text-xs text-muted-foreground italic border border-dashed rounded-lg">
-                                      Populate the Confluence Pool (Left) first.
-                                   </div>
-                                ) : (
-                                   <div className="space-y-2">
-                                      {confluences.map(rule => {
-                                         const isActive = setup.activeConfluences.includes(rule.id)
-                                         const type = CONFLUENCE_CATEGORIES.find(c => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
-                                         
-                                         return (
-                                            <div 
-                                               key={rule.id}
-                                               onClick={() => toggleConfluenceInSetup(setup.id, rule.id)}
-                                               className={cn(
-                                                  "flex items-center gap-3 p-2 rounded-lg border cursor-pointer transition-all select-none group",
-                                                  isActive 
-                                                     ? "bg-primary/5 border-primary/40 shadow-sm" 
-                                                     : "bg-background border-border/40 hover:bg-muted/50 opacity-60 hover:opacity-100"
-                                               )}
-                                            >
-                                               <div className={cn(
-                                                  "w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0",
-                                                  isActive ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 group-hover:border-primary/50"
-                                               )}>
-                                                  {isActive && <Check className="w-3 h-3" />}
-                                               </div>
-                                               
-                                               <div className={cn("p-1 rounded bg-muted/50", type.color)}>
-                                                  <type.icon className="w-3 h-3" />
-                                               </div>
-                                               
-                                               <span className={cn("text-xs font-medium truncate", isActive ? "text-foreground" : "text-muted-foreground")}>
-                                                  {rule.text}
-                                               </span>
-                                            </div>
-                                         )
-                                      })}
-                                   </div>
-                                )}
-                             </div>
-                             
-                             <div className="p-3 bg-muted/10 border-t border-border/40 flex justify-between items-center">
-                                <span className="text-[10px] text-muted-foreground font-mono">
-                                   {setup.activeConfluences.length} Rules Active
-                                </span>
-                                {setup.activeConfluences.length > 0 && (
-                                   <Badge variant="outline" className="text-[10px] border-primary/30 text-primary bg-primary/5 h-5">Valid Setup</Badge>
-                                )}
-                             </div>
-                          </motion.div>
-                       ))}
-                    </AnimatePresence>
-                    
-                    {setups.length === 0 && (
-                       <div className="col-span-full flex flex-col items-center justify-center py-20 border-2 border-dashed border-border/60 rounded-xl bg-muted/5">
-                          <LayoutGrid className="w-12 h-12 text-muted-foreground/20 mb-4" />
-                          <h3 className="text-lg font-medium text-foreground">No Setups Defined</h3>
-                          <p className="text-sm text-muted-foreground mb-6 max-w-sm text-center">Create specific trade setups (e.g. 'Silver Bullet') by combining confluences from your strategy pool.</p>
-                          <Button variant="secondary" onClick={() => document.querySelector('input[placeholder*="New Setup Name"]')?.focus()}>
-                             Create Your First Setup
-                          </Button>
-                       </div>
-                    )}
-                 </div>
-              </ScrollArea>
-           </div>
-
+                {setups.length === 0 && (
+                  <div className="col-span-full flex flex-col items-center justify-center py-20">
+                    <div className="p-4 rounded-2xl bg-muted/30 mb-4">
+                      <LayoutGrid className="w-8 h-8 text-muted-foreground/25" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground">No setups yet</h3>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-xs text-center leading-relaxed">Create trade setups like "Silver Bullet" or "London Killzone" by combining your confluences.</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
   )
 }
 
-// --- MAIN PAGE ---
+
+// ---------- STAT PILL ----------
+function StatPill({ icon: Icon, label, value, sub, accent }: { icon: any; label: string; value: string; sub?: string; accent: string }) {
+  return (
+    <div className="flex items-center gap-3.5 p-4 rounded-xl border border-border bg-card hover:bg-card/80 transition-colors">
+      <div className={cn("p-2.5 rounded-xl ring-1", accent)}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
+        <p className="text-xl font-bold text-foreground leading-tight">{value}</p>
+        {sub && <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+
+// ---------- STRATEGY CARD ----------
+function StrategyCard({
+  strat,
+  onEdit,
+  onDelete,
+}: {
+  strat: PlaybookStrategy
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const isProfitable = (strat.pnl || 0) >= 0
+  const winRate = strat.win_rate || 0
+  const setupCount = strat.setups?.length || 0
+  const ruleCount = strat.rules?.length || 0
+
+  return (
+    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="group">
+      <Card className="h-full border-border bg-card overflow-hidden hover:border-primary/25 transition-all duration-200 flex flex-col relative">
+        {/* Subtle equity curve background */}
+        <div className="h-28 relative flex flex-col justify-between p-5 border-b border-border">
+          <MiniEquityCurve data={strat.equity_curve || []} positive={isProfitable} />
+
+          {/* Top row */}
+          <div className="relative z-10 flex justify-between items-start">
+            <div className="flex gap-1.5">
+              {setupCount > 0 && (
+                <Badge variant="secondary" className="text-[10px] font-mono h-5 bg-primary/10 text-primary border-0">
+                  {setupCount} {setupCount === 1 ? "setup" : "setups"}
+                </Badge>
+              )}
+              {ruleCount > 0 && (
+                <Badge variant="secondary" className="text-[10px] font-mono h-5 bg-muted text-muted-foreground border-0">
+                  {ruleCount} rules
+                </Badge>
+              )}
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity -mr-1 -mt-1">
+                  <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-36">
+                <DropdownMenuItem onClick={onEdit}>
+                  <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={onDelete}>
+                  <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Strategy name */}
+          <div className="relative z-10 mt-auto">
+            <h3 className="text-lg font-bold tracking-tight text-foreground truncate leading-tight">{strat.name}</h3>
+            {strat.description && (
+              <p className="text-[11px] text-muted-foreground truncate mt-0.5">{strat.description}</p>
+            )}
+          </div>
+        </div>
+
+        <CardContent className="p-0 flex-1 flex flex-col">
+          {/* Stats row */}
+          <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
+            <div className="px-4 py-3 text-center">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Win Rate</p>
+              <p className={cn("text-lg font-bold tabular-nums", winRate >= 50 ? "text-emerald-500" : winRate > 0 ? "text-amber-500" : "text-muted-foreground")}>{winRate}%</p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Trades</p>
+              <p className="text-lg font-bold text-foreground tabular-nums">{strat.trades_count || 0}</p>
+            </div>
+            <div className="px-4 py-3 text-center">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net P&L</p>
+              <p className={cn("text-lg font-bold font-mono tabular-nums", isProfitable ? "text-emerald-500" : "text-rose-500")}>
+                {isProfitable ? "+" : ""}${Math.abs(strat.pnl || 0).toLocaleString()}
+              </p>
+            </div>
+          </div>
+
+          {/* Setup progress bar */}
+          {setupCount > 0 && (
+            <div className="px-4 py-3">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Setups</span>
+                <span className="text-[10px] text-muted-foreground font-mono">{setupCount}</span>
+              </div>
+              <div className="flex gap-1 h-1.5 rounded-full overflow-hidden bg-muted/50">
+                {(strat.setups || []).slice(0, 8).map((_, i) => (
+                  <div key={i} className="h-full flex-1 rounded-full bg-primary/50 first:bg-primary" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quick-edit footer */}
+          <div className="mt-auto px-4 py-3 border-t border-border">
+            <button onClick={onEdit} className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground hover:text-primary transition-colors group/btn">
+              <span className="flex items-center gap-1.5">
+                <Edit2 className="w-3 h-3" /> Open in Engine
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  )
+}
+
+
+// ---------- MAIN PAGE ----------
 export default function PlaybookPage() {
   const [strategies, setStrategies] = useState<PlaybookStrategy[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -483,12 +486,12 @@ export default function PlaybookPage() {
 
   const handleSave = async (s: Partial<PlaybookStrategy>) => {
     await upsertStrategy(s)
-    toast({ title: "Success", description: "Strategy saved to playbook." })
+    toast({ title: "Strategy saved", description: `"${s.name}" has been updated in your playbook.` })
     loadData()
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete strategy? This action cannot be undone.")) return
+    if (!confirm("Delete this strategy? This cannot be undone.")) return
     await deleteStrategy(id)
     loadData()
   }
@@ -500,181 +503,135 @@ export default function PlaybookPage() {
   )
 
   const totalPnL = strategies.reduce((acc, s) => acc + (s.pnl || 0), 0)
-  const bestStrategy = strategies.length > 0 
-    ? strategies.reduce((prev, current) => ((prev.win_rate || 0) > (current.win_rate || 0) ? prev : current), strategies[0]) 
+  const totalTrades = strategies.reduce((acc, s) => acc + (s.trades_count || 0), 0)
+  const bestStrategy = strategies.length > 0
+    ? strategies.reduce((prev, curr) => ((prev.win_rate || 0) > (curr.win_rate || 0) ? prev : curr), strategies[0])
     : null
+  const avgWinRate = strategies.length > 0
+    ? Math.round(strategies.reduce((acc, s) => acc + (s.win_rate || 0), 0) / strategies.length)
+    : 0
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Sticky Header with Glassmorphism */}
-      <div className="bg-background/80 backdrop-blur-xl border-b border-border sticky top-0 z-30 transition-all">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-             <div className="flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-primary hidden md:block" />
-                <div>
-                   <h1 className="text-2xl font-bold tracking-tight text-foreground">Playbook</h1>
-                   <p className="text-muted-foreground text-xs md:text-sm hidden md:block">Architect your trading systems.</p>
-                </div>
-             </div>
-             <div className="flex gap-3">
-                <div className="relative hidden md:block">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                   <Input 
-                     placeholder="Search strategies..." 
-                     value={searchQuery}
-                     onChange={e => setSearchQuery(e.target.value)}
-                     className="pl-9 w-64 bg-background/50 border-input hover:border-primary/50 transition-colors" 
-                   />
-                </div>
-                <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md font-bold">
-                   <Plus className="w-5 h-5 mr-2" /> New Strategy
-                </Button>
-             </div>
-           </div>
+      {/* Header */}
+      <div className="bg-background/80 backdrop-blur-xl border-b border-border sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary hidden md:flex">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div>
+                <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">Playbook</h1>
+                <p className="text-[11px] text-muted-foreground hidden md:block">Your strategy library and trade systems.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative hidden md:block">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 w-48 h-8 text-xs bg-card border-border"
+                />
+              </div>
+              <Button size="sm" onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }} className="gap-1.5 font-semibold shadow-sm h-8">
+                <Plus className="w-4 h-4" /> New Strategy
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 space-y-8 mt-8">
-           
-           {/* SECTION 1: METRICS GRID */}
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center gap-4 p-5 rounded-xl border bg-card/40 hover:bg-card/60 transition-colors shadow-sm">
-                 <div className="p-3 bg-indigo-500/10 rounded-lg text-indigo-500 ring-1 ring-indigo-500/20"><Layers className="w-6 h-6"/></div>
-                 <div>
-                    <div className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Active Systems</div>
-                    <div className="text-2xl font-bold text-foreground">{strategies.length}</div>
-                 </div>
-              </div>
-              <div className="flex items-center gap-4 p-5 rounded-xl border bg-card/40 hover:bg-card/60 transition-colors shadow-sm">
-                 <div className="p-3 bg-emerald-500/10 rounded-lg text-emerald-500 ring-1 ring-emerald-500/20"><TrendingUp className="w-6 h-6"/></div>
-                 <div>
-                    <div className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Total PnL</div>
-                    <div className={cn("text-2xl font-bold font-mono", totalPnL >= 0 ? "text-emerald-500" : "text-rose-500")}>
-                       ${totalPnL.toLocaleString()}
-                    </div>
-                 </div>
-              </div>
-              <div className="flex items-center gap-4 p-5 rounded-xl border bg-card/40 hover:bg-card/60 transition-colors shadow-sm">
-                 <div className="p-3 bg-amber-500/10 rounded-lg text-amber-500 ring-1 ring-amber-500/20"><Trophy className="w-6 h-6"/></div>
-                 <div>
-                    <div className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Top Performer</div>
-                    <div className="text-lg font-bold text-foreground truncate max-w-[150px]">{bestStrategy?.name || "N/A"}</div>
-                    {bestStrategy && <div className="text-xs text-muted-foreground">{bestStrategy.win_rate}% Win Rate</div>}
-                 </div>
-              </div>
-           </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 mt-6 space-y-8">
 
-           {/* SECTION 2: STRATEGY CARDS */}
-           <div className="space-y-4">
-              <h2 className="text-lg font-bold tracking-tight">Active Strategies</h2>
-              
-              {isLoading ? (
-                 <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-indigo-500" /></div>
-              ) : filtered.length === 0 ? (
-                 <div className="text-center py-32 border-2 border-dashed rounded-3xl bg-card/30">
-                    <BookOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-                    <h3 className="text-xl font-bold text-foreground">Playbook Empty</h3>
-                    <p className="text-muted-foreground mt-2 mb-8">Define your first system to start tracking data.</p>
-                    <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }}>Create Strategy</Button>
-                 </div>
-              ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AnimatePresence>
-                       {filtered.map(strat => {
-                          const isProfitable = (strat.pnl || 0) >= 0
-                          return (
-                             <motion.div 
-                                key={strat.id} 
-                                layout
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                whileHover={{ y: -4 }}
-                                className="group h-full"
-                             >
-                                <Card className="h-full border-border/60 bg-card overflow-hidden hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col">
-                                   <div className="h-32 relative p-6 flex flex-col justify-between border-b border-border/40 bg-gradient-to-b from-background to-card/50">
-                                      <Sparkline data={strat.equity_curve || []} color={isProfitable ? "#10b981" : "#ef4444"} />
-                                      <div className="relative z-10 flex justify-between items-start">
-                                         <div className="flex gap-2">
-                                            <Badge variant="outline" className="bg-background/50 backdrop-blur text-[10px] uppercase font-bold text-muted-foreground border-border/50">Strategy</Badge>
-                                         </div>
-                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background/80 -mr-2 -mt-2"><MoreHorizontal className="w-4 h-4 text-muted-foreground"/></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                               <DropdownMenuItem onClick={() => { setEditingStrategy(strat); setIsBuilderOpen(true) }}><Edit2 className="w-4 h-4 mr-2"/> Edit</DropdownMenuItem>
-                                               <DropdownMenuSeparator />
-                                               <DropdownMenuItem className="text-rose-600" onClick={() => handleDelete(strat.id)}><Trash2 className="w-4 h-4 mr-2"/> Delete</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                         </DropdownMenu>
-                                      </div>
-                                      <div className="relative z-10 mt-auto">
-                                         <h3 className="text-lg font-bold tracking-tight text-foreground truncate">{strat.name}</h3>
-                                      </div>
-                                   </div>
+        {/* Mobile search */}
+        <div className="md:hidden relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search strategies..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 bg-card" />
+        </div>
 
-                                   <CardContent className="p-6 space-y-6 flex-1 flex flex-col">
-                                      <div className="grid grid-cols-3 gap-2 py-2 border-y border-border/40">
-                                         <div className="text-center py-2">
-                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Win Rate</div>
-                                            <div className={cn("text-lg font-bold", (strat.win_rate || 0) > 50 ? "text-emerald-500" : "text-muted-foreground")}>{strat.win_rate || 0}%</div>
-                                         </div>
-                                         <div className="text-center py-2 border-l border-border/40">
-                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Trades</div>
-                                            <div className="text-lg font-bold text-foreground">{strat.trades_count || 0}</div>
-                                         </div>
-                                         <div className="text-center py-2 border-l border-border/40">
-                                            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net PnL</div>
-                                            <div className={cn("text-lg font-bold font-mono", isProfitable ? "text-emerald-500" : "text-rose-500")}>${(strat.pnl || 0).toLocaleString()}</div>
-                                         </div>
-                                      </div>
+        {/* Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatPill icon={Layers} label="Strategies" value={String(strategies.length)} accent="bg-primary/10 text-primary ring-primary/20" />
+          <StatPill
+            icon={TrendingUp}
+            label="Total P&L"
+            value={`${totalPnL >= 0 ? "+" : "-"}$${Math.abs(totalPnL).toLocaleString()}`}
+            accent={totalPnL >= 0 ? "bg-emerald-500/10 text-emerald-500 ring-emerald-500/20" : "bg-rose-500/10 text-rose-500 ring-rose-500/20"}
+          />
+          <StatPill icon={BarChart3} label="Total Trades" value={String(totalTrades)} sub={`${avgWinRate}% avg win rate`} accent="bg-sky-500/10 text-sky-500 ring-sky-500/20" />
+          <StatPill icon={Trophy} label="Top Performer" value={bestStrategy?.name || "N/A"} sub={bestStrategy ? `${bestStrategy.win_rate}% win rate` : undefined} accent="bg-amber-500/10 text-amber-500 ring-amber-500/20" />
+        </div>
 
-                                      <div className="space-y-3 mt-auto">
-                                         <div className="flex justify-between items-end">
-                                            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Active Setups</span>
-                                            <span className="text-[10px] text-muted-foreground">{strat.setups?.length || 0}</span>
-                                         </div>
-                                         {/* Visualize Setup Counts */}
-                                         <div className="flex gap-1 h-2 overflow-hidden rounded-full bg-secondary/50">
-                                            {(strat.setups || []).slice(0,8).map((s,i) => {
-                                               return <div key={i} className="h-full flex-1 bg-primary/40 first:bg-primary/60" />
-                                            })}
-                                            {(strat.setups || []).length === 0 && <div className="h-full w-full bg-muted" />}
-                                         </div>
-                                      </div>
-                                   </CardContent>
-                                </Card>
-                             </motion.div>
-                          )
-                       })}
-                    </AnimatePresence>
-                 </div>
+        {/* Strategy Cards */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Active Strategies</h2>
+            {filtered.length > 0 && (
+              <span className="text-xs text-muted-foreground font-mono">{filtered.length} total</span>
+            )}
+          </div>
+
+          {isLoading ? (
+            <div className="flex justify-center py-24">
+              <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-28 border border-dashed border-border rounded-2xl bg-card/30">
+              <div className="inline-flex p-4 rounded-2xl bg-muted/50 mb-4">
+                <BookOpen className="w-10 h-10 text-muted-foreground/25" />
+              </div>
+              <h3 className="text-base font-bold text-foreground">
+                {searchQuery ? "No matching strategies" : "Your playbook is empty"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
+                {searchQuery
+                  ? "Try a different search term."
+                  : "Define your first trading system to start tracking performance data across setups."}
+              </p>
+              {!searchQuery && (
+                <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }} className="gap-2 shadow-sm">
+                  <Plus className="w-4 h-4" /> Create Strategy
+                </Button>
               )}
-           </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filtered.map((strat) => (
+                <StrategyCard
+                  key={strat.id}
+                  strat={strat}
+                  onEdit={() => { setEditingStrategy(strat); setIsBuilderOpen(true) }}
+                  onDelete={() => handleDelete(strat.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
 
-           {/* SECTION 3: VISUAL MAP */}
-           <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                 <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-indigo-500" />
-                    Ecosystem Map
-                 </h2>
-              </div>
-              {/* Enhanced Visual Map with Strategy Merging */}
-              <EnhancedVisualMap strategies={strategies} />
-              
-              {/* Original Visual Map */}
-              <div className="mt-8">
-                <VisualMap className="w-full shadow-lg border-border/60" />
-              </div>
-           </div>
+        {/* Ecosystem Maps */}
+        {strategies.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" /> Ecosystem Map
+              </h2>
+            </div>
+            <EnhancedVisualMap strategies={strategies} />
+            <div className="mt-6">
+              <VisualMap className="w-full shadow-sm border-border" />
+            </div>
+          </section>
+        )}
       </div>
 
       <StrategyEngine
-         open={isBuilderOpen} 
-         onOpenChange={setIsBuilderOpen} 
-         onSave={handleSave} 
-         initialData={editingStrategy} 
+        open={isBuilderOpen}
+        onOpenChange={setIsBuilderOpen}
+        onSave={handleSave}
+        initialData={editingStrategy}
       />
     </div>
   )

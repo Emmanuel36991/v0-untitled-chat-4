@@ -128,6 +128,14 @@ const CustomChartTooltip = ({ active, payload, label, prefix = "" }: any) => {
 // --- Date Picker with Presets ---
 function DatePickerWithRange({ className, date, setDate }: any) {
   const [open, setOpen] = useState(false)
+  const [tempDate, setTempDate] = useState<DateRange | undefined>(date)
+
+  // Sync temp state when popover opens
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) setTempDate(date)
+    setOpen(isOpen)
+  }
+
   const presets = [
     { label: "Last 7 Days", getValue: () => ({ from: subDays(new Date(), 7), to: new Date() }) },
     { label: "Last 30 Days", getValue: () => ({ from: subDays(new Date(), 30), to: new Date() }) },
@@ -138,12 +146,13 @@ function DatePickerWithRange({ className, date, setDate }: any) {
   ]
 
   const isPresetActive = (presetValue: DateRange) => {
-    if (!date?.from || !date?.to || !presetValue.from || !presetValue.to) return false
-    return isSameDay(date.from, presetValue.from) && isSameDay(date.to, presetValue.to)
+    const check = tempDate
+    if (!check?.from || !check?.to || !presetValue.from || !presetValue.to) return false
+    return isSameDay(check.from, presetValue.from) && isSameDay(check.to, presetValue.to)
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           id="date"
@@ -169,9 +178,10 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 border-border shadow-xl rounded-lg overflow-hidden" align="start">
+      <PopoverContent className="w-auto p-0 border-border shadow-xl rounded-xl overflow-hidden" align="start" sideOffset={6}>
         <div className="flex flex-col sm:flex-row bg-card">
-          <div className="flex flex-col gap-1 p-3 border-b sm:border-b-0 sm:border-r border-border sm:w-[160px]">
+          {/* Quick Select Sidebar */}
+          <div className="flex flex-col gap-0.5 p-3 border-b sm:border-b-0 sm:border-r border-border sm:w-[152px] bg-muted/30">
             <div className="px-2 py-1.5 mb-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quick Select</span>
             </div>
@@ -180,23 +190,67 @@ function DatePickerWithRange({ className, date, setDate }: any) {
               return (
                 <button
                   key={preset.label}
-                  onClick={() => { setDate(preset.getValue()); setOpen(false) }}
+                  onClick={() => {
+                    const val = preset.getValue()
+                    setTempDate(val)
+                    setDate(val)
+                    setOpen(false)
+                  }}
                   className={cn(
-                    "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-all font-medium",
-                    isActive ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
+                    "flex items-center justify-between text-left text-xs px-3 py-2 rounded-md transition-colors font-medium",
+                    isActive
+                      ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {preset.label}
-                  {isActive && <Check className="w-3 h-3" />}
+                  {isActive && <Check className="w-3 h-3 shrink-0" />}
                 </button>
               )
             })}
           </div>
-          <div className="p-4">
-            <CalendarPrimitive initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} className="rounded-md border-0" />
-            <div className="flex items-center justify-end pt-4 border-t border-border mt-2 gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setOpen(false)} className="h-7 text-xs">Cancel</Button>
-              <Button size="sm" className="h-7 text-xs font-medium" onClick={() => setOpen(false)}>Apply</Button>
+
+          {/* Calendar Area */}
+          <div className="flex flex-col">
+            <div className="p-4 pb-3">
+              <CalendarPrimitive
+                initialFocus
+                mode="range"
+                defaultMonth={tempDate?.from}
+                selected={tempDate}
+                onSelect={setTempDate}
+                numberOfMonths={2}
+                className="rounded-md border-0"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
+              <p className="text-[11px] text-muted-foreground">
+                {tempDate?.from && tempDate?.to
+                  ? `${format(tempDate.from, "MMM d, yyyy")} - ${format(tempDate.to, "MMM d, yyyy")}`
+                  : tempDate?.from
+                  ? `${format(tempDate.from, "MMM d, yyyy")} - Select end date`
+                  : "Select a date range"}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setTempDate(date); setOpen(false) }}
+                  className="h-7 text-xs px-3"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-7 text-xs font-medium px-4"
+                  disabled={!tempDate?.from || !tempDate?.to}
+                  onClick={() => { setDate(tempDate); setOpen(false) }}
+                >
+                  Apply
+                </Button>
+              </div>
             </div>
           </div>
         </div>

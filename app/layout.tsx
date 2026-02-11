@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   description: "Professional trading journal with advanced analytics.",
   generator: "v0.app",
   applicationName: "Concentrade",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   appleWebApp: {
     title: "Concentrade",
     capable: true,

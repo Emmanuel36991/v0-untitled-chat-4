@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import PsychologyInsightsPanel from "@/components/psychology/psychology-insights-panel"
 import type { Trade } from "@/types"
 
@@ -89,87 +90,105 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
           </div>
         </motion.div>
 
-        {/* Top HUD (Heads Up Display) */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          <HUDCard
-            label="Current Streak"
-            value={stats?.currentStreak || "0"}
-            subtext="DAYS"
-            icon={Zap}
-            trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
-            trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-500"}
-          />
-          <HUDCard
-            label="Focus Score"
-            value={stats?.focusScore ? stats.focusScore.toFixed(1) : "0.0"}
-            subtext="/ 10.0"
-            icon={Target}
-            trend={stats && stats.focusScore >= 7 ? "Excellent" : stats && stats.focusScore >= 5 ? "Good" : "Improve"}
-            trendColor={stats && stats.focusScore >= 7 ? "text-emerald-600 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-blue-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-500"}
-          />
-          <HUDCard
-            label="Risk Alert"
-            value={stats?.riskAlert || "None"}
-            subtext={stats?.riskAlert && stats.riskAlert !== "None" ? "DETECTED" : "CLEAR"}
-            icon={ShieldAlert}
-            trend={stats?.riskAlert && stats.riskAlert !== "None" ? "High Risk" : "Low Risk"}
-            trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}
-          />
-          <HUDCard
-            label="Total Entries"
-            value={stats?.totalJournalEntries || "0"}
-            subtext="LOGS"
-            icon={CalendarDays}
-            trend={stats && stats.totalJournalEntries >= 30 ? "+30 Logs" : stats && stats.totalJournalEntries > 0 ? `+${stats.totalJournalEntries}` : "No Data"}
-            trendColor="text-blue-600 dark:text-indigo-400"
-          />
-        </motion.div>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className="bg-slate-100 dark:bg-zinc-900/50 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
+              <TabsTrigger value="overview" className="px-4 py-2 text-xs font-medium rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm transition-all duration-300">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="px-4 py-2 text-xs font-medium rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm transition-all duration-300">
+                Insights
+              </TabsTrigger>
+            </TabsList>
 
-        <Separator className="bg-slate-200 dark:bg-zinc-800/50 my-2" />
+            {/* Optional: Add date filter or other controls here if needed in future */}
+          </div>
 
+          <TabsContent value="overview" className="space-y-6 mt-0">
+            {/* Top HUD (Heads Up Display) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            >
+              <HUDCard
+                label="Current Streak"
+                value={stats?.currentStreak || "0"}
+                subtext="DAYS"
+                icon={Zap}
+                trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
+                trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-500"}
+              />
+              <HUDCard
+                label="Focus Score"
+                value={stats?.focusScore ? stats.focusScore.toFixed(1) : "0.0"}
+                subtext="/ 10.0"
+                icon={Target}
+                trend={stats && stats.focusScore >= 7 ? "Excellent" : stats && stats.focusScore >= 5 ? "Good" : "Improve"}
+                trendColor={stats && stats.focusScore >= 7 ? "text-emerald-600 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-blue-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-500"}
+              />
+              <HUDCard
+                label="Risk Alert"
+                value={stats?.riskAlert || "None"}
+                subtext={stats?.riskAlert && stats.riskAlert !== "None" ? "DETECTED" : "CLEAR"}
+                icon={ShieldAlert}
+                trend={stats?.riskAlert && stats.riskAlert !== "None" ? "High Risk" : "Low Risk"}
+                trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}
+              />
+              <HUDCard
+                label="Total Entries"
+                value={stats?.totalJournalEntries || "0"}
+                subtext="LOGS"
+                icon={CalendarDays}
+                trend={stats && stats.totalJournalEntries >= 30 ? "+30 Logs" : stats && stats.totalJournalEntries > 0 ? `+${stats.totalJournalEntries}` : "No Data"}
+                trendColor="text-blue-600 dark:text-indigo-400"
+              />
+            </motion.div>
 
+            <Separator className="bg-slate-200 dark:bg-zinc-800/50 my-2" />
 
-        {/* Psychology Insights Panel */}
-        <div className="mb-6">
-          <PsychologyInsightsPanel trades={trades} />
-        </div>
+            {/* Main Dashboard Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full">
+              {/* Left Column: Input Interface (40%) */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="lg:col-span-5 w-full"
+              >
+                <div className="sticky top-6">
+                  <SimplePsychologyJournal />
+                </div>
+              </motion.div>
 
-        <Separator className="bg-slate-200 dark:bg-zinc-800/50 my-2" />
-
-        {/* Main Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full">
-
-          {/* Left Column: Input Interface (40%) */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-5 w-full"
-          >
-            <div className="sticky top-6">
-              <SimplePsychologyJournal />
+              {/* Right Column: Analytics & Visualization (60%) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="lg:col-span-7 w-full h-full"
+              >
+                <PsychologyAnalytics
+                  disciplineScore={stats?.disciplineScore || 0}
+                  dominantEmotion={stats?.dominantEmotion || "Unknown"}
+                  winRate={stats?.winRate || 0}
+                />
+              </motion.div>
             </div>
-          </motion.div>
+          </TabsContent>
 
-          {/* Right Column: Analytics & Visualization (60%) */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="lg:col-span-7 w-full h-full"
-          >
-            <PsychologyAnalytics
-              disciplineScore={stats?.disciplineScore || 0}
-              dominantEmotion={stats?.dominantEmotion || "Unknown"}
-              winRate={stats?.winRate || 0}
-            />
-          </motion.div>
-        </div>
+          <TabsContent value="insights" className="mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <PsychologyInsightsPanel trades={trades} />
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

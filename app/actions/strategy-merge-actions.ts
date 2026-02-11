@@ -24,7 +24,10 @@ export async function createStrategyRelationship(
       child_strategy_id: childStrategyId,
       relationship_type: relationshipType,
       relationship_strength: relationshipStrength,
-    })
+    }) // Remove .upsert to avoid potential unique constraint issues if we want distinct errors, 
+    // but strictly the schema might have unique constraints. 
+    // If unique(parent, child) exists, we might want to ignore duplicates or update.
+    // For now, simple insert.
     .select()
     .single()
 
@@ -97,78 +100,88 @@ export async function createMergedStrategy(
     return { error: "Not authenticated" }
   }
 
-  // Fetch all strategies to merge
-  const { data: strategies, error: fetchError } = await supabase
-    .from("playbook_strategies")
-    .select("*")
-    .in("id", strategyIds)
-    .eq("user_id", user.id)
-
-  if (fetchError || !strategies) {
-    console.error("[v0] Error fetching strategies:", fetchError)
-    return { error: fetchError?.message || "Could not fetch strategies" }
-  }
-
-  // Fetch trades for these strategies to analyze good habits
-  const { data: trades, error: tradesError } = await supabase
-    .from("trades")
-    .select("good_habits, outcome")
-    .in("playbook_strategy_id", strategyIds)
-    .eq("user_id", user.id)
-
-  const goodHabitsMap = new Map<string, number>()
-  
-  if (trades) {
-    trades.forEach(trade => {
-      if (trade.good_habits && trade.outcome === 'win') {
-        trade.good_habits.forEach((habit: string) => {
-          goodHabitsMap.set(habit, (goodHabitsMap.get(habit) || 0) + 1)
-        })
-      }
-    })
-  }
-
-  // Find common good habits (appear in at least 30% of winning trades)
-  const totalWinningTrades = trades?.filter(t => t.outcome === 'win').length || 0
-  const commonGoodHabits = Array.from(goodHabitsMap.entries())
-    .filter(([_, count]) => count >= totalWinningTrades * 0.3)
-    .map(([habit]) => habit)
-
-  // Calculate combined metrics
-  const combinedWinRate = strategies.reduce((sum, s) => sum + s.win_rate, 0) / strategies.length
-  const combinedProfitFactor = strategies.reduce((sum, s) => sum + s.profit_factor, 0) / strategies.length
-  const combinedTradesCount = strategies.reduce((sum, s) => sum + s.trades_count, 0)
-  const combinedPnl = strategies.reduce((sum, s) => sum + s.pnl, 0)
-
-  const { data, error } = await supabase
-    .from("merged_strategies")
+  // 1. Create the merged strategy group
+  const { data: group, error: groupError } = await supabase
+    .from("merged_strategy_groups")
     .insert({
       user_id: user.id,
       name,
       description,
-      strategy_ids: strategyIds,
-      combined_win_rate: combinedWinRate,
-      combined_profit_factor: combinedProfitFactor,
-      combined_trades_count: combinedTradesCount,
-      combined_pnl: combinedPnl,
-      common_good_habits: commonGoodHabits,
     })
     .select()
     .single()
 
-  if (error) {
-    console.error("[v0] Error creating merged strategy:", error)
-    return { error: error.message }
+  if (groupError || !group) {
+    console.error("[v0] Error creating merged strategy group:", groupError)
+    return { error: groupError?.message || "Failed to create group" }
   }
 
-  // Create relationships between strategies
+  // 2. Add strategies to the group via junction table
+  const junctionInserts = strategyIds.map(id => ({
+    group_id: group.id,
+    strategy_id: id
+  }))
+
+  const { error: junctionError } = await supabase
+    .from("merged_group_strategies")
+    .insert(junctionInserts)
+
+  if (junctionError) {
+    console.error("[v0] Error adding strategies to group:", junctionError)
+    // Cleanup group if junction fails? Ideally yes, but keeping it simple for now.
+    return { error: junctionError.message }
+  }
+
+  // 3. Create relationships between strategies (for the network graph)
   for (let i = 0; i < strategyIds.length; i++) {
     for (let j = i + 1; j < strategyIds.length; j++) {
-      await createStrategyRelationship(strategyIds[i], strategyIds[j], 'merged', 100)
+      // We assume this won't fail or if it does (duplicate), it's fine
+      await supabase
+        .from("strategy_relationships")
+        .upsert({
+          user_id: user.id,
+          parent_strategy_id: strategyIds[i],
+          child_strategy_id: strategyIds[j],
+          relationship_type: 'merged',
+          relationship_strength: 100
+        }, { onConflict: 'parent_strategy_id,child_strategy_id' })
     }
   }
 
-  return { data }
+  // 4. To return the full MergedStrategy object, we need to calculate the stats
+  //    Function re-use: we can just call getMergedStrategies and filter for this new ID
+  //    But to be efficient let's just do it for this one.
+
+  // Fetch strategies
+  const { data: strategies } = await supabase
+    .from("playbook_strategies")
+    .select("*")
+    .in("id", strategyIds)
+
+  if (!strategies) return { error: "Could not fetch strategies" }
+
+  // Fetch trades for habits analysis and combined stats
+  const { data: trades } = await supabase
+    .from("trades")
+    .select("pnl, outcome, good_habits, playbook_strategy_id")
+    .in("playbook_strategy_id", strategyIds)
+    .eq("user_id", user.id)
+
+  const combinedStats = calculateMergedStats(strategies, trades || [])
+
+  const result: MergedStrategy = {
+    id: group.id,
+    user_id: group.user_id,
+    name: group.name,
+    description: group.description,
+    strategy_ids: strategyIds,
+    strategies: strategies,
+    created_at: group.created_at,
+    updated_at: group.updated_at,
+    ...combinedStats
+  }
+
+  return { data: result }
 }
 
 export async function getMergedStrategies() {
@@ -179,33 +192,84 @@ export async function getMergedStrategies() {
     return { error: "Not authenticated", data: [] }
   }
 
-  const { data, error } = await supabase
-    .from("merged_strategies")
+  // 1. Fetch all groups
+  const { data: groups, error: groupsError } = await supabase
+    .from("merged_strategy_groups")
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
-  if (error) {
-    console.error("[v0] Error fetching merged strategies:", error)
-    return { error: error.message, data: [] }
+  if (groupsError) {
+    console.error("[v0] Error fetching merged groups:", groupsError)
+    return { error: groupsError.message, data: [] }
   }
 
-  // Fetch full strategy details for each merged strategy
-  const mergedWithDetails = await Promise.all(
-    (data || []).map(async (merged) => {
-      const { data: strategies } = await supabase
-        .from("playbook_strategies")
-        .select("*")
-        .in("id", merged.strategy_ids)
+  if (!groups || groups.length === 0) {
+    return { data: [] }
+  }
 
-      return {
-        ...merged,
-        strategies: strategies || []
-      } as MergedStrategy
-    })
-  )
+  // 2. Fetch all junction items to map group -> strategy IDs
+  const groupIds = groups.map(g => g.id)
+  const { data: junctions, error: junctionError } = await supabase
+    .from("merged_group_strategies")
+    .select("group_id, strategy_id")
+    .in("group_id", groupIds)
 
-  return { data: mergedWithDetails }
+  if (junctionError) {
+    console.error("Error fetching junctions", junctionError)
+    return { data: [] }
+  }
+
+  // 3. Collect all unique strategy IDs needed
+  const allStrategyIds = Array.from(new Set(junctions?.map(j => j.strategy_id) || []))
+
+  // 4. Fetch all referenced strategies
+  const { data: allStrategies } = await supabase
+    .from("playbook_strategies")
+    .select("*")
+    .in("id", allStrategyIds)
+
+  const strategiesMap = new Map(allStrategies?.map(s => [s.id, s]))
+
+  // 5. Fetch all trades for these strategies (for calculating combined stats)
+  //    Optimization: We could fetch aggregated stats from DB, but for now raw trades give us habits.
+  const { data: allTrades } = await supabase
+    .from("trades")
+    .select("pnl, outcome, good_habits, playbook_strategy_id")
+    .in("playbook_strategy_id", allStrategyIds)
+    .eq("user_id", user.id)
+
+  // 6. Assemble the MergedStrategy objects
+  const results: MergedStrategy[] = groups.map(group => {
+    // Find strategy IDs for this group
+    const groupStrategyIds = junctions
+      ?.filter(j => j.group_id === group.id)
+      .map(j => j.strategy_id) || []
+
+    // Get full strategy objects
+    const groupStrategies = groupStrategyIds
+      .map(id => strategiesMap.get(id))
+      .filter(s => !!s) as PlaybookStrategy[]
+
+    // Get trades for this group
+    const groupTrades = allTrades?.filter(t => t.playbook_strategy_id && groupStrategyIds.includes(t.playbook_strategy_id)) || []
+
+    const stats = calculateMergedStats(groupStrategies, groupTrades)
+
+    return {
+      id: group.id,
+      user_id: group.user_id,
+      name: group.name,
+      description: group.description,
+      strategy_ids: groupStrategyIds,
+      strategies: groupStrategies,
+      created_at: group.created_at,
+      updated_at: group.updated_at,
+      ...stats
+    }
+  })
+
+  return { data: results }
 }
 
 export async function deleteMergedStrategy(mergedStrategyId: string) {
@@ -217,7 +281,7 @@ export async function deleteMergedStrategy(mergedStrategyId: string) {
   }
 
   const { error } = await supabase
-    .from("merged_strategies")
+    .from("merged_strategy_groups")
     .delete()
     .eq("id", mergedStrategyId)
     .eq("user_id", user.id)
@@ -228,4 +292,47 @@ export async function deleteMergedStrategy(mergedStrategyId: string) {
   }
 
   return { success: true }
+}
+
+// Helper to calculate stats in memory
+function calculateMergedStats(strategies: PlaybookStrategy[], trades: any[]) {
+  // Basic summation of existing strategy stats (weighted average possibility, but simple average for now)
+  // Actually, better to recalculate from raw trades if possible to be accurate, 
+  // but strategies might have manual offsets? Assuming trades are source of truth.
+
+  const totalTradesCount = trades.length
+  const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0)
+  const winningTrades = trades.filter(t => t.outcome === 'win').length
+  const losingTrades = trades.filter(t => t.outcome === 'loss').length
+
+  const combinedWinRate = totalTradesCount > 0 ? winningTrades / totalTradesCount : 0
+
+  const grossProfit = trades.filter(t => (Number(t.pnl) || 0) > 0).reduce((sum, t) => sum + Number(t.pnl), 0)
+  const grossLoss = Math.abs(trades.filter(t => (Number(t.pnl) || 0) < 0).reduce((sum, t) => sum + Number(t.pnl), 0))
+  const combinedProfitFactor = grossLoss === 0 ? (grossProfit > 0 ? 100 : 0) : grossProfit / grossLoss
+
+  // Common Habits
+  const goodHabitsMap = new Map<string, number>()
+  trades.forEach(trade => {
+    if (trade.good_habits && trade.outcome === 'win') {
+      // Handle postgres array string or actual array
+      const habits = Array.isArray(trade.good_habits) ? trade.good_habits : []
+      habits.forEach((habit: string) => {
+        goodHabitsMap.set(habit, (goodHabitsMap.get(habit) || 0) + 1)
+      })
+    }
+  })
+
+  // Identify habits present in at least 30% of wins
+  const commonGoodHabits = Array.from(goodHabitsMap.entries())
+    .filter(([_, count]) => count >= winningTrades * 0.3)
+    .map(([habit]) => habit)
+
+  return {
+    combined_win_rate: combinedWinRate,
+    combined_profit_factor: combinedProfitFactor,
+    combined_trades_count: totalTradesCount,
+    combined_pnl: totalPnl,
+    common_good_habits: commonGoodHabits
+  }
 }

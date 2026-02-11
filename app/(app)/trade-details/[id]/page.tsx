@@ -79,9 +79,12 @@ const formatDate = (dateString?: string): string => {
 const formatTime = (dateString?: string): string => {
   if (!dateString) return "--:--"
   try {
-    return new Date(dateString).toLocaleTimeString("en-US", {
+    const d = new Date(dateString)
+    if (isNaN(d.getTime())) return "--:--"
+    return d.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: true,
     })
   } catch (e) {
     return "--:--"
@@ -257,16 +260,17 @@ export default function EnhancedTradeDetailsPage() {
   }
 
   const handleDelete = async () => {
-    if (!trade || !confirm("Are you sure you want to delete this trade?")) return
-    try {
-      setIsDeleting(true)
-      await deleteTrade(trade.id)
-      router.push("/trades")
-    } catch (err) {
-      alert("Failed to delete trade")
-    } finally {
-      setIsDeleting(false)
-    }
+  if (!trade || !confirm("Are you sure you want to delete this trade?")) return
+  try {
+  setIsDeleting(true)
+  await deleteTrade(trade.id)
+  router.refresh()
+  router.push("/trades")
+  } catch (err) {
+  alert("Failed to delete trade")
+  } finally {
+  setIsDeleting(false)
+  }
   }
 
   // --- Derived Calculations (Robust) ---

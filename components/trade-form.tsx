@@ -96,6 +96,24 @@ interface ExtendedTradeInput extends NewTradeInput {
   exit_time?: string;
 }
 
+// Convert a UTC/ISO timestamp to a local datetime-local string (YYYY-MM-DDTHH:mm)
+const toLocalDatetimeString = (isoString: string | null | undefined): string => {
+  if (!isoString) return ""
+  try {
+    const d = new Date(isoString)
+    if (isNaN(d.getTime())) return ""
+    // Build local YYYY-MM-DDTHH:mm from the Date object (which auto-converts to local)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, "0")
+    const day = String(d.getDate()).padStart(2, "0")
+    const hours = String(d.getHours()).padStart(2, "0")
+    const minutes = String(d.getMinutes()).padStart(2, "0")
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  } catch {
+    return ""
+  }
+}
+
 const getInitialFormState = (initialTrade?: Trade): ExtendedTradeInput => {
   const baseState: ExtendedTradeInput = {
     date: new Date().toISOString().split("T")[0],
@@ -130,6 +148,9 @@ const getInitialFormState = (initialTrade?: Trade): ExtendedTradeInput => {
       ...initialTrade as unknown as ExtendedTradeInput,
       date: typeof initialTrade.date === "string" ? initialTrade.date : new Date(initialTrade.date).toISOString().split("T")[0],
       account_id: initialTrade.account_id || "",
+      // Convert stored UTC timestamps back to local datetime-local format for the input fields
+      entry_time: toLocalDatetimeString(initialTrade.trade_start_time),
+      exit_time: toLocalDatetimeString(initialTrade.trade_end_time),
     }
   }
   return baseState

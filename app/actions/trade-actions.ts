@@ -196,6 +196,7 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
     revalidatePath("/trades")
     revalidatePath("/dashboard")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
 
     return { 
       success: true, 
@@ -234,6 +235,8 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
@@ -258,6 +261,8 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
@@ -279,6 +284,8 @@ export async function deleteAllTrades(): Promise<SubmitTradeResult> {
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     return { success: true, message: "All trades deleted successfully!" }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -305,6 +312,8 @@ export async function addMultipleTrades(trades: NewTradeInput[]) {
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     
     return {
       successCount: data?.length || 0,

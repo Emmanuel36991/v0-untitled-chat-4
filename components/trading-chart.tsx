@@ -232,19 +232,28 @@ function TradingChart({
     const smaData = calculateSMA(ohlcData, 20)
     lineSeriesRef.current.setData(smaData)
 
-    // Update Markers
+    // Update Markers - use trade_start_time (ISO timestamp) for correct local-time positioning
     if (propTrades && propTrades.length > 0) {
       const markers = propTrades
         .filter(t => t.instrument === instrument)
-        .map(t => ({
-           time: Math.floor(new Date(t.entry_time || t.date).getTime() / 1000),
-           position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
-           color: t.direction === 'long' ? '#10b981' : '#ef4444',
-           shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
-           text: t.direction === 'long' ? 'BUY' : 'SELL',
-           size: 2
-        }))
-        .sort((a,b) => a.time - b.time)
+        .map(t => {
+           // Prefer trade_start_time (full timestamp), fallback to date
+           const timeSource = t.trade_start_time || t.date
+           const timestamp = new Date(timeSource)
+           // Lightweight Charts expects UTC seconds, but we want local time on the axis.
+           // Apply timezone offset so the marker aligns with the local time display.
+           const localOffsetSeconds = timestamp.getTimezoneOffset() * 60
+           const utcSeconds = Math.floor(timestamp.getTime() / 1000)
+           return {
+             time: utcSeconds - localOffsetSeconds,
+             position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
+             color: t.direction === 'long' ? '#10b981' : '#ef4444',
+             shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
+             text: t.direction === 'long' ? 'BUY' : 'SELL',
+             size: 2,
+           }
+        })
+        .sort((a: any, b: any) => a.time - b.time)
       
       candleSeriesRef.current.setMarkers(markers)
     }

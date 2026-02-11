@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import {
     TrendingUp, TrendingDown, Target, Brain, Shield,
     Activity, AlertTriangle, CheckCircle2, Zap,
-    BarChart3, RefreshCw, ArrowRight, Sparkles, Microscope
+    BarChart3, RefreshCw, ArrowRight, Microscope
 } from 'lucide-react'
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
 import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
@@ -75,7 +75,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                 </div>
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">No Data to Analyze</h1>
                 <p className="text-slate-500 max-w-md mb-8">
-                    Log at least a few trades to unlock the AI Insights engine.
+                    Log at least a few trades to unlock the Insights engine.
                 </p>
                 <Button asChild>
                     <a href="/add-trade">Log a Trade</a>
@@ -96,7 +96,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
             </div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Intelligence Coming Soon</h1>
             <p className="text-slate-500 max-w-md mb-8">
-                Advanced AI-powered insights and trading intelligence features are currently in development. Check back soon for deep analysis of your trading patterns, psychology, and risk profile.
+                Advanced insights and trading intelligence features are currently in development. Check back soon for deep analysis of your trading patterns, psychology, and risk profile.
             </p>
             <Button asChild variant="outline">
                 <a href="/analytics">Back to Analytics</a>

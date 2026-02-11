@@ -20,7 +20,7 @@ import {
   Tag,
   TrendingUp,
   AlertTriangle,
-  Sparkles,
+  Lightbulb,
   ChevronDown,
   ChevronUp,
   Brain,
@@ -470,7 +470,7 @@ export default function SimplePsychologyJournal() {
 
                       <div className="space-y-2">
                         <Label className="text-xs font-mono text-zinc-500 uppercase flex items-center gap-2">
-                          <Sparkles className="w-3 h-3 text-yellow-500" /> Key Lesson
+                          <Lightbulb className="w-3 h-3 text-yellow-500" /> Key Lesson
                         </Label>
                         <Textarea 
                           value={lessonsLearned}
@@ -620,7 +620,7 @@ export default function SimplePsychologyJournal() {
             {viewingEntry?.lessons_learned && (
               <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
                 <Label className="text-xs text-amber-500 uppercase font-bold mb-2 block flex items-center gap-2">
-                  <Sparkles className="w-3 h-3" /> Key Lesson
+                  <Lightbulb className="w-3 h-3" /> Key Lesson
                 </Label>
                 <p className="text-sm text-zinc-300 italic">"{viewingEntry.lessons_learned}"</p>
               </div>

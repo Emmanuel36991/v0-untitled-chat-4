@@ -7,7 +7,7 @@ import {
   Loader2, TrendingUp, Trophy, Layers, BookOpen,
   Clock, CandlestickChart, Activity, Zap, Database,
   GitBranch, Check, ArrowRight, LayoutGrid, BarChart3,
-  ChevronRight, Target, Sparkles
+  ChevronRight, Target, Layers as LayersIcon
 } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer } from "recharts"
 
@@ -616,7 +616,7 @@ export default function PlaybookPage() {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" /> Ecosystem Map
+                <LayersIcon className="w-4 h-4 text-primary" /> Ecosystem Map
               </h2>
             </div>
             <EnhancedVisualMap strategies={strategies} />

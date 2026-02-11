@@ -75,7 +75,7 @@ export default function DemoAnalytics() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Advanced Analytics</h1>
-        <p className="text-gray-300">AI-powered insights to optimize your trading performance</p>
+        <p className="text-gray-300">Data-driven insights to optimize your trading performance</p>
       </div>
 
       {/* Key Insights */}

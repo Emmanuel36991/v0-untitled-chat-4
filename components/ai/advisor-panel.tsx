@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Sparkles, Copy, Check, RefreshCw } from "lucide-react"
+import { X, Brain, Copy, Check, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -100,7 +100,7 @@ export function AdvisorPanel({ isOpen, onClose, title, type, data, context }: Ad
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-                <Sparkles className="w-4 h-4 text-white" />
+                <Brain className="w-4 h-4 text-white" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">{title}</h2>

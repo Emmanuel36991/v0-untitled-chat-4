@@ -25,7 +25,7 @@ import {
   MinusCircle,
   Info,
   BookOpen,
-  Sparkles,
+  Lightbulb,
   Loader2,
   ArrowUpRight,
   ArrowDownRight,
@@ -523,7 +523,7 @@ export default function TradeDetailsPage() {
                   size="sm"
                   className="hidden sm:flex bg-primary text-primary-foreground gap-1.5 h-8 text-xs font-semibold"
                 >
-                  {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Lightbulb className="w-3.5 h-3.5" />}
                   Analyze
                 </Button>
                 <Button
@@ -598,7 +598,7 @@ export default function TradeDetailsPage() {
                 <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-5 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-xl" />
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-4 h-4 text-primary" />
+                    <Lightbulb className="w-4 h-4 text-primary" />
                     <span className="text-sm font-bold text-foreground">AI Trade Analysis</span>
                   </div>
                   {aiLoading && !aiAnalysis ? (

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { LayoutDashboard, TrendingUp, Brain, LineChart, ArrowRight, Sparkles, CheckCircle } from "lucide-react"
+import { LayoutDashboard, TrendingUp, Brain, LineChart, ArrowRight, CheckCircle } from "lucide-react"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 
 export default function DemoHomePage() {
@@ -30,7 +30,7 @@ export default function DemoHomePage() {
           {/* Hero Badge */}
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <CheckCircle className="h-4 w-4 text-primary" />
               <span className="text-sm font-semibold text-primary">Interactive Demo Ready</span>
             </div>
           </div>

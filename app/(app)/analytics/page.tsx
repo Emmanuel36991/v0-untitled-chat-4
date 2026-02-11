@@ -44,7 +44,7 @@ import {
   Calendar as CalendarIcon,
   Filter,
   Brain,
-  Sparkles,
+  Microscope,
   Check,
   Download,
   TrendingUp,
@@ -475,7 +475,7 @@ export default function AnalyticsPage() {
                   Overview
                 </TabsTrigger>
                 <TabsTrigger value="intelligence" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm font-semibold">
-                  <Sparkles className="w-3 h-3 mr-1.5" /> Intelligence
+                  <Microscope className="w-3 h-3 mr-1.5" /> Insights
                 </TabsTrigger>
               </TabsList>
             </Tabs>

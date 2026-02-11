@@ -18,7 +18,7 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  Sparkles,
+  CircleDot,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -294,7 +294,7 @@ export function AdvancedTradeFilters({ setFilters, initialFilters }: AdvancedTra
               onChange={(value) => handleChange("outcome", value === "any" ? "" : value)}
               options={outcomeOptions}
               placeholder="Select outcome"
-              icon={Sparkles}
+              icon={CircleDot}
             />
           </div>
 

@@ -18,7 +18,7 @@ import {
   Zap,
   ArrowUpRight,
   ArrowDownRight,
-  Sparkles,
+  Award,
   Heart,
   CheckCircle,
   Radar as RadarIcon,
@@ -324,8 +324,8 @@ export default function PsychologyAnalytics({
     if (avgMood >= 7) {
       insights.push({
         type: "positive",
-        icon: Sparkles,
-        title: "Strong Mental State",
+      icon: Award,
+      title: "Strong Mental State",
         description: "Your overall mood is positive. This is a great foundation for disciplined trading decisions.",
       })
     } else if (avgMood <= 4) {
@@ -363,7 +363,7 @@ export default function PsychologyAnalytics({
             </div>
             <h3 className="text-xl font-semibold text-slate-900 dark:text-zinc-200">No Analytics Available</h3>
             <p className="text-slate-600 dark:text-zinc-500 leading-relaxed">
-              Start creating journal entries to see comprehensive analytics and AI-powered insights about your trading
+              Start creating journal entries to see comprehensive analytics and data-driven insights about your trading
               psychology.
             </p>
           </div>
@@ -382,7 +382,7 @@ export default function PsychologyAnalytics({
             <Activity className="h-5 w-5 text-indigo-500" />
             Psychology Analytics
           </h2>
-          <p className="text-slate-600 dark:text-zinc-500 text-sm mt-1">AI-powered insights into your trading mindset</p>
+          <p className="text-slate-600 dark:text-zinc-500 text-sm mt-1">Data-driven insights into your trading mindset</p>
         </div>
         <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
           {(["7d", "30d", "90d"] as const).map((range) => (
@@ -667,10 +667,10 @@ export default function PsychologyAnalytics({
       <Card className="bg-gradient-to-br from-blue-50 via-white to-violet-50 dark:from-indigo-950/20 dark:via-zinc-900/50 dark:to-purple-950/20 border-blue-200 dark:border-indigo-500/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-indigo-100">
-            <Sparkles className="h-5 w-5 text-violet-600 dark:text-indigo-400" />
-            AI Advisor Protocol
+              <Brain className="h-5 w-5 text-violet-600 dark:text-indigo-400" />
+              Trading Advisor Insights
           </CardTitle>
-          <CardDescription className="text-slate-600 dark:text-indigo-400/50">Personalized trading psychology recommendations</CardDescription>
+          <CardDescription className="text-slate-600 dark:text-indigo-400/50">Personalized trading psychology insights</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

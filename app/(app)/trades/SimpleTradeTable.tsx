@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, Sparkles, Zap } from 'lucide-react'
+import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, PlusCircle, Zap } from 'lucide-react'
 import Link from "next/link"
 import { useState } from "react"
 import {
@@ -160,7 +160,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
           <div className="relative inline-block mb-6">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur-2xl opacity-30 animate-pulse" />
             <div className="relative w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl">
-              <Sparkles className="h-12 w-12 text-white animate-pulse" />
+              <Database className="h-12 w-12 text-white" />
             </div>
           </div>
           <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent mb-2">
@@ -172,7 +172,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
             className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
           >
             <Link href="/add-trade">
-              <Sparkles className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-4 w-4 mr-2" />
               Add Your First Trade
             </Link>
           </Button>

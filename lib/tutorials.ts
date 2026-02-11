@@ -19,7 +19,7 @@ Logging your first trade is the first step toward data-driven mastery. Here is h
 ## Step 1: Click "Add Trade"
 Navigate to the Dashboard or Journal view and look for the primary action button.
 
-![Screenshot of Add Trade Button](https://placehold.co/600x400?text=Add+Trade+Button)
+![Add Trade Button](/guides/first-trade.jpg)
 
 ## Step 2: Enter Trade Details
 Fill in the core financial data:
@@ -34,7 +34,7 @@ Before you hit save, scroll down to the "Psychology" section. This is what separ
 1.  **Select Your State**: Were you Focused? Anxious? Selecting this accurately helps the engine find patterns later.
 2.  **Tag Behaviors**: Did you follow your plan? Did you revenge trade? Be honest. 
 
-![Screenshot of Psychology Section](https://placehold.co/600x400?text=Psychology+Section)
+![Psychology Section](/guides/first-trade.jpg)
 
 ## Step 4: Save & Review
 Click "Save Trade". Your trade is now part of your permanent record, contributing to your compliance score and psychological profile.
@@ -64,7 +64,7 @@ Don't want to log everything manually? You can import your history in seconds.
 3.  Select your file source (e.g., "Tradovate").
 4.  Upload your CSV file.
 
-![Screenshot of Import Modal](https://placehold.co/600x400?text=Import+Modal)
+![Import Modal](/guides/importing.jpg)
 
 ## Troubleshooting Common Errors
 *   **"Invalid Date Format"**: Ensure your CSV uses standard date formatting.
@@ -96,7 +96,7 @@ Your score starts at 100 each week. It drops when you break your own rules.
 *   **Trading During "No-Trade" Windows**: Medium penalty.
 *   **Revenge Trading Tags**: If you tag a trade as "Revenge", your score takes a hit.
 
-![Screenshot of Compliance Score Dashboard](https://placehold.co/600x400?text=Compliance+Score)
+![Compliance Score Dashboard](/guides/compliance.jpg)
 
 ## Why It Matters
 A high Compliance Score with a flat P&L is better than a low Compliance Score with high P&L. The former is sustainable; the latter is gambling.
@@ -124,7 +124,7 @@ Look for clusters of nodes.
 *   **The "Tilt" Cluster**: Do you see "Loss" connected tightly to "Anger" and "Increased Size"? That is a visual representation of tilt.
 *   **The "Zone" Cluster**: Notice "Win" connected to "Calm" and "Plan Followed"? This is your ideal state.
 
-![Screenshot of Visual Map](https://placehold.co/600x400?text=Visual+Map+Clusters)
+![Visual Map Clusters](/guides/visual-map.jpg)
 
 ## Actionable Insights
 If you see a strong link between a specific Time of Day and Losses, the map is telling you to stop trading during that hour.
@@ -153,7 +153,7 @@ Navigate to **Settings > Rules Engine**.
 2.  **Risk-Based**: "Max Daily Loss = $500". If you hit this, the dashboard will alert you to stop.
 3.  **Size-Based**: "Max Position Size = 5 contracts".
 
-![Screenshot of Rule Settings](https://placehold.co/600x400?text=Rule+Settings)
+![Rule Settings](/guides/rules.jpg)
 
 ## Active Monitoring
 Once set, these rules are active. If you log a trade that violates them, it will automatically be flagged as a "Rule Violation" and impact your Compliance Score.
@@ -187,7 +187,7 @@ Type out your simple goal for the day.
 ### 3. Check Potential
 Review the daily expected range and key levels before looking at a chart.
 
-![Screenshot of Calibration Mode](https://placehold.co/600x400?text=Calibration+Screen)
+![Calibration Screen](/guides/calibration.jpg)
 
 Completing this routine adds a "Calibrated" tag to your session, which statistically correlates with higher win rates.
 `

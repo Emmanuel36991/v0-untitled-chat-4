@@ -82,20 +82,26 @@ interface JournalEntry {
   lessons_learned: string
 }
 
-export default function SimplePsychologyJournal() {
+export default function SimplePsychologyJournal({
+  onEntrySaved,
+  initialEntries = []
+}: {
+  onEntrySaved?: () => void,
+  initialEntries?: JournalEntry[]
+}) {
   const { toast } = useToast()
-  const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [loading, setLoading] = useState(true)
+  const [entries, setEntries] = useState<JournalEntry[]>(initialEntries)
+  const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [viewingEntry, setViewingEntry] = useState<JournalEntry | null>(null)
-  
+
   // --- Form State ---
   const [activeTab, setActiveTab] = useState("pre")
   const [mood, setMood] = useState("")
   // New States for Sliders
   const [confidence, setConfidence] = useState([5])
   const [focus, setFocus] = useState([5])
-  
+
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([])
   const [selectedPatterns, setSelectedPatterns] = useState<string[]>([])
   const [customTags, setCustomTags] = useState<string[]>([])
@@ -110,33 +116,10 @@ export default function SimplePsychologyJournal() {
   )
 
   useEffect(() => {
-    loadEntries()
-  }, [])
+    setEntries(initialEntries)
+  }, [initialEntries])
 
-  async function loadEntries() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        setLoading(false)
-        return
-      }
-
-      // Fetch with trade information if linked
-      const { data, error } = await supabase
-        .from("psychology_journal_entries")
-        .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl, outcome)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-      setEntries(data || [])
-    } catch (error) {
-      console.error("Error loading entries:", error)
-      toast({ title: "Error", description: "Failed to load journal.", variant: "destructive" })
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Removed internal loadEntries in favor of props from server (via parent)
 
   async function saveEntry() {
     try {
@@ -148,8 +131,8 @@ export default function SimplePsychologyJournal() {
 
       // Combine all data including new sliders into the emotions array for storage compatibility
       const emotionsArray = [
-        ...selectedTriggers, 
-        ...selectedPatterns, 
+        ...selectedTriggers,
+        ...selectedPatterns,
         ...customTags,
         `Confidence: ${confidence[0]}`,
         `Focus: ${focus[0]}`
@@ -169,8 +152,8 @@ export default function SimplePsychologyJournal() {
 
       if (error) throw error
 
-      toast({ 
-        title: "Log Recorded", 
+      toast({
+        title: "Log Recorded",
         description: "Your mental state has been successfully tracked.",
         className: "bg-emerald-950 border-emerald-900 text-emerald-100"
       })
@@ -189,7 +172,9 @@ export default function SimplePsychologyJournal() {
       setShowForm(false)
       setActiveTab("pre")
 
-      loadEntries()
+      if (onEntrySaved) {
+        onEntrySaved()
+      }
     } catch (error) {
       console.error("Error saving entry:", error)
       toast({ title: "Error", description: "Failed to save entry.", variant: "destructive" })
@@ -205,7 +190,9 @@ export default function SimplePsychologyJournal() {
       if (error) throw error
 
       toast({ title: "Deleted", description: "Journal entry removed." })
-      loadEntries()
+      if (onEntrySaved) {
+        onEntrySaved()
+      }
     } catch (error) {
       console.error("Error deleting:", error)
       toast({ title: "Error", description: "Could not delete entry.", variant: "destructive" })
@@ -237,7 +224,7 @@ export default function SimplePsychologyJournal() {
     if (trigger) return trigger.label
     const pattern = BEHAVIORAL_PATTERNS.find(p => p.id === id)
     if (pattern) return pattern.label
-    return id 
+    return id
   }
 
   if (loading) {
@@ -250,7 +237,7 @@ export default function SimplePsychologyJournal() {
 
   return (
     <div className="space-y-6 h-full flex flex-col">
-      
+
       {/* 1. Header / Toggle */}
       {!showForm ? (
         <div className="flex items-center justify-between">
@@ -263,8 +250,8 @@ export default function SimplePsychologyJournal() {
               {entries.length} RECORDS FOUND
             </p>
           </div>
-          <Button 
-            onClick={() => setShowForm(true)} 
+          <Button
+            onClick={() => setShowForm(true)}
             className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/20 border border-indigo-400/20"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -272,8 +259,8 @@ export default function SimplePsychologyJournal() {
           </Button>
         </div>
       ) : (
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} 
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 backdrop-blur-sm"
         >
@@ -316,10 +303,10 @@ export default function SimplePsychologyJournal() {
 
                 <div className="flex-1 overflow-y-auto">
                   <CardContent className="p-6 space-y-6">
-                    
+
                     {/* PRE-SESSION TAB */}
                     <TabsContent value="pre" className="mt-0 space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
-                      
+
                       {/* Mood Selector */}
                       <div className="space-y-3">
                         <Label className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Current State</Label>
@@ -330,8 +317,8 @@ export default function SimplePsychologyJournal() {
                               onClick={() => setMood(m.id)}
                               className={`
                                 flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all duration-200
-                                ${mood === m.id 
-                                  ? m.color + " shadow-[0_0_15px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/10 scale-[1.02]" 
+                                ${mood === m.id
+                                  ? m.color + " shadow-[0_0_15px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-white/10 scale-[1.02]"
                                   : "bg-zinc-950/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:bg-zinc-900"}
                               `}
                             >
@@ -351,11 +338,11 @@ export default function SimplePsychologyJournal() {
                             </Label>
                             <span className="text-sm font-mono text-indigo-400 font-bold">{confidence[0]}/10</span>
                           </div>
-                          <Slider 
-                            value={confidence} 
-                            onValueChange={setConfidence} 
-                            max={10} step={1} 
-                            className="py-2 [&>.relative>.absolute]:bg-indigo-500" 
+                          <Slider
+                            value={confidence}
+                            onValueChange={setConfidence}
+                            max={10} step={1}
+                            className="py-2 [&>.relative>.absolute]:bg-indigo-500"
                           />
                         </div>
                         <div className="space-y-4">
@@ -365,11 +352,11 @@ export default function SimplePsychologyJournal() {
                             </Label>
                             <span className="text-sm font-mono text-emerald-400 font-bold">{focus[0]}/10</span>
                           </div>
-                          <Slider 
-                            value={focus} 
-                            onValueChange={setFocus} 
-                            max={10} step={1} 
-                            className="py-2 [&>.relative>.absolute]:bg-emerald-500" 
+                          <Slider
+                            value={focus}
+                            onValueChange={setFocus}
+                            max={10} step={1}
+                            className="py-2 [&>.relative>.absolute]:bg-emerald-500"
                           />
                         </div>
                       </div>
@@ -377,7 +364,7 @@ export default function SimplePsychologyJournal() {
                       {/* Pre-Trade Notes */}
                       <div className="space-y-2">
                         <Label className="text-xs font-mono text-zinc-500 uppercase">Mindset & Trade Plan</Label>
-                        <Textarea 
+                        <Textarea
                           value={preTradeThoughts}
                           onChange={(e) => setPreTradeThoughts(e.target.value)}
                           placeholder="What is your plan? Are you forcing a trade?"
@@ -388,7 +375,7 @@ export default function SimplePsychologyJournal() {
 
                     {/* POST-SESSION TAB */}
                     <TabsContent value="post" className="mt-0 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-                      
+
                       {/* Triggers & Patterns */}
                       <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
@@ -402,8 +389,8 @@ export default function SimplePsychologyJournal() {
                                 onClick={() => toggleTrigger(t.id)}
                                 className={`
                                   text-[10px] uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all
-                                  ${selectedTriggers.includes(t.id) 
-                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.1)]" 
+                                  ${selectedTriggers.includes(t.id)
+                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.1)]"
                                     : "bg-zinc-900 border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}
                                 `}
                               >
@@ -424,8 +411,8 @@ export default function SimplePsychologyJournal() {
                                 onClick={() => togglePattern(p.id)}
                                 className={`
                                   text-[10px] uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all
-                                  ${selectedPatterns.includes(p.id) 
-                                    ? "bg-rose-500/10 text-rose-400 border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.1)]" 
+                                  ${selectedPatterns.includes(p.id)
+                                    ? "bg-rose-500/10 text-rose-400 border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.1)]"
                                     : "bg-zinc-900 border-zinc-800 text-zinc-600 hover:border-zinc-700 hover:text-zinc-400"}
                                 `}
                               >
@@ -440,7 +427,7 @@ export default function SimplePsychologyJournal() {
                       <div className="space-y-2">
                         <Label className="text-xs font-mono text-zinc-500 uppercase">Custom Tags</Label>
                         <div className="flex gap-2">
-                          <Input 
+                          <Input
                             value={customTagInput}
                             onChange={(e) => setCustomTagInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && addCustomTag()}
@@ -460,7 +447,7 @@ export default function SimplePsychologyJournal() {
 
                       <div className="space-y-2">
                         <Label className="text-xs font-mono text-zinc-500 uppercase">Post-Trade Review</Label>
-                        <Textarea 
+                        <Textarea
                           value={postTradeThoughts}
                           onChange={(e) => setPostTradeThoughts(e.target.value)}
                           placeholder="How did you handle your emotions during the trade?"
@@ -472,7 +459,7 @@ export default function SimplePsychologyJournal() {
                         <Label className="text-xs font-mono text-zinc-500 uppercase flex items-center gap-2">
                           <Lightbulb className="w-3 h-3 text-yellow-500" /> Key Lesson
                         </Label>
-                        <Textarea 
+                        <Textarea
                           value={lessonsLearned}
                           onChange={(e) => setLessonsLearned(e.target.value)}
                           placeholder="One thing to improve tomorrow..."
@@ -484,9 +471,9 @@ export default function SimplePsychologyJournal() {
                 </div>
 
                 <div className="p-4 border-t border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
-                  <Button 
-                    onClick={saveEntry} 
-                    disabled={!mood} 
+                  <Button
+                    onClick={saveEntry}
+                    disabled={!mood}
                     className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium shadow-lg"
                   >
                     <Save className="w-4 h-4 mr-2" />
@@ -514,8 +501,8 @@ export default function SimplePsychologyJournal() {
                 {entries.map((entry) => {
                   const moodData = MOODS.find((m) => m.id === entry.mood)
                   return (
-                    <Card 
-                      key={entry.id} 
+                    <Card
+                      key={entry.id}
                       className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800 hover:border-blue-300 dark:hover:border-zinc-700 transition-all group overflow-hidden shadow-sm"
                     >
                       <div className={`h-1 w-full bg-gradient-to-r ${moodData?.color.split(' ')[0].replace('bg-', 'from-').replace('/20', '')} to-transparent opacity-50`} />
@@ -554,7 +541,7 @@ export default function SimplePsychologyJournal() {
                             </Button>
                           </div>
                         </div>
-                        
+
                         {/* Tags Preview */}
                         {entry.emotions && entry.emotions.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-3">
@@ -590,7 +577,7 @@ export default function SimplePsychologyJournal() {
               {viewingEntry && new Date(viewingEntry.created_at).toLocaleString()}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 mt-4">
             {viewingEntry?.emotions && viewingEntry.emotions.length > 0 && (
               <div className="flex flex-wrap gap-2">

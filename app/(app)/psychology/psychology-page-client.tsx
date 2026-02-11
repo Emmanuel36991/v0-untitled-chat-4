@@ -33,6 +33,7 @@ interface PsychologyStats {
 interface Props {
   stats: PsychologyStats | null
   trades: Trade[]
+  journalEntries: any[]
 }
 
 const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-emerald-600 dark:text-emerald-400" }: any) => (
@@ -57,7 +58,16 @@ const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-
   </Card>
 )
 
-export default function PsychologyPageClient({ stats, trades }: Props) {
+// Import useRouter
+import { useRouter } from "next/navigation"
+
+export default function PsychologyPageClient({ stats, trades, journalEntries }: Props) {
+  const router = useRouter()
+
+  function handleEntrySaved() {
+    router.refresh()
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
 
@@ -159,7 +169,7 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
                 className="lg:col-span-5 w-full"
               >
                 <div className="sticky top-6">
-                  <SimplePsychologyJournal />
+                  <SimplePsychologyJournal onEntrySaved={handleEntrySaved} initialEntries={journalEntries} />
                 </div>
               </motion.div>
 
@@ -174,6 +184,7 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
                   disciplineScore={stats?.disciplineScore || 0}
                   dominantEmotion={stats?.dominantEmotion || "Unknown"}
                   winRate={stats?.winRate || 0}
+                  entries={journalEntries}
                 />
               </motion.div>
             </div>

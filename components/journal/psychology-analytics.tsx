@@ -87,15 +87,15 @@ interface PsychologyAnalyticsProps {
   disciplineScore?: number
   dominantEmotion?: string
   winRate?: number
+  entries?: JournalEntry[]
 }
 
-export default function PsychologyAnalytics({ 
-  disciplineScore = 0, 
-  dominantEmotion = "Unknown", 
-  winRate = 0 
+export default function PsychologyAnalytics({
+  disciplineScore = 0,
+  dominantEmotion = "Unknown",
+  winRate = 0,
+  entries = []
 }: PsychologyAnalyticsProps) {
-  const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d")
   const [isDark, setIsDark] = useState(false)
 
@@ -112,53 +112,20 @@ export default function PsychologyAnalytics({
 
   const CHART_THEME = isDark ? CHART_THEME_DARK : CHART_THEME_LIGHT
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  useEffect(() => {
-    loadEntries()
-  }, [timeRange])
-
-  async function loadEntries() {
-    setLoading(true)
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        setLoading(false)
-        return
-      }
-
-      const daysAgo = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() - daysAgo)
-
-      // Fetch journal entries with trade information if linked
-      const { data, error } = await supabase
-        .from("psychology_journal_entries")
-        .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl)")
-        .eq("user_id", user.id)
-        .gte("created_at", startDate.toISOString())
-        .order("created_at", { ascending: true })
-
-      if (error) throw error
-      setEntries(data || [])
-    } catch (error) {
-      console.error("Error loading entries:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Filter entries based on timeRange
+  const filteredEntries = useMemo(() => {
+    const daysAgo = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - daysAgo)
+    return entries.filter(e => new Date(e.created_at) >= startDate).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+  }, [entries, timeRange])
 
   // Calculate analytics - Preserving ALL original logic + adding Radar logic
   const analytics = useMemo(() => {
-    if (entries.length === 0) return null
+    if (filteredEntries.length === 0) return null
 
     // 1. Mood Trend Data
-    const moodTrend = entries.map((entry) => {
+    const moodTrend = filteredEntries.map((entry) => {
       const moodData = MOODS.find((m) => m.id === entry.mood)
       return {
         date: new Date(entry.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
@@ -170,7 +137,7 @@ export default function PsychologyAnalytics({
 
     // 2. Mood Distribution
     const moodCounts: Record<string, number> = {}
-    entries.forEach((entry) => {
+    filteredEntries.forEach((entry) => {
       moodCounts[entry.mood] = (moodCounts[entry.mood] || 0) + 1
     })
     const moodDistribution = Object.entries(moodCounts).map(([mood, count]) => {
@@ -189,21 +156,21 @@ export default function PsychologyAnalytics({
     let totalFocus = 0
     let ratedEntriesCount = 0
 
-    entries.forEach((entry) => {
+    filteredEntries.forEach((entry) => {
       if (entry.emotions && Array.isArray(entry.emotions)) {
         entry.emotions.forEach((emotion) => {
           // Logic to handle new "Label: Value" format from new Input component
           if (emotion.startsWith("Confidence:")) {
-             totalConfidence += parseInt(emotion.split(":")[1]) || 5
+            totalConfidence += parseInt(emotion.split(":")[1]) || 5
           } else if (emotion.startsWith("Focus:")) {
-             totalFocus += parseInt(emotion.split(":")[1]) || 5
+            totalFocus += parseInt(emotion.split(":")[1]) || 5
           } else {
-             // Standard trigger counting
-             triggerCounts[emotion] = (triggerCounts[emotion] || 0) + 1
+            // Standard trigger counting
+            triggerCounts[emotion] = (triggerCounts[emotion] || 0) + 1
           }
         })
         if (entry.emotions.some(e => e.startsWith("Confidence:"))) {
-            ratedEntriesCount++
+          ratedEntriesCount++
         }
       }
     })
@@ -218,10 +185,10 @@ export default function PsychologyAnalytics({
 
     // 4. Calculate Averages
     const avgMood =
-      entries.reduce((sum, entry) => {
+      filteredEntries.reduce((sum, entry) => {
         const moodData = MOODS.find((m) => m.id === entry.mood)
         return sum + (moodData?.value || 5)
-      }, 0) / entries.length
+      }, 0) / filteredEntries.length
 
     // Radar Chart Data (Calculated or Inferred)
     const avgConfidence = ratedEntriesCount > 0 ? Math.round((totalConfidence / ratedEntriesCount) * 10) : 50
@@ -238,11 +205,11 @@ export default function PsychologyAnalytics({
     ]
 
     // 5. Mood Trend Direction
-    const recentEntries = entries.slice(-7)
-    const olderEntries = entries.slice(0, Math.max(0, entries.length - 7))
-    
+    const recentEntries = filteredEntries.slice(-7)
+    const olderEntries = filteredEntries.slice(0, Math.max(0, filteredEntries.length - 7))
+
     const getAvg = (arr: JournalEntry[]) => arr.reduce((sum, e) => sum + (MOODS.find(m => m.id === e.mood)?.value || 5), 0) / (arr.length || 1)
-    
+
     const recentAvg = getAvg(recentEntries)
     const olderAvg = olderEntries.length > 0 ? getAvg(olderEntries) : recentAvg
 
@@ -250,7 +217,7 @@ export default function PsychologyAnalytics({
     const moodTrendDirection = moodChange > 0.5 ? "improving" : moodChange < -0.5 ? "declining" : "stable"
 
     // 6. AI Insights
-    const insights = generateInsights(entries, topTriggers, moodTrendDirection, avgMood)
+    const insights = generateInsights(filteredEntries, topTriggers, moodTrendDirection, avgMood)
 
     return {
       moodTrend,
@@ -261,9 +228,9 @@ export default function PsychologyAnalytics({
       moodTrendDirection,
       moodChange,
       insights,
-      totalEntries: entries.length,
+      totalEntries: filteredEntries.length,
     }
-  }, [entries])
+  }, [filteredEntries])
 
   function generateInsights(
     entries: JournalEntry[],
@@ -324,8 +291,8 @@ export default function PsychologyAnalytics({
     if (avgMood >= 7) {
       insights.push({
         type: "positive",
-      icon: Award,
-      title: "Strong Mental State",
+        icon: Award,
+        title: "Strong Mental State",
         description: "Your overall mood is positive. This is a great foundation for disciplined trading decisions.",
       })
     } else if (avgMood <= 4) {
@@ -342,18 +309,7 @@ export default function PsychologyAnalytics({
 
   // --- Rendering ---
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] h-full bg-slate-100 dark:bg-zinc-900/50 rounded-xl border border-slate-200 dark:border-zinc-800">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-indigo-500 mx-auto" />
-          <p className="text-slate-500 dark:text-zinc-500 font-mono text-sm">Decrypting psychology data...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!analytics || entries.length === 0) {
+  if (!analytics || filteredEntries.length === 0) {
     return (
       <Card className="border-dashed border-2 border-slate-300 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/20">
         <CardContent className="py-20 text-center">
@@ -374,7 +330,7 @@ export default function PsychologyAnalytics({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      
+
       {/* Header with Time Range Selector */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -389,11 +345,10 @@ export default function PsychologyAnalytics({
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-3 py-1.5 text-xs font-mono font-medium rounded-md transition-all ${
-                timeRange === range 
-                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm border border-slate-300 dark:border-zinc-700" 
-                  : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"
-              }`}
+              className={`px-3 py-1.5 text-xs font-mono font-medium rounded-md transition-all ${timeRange === range
+                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm border border-slate-300 dark:border-zinc-700"
+                : "text-slate-500 dark:text-zinc-500 hover:text-slate-700 dark:hover:text-zinc-300"
+                }`}
             >
               {range.toUpperCase()}
             </button>
@@ -493,7 +448,7 @@ export default function PsychologyAnalytics({
 
       {/* Main Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Radar Chart - NEW Feature */}
         <Card className="bg-white dark:bg-zinc-900/50 backdrop-blur border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden">
           <CardHeader>
@@ -507,9 +462,9 @@ export default function PsychologyAnalytics({
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={analytics.radarData}>
                 <PolarGrid stroke={CHART_THEME.grid} strokeOpacity={isDark ? 1 : 0.5} />
-                <PolarAngleAxis 
-                  dataKey="subject" 
-                  tick={{ fill: CHART_THEME.text, fontSize: 11, fontFamily: 'monospace' }} 
+                <PolarAngleAxis
+                  dataKey="subject"
+                  tick={{ fill: CHART_THEME.text, fontSize: 11, fontFamily: 'monospace' }}
                 />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                 <Radar
@@ -520,9 +475,9 @@ export default function PsychologyAnalytics({
                   fill="#6366f1"
                   fillOpacity={isDark ? 0.25 : 0.15}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: CHART_THEME.tooltipBg, 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: CHART_THEME.tooltipBg,
                     borderColor: CHART_THEME.border,
                     borderRadius: '8px',
                     color: isDark ? '#fff' : '#0f172a'
@@ -547,15 +502,15 @@ export default function PsychologyAnalytics({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analytics.moodTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke={CHART_THEME.grid} vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  tick={{ fill: CHART_THEME.text, fontSize: 11 }} 
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: CHART_THEME.text, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   dy={10}
                 />
-                <YAxis 
-                  domain={[0, 10]} 
+                <YAxis
+                  domain={[0, 10]}
                   hide
                 />
                 <Tooltip
@@ -616,12 +571,12 @@ export default function PsychologyAnalytics({
               </RechartsPie>
             </ResponsiveContainer>
             <div className="flex flex-wrap justify-center gap-3 mt-[-20px] relative z-10">
-                {analytics.moodDistribution.slice(0, 4).map((m, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-xs text-zinc-400">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: m.color }}/>
-                        {m.name}
-                    </div>
-                ))}
+              {analytics.moodDistribution.slice(0, 4).map((m, i) => (
+                <div key={i} className="flex items-center gap-1.5 text-xs text-zinc-400">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: m.color }} />
+                  {m.name}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -645,13 +600,13 @@ export default function PsychologyAnalytics({
                       <span className="text-sm font-medium text-slate-700 dark:text-zinc-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{trigger.name}</span>
                     </div>
                     <div className="flex items-center gap-3 w-1/2">
-                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                            <div 
-                                className="h-full bg-amber-500/60 rounded-full" 
-                                style={{ width: `${Math.min(100, (trigger.count / analytics.totalEntries) * 100 * 2)}%` }}
-                            />
-                        </div>
-                        <span className="text-xs font-mono text-slate-600 dark:text-zinc-500">{trigger.count}</span>
+                      <div className="flex-1 h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-amber-500/60 rounded-full"
+                          style={{ width: `${Math.min(100, (trigger.count / analytics.totalEntries) * 100 * 2)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-mono text-slate-600 dark:text-zinc-500">{trigger.count}</span>
                     </div>
                   </div>
                 ))
@@ -667,8 +622,8 @@ export default function PsychologyAnalytics({
       <Card className="bg-gradient-to-br from-blue-50 via-white to-violet-50 dark:from-indigo-950/20 dark:via-zinc-900/50 dark:to-purple-950/20 border-blue-200 dark:border-indigo-500/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-indigo-100">
-              <Brain className="h-5 w-5 text-violet-600 dark:text-indigo-400" />
-              Trading Advisor Insights
+            <Brain className="h-5 w-5 text-violet-600 dark:text-indigo-400" />
+            Trading Advisor Insights
           </CardTitle>
           <CardDescription className="text-slate-600 dark:text-indigo-400/50">Personalized trading psychology insights</CardDescription>
         </CardHeader>
@@ -679,31 +634,28 @@ export default function PsychologyAnalytics({
               return (
                 <div
                   key={index}
-                  className={`p-4 rounded-xl border transition-all ${
-                    insight.type === "positive"
-                      ? "bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-500/20 hover:border-emerald-300 dark:hover:border-emerald-500/40 hover:bg-emerald-100 dark:hover:bg-zinc-900/80"
-                      : insight.type === "warning"
+                  className={`p-4 rounded-xl border transition-all ${insight.type === "positive"
+                    ? "bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-500/20 hover:border-emerald-300 dark:hover:border-emerald-500/40 hover:bg-emerald-100 dark:hover:bg-zinc-900/80"
+                    : insight.type === "warning"
                       ? "bg-amber-50 dark:bg-amber-950/10 border-amber-200 dark:border-amber-500/20 hover:border-amber-300 dark:hover:border-amber-500/40 hover:bg-amber-100 dark:hover:bg-zinc-900/80"
                       : "bg-blue-50 dark:bg-indigo-950/10 border-blue-200 dark:border-indigo-500/20 hover:border-blue-300 dark:hover:border-indigo-500/40 hover:bg-blue-100 dark:hover:bg-zinc-900/80"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-4">
                     <div
-                      className={`p-2 rounded-lg shrink-0 ${
-                        insight.type === "positive"
-                          ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                          : insight.type === "warning"
+                      className={`p-2 rounded-lg shrink-0 ${insight.type === "positive"
+                        ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        : insight.type === "warning"
                           ? "bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400"
                           : "bg-blue-100 dark:bg-indigo-500/10 text-blue-600 dark:text-indigo-400"
-                      }`}
+                        }`}
                     >
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 space-y-1">
-                      <h4 className={`font-semibold text-sm ${
-                         insight.type === "positive" ? "text-emerald-700 dark:text-emerald-100" : 
-                         insight.type === "warning" ? "text-amber-700 dark:text-amber-100" : "text-blue-700 dark:text-indigo-100"
-                      }`}>
+                      <h4 className={`font-semibold text-sm ${insight.type === "positive" ? "text-emerald-700 dark:text-emerald-100" :
+                        insight.type === "warning" ? "text-amber-700 dark:text-amber-100" : "text-blue-700 dark:text-indigo-100"
+                        }`}>
                         {insight.title}
                       </h4>
                       <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">{insight.description}</p>
@@ -719,58 +671,56 @@ export default function PsychologyAnalytics({
       {/* Metrics Row (Bottom) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800">
-            <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Entries Logged</p>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{analytics.totalEntries}</p>
-                    </div>
-                    <div className="p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-500" />
-                    </div>
-                </div>
-            </CardContent>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Entries Logged</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{analytics.totalEntries}</p>
+              </div>
+              <div className="p-2 bg-purple-100 dark:bg-purple-500/10 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-500" />
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800">
-            <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Avg Mood</p>
-                        <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{analytics.avgMood.toFixed(1)} <span className="text-sm font-normal text-slate-600 dark:text-zinc-500">/ 10</span></p>
-                    </div>
-                    <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg">
-                        <Activity className="w-5 h-5 text-blue-600 dark:text-blue-500" />
-                    </div>
-                </div>
-            </CardContent>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Avg Mood</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 mt-1">{analytics.avgMood.toFixed(1)} <span className="text-sm font-normal text-slate-600 dark:text-zinc-500">/ 10</span></p>
+              </div>
+              <div className="p-2 bg-blue-100 dark:bg-blue-500/10 rounded-lg">
+                <Activity className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card className="bg-white dark:bg-zinc-900/50 border-slate-200 dark:border-zinc-800">
-            <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Recent Trend</p>
-                        <div className="flex items-center gap-2 mt-1">
-                            <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 capitalize">{analytics.moodTrendDirection}</p>
-                            {analytics.moodTrendDirection === 'improving' ? (
-                                <ArrowUpRight className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
-                            ) : analytics.moodTrendDirection === 'declining' ? (
-                                <ArrowDownRight className="w-5 h-5 text-rose-600 dark:text-rose-500" />
-                            ) : (
-                                <Activity className="w-5 h-5 text-slate-500 dark:text-zinc-500" />
-                            )}
-                        </div>
-                    </div>
-                    <div className={`p-2 rounded-lg ${
-                        analytics.moodTrendDirection === 'improving' ? 'bg-emerald-100 dark:bg-emerald-500/10' : 
-                        analytics.moodTrendDirection === 'declining' ? 'bg-rose-100 dark:bg-rose-500/10' : 'bg-slate-100 dark:bg-zinc-500/10'
-                    }`}>
-                        <TrendingUp className={`w-5 h-5 ${
-                             analytics.moodTrendDirection === 'improving' ? 'text-emerald-600 dark:text-emerald-500' : 
-                             analytics.moodTrendDirection === 'declining' ? 'text-rose-600 dark:text-rose-500' : 'text-slate-600 dark:text-zinc-500'
-                        }`} />
-                    </div>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-mono text-slate-600 dark:text-zinc-500 uppercase tracking-wider">Recent Trend</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-2xl font-bold text-slate-900 dark:text-zinc-100 capitalize">{analytics.moodTrendDirection}</p>
+                  {analytics.moodTrendDirection === 'improving' ? (
+                    <ArrowUpRight className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+                  ) : analytics.moodTrendDirection === 'declining' ? (
+                    <ArrowDownRight className="w-5 h-5 text-rose-600 dark:text-rose-500" />
+                  ) : (
+                    <Activity className="w-5 h-5 text-slate-500 dark:text-zinc-500" />
+                  )}
                 </div>
-            </CardContent>
+              </div>
+              <div className={`p-2 rounded-lg ${analytics.moodTrendDirection === 'improving' ? 'bg-emerald-100 dark:bg-emerald-500/10' :
+                analytics.moodTrendDirection === 'declining' ? 'bg-rose-100 dark:bg-rose-500/10' : 'bg-slate-100 dark:bg-zinc-500/10'
+                }`}>
+                <TrendingUp className={`w-5 h-5 ${analytics.moodTrendDirection === 'improving' ? 'text-emerald-600 dark:text-emerald-500' :
+                  analytics.moodTrendDirection === 'declining' ? 'text-rose-600 dark:text-rose-500' : 'text-slate-600 dark:text-zinc-500'
+                  }`} />
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

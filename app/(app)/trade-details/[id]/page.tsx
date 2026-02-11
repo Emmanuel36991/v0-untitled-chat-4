@@ -66,7 +66,28 @@ const formatPercentage = (value: number): string => {
 const formatDate = (dateString?: string): string => {
   if (!dateString) return "N/A"
   try {
-    return new Date(dateString).toLocaleDateString("en-US", {
+    const d = new Date(dateString)
+    if (isNaN(d.getTime())) return "Invalid Date"
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  } catch (e) {
+    return "Invalid Date"
+  }
+}
+
+// For date-only strings like "2026-02-10" from the trade.date field,
+// parse without timezone shift (date-only ISO strings are parsed as UTC midnight,
+// which can shift the date in local time). This forces local date interpretation.
+const formatTradeDate = (dateOnlyString?: string): string => {
+  if (!dateOnlyString) return "N/A"
+  try {
+    // Add T12:00 to avoid midnight UTC -> previous day local issue
+    const d = new Date(dateOnlyString + "T12:00:00")
+    if (isNaN(d.getTime())) return "Invalid Date"
+    return d.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -377,10 +398,10 @@ export default function EnhancedTradeDetailsPage() {
                   </div>
                   <div className="text-sm text-slate-500 flex items-center gap-2 mt-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>{formatDate(trade.date)}</span>
+                    <span>{formatTradeDate(trade.date)}</span>
                     <span className="text-slate-300">•</span>
                     <Clock className="w-3.5 h-3.5" />
-                    <span>{formatTime(trade.trade_start_time || trade.date)}</span>
+                    <span>{formatTime(trade.trade_start_time)}</span>
                   </div>
                 </div>
               </div>
@@ -655,8 +676,8 @@ export default function EnhancedTradeDetailsPage() {
                         <div className="relative">
                            <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-slate-900 border-4 border-white shadow-sm" />
                            <p className="text-xs font-bold text-slate-400 uppercase mb-1">Entry</p>
-                           <p className="text-sm font-medium text-slate-900">{formatDate(trade.date)}</p>
-                           <p className="text-xs font-mono text-slate-500">{formatTime(trade.trade_start_time || trade.date)}</p>
+                           <p className="text-sm font-medium text-slate-900">{formatTradeDate(trade.date)}</p>
+                           <p className="text-xs font-mono text-slate-500">{formatTime(trade.trade_start_time)}</p>
                         </div>
                         
                         {/* Exit Point */}

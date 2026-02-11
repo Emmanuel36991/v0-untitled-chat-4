@@ -232,20 +232,19 @@ function TradingChart({
     const smaData = calculateSMA(ohlcData, 20)
     lineSeriesRef.current.setData(smaData)
 
-    // Update Markers - use trade_start_time (ISO timestamp) for correct local-time positioning
+    // Update Markers - use trade_start_time (proper UTC ISO timestamp) for positioning
     if (propTrades && propTrades.length > 0) {
       const markers = propTrades
         .filter(t => t.instrument === instrument)
         .map(t => {
-           // Prefer trade_start_time (full timestamp), fallback to date
+           // Prefer trade_start_time (full UTC timestamp), fallback to date
            const timeSource = t.trade_start_time || t.date
-           const timestamp = new Date(timeSource)
-           // Lightweight Charts expects UTC seconds, but we want local time on the axis.
-           // Apply timezone offset so the marker aligns with the local time display.
-           const localOffsetSeconds = timestamp.getTimezoneOffset() * 60
-           const utcSeconds = Math.floor(timestamp.getTime() / 1000)
+           // trade_start_time is stored as proper UTC in the DB.
+           // The OHLC candle data timestamps are also UTC seconds.
+           // Use the UTC timestamp directly so markers align with candle data.
+           const utcSeconds = Math.floor(new Date(timeSource).getTime() / 1000)
            return {
-             time: utcSeconds - localOffsetSeconds,
+             time: utcSeconds,
              position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
              color: t.direction === 'long' ? '#10b981' : '#ef4444',
              shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',

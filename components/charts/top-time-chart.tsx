@@ -1,8 +1,18 @@
 "use client"
 
-import { Clock } from "lucide-react"
+import { useMemo } from "react"
+import { Clock, Info } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+import {
+  ScatterChart,
+  Scatter,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts"
 
 interface Trade {
   id: string
@@ -15,92 +25,153 @@ interface TopTimeChartProps {
   trades: Trade[]
 }
 
+function extractHour(raw: string | null | undefined): number | null {
+  if (!raw || typeof raw !== "string") return null
+
+  // Try parsing as ISO / full timestamp first (e.g. "2025-01-15T14:30:00+00:00")
+  const d = new Date(raw)
+  if (!isNaN(d.getTime())) {
+    return d.getHours()
+  }
+
+  // Fallback: simple "HH:MM" or "HH:MM:SS" string
+  if (raw.includes(":")) {
+    const hour = parseInt(raw.split(":")[0], 10)
+    if (!isNaN(hour) && hour >= 0 && hour <= 23) return hour
+  }
+
+  return null
+}
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (!active || !payload?.[0]) return null
+  const data = payload[0].payload
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">
+      <p className="text-xs font-semibold text-foreground">
+        {data.hourLabel}
+      </p>
+      <p className={`text-sm font-bold font-mono ${data.pnl >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+        {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
+      </p>
+      <p className="text-[10px] text-muted-foreground capitalize">{data.outcome}</p>
+    </div>
+  )
+}
+
 export function TopTimeChart({ trades }: TopTimeChartProps) {
-  const getValidHour = (timeString: string | null | undefined): number | null => {
-    if (!timeString || typeof timeString !== "string") return null
-    if (!timeString.includes(":")) return null
-    const parts = timeString.split(":")
-    const hour = parseInt(parts[0], 10)
-    if (isNaN(hour) || hour < 0 || hour > 23) return null
-    return hour
-  }
+  const { winData, lossData } = useMemo(() => {
+    const wins: any[] = []
+    const losses: any[] = []
 
-  const formatHour = (hour: number) => {
-    const period = hour >= 12 ? "PM" : "AM"
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
-    return `${displayHour}:00 ${period}`
-  }
+    trades.forEach((trade) => {
+      const hour = extractHour(trade.trade_start_time)
+      if (hour === null) return
 
-  const hourlyStats = trades
-    .reduce(
-      (acc, trade) => {
-        const hour = getValidHour(trade.trade_start_time)
-        if (hour === null) return acc
-        if (!acc[hour]) {
-          acc[hour] = { wins: 0, total: 0, pnl: 0 }
-        }
-        acc[hour].total++
-        acc[hour].pnl += trade.pnl
-        if (trade.outcome === "win" || trade.pnl > 0) {
-          acc[hour].wins++
-        }
-        return acc
-      },
-      {} as Record<number, { wins: number; total: number; pnl: number }>,
-    )
+      const point = {
+        hour,
+        hourLabel: `${hour.toString().padStart(2, "0")}:00`,
+        pnl: trade.pnl,
+        outcome: trade.outcome,
+      }
 
-  const topTimes = Object.entries(hourlyStats)
-    .map(([hour, stats]) => ({
-      hour: parseInt(hour, 10),
-      winRate: stats.total > 0 ? (stats.wins / stats.total) * 100 : 0,
-      trades: stats.total,
-      pnl: stats.pnl,
-    }))
-    .sort((a, b) => b.winRate - a.winRate)
-    .slice(0, 3)
+      if (trade.pnl >= 0) {
+        wins.push(point)
+      } else {
+        losses.push(point)
+      }
+    })
 
-  const getRankColor = (index: number) => {
-    switch (index) {
-      case 0: return "bg-yellow-500"
-      case 1: return "bg-gray-400"
-      case 2: return "bg-amber-600"
-      default: return "bg-gray-300"
-    }
-  }
+    return { winData: wins, lossData: losses }
+  }, [trades])
+
+  const hasData = winData.length > 0 || lossData.length > 0
+
+  // Compute tick values from actual data
+  const allHours = useMemo(() => {
+    const hours = new Set<number>()
+    ;[...winData, ...lossData].forEach((d) => hours.add(d.hour))
+    return Array.from(hours).sort((a, b) => a - b)
+  }, [winData, lossData])
 
   return (
-    <Card className="border border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-gray-900/40 shadow-sm">
-      <CardHeader className="pb-3 border-b border-gray-100 dark:border-gray-800/50">
-        <CardTitle className="flex items-center gap-2 text-sm font-bold">
-          <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-500/20">
-            <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+    <Card className="border border-border bg-card shadow-sm">
+      <CardHeader className="pb-3 border-b border-border">
+        <CardTitle className="flex items-center justify-between text-sm font-bold">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-blue-500/10">
+              <Clock className="h-4 w-4 text-blue-500" />
+            </div>
+            Trade Time Performance
           </div>
-          Top 3 Entry Time Performance
+          <Info className="h-3.5 w-3.5 text-muted-foreground" />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 pt-4">
-        {topTimes.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">No time data available</p>
+      <CardContent className="pt-4 pb-2 px-2">
+        {!hasData ? (
+          <p className="text-sm text-muted-foreground text-center py-12">
+            No time data available. Add entry times to your trades.
+          </p>
         ) : (
-          topTimes.map((item, index) => (
-            <div key={item.hour} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50">
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn("w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold", getRankColor(index))}
-                >
-                  {index + 1}
-                </div>
-                <div>
-                  <div className="font-semibold text-sm">{formatHour(item.hour)}</div>
-                  <div className="text-xs text-muted-foreground">{item.trades} trades</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-bold text-sm font-mono">{Math.round(item.winRate)}%</div>
-                <div className="text-xs text-muted-foreground">win rate</div>
-              </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <ScatterChart margin={{ top: 10, right: 16, bottom: 4, left: 0 }}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+                strokeOpacity={0.5}
+                vertical={false}
+              />
+              <XAxis
+                type="number"
+                dataKey="hour"
+                domain={["dataMin - 0.5", "dataMax + 0.5"]}
+                ticks={allHours}
+                tickFormatter={(h) => `${h}:00`}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
+                tickLine={false}
+              />
+              <YAxis
+                type="number"
+                dataKey="pnl"
+                tickFormatter={(v) => `$${v}`}
+                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                axisLine={false}
+                tickLine={false}
+                width={54}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={false} />
+              <ReferenceLine y={0} stroke="hsl(var(--border))" strokeDasharray="3 3" />
+              <Scatter
+                name="Wins"
+                data={winData}
+                fill="#10b981"
+                fillOpacity={0.85}
+                r={5}
+                shape="circle"
+              />
+              <Scatter
+                name="Losses"
+                data={lossData}
+                fill="#f43f5e"
+                fillOpacity={0.85}
+                r={5}
+                shape="circle"
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        )}
+        {hasData && (
+          <div className="flex items-center justify-center gap-5 pt-1 pb-1">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              Profit
             </div>
-          ))
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
+              Loss
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

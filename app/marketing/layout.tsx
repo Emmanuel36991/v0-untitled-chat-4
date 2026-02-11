@@ -1,11 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "../globals.css" // Import global styles
-import "./marketing.css" // Import marketing-specific styles
-import { ThemeProvider } from "@/components/theme-provider"
-
-const inter = Inter({ subsets: ["latin"] })
+import "./marketing.css"
 
 export const metadata: Metadata = {
   title: "Concentrade Trading Journal - Turn Your Trading Chaos Into Consistent Profits",
@@ -19,12 +14,8 @@ export default function MarketingLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} marketing-layout`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <div className="marketing-layout dark">
+      {children}
+    </div>
   )
 }

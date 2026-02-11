@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { 
   TrendingUp, TrendingDown, Target, Brain, Shield, 
   Activity, AlertTriangle, CheckCircle2, Zap, 
-  BarChart3, RefreshCw, ArrowRight, Sparkles, Microscope
+  BarChart3, RefreshCw, ArrowRight, Microscope, BarChart3 as ChartIcon
 } from 'lucide-react'
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
 import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
@@ -112,7 +112,7 @@ export default function InsightsPage() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="outline" className="bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800">
-                  <Sparkles className="w-3 h-3 mr-1" /> Beta Intelligence
+                  <Microscope className="w-3 h-3 mr-1" /> Pattern Analysis
                 </Badge>
                 <span className="text-xs text-slate-400 font-mono">UPDATED JUST NOW</span>
               </div>

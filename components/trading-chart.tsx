@@ -232,19 +232,27 @@ function TradingChart({
     const smaData = calculateSMA(ohlcData, 20)
     lineSeriesRef.current.setData(smaData)
 
-    // Update Markers
+    // Update Markers - use trade_start_time (proper UTC ISO timestamp) for positioning
     if (propTrades && propTrades.length > 0) {
       const markers = propTrades
         .filter(t => t.instrument === instrument)
-        .map(t => ({
-           time: Math.floor(new Date(t.entry_time || t.date).getTime() / 1000),
-           position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
-           color: t.direction === 'long' ? '#10b981' : '#ef4444',
-           shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
-           text: t.direction === 'long' ? 'BUY' : 'SELL',
-           size: 2
-        }))
-        .sort((a,b) => a.time - b.time)
+        .map(t => {
+           // Prefer trade_start_time (full UTC timestamp), fallback to date
+           const timeSource = t.trade_start_time || t.date
+           // trade_start_time is stored as proper UTC in the DB.
+           // The OHLC candle data timestamps are also UTC seconds.
+           // Use the UTC timestamp directly so markers align with candle data.
+           const utcSeconds = Math.floor(new Date(timeSource).getTime() / 1000)
+           return {
+             time: utcSeconds,
+             position: t.direction === 'long' ? 'belowBar' : 'aboveBar',
+             color: t.direction === 'long' ? '#10b981' : '#ef4444',
+             shape: t.direction === 'long' ? 'arrowUp' : 'arrowDown',
+             text: t.direction === 'long' ? 'BUY' : 'SELL',
+             size: 2,
+           }
+        })
+        .sort((a: any, b: any) => a.time - b.time)
       
       candleSeriesRef.current.setMarkers(markers)
     }

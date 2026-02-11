@@ -54,9 +54,6 @@ export default function MarketingPage() {
               <button onClick={() => scrollToSection("testimonials")} className="nav-link">
                 Reviews
               </button>
-              <button onClick={() => scrollToSection("demo")} className="nav-link">
-                Demo
-              </button>
               <Link href="/login" className="nav-link">
                 Login
               </Link>
@@ -82,9 +79,6 @@ export default function MarketingPage() {
               </button>
               <button onClick={() => scrollToSection("testimonials")} className="block w-full text-left nav-link">
                 Reviews
-              </button>
-              <button onClick={() => scrollToSection("demo")} className="block w-full text-left nav-link">
-                Demo
               </button>
               <Link href="/login" className="block w-full text-left nav-link">
                 Login
@@ -124,10 +118,6 @@ export default function MarketingPage() {
               Start Free 14-Day Trial
               <ArrowRight className="h-4 w-4 ml-2" />
             </a>
-            <Link href="/demo" className="btn-secondary">
-              <Play className="h-5 w-5 mr-2" />
-              Watch Live Demo
-            </Link>
           </div>
 
           <div className="stats-container mt-16">
@@ -419,37 +409,6 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      {/* Demo Section */}
-      <section id="demo" className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">See Concentrade in Action</h2>
-            <p className="text-xl text-gray-300">Experience the full platform before you sign up</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-2xl p-12 border border-accent/20 shadow-2xl text-center">
-            <div className="max-w-2xl mx-auto">
-              <div className="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Play className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold mb-4">Try the Full Platform</h3>
-              <p className="text-lg text-gray-300 mb-8">
-                Explore a complete replica of Concentrade with real features and sample data. No signup required.
-              </p>
-              <Link
-                href="/demo"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Play className="h-6 w-6" />
-                Launch Interactive Demo
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-              <p className="text-sm text-gray-400 mt-4">Full access • No credit card • No signup required</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Section */}
       <section id="pricing" className="py-20 px-4 bg-secondary/20">
         <div className="container mx-auto max-w-6xl">
@@ -670,11 +629,6 @@ export default function MarketingPage() {
                 <li>
                   <Link href="#pricing" className="hover:text-accent">
                     Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#demo" className="hover:text-accent">
-                    Demo
                   </Link>
                 </li>
                 <li>

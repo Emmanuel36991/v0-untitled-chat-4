@@ -96,6 +96,16 @@ function mapRowToTrade(row: any): Trade {
   }
 }
 
+// Helper: Convert a datetime-local string (local time, no TZ) to a proper UTC ISO string.
+// datetime-local inputs produce strings like "2026-02-10T16:30" which have NO timezone info.
+// new Date() parses these as LOCAL time per the JS spec, so .toISOString() gives correct UTC.
+function localDatetimeToUTC(value: string | null | undefined): string | null {
+  if (!value || typeof value !== "string" || value.trim() === "") return null
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return null
+  return d.toISOString()
+}
+
 // 2. CONVERT FORM DATA TO DB PAYLOAD
 function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
   const payload: Record<string, any> = {}
@@ -118,9 +128,10 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
     } else if (key === 'screenshotAfterUrl') {
        payload['screenshot_after_url'] = value
     } else if (key === 'entry_time') {
-       payload['trade_start_time'] = value 
+       // Convert local datetime-local to proper UTC before storing in timestamptz column
+       payload['trade_start_time'] = localDatetimeToUTC(value as string) 
     } else if (key === 'exit_time') {
-       payload['trade_end_time'] = value   
+       payload['trade_end_time'] = localDatetimeToUTC(value as string)   
     } else {
        // Snake Case Conversion for standard fields
        const snakeKey = key
@@ -196,6 +207,7 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
     revalidatePath("/trades")
     revalidatePath("/dashboard")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
 
     return { 
       success: true, 
@@ -234,6 +246,8 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
@@ -258,6 +272,8 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
@@ -279,6 +295,8 @@ export async function deleteAllTrades(): Promise<SubmitTradeResult> {
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     return { success: true, message: "All trades deleted successfully!" }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -305,6 +323,8 @@ export async function addMultipleTrades(trades: NewTradeInput[]) {
 
     revalidatePath("/trades")
     revalidatePath("/playbook")
+    revalidatePath("/analytics")
+    revalidatePath("/dashboard")
     
     return {
       successCount: data?.length || 0,

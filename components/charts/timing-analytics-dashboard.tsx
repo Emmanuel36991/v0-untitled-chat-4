@@ -51,18 +51,31 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
       }
     }
 
+    // --- Helper: extract hour from timestamp or time string ---
+    const extractHour = (raw: string | null | undefined): number | null => {
+      if (!raw || typeof raw !== "string") return null
+      // Try ISO timestamp first (e.g. "2025-01-15T14:30:00+00:00")
+      const d = new Date(raw)
+      if (!isNaN(d.getTime())) return d.getHours()
+      // Fallback: "HH:MM" or "HH:MM:SS"
+      if (raw.includes(":")) {
+        const hour = parseInt(raw.split(":")[0], 10)
+        if (!isNaN(hour) && hour >= 0 && hour <= 23) return hour
+      }
+      return null
+    }
+
     // --- Most Active Trading Hour (only from trade_start_time, no fallback) ---
     const tradesWithTime = trades.filter(
-      (t) => t.trade_start_time && typeof t.trade_start_time === "string" && t.trade_start_time.includes(":")
+      (t) => extractHour(t.trade_start_time) !== null
     )
 
     let mostActivePeriod = "N/A"
     if (tradesWithTime.length > 0) {
       const hourCounts: Record<number, number> = {}
       tradesWithTime.forEach((trade) => {
-        const parts = trade.trade_start_time!.split(":")
-        const hour = parseInt(parts[0], 10)
-        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+        const hour = extractHour(trade.trade_start_time)
+        if (hour !== null) {
           hourCounts[hour] = (hourCounts[hour] || 0) + 1
         }
       })
@@ -122,9 +135,8 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
     if (tradesWithTime.length > 0) {
       const hourStats: Record<number, { wins: number; total: number }> = {}
       tradesWithTime.forEach((t) => {
-        const parts = t.trade_start_time!.split(":")
-        const hour = parseInt(parts[0], 10)
-        if (!isNaN(hour) && hour >= 0 && hour <= 23) {
+        const hour = extractHour(t.trade_start_time)
+        if (hour !== null) {
           if (!hourStats[hour]) hourStats[hour] = { wins: 0, total: 0 }
           hourStats[hour].total++
           if (t.outcome === "win" || t.pnl > 0) hourStats[hour].wins++
@@ -162,55 +174,55 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
   return (
     <div className={className}>
       {/* Overview Cards */}
-      <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-800/50">
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <Clock className="w-5 h-5 text-primary" />
+      <CardHeader className="pb-4 border-b border-border">
+        <CardTitle className="text-sm font-bold flex items-center gap-2">
+          <Clock className="w-4 h-4 text-primary" />
           Timing Analytics
         </CardTitle>
-        <CardDescription>Duration and entry time performance breakdown</CardDescription>
+        <CardDescription className="text-xs">Duration and entry time performance breakdown</CardDescription>
       </CardHeader>
 
-      <CardContent className="p-6 space-y-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50">
+      <CardContent className="p-5 space-y-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <Clock className="h-3.5 w-3.5 text-blue-500" />
               Avg Duration
             </div>
-            <div className="text-xl font-bold text-blue-600 dark:text-blue-400 font-mono">
+            <div className="text-lg font-bold text-blue-600 dark:text-blue-400 font-mono">
               {timingInsights.avgDurationFormatted}
             </div>
             <p className="text-[10px] text-muted-foreground">Average hold time</p>
           </div>
 
-          <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50">
+          <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
               Most Active
             </div>
-            <div className="text-xl font-bold text-green-600 dark:text-green-400 font-mono">
+            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
               {timingInsights.mostActivePeriod}
             </div>
             <p className="text-[10px] text-muted-foreground">Peak trading time</p>
           </div>
 
-          <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50">
+          <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <Target className="h-3.5 w-3.5 text-purple-500" />
+              <Target className="h-3.5 w-3.5 text-primary" />
               Best Duration
             </div>
-            <div className="text-xl font-bold text-purple-600 dark:text-purple-400 font-mono">
+            <div className="text-lg font-bold text-primary font-mono">
               {timingInsights.bestPerformingDuration}
             </div>
             <p className="text-[10px] text-muted-foreground">Highest win rate hold time</p>
           </div>
 
-          <div className="flex flex-col gap-1.5 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800/50">
+          <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <Activity className="h-3.5 w-3.5 text-amber-500" />
               Best Time
             </div>
-            <div className="text-xl font-bold text-amber-600 dark:text-amber-400 font-mono">
+            <div className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono">
               {timingInsights.bestPerformingTime}
             </div>
             <p className="text-[10px] text-muted-foreground">Highest win rate entry</p>
@@ -218,7 +230,7 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <TopDurationChart trades={trades} />
           <TopTimeChart trades={trades} />
         </div>

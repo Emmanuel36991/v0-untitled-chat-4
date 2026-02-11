@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { ConcentrateLogo } from "@/components/ConcentrateLogo" // Assuming ConcentrateLogo is imported from this path
-import { BarChart3, BookOpen, Brain, Calculator, ChevronLeft, ChevronRight, CreditCard, Home, LineChart, PlusCircle, Settings, Sparkles, TrendingUp, Users, Bot, Zap } from 'lucide-react'
+import { BarChart3, BookOpen, Brain, Calculator, ChevronLeft, ChevronRight, CreditCard, Home, LineChart, PlusCircle, Settings, TrendingUp, Users, Bot, Zap } from 'lucide-react'
 
 interface SidebarProps {
   className?: string

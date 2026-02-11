@@ -167,7 +167,7 @@ export function AdvancedConfigurationStep({ tradingPreferences, onUpdate }: Adva
       {/* Info Section */}
       <Card className="bg-muted/30 border-border">
         <CardContent className="p-4">
-          <h5 className="font-semibold text-foreground mb-2">💡 Pro Tips</h5>
+          <h5 className="font-semibold text-foreground mb-2">Pro Tips</h5>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>• Set conservative risk tolerance if you're still building your trading system</li>
             <li>• Default R:R helps maintain consistency across your trading journal</li>

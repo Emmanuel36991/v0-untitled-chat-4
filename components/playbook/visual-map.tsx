@@ -424,7 +424,7 @@ export function VisualMap({ className }: { className?: string }) {
         {/* --- STATUS INDICATOR (Top Left) --- */}
         <div className="absolute top-4 left-4 z-20 flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-background/50 backdrop-blur-sm px-2.5 py-1.5 rounded-md border border-border/20">
           <div className={cn("w-1.5 h-1.5 rounded-full", loading ? "bg-amber-500 animate-pulse" : "bg-emerald-500")} />
-          <span>{loading ? "SYNCING" : "LIVE"}</span>
+          <span>{loading ? "SYNCING" : "ACTIVE"}</span>
           <span className="text-muted-foreground/50">|</span>
           <span>{data.nodes.length} NODES</span>
         </div>

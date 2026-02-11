@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Bot, X, Send, Sparkles, Minimize2, Maximize2 } from "lucide-react"
+import { Bot, X, Send, MessageSquare, Minimize2, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -190,7 +190,7 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
         <ScrollArea className="h-full p-4" ref={scrollRef}>
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8 opacity-50">
-              <Sparkles className="w-12 h-12 text-blue-500/50" />
+              <MessageSquare className="w-12 h-12 text-blue-500/50" />
               <p className="text-sm text-slate-400">
                 I'm your AI trading assistant. Ask me about your performance, risk management, or specific setups!
               </p>

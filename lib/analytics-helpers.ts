@@ -164,16 +164,32 @@ function calculateConsecutiveStreaks(trades: Trade[]): { maxConsecutiveWins: num
   return { maxConsecutiveWins, maxConsecutiveLosses }
 }
 
+function extractHourFromTimestamp(raw: string | null | undefined): number | null {
+  if (!raw || typeof raw !== "string") return null
+  // Try ISO timestamp first (e.g. "2025-01-15T14:30:00+00:00")
+  const d = new Date(raw)
+  if (!isNaN(d.getTime())) return d.getHours()
+  // Fallback: "HH:MM" or "HH:MM:SS"
+  if (raw.includes(":")) {
+    const hour = parseInt(raw.split(":")[0], 10)
+    if (!isNaN(hour) && hour >= 0 && hour <= 23) return hour
+  }
+  return null
+}
+
 function calculateProfitabilityByTimeOfDay(trades: Trade[]): Record<string, number> {
   const hourlyPnl: Record<string, number[]> = {}
 
   trades.forEach((trade) => {
     if (trade.trade_start_time) {
-      const hour = trade.trade_start_time.split(":")[0]
-      if (!hourlyPnl[hour]) {
-        hourlyPnl[hour] = []
+      const hour = extractHourFromTimestamp(trade.trade_start_time)
+      if (hour !== null) {
+        const hourKey = String(hour).padStart(2, "0")
+        if (!hourlyPnl[hourKey]) {
+          hourlyPnl[hourKey] = []
+        }
+        hourlyPnl[hourKey].push(trade.pnl)
       }
-      hourlyPnl[hour].push(trade.pnl)
     }
   })
 

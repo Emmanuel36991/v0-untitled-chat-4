@@ -16,7 +16,7 @@ import {
   TrendingUp, 
   CheckCircle, 
   Target, 
-  Sparkles,
+  Layers,
   Plus,
   X,
   GitMerge
@@ -172,9 +172,9 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
       {/* Merged Strategies Section */}
       {mergedStrategies.length > 0 && (
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
-            <Sparkles className="w-5 h-5" />
-            Merged Strategy Groups
+      <h4 className="text-lg font-semibold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+              <Layers className="w-5 h-5" />
+              Merged Strategy Groups
           </h4>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {mergedStrategies.map(merged => (
@@ -420,7 +420,7 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
               Cancel
             </Button>
             <Button onClick={handleCreateMerge} disabled={isCreating} className="gap-2">
-              <Sparkles className="w-4 h-4" />
+              <GitMerge className="w-4 h-4" />
               {isCreating ? "Creating..." : "Create Merge"}
             </Button>
           </DialogFooter>

@@ -7,7 +7,8 @@ import {
   Loader2, TrendingUp, Trophy, Layers, BookOpen,
   Clock, CandlestickChart, Activity, Zap, Database,
   GitBranch, Check, ArrowRight, LayoutGrid, BarChart3,
-  ChevronRight, Target, Layers as LayersIcon
+  ChevronRight, Target, Layers as LayersIcon,
+  FileText, SlidersHorizontal,
 } from "lucide-react"
 import { Area, AreaChart, ResponsiveContainer } from "recharts"
 
@@ -583,14 +584,14 @@ export default function PlaybookPage() {
             <div className="border border-dashed border-border rounded-2xl bg-card/30">
               {searchQuery ? (
                 <EmptyState
-                  icon={Search}
+                  icon={SlidersHorizontal}
                   title="No matching strategies"
                   description="Try a different search term to find your strategies."
                   action={{ label: "Clear search", onClick: () => setSearchQuery(""), variant: "outline" }}
                 />
               ) : (
                 <EmptyState
-                  icon={BookOpen}
+                  icon={FileText}
                   title="Your playbook is empty"
                   description="Define your first trading system to start tracking performance data across setups."
                   action={{ label: "Create Strategy", onClick: () => { setEditingStrategy(null); setIsBuilderOpen(true) } }}

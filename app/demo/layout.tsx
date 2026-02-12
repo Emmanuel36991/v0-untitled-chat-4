@@ -35,21 +35,29 @@ const DemoNavbar = () => {
             </span>
           </Link>
           <nav className="hidden lg:flex items-center gap-1">
-            <Button variant="ghost" className="justify-start gap-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
+            <Button asChild variant="ghost" className="justify-start gap-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
+              <Link href="/demo">
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
             </Button>
-            <Button variant="ghost" className="justify-start gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              <List className="h-4 w-4" />
-              Trades
+            <Button asChild variant="ghost" className="justify-start gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <Link href="/demo/trades">
+                <List className="h-4 w-4" />
+                Trades
+              </Link>
             </Button>
-            <Button variant="ghost" className="justify-start gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              <BarChart3 className="h-4 w-4" />
-              Analytics
+            <Button asChild variant="ghost" className="justify-start gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <Link href="/demo/analytics">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
+              </Link>
             </Button>
-            <Button variant="ghost" className="justify-start gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
-              <BookOpen className="h-4 w-4" />
-              Playbook
+            <Button asChild variant="ghost" className="justify-start gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <Link href="/demo/playbook">
+                <BookOpen className="h-4 w-4" />
+                Playbook
+              </Link>
             </Button>
           </nav>
         </div>

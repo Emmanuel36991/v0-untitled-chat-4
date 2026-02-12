@@ -27,7 +27,10 @@ import {
    Wallet,
    Briefcase,
    Layers,
-   Check
+   Check,
+   FolderOpen,
+   PenLine,
+   SlidersHorizontal,
 } from "lucide-react"
 import NextLink from "next/link"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
@@ -458,7 +461,7 @@ export default function TradesPage() {
                   ) : filteredTrades.length === 0 ? (
                      accounts.length === 0 ? (
                         <EmptyState
-                           icon={Wallet}
+                           icon={FolderOpen}
                            title="No portfolio yet"
                            description="Create a trading portfolio to start logging your journey."
                            action={{ label: "Create Portfolio", onClick: () => setIsCreateAccountOpen(true) }}
@@ -466,7 +469,7 @@ export default function TradesPage() {
                         />
                      ) : trades.length === 0 ? (
                         <EmptyState
-                           icon={BookOpen}
+                           icon={PenLine}
                            title="No trades logged"
                            description="Start recording executions to build your trade journal and track performance."
                            action={{ label: "Add Trade", href: "/add-trade" }}
@@ -474,7 +477,7 @@ export default function TradesPage() {
                         />
                      ) : (
                         <EmptyState
-                           icon={Search}
+                           icon={SlidersHorizontal}
                            title="No matching trades"
                            description="No entries match your current filters. Try broadening your search criteria."
                            action={{ label: "Clear filters", onClick: () => { setFilters({}); setSearchTerm("") }, variant: "outline" }}

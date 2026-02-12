@@ -72,6 +72,8 @@ import {
   ArrowRight,
   Filter,
   Calendar,
+  LineChart,
+  Inbox,
 } from "lucide-react"
 
 // --- Charts (Recharts) ---
@@ -1012,7 +1014,7 @@ export default function DashboardPage() {
                   </div>
                 ) : chartData.length === 0 ? (
                   <EmptyState
-                    icon={BarChart3}
+                    icon={LineChart}
                     title="No Trading Data"
                     description="Log your first trade to see your equity curve and performance charts come to life."
                     action={{ label: "Log your first trade", href: "/add-trade" }}
@@ -1390,7 +1392,7 @@ export default function DashboardPage() {
 
               {filteredTrades.length === 0 && (
                 <EmptyState
-                  icon={Filter}
+                  icon={Inbox}
                   title="No recent executions"
                   description="Trades logged within your selected time period will appear here."
                   action={{ label: "Log your first trade", href: "/add-trade" }}

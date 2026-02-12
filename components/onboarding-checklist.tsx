@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   Circle,
   X,
-  Rocket,
+  ListChecks,
   ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -104,7 +104,7 @@ export function OnboardingChecklist({
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20">
-              <Rocket className="w-5 h-5" />
+              <ListChecks className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-foreground">
@@ -134,14 +134,14 @@ export function OnboardingChecklist({
         </div>
 
         {/* Steps */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {steps.map((step) => {
             const Icon = step.icon
             return (
               <Link key={step.id} href={step.completed ? "#" : step.href}>
                 <div
                   className={cn(
-                    "group flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
+                    "group flex items-center gap-3.5 p-3.5 rounded-xl transition-all duration-200",
                     step.completed
                       ? "bg-emerald-50/60 dark:bg-emerald-900/10"
                       : "bg-white/60 dark:bg-gray-800/40 hover:bg-white dark:hover:bg-gray-800/60 hover:shadow-sm cursor-pointer"

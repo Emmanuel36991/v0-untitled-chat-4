@@ -40,21 +40,37 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
     icon: React.ComponentType<{ className?: string }>
     checked: boolean
     onToggle: () => void
+    href?: string
     details: string[]
   }) => (
     <div className="border-2 border-border rounded-xl overflow-hidden transition-all">
-      <button
-        onClick={() => setExpandedSection(expandedSection === id ? null : id)}
-        className="w-full p-4 hover:bg-muted/50 transition-colors text-left flex items-start gap-4"
-      >
-        <div className="mt-1 flex-shrink-0">
-          <Icon className="w-5 h-5 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-foreground">{title}</h4>
-          <p className="text-sm text-muted-foreground mt-1">{description}</p>
-        </div>
-      </button>
+      <div className="flex w-full">
+        <button
+          onClick={() => setExpandedSection(expandedSection === id ? null : id)}
+          className="flex-1 p-4 hover:bg-muted/50 transition-colors text-left flex items-start gap-4"
+        >
+          <div className="mt-1 flex-shrink-0">
+            <Icon className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h4 className="font-semibold text-foreground">{title}</h4>
+              {href && (
+                <a
+                  href={href}
+                  onClick={(e) => e.stopPropagation()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-indigo-500 hover:text-indigo-600 hover:underline flex items-center gap-0.5"
+                >
+                  (Read full document <span className="text-[10px] ml-0.5">↗</span>)
+                </a>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          </div>
+        </button>
+      </div>
 
       {expandedSection === id && (
         <div className="border-t border-border bg-muted/30 p-4">
@@ -107,6 +123,7 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
           description="I agree to the Terms of Service and understand my rights and responsibilities."
           checked={privacyPreferences.termsAccepted || false}
           onToggle={() => toggleConsent("termsAccepted")}
+          href="/terms"
           details={[
             "User account creation and management",
             "Prohibited activities and misuse prevention",
@@ -124,6 +141,7 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
           description="I acknowledge that I have read and understand how my data is collected and used."
           checked={privacyPreferences.privacyPolicyAccepted || false}
           onToggle={() => toggleConsent("privacyPolicyAccepted")}
+          href="/privacy"
           details={[
             "Personal data collection and processing",
             "Data storage and security measures",

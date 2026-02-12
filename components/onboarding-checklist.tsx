@@ -134,7 +134,7 @@ export function OnboardingChecklist({
         </div>
 
         {/* Steps */}
-        <div className="space-y-3">
+        <div className="space-y-6">
           {steps.map((step) => {
             const Icon = step.icon
             return (

@@ -3,47 +3,45 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge" // <--- ADDED THIS IMPORT
-import { 
-  LayoutDashboard, 
-  List, 
-  BarChart3, 
-  BookOpen, 
-  Users, 
-  Menu, 
-  ShieldCheck, 
-  FileText, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  List,
+  BarChart3,
+  BookOpen,
+  Users,
+  Menu,
+  ShieldCheck,
+  FileText,
   Settings,
-  Zap 
+  Zap
 } from 'lucide-react'
 import { cn } from "@/lib/utils"
-import { createClient } from "@/lib/supabase/client"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
 import { LATEST_UPDATE_ID } from "@/lib/updates"
+import { UserNav } from "@/components/layout/user-nav"
 
 const mainNavItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Trades", href: "/trades", icon: List },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Playbook", href: "/playbook", icon: BookOpen }, 
+  { name: "Playbook", href: "/playbook", icon: BookOpen },
   { name: "Psychology", href: "/psychology", icon: ShieldCheck },
   { name: "Backtesting", href: "/backtesting", icon: FileText },
-  { name: "Community", href: "/social-insights", icon: Users },
-  { name: "Guides", href: "/guides", icon: BookOpen },
-  { name: "Settings", href: "/settings", icon: Settings }, 
 ]
 
-const secondaryNavItems: any[] = []
+const moreNavItems = [
+  { name: "Community", href: "/social-insights", icon: Users },
+  { name: "Guides", href: "/guides", icon: BookOpen },
+  { name: "Settings", href: "/settings", icon: Settings },
+]
 
 export function Navbar() {
   const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
 
   // Updates State
   const [showUpdates, setShowUpdates] = useState(false)
@@ -66,7 +64,6 @@ export function Navbar() {
   }
 
   const visibleMainNavItems = mainNavItems
-  const visibleSecondaryNavItems = secondaryNavItems
 
   const NavLink = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
     <Link
@@ -81,11 +78,6 @@ export function Navbar() {
       {children}
     </Link>
   )
-
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
 
   const NavContent = () => (
     <div className="relative flex h-16 items-center border-b border-gray-200 dark:border-gray-800 px-4 lg:px-6 sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-sm">
@@ -103,7 +95,7 @@ export function Navbar() {
 
       {/* Desktop Navigation with modern styling */}
       <nav className="hidden lg:flex items-center space-x-2 flex-grow">
-        {visibleMainNavItems.map((item, index) => (
+        {visibleMainNavItems.map((item) => (
           <div key={item.name} className="relative group">
             <NavLink
               href={item.href}
@@ -140,16 +132,8 @@ export function Navbar() {
           )}
         </Button>
 
-        {/* Modern Logout Button */}
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          size="sm"
-          className="relative border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white group shadow-sm hover:shadow-md"
-        >
-          <LogOut className="h-4 w-4 mr-2 transition-all duration-300" />
-          <span className="font-medium">Logout</span>
-        </Button>
+        {/* User Profile Dropdown */}
+        <UserNav />
 
         {/* Mobile Navigation Trigger with modern styling */}
         <div className="lg:hidden relative">
@@ -192,10 +176,31 @@ export function Navbar() {
                   ))}
                 </nav>
 
+                {/* Mobile secondary navigation */}
+                <div className="mt-8">
+                  <h4 className="mb-4 px-4 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider">
+                    More
+                  </h4>
+                  <nav className="grid gap-2 px-4">
+                    {moreNavItems.map((item) => (
+                      <NavLink
+                        key={item.name}
+                        href={item.href}
+                        className="text-base py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium">{item.name}</span>
+                        </div>
+                      </NavLink>
+                    ))}
+                  </nav>
+                </div>
+
                 {/* Mobile Updates Button */}
                 <div className="mt-6 px-4">
-                   <Button 
-                    variant="outline" 
+                   <Button
+                    variant="outline"
                     onClick={handleOpenUpdates}
                     className="w-full justify-start gap-3 text-base py-6 rounded-xl border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-300"
                   >
@@ -204,42 +209,6 @@ export function Navbar() {
                     {hasUnreadUpdates && (
                       <Badge className="ml-auto bg-red-500 text-white border-0">New</Badge>
                     )}
-                  </Button>
-                </div>
-
-                {/* Mobile secondary navigation */}
-                {visibleSecondaryNavItems.length > 0 && (
-                  <div className="mt-8">
-                    <h4 className="mb-4 px-4 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
-                      <div className="w-2 h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"></div>
-                      Additional Resources
-                    </h4>
-                    <nav className="grid gap-2 px-4">
-                      {visibleSecondaryNavItems.map((item) => (
-                        <NavLink
-                          key={item.name}
-                          href={item.href}
-                          className="text-base py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
-                        >
-                          <div className="flex items-center gap-3">
-                            <item.icon className="h-5 w-5" />
-                            <span className="font-medium">{item.name}</span>
-                          </div>
-                        </NavLink>
-                      ))}
-                    </nav>
-                  </div>
-                )}
-
-                {/* Mobile Logout Button */}
-                <div className="mt-8 px-4">
-                  <Button
-                    onClick={handleLogout}
-                    variant="outline"
-                    className="w-full border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white group shadow-sm hover:shadow-md"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    <span className="font-medium">Logout</span>
                   </Button>
                 </div>
               </div>

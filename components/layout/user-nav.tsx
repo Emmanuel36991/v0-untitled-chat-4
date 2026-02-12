@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, UserIcon, Loader2 } from "lucide-react" // Added Loader2
+import { LogOut, UserIcon, Loader2, Settings, BookOpen, Users } from "lucide-react"
 
 export function UserNav() {
   const router = useRouter()
@@ -119,18 +119,24 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push("/dashboard")} className="cursor-pointer">
-            {" "}
-            {/* Assuming settings is part of dashboard or trades now */}
             <UserIcon className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </DropdownMenuItem>
-          {/* The settings are now in the Trades page dialog, so this direct link might be redundant
-              or could point to the trades page if desired. For now, I'll keep it generic or remove.
-          <DropdownMenuItem onClick={() => router.push("/trades")} className="cursor-pointer">
+          <DropdownMenuItem onClick={() => router.push("/settings")} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Settings</span>
           </DropdownMenuItem>
-          */}
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => router.push("/social-insights")} className="cursor-pointer">
+            <Users className="mr-2 h-4 w-4" />
+            <span>Community</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/guides")} className="cursor-pointer">
+            <BookOpen className="mr-2 h-4 w-4" />
+            <span>Guides</span>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem

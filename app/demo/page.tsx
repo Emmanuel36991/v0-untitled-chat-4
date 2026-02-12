@@ -1,233 +1,280 @@
 "use client"
 
+import React, { useState } from "react"
 import Link from "next/link"
-import { LayoutDashboard, TrendingUp, Brain, LineChart, ArrowRight, CheckCircle } from "lucide-react"
-import { ConcentradeLogo } from "@/components/concentrade-logo"
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Activity,
+  Percent,
+  ArrowUpRight,
+  Filter,
+  Download,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  CartesianGrid,
+} from "recharts"
+import { DEMO_EQUITY_DATA, DEMO_RECENT_TRADES } from "@/lib/mock-demo-data"
+import { cn } from "@/lib/utils"
 
-export default function DemoHomePage() {
+const KPICard = ({ title, value, subValue, icon: Icon, trend, trendValue, colorClass }: any) => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/50">
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <ConcentradeLogo size={48} variant="full" />
-            <div className="hidden sm:flex flex-col">
-              <span className="text-sm font-semibold text-foreground">Concentrade</span>
-              <span className="text-xs text-muted-foreground">Demo Environment</span>
-            </div>
+    <Card className="relative overflow-hidden border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 backdrop-blur-xl hover:shadow-lg transition-all duration-300 group">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div className={cn("p-2.5 rounded-xl bg-opacity-10 transition-transform group-hover:scale-110", colorClass)}>
+            <Icon className="h-5 w-5" />
           </div>
-          <Link
-            href="/marketing"
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-200"
-          >
-            ← Back
-          </Link>
+          {trend && (
+            <Badge variant="secondary" className={cn("font-mono text-xs", trend === "up" ? "text-green-600 bg-green-500/10" : "text-red-600 bg-red-500/10")}>
+              {trend === "up" ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
+              {trendValue}
+            </Badge>
+          )}
         </div>
-      </header>
-
-      <section className="container mx-auto px-4 py-20 md:py-28">
-        <div className="max-w-4xl mx-auto">
-          {/* Hero Badge */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
-              <CheckCircle className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary">Interactive Demo Ready</span>
-            </div>
+        <div className="space-y-1">
+          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-bold font-mono tracking-tight">{value}</span>
+            {subValue && <span className="text-sm text-muted-foreground">{subValue}</span>}
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
-          {/* Main Heading */}
-          <h1 className="text-6xl md:text-7xl font-bold text-center text-foreground mb-6 leading-tight">
-            Experience Professional Trading Excellence
-          </h1>
+// Icon wrapper for Scale (Avg Win/Loss)
+const ScaleIcon = (props: any) => (
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+    <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
+    <path d="M7 21h10" />
+    <path d="M12 3v18" />
+    <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+  </svg>
+)
 
-          {/* Subheading */}
-          <p className="text-xl md:text-2xl text-center text-muted-foreground mb-8 leading-relaxed max-w-3xl mx-auto">
-            Explore how traders use Concentrade to eliminate emotional mistakes, track performance patterns, and build
-            consistent, profitable results.
+export default function DemoPage() {
+  const [timeframe, setTimeframe] = useState("30d")
+
+  return (
+    <main className="container mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8 space-y-8">
+
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Dashboard Overview</h1>
+          <p className="text-muted-foreground">
+            Welcome back, Demo User. Here's what's happening with your trading today.
           </p>
-
-          {/* Feature Tags */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {[
-              { icon: CheckCircle, label: "Real Trading Data" },
-              { icon: CheckCircle, label: "Psychology Insights" },
-              { icon: CheckCircle, label: "Advanced Analytics" },
-            ].map((tag, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-full text-sm"
-              >
-                <tag.icon className="h-4 w-4 text-primary" />
-                <span className="text-foreground font-medium">{tag.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
-      </section>
-
-      <section className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-          {/* Dashboard Card */}
-          <Link href="/demo/dashboard" className="group h-full">
-            <div className="relative h-full bg-card hover:bg-card/80 border border-border hover:border-primary/50 rounded-2xl p-8 md:p-10 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              {/* Background accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-primary/15 rounded-xl group-hover:bg-primary/25 transition-colors">
-                    <LayoutDashboard className="h-7 w-7 text-primary" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1" />
-                </div>
-
-                <h3 className="text-2xl font-bold text-foreground mb-2">Trading Dashboard</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Real-time performance overview with P&L, win rates, profit factors, and key metrics all in one
-                  comprehensive dashboard.
-                </p>
-
-                <div className="flex items-center text-primary font-semibold text-sm">Explore Dashboard</div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Trades Card */}
-          <Link href="/demo/trades" className="group h-full">
-            <div className="relative h-full bg-card hover:bg-card/80 border border-border hover:border-primary/50 rounded-2xl p-8 md:p-10 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              {/* Background accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-primary/15 rounded-xl group-hover:bg-primary/25 transition-colors">
-                    <TrendingUp className="h-7 w-7 text-primary" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1" />
-                </div>
-
-                <h3 className="text-2xl font-bold text-foreground mb-2">Trade Journal</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Detailed trade entries with screenshots, setup notes, emotion tracking, and comprehensive analysis for
-                  every trade.
-                </p>
-
-                <div className="flex items-center text-primary font-semibold text-sm">View Trades</div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Analytics Card */}
-          <Link href="/demo/analytics" className="group h-full">
-            <div className="relative h-full bg-card hover:bg-card/80 border border-border hover:border-primary/50 rounded-2xl p-8 md:p-10 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              {/* Background accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-primary/15 rounded-xl group-hover:bg-primary/25 transition-colors">
-                    <LineChart className="h-7 w-7 text-primary" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1" />
-                </div>
-
-                <h3 className="text-2xl font-bold text-foreground mb-2">Advanced Analytics</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Deep pattern analysis by time, day, and setup type. Performance calendars and insights to identify
-                  your best trading conditions.
-                </p>
-
-                <div className="flex items-center text-primary font-semibold text-sm">See Analytics</div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Psychology Card */}
-          <Link href="/demo/psychology" className="group h-full">
-            <div className="relative h-full bg-card hover:bg-card/80 border border-border hover:border-primary/50 rounded-2xl p-8 md:p-10 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              {/* Background accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-primary/15 rounded-xl group-hover:bg-primary/25 transition-colors">
-                    <Brain className="h-7 w-7 text-primary" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors translate-x-0 group-hover:translate-x-1" />
-                </div>
-
-                <h3 className="text-2xl font-bold text-foreground mb-2">Psychology Tracker</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Track emotional patterns like confidence, stress, and focus. Understand how your psychology directly
-                  impacts trading success.
-                </p>
-
-                <div className="flex items-center text-primary font-semibold text-sm">Track Psychology</div>
-              </div>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-4 py-20 md:py-28">
-        <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl border border-primary/20 p-12 md:p-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-center text-foreground mb-4">Demo Account Performance</h2>
-          <p className="text-center text-muted-foreground mb-12 text-lg max-w-2xl mx-auto">
-            See sample results from professional traders using all Concentrade features
-          </p>
-
-          <div className="grid md:grid-cols-4 gap-6">
-            {[
-              { value: "+$47K", label: "Total P&L", highlight: true },
-              { value: "73%", label: "Win Rate" },
-              { value: "2.4", label: "Profit Factor" },
-              { value: "1,247", label: "Total Trades" },
-            ].map((stat, idx) => (
-              <div
-                key={idx}
-                className={`p-8 rounded-xl transition-all ${stat.highlight ? "bg-primary/20 border border-primary/40" : "bg-background/60 border border-border"}`}
-              >
-                <div className={`text-4xl font-bold mb-2 ${stat.highlight ? "text-primary" : "text-foreground"}`}>
-                  {stat.value}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-4 py-20 md:py-28">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">Ready to Master Your Trading?</h2>
-          <p className="text-lg text-muted-foreground mb-12 leading-relaxed">
-            Join professional traders using Concentrade to build consistent profits, manage emotions, and achieve
-            trading excellence.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/signup"
-              className="px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold transition-all hover:shadow-xl hover:scale-105 active:scale-95"
+        <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-1 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
+          {["7d", "30d", "90d", "YTD"].map((tf) => (
+            <button
+              key={tf}
+              onClick={() => setTimeframe(tf)}
+              className={cn(
+                "px-3 py-1.5 text-sm font-medium rounded-md transition-all",
+                timeframe === tf
+                  ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-200"
+              )}
             >
-              Start Your Free Trial
-            </Link>
-            <Link
-              href="/marketing"
-              className="px-8 py-4 border-2 border-primary text-primary hover:bg-primary/5 rounded-xl font-semibold transition-all"
-            >
-              Learn More About Concentrade
-            </Link>
-          </div>
+              {tf}
+            </button>
+          ))}
         </div>
-      </section>
+      </div>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 mt-20">
-        <div className="container mx-auto px-4 py-8 text-center text-sm text-muted-foreground">
-          <p>© 2025 Concentrade. All rights reserved. This is a demo environment.</p>
+      {/* KPI Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard
+          title="Total P&L"
+          value="+$4,250.00"
+          icon={DollarSign}
+          trend="up"
+          trendValue="+12.5%"
+          colorClass="bg-green-500 text-green-500"
+        />
+        <KPICard
+          title="Win Rate"
+          value="68%"
+          subValue="29W - 13L"
+          icon={Activity}
+          trend="up"
+          trendValue="+2.1%"
+          colorClass="bg-blue-500 text-blue-500"
+        />
+        <KPICard
+          title="Profit Factor"
+          value="2.10"
+          icon={Percent}
+          trend="up"
+          trendValue="+0.15"
+          colorClass="bg-purple-500 text-purple-500"
+        />
+        <KPICard
+          title="Avg Win / Loss"
+          value="$350"
+          subValue="/ -$150"
+          icon={ScaleIcon}
+          trend="neutral"
+          colorClass="bg-orange-500 text-orange-500"
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+        {/* Equity Chart - Spans 2 cols */}
+        <div className="xl:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Equity Curve</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="h-8">
+                <Filter className="h-3.5 w-3.5 mr-2" /> Filter
+              </Button>
+              <Button variant="outline" size="sm" className="h-8">
+                <Download className="h-3.5 w-3.5 mr-2" /> Export
+              </Button>
+            </div>
+          </div>
+
+          <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm">
+            <CardContent className="p-6">
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={DEMO_EQUITY_DATA}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
+                    <XAxis
+                      dataKey="date"
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      minTickGap={30}
+                    />
+                    <YAxis
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `$${value}`}
+                    />
+                    <RechartsTooltip
+                      contentStyle={{
+                        backgroundColor: "#1f2937",
+                        borderColor: "#374151",
+                        color: "#f3f4f6",
+                        borderRadius: "0.5rem"
+                      }}
+                      itemStyle={{ color: "#10b981" }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorValue)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </footer>
-    </div>
+
+        {/* Recent Trades - Spans 1 col */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Recent Trades</h2>
+            <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 h-8">
+              View All <ArrowUpRight className="ml-1 h-3 w-3" />
+            </Button>
+          </div>
+
+          <Card className="border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 shadow-sm h-[450px] overflow-hidden flex flex-col">
+            <div className="flex-1 overflow-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-900/50 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Symbol</th>
+                    <th className="px-4 py-3 font-medium">Setup</th>
+                    <th className="px-4 py-3 font-medium text-right">P&L</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {DEMO_RECENT_TRADES.map((trade) => (
+                    <tr key={trade.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold">{trade.symbol}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <span className={trade.side === "Long" ? "text-green-500" : "text-red-500"}>
+                            {trade.side}
+                          </span>
+                          <span>•</span>
+                          <span>{trade.date.split(' ')[0]}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="font-normal text-xs bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                          {trade.setup}
+                        </Badge>
+                      </td>
+                      <td className={cn("px-4 py-3 text-right font-mono font-medium", trade.pnl > 0 ? "text-green-500" : "text-red-500")}>
+                        {trade.pnl > 0 ? "+" : ""}${trade.pnl.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Promo / Call to Action specific to Demo */}
+          <div className="rounded-xl p-4 bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-lg">
+            <h3 className="font-bold text-lg mb-1">Like what you see?</h3>
+            <p className="text-sm text-indigo-100 mb-3">
+              Start your own trading journal today and get professional analytics instantly.
+            </p>
+            <Button asChild size="sm" variant="secondary" className="w-full font-semibold shadow-md hover:scale-[1.02] transition-transform">
+              <Link href="/signup">
+                Create Free Account
+              </Link>
+            </Button>
+          </div>
+
+        </div>
+      </div>
+    </main>
   )
 }

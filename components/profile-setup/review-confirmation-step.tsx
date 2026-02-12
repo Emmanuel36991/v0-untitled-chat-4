@@ -3,20 +3,24 @@
 import type React from "react"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle2, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CheckCircle2, AlertCircle, Rocket, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 import type { UserConfiguration } from "@/types/user-config"
 
 interface ReviewConfirmationStepProps {
   config: UserConfiguration
+  onLaunch?: () => void
+  isLaunching?: boolean
 }
 
-export function ReviewConfirmationStep({ config }: ReviewConfirmationStepProps) {
+export function ReviewConfirmationStep({ config, onLaunch, isLaunching = false }: ReviewConfirmationStepProps) {
   const allRequiredFieldsComplete =
     config.privacyPreferences.termsAccepted &&
     config.privacyPreferences.privacyPolicyAccepted &&
     config.privacyPreferences.dataCollectionConsent &&
-    (config.tradingPreferences.methodologies?.length ?? 0) > 0 &&
-    (config.tradingPreferences.primaryInstruments?.length ?? 0) > 0
+    (config.tradingPreferences.primaryInstruments?.length ?? 0) > 0 &&
+    (config.userProfile.fullName?.trim().length ?? 0) >= 3
 
   const ReviewSection = ({
     title,
@@ -27,18 +31,26 @@ export function ReviewConfirmationStep({ config }: ReviewConfirmationStepProps) 
     items: Array<{ label: string; value: string | number | boolean }>
     icon: React.ComponentType<{ className?: string }>
   }) => (
-    <Card className="border-2 border-border">
-      <CardContent className="p-6">
+    <Card className="border border-border">
+      <CardContent className="p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Icon className="w-5 h-5 text-primary" />
-          <h4 className="font-semibold text-foreground">{title}</h4>
+          <Icon className="w-4 h-4 text-primary" />
+          <h4 className="font-semibold text-sm text-foreground">{title}</h4>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {items.map((item, i) => (
-            <div key={i} className="flex items-start justify-between">
+            <div key={i} className="flex items-start justify-between gap-4">
               <span className="text-sm text-muted-foreground">{item.label}</span>
-              <span className="text-sm font-medium text-foreground">
-                {typeof item.value === "boolean" ? (item.value ? "Accepted" : "Not Set") : item.value}
+              <span className="text-sm font-medium text-foreground text-right">
+                {typeof item.value === "boolean" ? (
+                  item.value ? (
+                    <span className="text-emerald-600">Accepted</span>
+                  ) : (
+                    <span className="text-muted-foreground">Not Set</span>
+                  )
+                ) : (
+                  item.value || <span className="text-muted-foreground">Not Set</span>
+                )}
               </span>
             </div>
           ))}
@@ -49,25 +61,14 @@ export function ReviewConfirmationStep({ config }: ReviewConfirmationStepProps) 
 
   return (
     <div className="space-y-8">
-      <div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">Review Your Profile Setup</h3>
-        <p className="text-muted-foreground mb-6">
-          Please review all your settings before completing the setup process.
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ReviewSection
           icon={CheckCircle2}
           title="Trading Configuration"
           items={[
-            { label: "Methodologies", value: config.tradingPreferences.methodologies?.length ?? 0 },
             { label: "Markets", value: config.tradingPreferences.primaryInstruments?.length ?? 0 },
             { label: "Instruments", value: config.tradingPreferences.specificInstruments?.length ?? 0 },
-            {
-              label: "24-Hour Format",
-              value: config.tradingPreferences.use24HourFormat ? "Enabled" : "Disabled",
-            },
+            { label: "Visible in forms", value: config.tradingPreferences.visibleInstruments?.length ?? 0 },
           ]}
         />
 
@@ -76,8 +77,8 @@ export function ReviewConfirmationStep({ config }: ReviewConfirmationStepProps) 
           title="Personal Information"
           items={[
             { label: "Full Name", value: config.userProfile.fullName || "Not Provided" },
-            { label: "Experience Level", value: config.userProfile.experienceLevel || "Not Selected" },
-            { label: "Account Type", value: config.userProfile.accountType || "Not Selected" },
+            { label: "Experience", value: config.userProfile.experienceLevel || "Not Selected" },
+            { label: "Style", value: config.userProfile.accountType?.replace("_", " ") || "Not Selected" },
           ]}
         />
 
@@ -88,7 +89,6 @@ export function ReviewConfirmationStep({ config }: ReviewConfirmationStepProps) 
             { label: "New Features", value: config.notificationPreferences.emailNewFeatures ?? false },
             { label: "Trade Milestones", value: config.notificationPreferences.emailTradeMilestones ?? false },
             { label: "Weekly Digest", value: config.notificationPreferences.emailWeeklyDigest ?? false },
-            { label: "Community Insights", value: config.notificationPreferences.emailCommunityInsights ?? false },
           ]}
         />
 
@@ -99,35 +99,57 @@ export function ReviewConfirmationStep({ config }: ReviewConfirmationStepProps) 
             { label: "Terms Accepted", value: config.privacyPreferences.termsAccepted ?? false },
             { label: "Privacy Accepted", value: config.privacyPreferences.privacyPolicyAccepted ?? false },
             { label: "Data Consent", value: config.privacyPreferences.dataCollectionConsent ?? false },
-            { label: "Marketing Emails", value: config.privacyPreferences.marketingEmailsOptIn ?? false },
           ]}
         />
       </div>
 
       {/* Completion Status */}
       <Card
-        className={`border-2 ${
-          allRequiredFieldsComplete ? "border-green-500/30 bg-green-500/5" : "border-amber-500/30 bg-amber-500/5"
-        }`}
+        className={cn(
+          "border",
+          allRequiredFieldsComplete ? "border-emerald-500/30 bg-emerald-500/5" : "border-amber-500/30 bg-amber-500/5"
+        )}
       >
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className={allRequiredFieldsComplete ? "text-green-600" : "text-amber-600"}>
+            <div className={allRequiredFieldsComplete ? "text-emerald-600" : "text-amber-600"}>
               {allRequiredFieldsComplete ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
             </div>
-            <div>
+            <div className="flex-1">
               <h4 className="font-semibold text-foreground mb-1">
-                {allRequiredFieldsComplete ? "Ready to Complete Setup" : "Incomplete Setup"}
+                {allRequiredFieldsComplete ? "Ready to launch" : "Incomplete Setup"}
               </h4>
               <p className="text-sm text-muted-foreground">
                 {allRequiredFieldsComplete
-                  ? "All required fields are complete. Click 'Complete Setup' to finalize your profile."
-                  : "Please ensure all required fields are completed before proceeding."}
+                  ? "Everything looks good. Launch your dashboard to start journaling."
+                  : "Please go back and ensure all required fields are completed."}
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Launch Button */}
+      {onLaunch && (
+        <Button
+          size="lg"
+          onClick={onLaunch}
+          disabled={!allRequiredFieldsComplete || isLaunching}
+          className="w-full h-14 text-base font-bold gap-3 shadow-lg shadow-primary/20 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all"
+        >
+          {isLaunching ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Setting up your workspace...
+            </>
+          ) : (
+            <>
+              <Rocket className="w-5 h-5" />
+              Launch Dashboard
+            </>
+          )}
+        </Button>
+      )}
     </div>
   )
 }

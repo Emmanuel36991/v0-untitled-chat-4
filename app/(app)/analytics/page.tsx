@@ -653,11 +653,10 @@ export default function AnalyticsPage() {
                 <CardHeader className="pb-2 border-b border-border shrink-0">
                   <div className="flex items-center justify-between w-full">
                     <div>
-                      <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <Brain className="w-4 h-4 text-primary" />
-                        Trader DNA
-                      </CardTitle>
-                      <CardDescription className="text-xs">Performance hexagram</CardDescription>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-primary" />
+                  Trader's Performance
+                </CardTitle>
                     </div>
                     <Badge variant="secondary" className="font-mono text-xs bg-primary/10 text-primary border-0 font-bold">
                       {analytics.overallScore}/100

@@ -1457,7 +1457,7 @@ export default function DashboardPage() {
                     variant="secondary"
                     className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md px-3 py-1"
                   >
-                    <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" /> AI Insight
+                    AI Insight
                   </Badge>
                   <span className="text-[10px] font-medium opacity-70">Just now</span>
                 </div>

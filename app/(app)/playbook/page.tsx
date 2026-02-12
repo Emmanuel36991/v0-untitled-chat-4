@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
+import { EmptyState } from "@/components/empty-state"
 import {
   getStrategies,
   upsertStrategy,
@@ -579,22 +580,21 @@ export default function PlaybookPage() {
               <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-28 border border-dashed border-border rounded-2xl bg-card/30">
-              <div className="inline-flex p-4 rounded-2xl bg-muted/50 mb-4">
-                <BookOpen className="w-10 h-10 text-muted-foreground/25" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">
-                {searchQuery ? "No matching strategies" : "Your playbook is empty"}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
-                {searchQuery
-                  ? "Try a different search term."
-                  : "Define your first trading system to start tracking performance data across setups."}
-              </p>
-              {!searchQuery && (
-                <Button onClick={() => { setEditingStrategy(null); setIsBuilderOpen(true) }} className="gap-2 shadow-sm">
-                  <Plus className="w-4 h-4" /> Create Strategy
-                </Button>
+            <div className="border border-dashed border-border rounded-2xl bg-card/30">
+              {searchQuery ? (
+                <EmptyState
+                  icon={Search}
+                  title="No matching strategies"
+                  description="Try a different search term to find your strategies."
+                  action={{ label: "Clear search", onClick: () => setSearchQuery(""), variant: "outline" }}
+                />
+              ) : (
+                <EmptyState
+                  icon={BookOpen}
+                  title="Your playbook is empty"
+                  description="Define your first trading system to start tracking performance data across setups."
+                  action={{ label: "Create Strategy", onClick: () => { setEditingStrategy(null); setIsBuilderOpen(true) } }}
+                />
               )}
             </div>
           ) : (

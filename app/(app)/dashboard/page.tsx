@@ -95,6 +95,10 @@ import { CurrencySelector } from "@/components/currency-selector"
 import { formatPnLEnhanced } from "@/lib/format-pnl-enhanced"
 import { formatCurrencyValue } from "@/lib/currency-config"
 import { generateAIInsights } from "@/lib/ai-insights-generator"
+import { getTradingAccounts } from "@/app/actions/account-actions"
+import { getStrategies } from "@/app/actions/playbook-actions"
+import { EmptyState } from "@/components/empty-state"
+import { OnboardingChecklist } from "@/components/onboarding-checklist"
 
 // ==========================================
 // 1. DATA MODELS & TYPES
@@ -514,6 +518,10 @@ export default function DashboardPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Onboarding state
+  const [hasAccounts, setHasAccounts] = useState(false)
+  const [hasStrategies, setHasStrategies] = useState(false)
+
   // UI State
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "ytd" | "all">("30d")
   const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily" | "calendar">("cumulative")
@@ -542,9 +550,15 @@ export default function DashboardPage() {
     try {
       // Simulate network delay for smoother UI
       await new Promise((resolve) => setTimeout(resolve, 600))
-      const fetchedTrades = await getTrades()
+      const [fetchedTrades, accounts, strategies] = await Promise.all([
+        getTrades(),
+        getTradingAccounts(),
+        getStrategies(),
+      ])
       console.log("[v0] Dashboard - Fetched trades:", fetchedTrades?.length || 0)
       setTrades(fetchedTrades || [])
+      setHasAccounts((accounts?.length ?? 0) > 0)
+      setHasStrategies((strategies?.length ?? 0) > 0)
     } catch (err) {
       console.error("Dashboard: Failed to fetch trades", err)
       setError("Failed to synchronize trading data.")
@@ -827,6 +841,13 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Onboarding Checklist (new users) */}
+        <OnboardingChecklist
+          hasAccounts={hasAccounts}
+          hasStrategies={hasStrategies}
+          hasTrades={trades.length > 0}
+        />
+
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
@@ -990,12 +1011,13 @@ export default function DashboardPage() {
                     />
                   </div>
                 ) : chartData.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                    <BarChart3 className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                      No Trading Data
-                    </h3>
-                  </div>
+                  <EmptyState
+                    icon={BarChart3}
+                    title="No Trading Data"
+                    description="Log your first trade to see your equity curve and performance charts come to life."
+                    action={{ label: "Log your first trade", href: "/add-trade" }}
+                    className="h-full"
+                  />
                 ) : (
                   <div className="w-full h-full px-6">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1367,10 +1389,13 @@ export default function DashboardPage() {
               })}
 
               {filteredTrades.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                  <Filter className="w-8 h-8 opacity-20 mb-4" />
-                  <p className="font-medium">No trading data found</p>
-                </div>
+                <EmptyState
+                  icon={Filter}
+                  title="No recent executions"
+                  description="Trades logged within your selected time period will appear here."
+                  action={{ label: "Log your first trade", href: "/add-trade" }}
+                  compact
+                />
               )}
             </CardContent>
           </Card>

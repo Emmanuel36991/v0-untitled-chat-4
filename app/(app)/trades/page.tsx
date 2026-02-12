@@ -32,6 +32,7 @@ import {
 import NextLink from "next/link"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
 import { cn } from "@/lib/utils"
+import { EmptyState } from "@/components/empty-state"
 import { SimpleConnectionModal } from "@/components/connection/simple-connection-modal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
@@ -455,22 +456,31 @@ export default function TradesPage() {
                         <p className="text-sm text-muted-foreground">Loading journal entries...</p>
                      </div>
                   ) : filteredTrades.length === 0 ? (
-                     <div className="flex-1 flex flex-col items-center justify-center p-12 text-center max-w-md mx-auto">
-                        <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mb-4">
-                           <BookOpen className="h-8 w-8 text-muted-foreground/40" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-foreground">No trades found</h3>
-                        <p className="text-sm text-muted-foreground mt-2 max-w-xs">
-                           {accounts.length === 0
-                              ? "Create a portfolio to start logging your journey."
-                              : "No entries match your current filters."}
-                        </p>
-                        {accounts.length === 0 && (
-                           <Button className="mt-6 gap-2" onClick={() => setIsCreateAccountOpen(true)}>
-                              <Plus className="w-4 h-4" /> Create Portfolio
-                           </Button>
-                        )}
-                     </div>
+                     accounts.length === 0 ? (
+                        <EmptyState
+                           icon={Wallet}
+                           title="No portfolio yet"
+                           description="Create a trading portfolio to start logging your journey."
+                           action={{ label: "Create Portfolio", onClick: () => setIsCreateAccountOpen(true) }}
+                           className="flex-1"
+                        />
+                     ) : trades.length === 0 ? (
+                        <EmptyState
+                           icon={BookOpen}
+                           title="No trades logged"
+                           description="Start recording executions to build your trade journal and track performance."
+                           action={{ label: "Add Trade", href: "/add-trade" }}
+                           className="flex-1"
+                        />
+                     ) : (
+                        <EmptyState
+                           icon={Search}
+                           title="No matching trades"
+                           description="No entries match your current filters. Try broadening your search criteria."
+                           action={{ label: "Clear filters", onClick: () => { setFilters({}); setSearchTerm("") }, variant: "outline" }}
+                           className="flex-1"
+                        />
+                     )
                   ) : (
                      <SimpleTradeTable trades={filteredTrades} onRefresh={() => fetchData(true)} />
                   )}

@@ -102,9 +102,13 @@ export default function TradesPage() {
          const fetchedAccounts = await getTradingAccounts()
          setAccounts(fetchedAccounts)
 
-         // Fetch Trades
+         // Fetch Trades - Sort newest first (descending by date)
          const fetchedTrades = await getTrades()
-         const sorted = fetchedTrades.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+         const sorted = fetchedTrades.sort((a, b) => {
+            const dateA = new Date(a.date).getTime()
+            const dateB = new Date(b.date).getTime()
+            return dateB - dateA // Newest first
+         })
          setTrades(sorted)
 
          if (showToast) toast({ title: "Updated", description: "Data synchronized." })

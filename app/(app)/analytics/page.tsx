@@ -179,9 +179,9 @@ function DatePickerWithRange({ className, date, setDate }: any) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 border-border shadow-xl rounded-xl overflow-hidden" align="start" sideOffset={6}>
-        <div className="flex flex-col sm:flex-row bg-card">
+        <div className="flex bg-card">
           {/* Quick Select Sidebar */}
-          <div className="flex flex-col gap-0.5 p-3 border-b sm:border-b-0 sm:border-r border-border sm:w-[152px] bg-muted/30">
+          <div className="flex flex-col gap-0.5 p-3 border-r border-border w-[160px] bg-muted/30 shrink-0">
             <div className="px-2 py-1.5 mb-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Quick Select</span>
             </div>
@@ -211,7 +211,7 @@ function DatePickerWithRange({ className, date, setDate }: any) {
           </div>
 
           {/* Calendar Area */}
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="p-4 pb-3">
               <CalendarPrimitive
                 initialFocus
@@ -226,7 +226,7 @@ function DatePickerWithRange({ className, date, setDate }: any) {
 
             {/* Footer */}
             <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground font-medium">
                 {tempDate?.from && tempDate?.to
                   ? `${format(tempDate.from, "MMM d, yyyy")} - ${format(tempDate.to, "MMM d, yyyy")}`
                   : tempDate?.from
@@ -653,11 +653,10 @@ export default function AnalyticsPage() {
                 <CardHeader className="pb-2 border-b border-border shrink-0">
                   <div className="flex items-center justify-between w-full">
                     <div>
-                      <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <Brain className="w-4 h-4 text-primary" />
-                        Trader DNA
-                      </CardTitle>
-                      <CardDescription className="text-xs">Performance hexagram</CardDescription>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-primary" />
+                  Trader's Performance
+                </CardTitle>
                     </div>
                     <Badge variant="secondary" className="font-mono text-xs bg-primary/10 text-primary border-0 font-bold">
                       {analytics.overallScore}/100

@@ -79,7 +79,7 @@ export function TradeTable({
   const { displayFormat, setDisplayFormat } = usePnLDisplay()
 
   const [sortField, setSortField] = useState<SortField>("date")
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc") // Newest first by default
   const [editingRow, setEditingRow] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Partial<Trade>>({})
   const [searchTerm, setSearchTerm] = useState("")

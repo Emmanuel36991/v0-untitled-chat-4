@@ -694,6 +694,36 @@ export default function DashboardPage() {
     })
   }, [filteredTrades])
 
+  // Calculate Win Rate Trend over time
+  const winRateTrend = useMemo(() => {
+    if (filteredTrades.length === 0) return []
+    
+    const sorted = [...filteredTrades].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    )
+    
+    // Calculate cumulative win rate at each trade
+    const trendData: Array<{ value: number }> = []
+    let totalWins = 0
+    let totalTrades = 0
+    
+    sorted.forEach((trade) => {
+      const pnl = trade.pnl !== undefined
+        ? trade.pnl
+        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+      
+      totalTrades++
+      if (pnl > 0) totalWins++
+      
+      const currentWinRate = (totalWins / totalTrades) * 100
+      trendData.push({ value: currentWinRate })
+    })
+    
+    // Sample every nth trade to keep ~10-15 data points for smoother visualization
+    const sampleRate = Math.max(1, Math.floor(trendData.length / 12))
+    return trendData.filter((_, index) => index % sampleRate === 0 || index === trendData.length - 1)
+  }, [filteredTrades])
+
   // Prepare Strategy Data
   const strategyData = useMemo(() => {
     const map = new Map<string, { name: string; pnl: number; wins: number; total: number }>()
@@ -861,9 +891,7 @@ export default function DashboardPage() {
             }
             icon={Target}
             iconColor="text-purple-600 dark:text-purple-400"
-            trendData={[
-              { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
-            ]} // Simple trend simulation
+            trendData={winRateTrend}
             subtitle={`Current Streak: ${stats.consecutiveWins} Wins`}
           />
 
@@ -1429,7 +1457,7 @@ export default function DashboardPage() {
                     variant="secondary"
                     className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md px-3 py-1"
                   >
-                    <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" /> AI Insight
+                    AI Insight
                   </Badge>
                   <span className="text-[10px] font-medium opacity-70">Just now</span>
                 </div>

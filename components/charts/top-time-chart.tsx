@@ -113,12 +113,12 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
             No time data available. Add entry times to your trades.
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
+          <ResponsiveContainer width="100%" height={360}>
             <ScatterChart margin={{ top: 10, right: 16, bottom: 4, left: 0 }}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="hsl(var(--border))"
-                strokeOpacity={0.5}
+                strokeOpacity={0.8}
                 vertical={false}
               />
               <XAxis
@@ -127,7 +127,7 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
                 domain={["dataMin - 0.5", "dataMax + 0.5"]}
                 ticks={allHours}
                 tickFormatter={(h) => `${h}:00`}
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={{ stroke: "hsl(var(--border))" }}
                 tickLine={false}
               />
@@ -135,40 +135,40 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
                 type="number"
                 dataKey="pnl"
                 tickFormatter={(v) => `$${v}`}
-                tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 axisLine={false}
                 tickLine={false}
-                width={54}
+                width={60}
               />
               <Tooltip content={<CustomTooltip />} cursor={false} />
-              <ReferenceLine y={0} stroke="hsl(var(--border))" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="hsl(var(--border))" strokeDasharray="3 3" strokeWidth={1.5} />
               <Scatter
                 name="Wins"
                 data={winData}
                 fill="#10b981"
-                fillOpacity={0.85}
-                r={5}
+                fillOpacity={0.9}
+                r={7}
                 shape="circle"
               />
               <Scatter
                 name="Losses"
                 data={lossData}
                 fill="#f43f5e"
-                fillOpacity={0.85}
-                r={5}
+                fillOpacity={0.9}
+                r={7}
                 shape="circle"
               />
             </ScatterChart>
           </ResponsiveContainer>
         )}
         {hasData && (
-          <div className="flex items-center justify-center gap-5 pt-1 pb-1">
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+          <div className="flex items-center justify-center gap-6 pt-2 pb-1">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <span className="inline-block h-3 w-3 rounded-full bg-emerald-500" />
               Profit
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <span className="inline-block h-3 w-3 rounded-full bg-rose-500" />
               Loss
             </div>
           </div>

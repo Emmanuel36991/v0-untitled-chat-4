@@ -4,17 +4,20 @@ import React from "react"
 import { motion } from "framer-motion"
 import SimplePsychologyJournal from "@/components/journal/simple-psychology-journal"
 import PsychologyAnalytics from "@/components/journal/psychology-analytics"
-import { 
-  Activity, 
-  Brain, 
-  Target, 
-  Zap, 
+import {
+  Activity,
+  Brain,
+  Target,
+  Zap,
   CalendarDays,
   ShieldAlert,
   BarChart3
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import PsychologyInsightsPanel from "@/components/psychology/psychology-insights-panel"
+import type { Trade } from "@/types"
 
 interface PsychologyStats {
   disciplineScore: number
@@ -29,6 +32,8 @@ interface PsychologyStats {
 
 interface Props {
   stats: PsychologyStats | null
+  trades: Trade[]
+  journalEntries: any[]
 }
 
 const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-emerald-600 dark:text-emerald-400" }: any) => (
@@ -53,18 +58,27 @@ const HUDCard = ({ label, value, subtext, icon: Icon, trend, trendColor = "text-
   </Card>
 )
 
-export default function PsychologyPageClient({ stats }: Props) {
+// Import useRouter
+import { useRouter } from "next/navigation"
+
+export default function PsychologyPageClient({ stats, trades, journalEntries }: Props) {
+  const router = useRouter()
+
+  function handleEntrySaved() {
+    router.refresh()
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      
+
       {/* Background Pattern */}
       <div className="fixed inset-0 z-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-slate-50 via-slate-50/90 to-slate-50 dark:from-zinc-950 dark:via-zinc-950/90 dark:to-zinc-950 pointer-events-none" />
-      
+
       <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        
+
         {/* Header Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2"
@@ -81,83 +95,111 @@ export default function PsychologyPageClient({ stats }: Props) {
             </p>
           </div>
           <div className="flex items-center gap-3 text-[10px] font-mono text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-900/50 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full shadow-inner backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"/>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
             JOURNAL ACTIVE
           </div>
         </motion.div>
 
-        {/* Top HUD (Heads Up Display) */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
-        >
-          <HUDCard 
-            label="Current Streak" 
-            value={stats?.currentStreak || "0"} 
-            subtext="DAYS"
-            icon={Zap} 
-            trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
-            trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-500"}
-          />
-          <HUDCard 
-            label="Focus Score" 
-            value={stats?.focusScore ? stats.focusScore.toFixed(1) : "0.0"} 
-            subtext="/ 10.0"
-            icon={Target} 
-            trend={stats && stats.focusScore >= 7 ? "Excellent" : stats && stats.focusScore >= 5 ? "Good" : "Improve"}
-            trendColor={stats && stats.focusScore >= 7 ? "text-emerald-600 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-blue-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-500"}
-          />
-          <HUDCard 
-            label="Risk Alert" 
-            value={stats?.riskAlert || "None"} 
-            subtext={stats?.riskAlert && stats.riskAlert !== "None" ? "DETECTED" : "CLEAR"}
-            icon={ShieldAlert} 
-            trend={stats?.riskAlert && stats.riskAlert !== "None" ? "High Risk" : "Low Risk"}
-            trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}
-          />
-          <HUDCard 
-            label="Total Entries" 
-            value={stats?.totalJournalEntries || "0"} 
-            subtext="LOGS"
-            icon={CalendarDays} 
-            trend={stats && stats.totalJournalEntries >= 30 ? "+30 Logs" : stats && stats.totalJournalEntries > 0 ? `+${stats.totalJournalEntries}` : "No Data"}
-            trendColor="text-blue-600 dark:text-indigo-400"
-          />
-        </motion.div>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className="bg-slate-100 dark:bg-zinc-900/50 p-1 rounded-lg border border-slate-200 dark:border-zinc-800">
+              <TabsTrigger value="overview" className="px-4 py-2 text-xs font-medium rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm transition-all duration-300">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="px-4 py-2 text-xs font-medium rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-sm transition-all duration-300">
+                Insights
+              </TabsTrigger>
+            </TabsList>
 
-        <Separator className="bg-slate-200 dark:bg-zinc-800/50 my-2" />
+            {/* Optional: Add date filter or other controls here if needed in future */}
+          </div>
 
-        {/* Main Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full">
-          
-          {/* Left Column: Input Interface (40%) */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-5 w-full"
-          >
-            <div className="sticky top-6">
-              <SimplePsychologyJournal />
+          <TabsContent value="overview" className="space-y-6 mt-0">
+            {/* Top HUD (Heads Up Display) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            >
+              <HUDCard
+                label="Current Streak"
+                value={stats?.currentStreak || "0"}
+                subtext="DAYS"
+                icon={Zap}
+                trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
+                trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-500"}
+              />
+              <HUDCard
+                label="Focus Score"
+                value={stats?.focusScore ? stats.focusScore.toFixed(1) : "0.0"}
+                subtext="/ 10.0"
+                icon={Target}
+                trend={stats && stats.focusScore >= 7 ? "Excellent" : stats && stats.focusScore >= 5 ? "Good" : "Improve"}
+                trendColor={stats && stats.focusScore >= 7 ? "text-emerald-600 dark:text-emerald-400" : stats && stats.focusScore >= 5 ? "text-blue-600 dark:text-indigo-400" : "text-amber-600 dark:text-amber-500"}
+              />
+              <HUDCard
+                label="Risk Alert"
+                value={stats?.riskAlert || "None"}
+                subtext={stats?.riskAlert && stats.riskAlert !== "None" ? "DETECTED" : "CLEAR"}
+                icon={ShieldAlert}
+                trend={stats?.riskAlert && stats.riskAlert !== "None" ? "High Risk" : "Low Risk"}
+                trendColor={stats?.riskAlert && stats.riskAlert !== "None" ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}
+              />
+              <HUDCard
+                label="Total Entries"
+                value={stats?.totalJournalEntries || "0"}
+                subtext="LOGS"
+                icon={CalendarDays}
+                trend={stats && stats.totalJournalEntries >= 30 ? "+30 Logs" : stats && stats.totalJournalEntries > 0 ? `+${stats.totalJournalEntries}` : "No Data"}
+                trendColor="text-blue-600 dark:text-indigo-400"
+              />
+            </motion.div>
+
+            <Separator className="bg-slate-200 dark:bg-zinc-800/50 my-2" />
+
+            {/* Main Dashboard Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start h-full">
+              {/* Left Column: Input Interface (40%) */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="lg:col-span-5 w-full"
+              >
+                <div className="sticky top-6">
+                  <SimplePsychologyJournal onEntrySaved={handleEntrySaved} initialEntries={journalEntries} />
+                </div>
+              </motion.div>
+
+              {/* Right Column: Analytics & Visualization (60%) */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="lg:col-span-7 w-full h-full"
+              >
+                <PsychologyAnalytics
+                  disciplineScore={stats?.disciplineScore || 0}
+                  dominantEmotion={stats?.dominantEmotion || "Unknown"}
+                  winRate={stats?.winRate || 0}
+                  entries={journalEntries}
+                />
+              </motion.div>
             </div>
-          </motion.div>
+          </TabsContent>
 
-          {/* Right Column: Analytics & Visualization (60%) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="lg:col-span-7 w-full h-full"
-          >
-            <PsychologyAnalytics 
-              disciplineScore={stats?.disciplineScore || 0}
-              dominantEmotion={stats?.dominantEmotion || "Unknown"}
-              winRate={stats?.winRate || 0}
-            />
-          </motion.div>
-        </div>
+          <TabsContent value="insights" className="mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <PsychologyInsightsPanel trades={trades} />
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

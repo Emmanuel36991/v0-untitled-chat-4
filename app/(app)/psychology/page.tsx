@@ -20,7 +20,7 @@ export default async function PsychologyPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return <PsychologyPageClient stats={null} trades={[]} />
+    return <PsychologyPageClient stats={null} trades={[]} journalEntries={[]} />
   }
 
   // Fetch FULL trade data so the psychology correlation engine can work
@@ -32,19 +32,25 @@ export default async function PsychologyPage() {
 
   if (error) {
     console.error("Error fetching trades:", error)
-    return <PsychologyPageClient stats={null} trades={[]} />
+    return <PsychologyPageClient stats={null} trades={[]} journalEntries={[]} />
   }
 
   // Fetch journal entries
   const { data: journalEntries } = await supabase
     .from("psychology_journal_entries")
-    .select("created_at, mood, emotions, trade_id")
+    .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl, outcome)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
   const stats: PsychologyStats = calculateStats(trades || [], journalEntries || [])
 
-  return <PsychologyPageClient stats={stats} trades={(trades || []) as Trade[]} />
+  return (
+    <PsychologyPageClient
+      stats={stats}
+      trades={(trades || []) as Trade[]}
+      journalEntries={journalEntries || []}
+    />
+  )
 }
 
 function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {
@@ -61,6 +67,19 @@ function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {
     }
   }
 
+  // 1. Discipline Score: Based on absence of "Bad Habits" in journal + trades
+  // We check triggers in journal entries that match known bad patterns
+  const BAD_PATTERNS = [
+    "overtrading", "averaging-down", "ignoring-stops", "revenge-trading", "fomo-trading", "holding-losers", "position-size-large"
+  ]
+
+  const disciplinedEntries = journalEntries.filter(entry => {
+    const emotions = entry.emotions || []
+    const hasBadPattern = emotions.some((e: string) => BAD_PATTERNS.includes(e))
+    return !hasBadPattern
+  })
+
+  // Also check trades for explicit bad psychology tags if they exist (legacy support or if users tag trades directly)
   const disciplinedTrades = trades.filter(trade => {
     const psychologyFactors = trade.psychology_factors || []
     const hasImpulsive = psychologyFactors.some((factor: string) =>
@@ -71,10 +90,16 @@ function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {
     )
     return !hasImpulsive
   })
-  const disciplineScore = trades.length > 0
-    ? Math.round((disciplinedTrades.length / trades.length) * 100)
-    : 0
 
+  // Weighted average: Journal entries are more direct psychology logs
+  const totalItems = journalEntries.length + trades.length
+  const totalDisciplined = disciplinedEntries.length + disciplinedTrades.length
+
+  const disciplineScore = totalItems > 0
+    ? Math.round((totalDisciplined / totalItems) * 100)
+    : 100 // Default to 100 if no data
+
+  // 2. Dominant Emotion
   const emotionCounts: Record<string, number> = {}
   journalEntries.forEach(entry => {
     if (entry.mood) {
@@ -120,7 +145,15 @@ function calculateJournalStreak(journalEntries: any[]): number {
   const sortedEntries = [...journalEntries].sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
-  for (let i = 0; i < 90; i++) {
+
+  // Check if there is an entry for today, if not start checking from yesterday
+  const dateStrToday = checkDate.toISOString().split('T')[0]
+  const hasEntryToday = sortedEntries.some(entry => entry.created_at.startsWith(dateStrToday))
+  if (!hasEntryToday) {
+    checkDate.setDate(checkDate.getDate() - 1)
+  }
+
+  for (let i = 0; i < 365; i++) {
     const dateStr = checkDate.toISOString().split('T')[0]
     const hasEntry = sortedEntries.some(entry => entry.created_at.startsWith(dateStr))
     if (hasEntry) {
@@ -152,35 +185,21 @@ function calculateFocusScore(journalEntries: any[]): number {
 }
 
 function detectRiskAlert(trades: any[], journalEntries: any[]): string {
-  const recentTrades = trades.slice(0, 10)
-  const fomoCount = recentTrades.filter(trade => {
-    const factors = trade.psychology_factors || []
-    return factors.some((f: string) => f.toLowerCase().includes('fomo'))
-  }).length
-  const revengeCount = recentTrades.filter(trade => {
-    const factors = trade.psychology_factors || []
-    return factors.some((f: string) => f.toLowerCase().includes('revenge'))
-  }).length
-  const overtradingCount = recentTrades.filter(trade => {
-    const factors = trade.psychology_factors || []
-    return factors.some((f: string) => f.toLowerCase().includes('overtrading'))
-  }).length
+  // Check recent journal entries (last 3 days)
+  const threeDaysAgo = new Date()
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
 
-  const recentJournalEntries = journalEntries.slice(0, 7)
-  const stressedMoods = ['anxious', 'frustrated']
-  const stressCount = recentJournalEntries.filter(entry =>
-    stressedMoods.includes(entry.mood?.toLowerCase())
-  ).length
-  const emotionalTriggers = recentJournalEntries.flatMap(entry => entry.emotions || [])
-  const hasStressTriggers = emotionalTriggers.some((emotion: string) =>
-    emotion.toLowerCase().includes('time-pressure') ||
-    emotion.toLowerCase().includes('large-loss') ||
-    emotion.toLowerCase().includes('consecutive-losses')
-  )
+  const recentEntries = journalEntries.filter(e => new Date(e.created_at) >= threeDaysAgo)
 
-  if (fomoCount >= 3) return "FOMO"
-  if (revengeCount >= 2) return "Revenge"
-  if (overtradingCount >= 3) return "Overtrading"
-  if (stressCount >= 4 || hasStressTriggers) return "Burnout"
+  const fomoCount = recentEntries.filter(e => e.emotions?.includes('fomo-trading')).length
+  const revengeCount = recentEntries.filter(e => e.emotions?.includes('revenge-trading')).length
+  const overtradingCount = recentEntries.filter(e => e.emotions?.includes('overtrading')).length
+  const tiltCount = recentEntries.filter(e => ['anxious', 'frustrated', 'overwhelmed'].includes(e.mood)).length
+
+  if (revengeCount >= 1) return "Revenge"
+  if (fomoCount >= 2) return "FOMO"
+  if (overtradingCount >= 2) return "Overtrading"
+  if (tiltCount >= 3) return "Tilt / Burnout"
+
   return "None"
 }

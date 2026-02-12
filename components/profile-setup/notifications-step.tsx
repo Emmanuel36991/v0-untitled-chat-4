@@ -13,26 +13,24 @@ interface NotificationsStepProps {
   onUpdate: (prefs: Partial<NotificationPreferences>) => void
 }
 
-export function NotificationsStep({ notificationPreferences, onUpdate }: NotificationsStepProps) {
-  const toggleNotification = (key: keyof NotificationPreferences) => {
-    onUpdate({ [key]: !notificationPreferences[key] })
-  }
+interface NotificationOptionProps {
+  title: string
+  description: string
+  icon: React.ComponentType<{ className?: string }>
+  value: boolean | undefined
+  onChange: () => void
+  badge?: string
+}
 
-  const NotificationOption = ({
-    title,
-    description,
-    icon: Icon,
-    value,
-    onChange,
-    badge,
-  }: {
-    title: string
-    description: string
-    icon: React.ComponentType<{ className?: string }>
-    value: boolean | undefined
-    onChange: () => void
-    badge?: string
-  }) => (
+function NotificationOption({
+  title,
+  description,
+  icon: Icon,
+  value,
+  onChange,
+  badge,
+}: NotificationOptionProps) {
+  return (
     <div className="flex items-start justify-between p-4 rounded-xl border-2 border-border hover:border-primary/50 transition-all">
       <div className="flex items-start gap-3 flex-1">
         <div className="mt-1 text-primary flex-shrink-0">
@@ -62,6 +60,16 @@ export function NotificationsStep({ notificationPreferences, onUpdate }: Notific
       </button>
     </div>
   )
+}
+
+export function NotificationsStep({ notificationPreferences, onUpdate }: NotificationsStepProps) {
+  if (!notificationPreferences) {
+    return null
+  }
+
+  const toggleNotification = (key: keyof NotificationPreferences) => {
+    onUpdate({ [key]: !notificationPreferences[key] })
+  }
 
   return (
     <div className="space-y-8">

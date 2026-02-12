@@ -13,40 +13,36 @@ interface LegalPrivacyStepProps {
   onUpdate: (prefs: Partial<PrivacyPreferences>) => void
 }
 
-export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyStepProps) {
-  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+interface ConsentCardProps {
+  id: string
+  title: string
+  description: string
+  icon: React.ComponentType<{ className?: string }>
+  checked: boolean
+  onToggle: () => void
+  href?: string
+  details: string[]
+  expanded: boolean
+  onExpand: (id: string | null) => void
+}
 
-  const allConsentsGiven =
-    privacyPreferences.termsAccepted &&
-    privacyPreferences.privacyPolicyAccepted &&
-    privacyPreferences.dataCollectionConsent
-
-  const toggleConsent = (key: keyof PrivacyPreferences) => {
-    onUpdate({ [key]: !privacyPreferences[key] })
-  }
-
-  const ConsentCard = ({
-    id,
-    title,
-    description,
-    icon: Icon,
-    checked,
-    onToggle,
-    details,
-  }: {
-    id: string
-    title: string
-    description: string
-    icon: React.ComponentType<{ className?: string }>
-    checked: boolean
-    onToggle: () => void
-    href?: string
-    details: string[]
-  }) => (
+function ConsentCard({
+  id,
+  title,
+  description,
+  icon: Icon,
+  checked,
+  onToggle,
+  href,
+  details,
+  expanded,
+  onExpand,
+}: ConsentCardProps) {
+  return (
     <div className="border-2 border-border rounded-xl overflow-hidden transition-all">
       <div className="flex w-full">
         <button
-          onClick={() => setExpandedSection(expandedSection === id ? null : id)}
+          onClick={() => onExpand(expanded ? null : id)}
           className="flex-1 p-4 hover:bg-muted/50 transition-colors text-left flex items-start gap-4"
         >
           <div className="mt-1 flex-shrink-0">
@@ -72,7 +68,7 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
         </button>
       </div>
 
-      {expandedSection === id && (
+      {expanded && (
         <div className="border-t border-border bg-muted/30 p-4">
           <ul className="space-y-2">
             {details.map((detail, i) => (
@@ -104,6 +100,23 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
       </div>
     </div>
   )
+}
+
+export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyStepProps) {
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+
+  if (!privacyPreferences) {
+    return null
+  }
+
+  const allConsentsGiven =
+    privacyPreferences.termsAccepted &&
+    privacyPreferences.privacyPolicyAccepted &&
+    privacyPreferences.dataCollectionConsent
+
+  const toggleConsent = (key: keyof PrivacyPreferences) => {
+    onUpdate({ [key]: !privacyPreferences[key] })
+  }
 
   return (
     <div className="space-y-8">
@@ -131,6 +144,8 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
             "Dispute resolution and jurisdiction",
             "Service modifications and discontinuation",
           ]}
+          expanded={expandedSection === "terms"}
+          onExpand={setExpandedSection}
         />
 
         {/* Privacy Policy */}
@@ -149,6 +164,8 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
             "Third-party integrations and sharing",
             "Cookie usage and tracking technologies",
           ]}
+          expanded={expandedSection === "privacy"}
+          onExpand={setExpandedSection}
         />
 
         {/* Data Collection */}
@@ -166,6 +183,8 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
             "Aggregated analytics (no personal ID)",
             "Feature usage to improve functionality",
           ]}
+          expanded={expandedSection === "data-collection"}
+          onExpand={setExpandedSection}
         />
 
         {/* Marketing Emails */}
@@ -183,6 +202,8 @@ export function LegalPrivacyStep({ privacyPreferences, onUpdate }: LegalPrivacyS
             "Community highlights and success stories",
             "You can unsubscribe anytime from emails",
           ]}
+          expanded={expandedSection === "marketing"}
+          onExpand={setExpandedSection}
         />
       </div>
 

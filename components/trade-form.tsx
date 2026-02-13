@@ -804,10 +804,10 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
       // If we let the server do this conversion, it would use UTC as "local", causing a double-offset.
       const entryTimeUTC = formData.entry_time
         ? new Date(formData.entry_time).toISOString()
-        : formData.entry_time
+        : null
       const exitTimeUTC = formData.exit_time
         ? new Date(formData.exit_time).toISOString()
-        : formData.exit_time
+        : null
 
       const submissionData = {
         ...formData,

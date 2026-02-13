@@ -54,6 +54,7 @@ export interface NotificationPreferences {
   emailWeeklyDigest?: boolean
   emailCommunityInsights?: boolean
   tradeAlerts?: boolean
+  weeklyReport?: boolean
 }
 
 export interface PrivacyPreferences {
@@ -62,6 +63,9 @@ export interface PrivacyPreferences {
   privacyPolicyAccepted?: boolean
   dataCollectionConsent?: boolean
   marketingEmailsOptIn?: boolean
+  publicProfile?: boolean
+  showPnl?: boolean
+  deletionRequestedAt?: string | null
 }
 
 export interface UserConfiguration {
@@ -93,6 +97,7 @@ export const DEFAULT_USER_CONFIGURATION: UserConfiguration = {
     emailWeeklyDigest: false,
     emailCommunityInsights: false,
     tradeAlerts: false,
+    weeklyReport: false,
   },
   privacyPreferences: {
     allowAnonymousUsageData: true,
@@ -100,6 +105,9 @@ export const DEFAULT_USER_CONFIGURATION: UserConfiguration = {
     privacyPolicyAccepted: false,
     dataCollectionConsent: false,
     marketingEmailsOptIn: false,
+    publicProfile: false,
+    showPnl: true,
+    deletionRequestedAt: null,
   },
   profileSetupComplete: false,
 }

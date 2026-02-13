@@ -191,6 +191,7 @@ export function useUserConfig() {
     updatePrivacyPreferences,
     markSetupComplete,
     isLoaded,
+    isLoading: !isLoaded,
     isSyncing,
   }
 }

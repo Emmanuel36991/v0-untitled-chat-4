@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
-  ArrowLeft, Calendar, Clock, Target, TrendingUp, TrendingDown,
+  Calendar, Clock, Target, TrendingUp, TrendingDown,
   Shield, CheckCircle, ChevronRight, ChevronLeft, Search, Save,
   Loader2, Brain, BarChart3, Globe, Zap, Crosshair, MousePointer,
   ImageIcon, Calculator, Info, Plus, Layers, BookOpen, ListChecks,
@@ -69,10 +69,10 @@ const MOODS = [
 ]
 
 const TRADING_SESSIONS = [
-  { value: "asian", label: "Asian Session", emoji: "🌏", time: "21:00 - 06:00 GMT", description: "Lower volatility, range-bound markets.", borderColor: "border-orange-200 dark:border-orange-800", textColor: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-950/10" },
-  { value: "london", label: "London Session", emoji: "🏰", time: "07:00 - 16:00 GMT", description: "High volume, trend establishment.", borderColor: "border-blue-200 dark:border-blue-800", textColor: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-950/10" },
-  { value: "new-york", label: "New York Session", emoji: "🗽", time: "12:00 - 21:00 GMT", description: "Highest volatility, major news releases.", borderColor: "border-green-200 dark:border-green-800", textColor: "text-green-600 dark:text-green-400", bgColor: "bg-green-50 dark:bg-green-950/10" },
-  { value: "overlap", label: "London/NY Overlap", emoji: "⚡", time: "12:00 - 16:00 GMT", description: "Peak liquidity and momentum.", borderColor: "border-purple-200 dark:border-purple-800", textColor: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-950/10" },
+  { value: "asian", label: "Asian Session", icon: Globe, time: "21:00 - 06:00 GMT", description: "Lower volatility, range-bound markets.", borderColor: "border-orange-200 dark:border-orange-800", textColor: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-950/10", iconBg: "bg-orange-500/15" },
+  { value: "london", label: "London Session", icon: Layers, time: "07:00 - 16:00 GMT", description: "High volume, trend establishment.", borderColor: "border-blue-200 dark:border-blue-800", textColor: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-950/10", iconBg: "bg-blue-500/15" },
+  { value: "new-york", label: "New York Session", icon: TrendingUp, time: "12:00 - 21:00 GMT", description: "Highest volatility, major news releases.", borderColor: "border-green-200 dark:border-green-800", textColor: "text-green-600 dark:text-green-400", bgColor: "bg-green-50 dark:bg-green-950/10", iconBg: "bg-green-500/15" },
+  { value: "overlap", label: "London/NY Overlap", icon: Zap, time: "12:00 - 16:00 GMT", description: "Peak liquidity and momentum.", borderColor: "border-purple-200 dark:border-purple-800", textColor: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-950/10", iconBg: "bg-purple-500/15" },
 ]
 
 const EMOTIONAL_TRIGGERS = [
@@ -220,38 +220,43 @@ const PriceInput = ({ id, label, value, onChange, icon: Icon, color = "text-fore
   </div>
 )
 
-const SessionCard = ({ session, isSelected, onSelect }: any) => (
-  <button
-    type="button"
-    onClick={onSelect}
-    className={cn(
-      "flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-200 w-full",
-      isSelected
-        ? cn("bg-background shadow-md ring-1 ring-offset-0", session.borderColor)
-        : "border-border bg-card/50 hover:bg-accent/50",
-    )}
-  >
-    <div className="flex items-center justify-between w-full mb-3">
-      <div className="flex items-center gap-3">
-        <span className="text-2xl">{session.emoji}</span>
-        <div>
-          <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
-            {session.label}
-          </h4>
-          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
-            {session.time}
-          </span>
-        </div>
-      </div>
-      {isSelected && (
-        <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", session.textColor.split(" ")[0].replace("text-", "bg-"))}>
-          <CheckCircle className="w-3 h-3 text-white" />
-        </div>
+const SessionCard = ({ session, isSelected, onSelect }: any) => {
+  const Icon = session.icon
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-200 w-full",
+        isSelected
+          ? cn("bg-background shadow-md ring-1 ring-offset-0", session.borderColor)
+          : "border-border bg-card/50 hover:bg-accent/50",
       )}
-    </div>
-    <p className="text-xs text-muted-foreground leading-relaxed">{session.description}</p>
-  </button>
-)
+    >
+      <div className="flex items-center justify-between w-full mb-3">
+        <div className="flex items-center gap-3">
+          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", session.iconBg)}>
+            <Icon className={cn("w-4.5 h-4.5", isSelected ? session.textColor : "text-muted-foreground")} />
+          </div>
+          <div>
+            <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
+              {session.label}
+            </h4>
+            <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
+              {session.time}
+            </span>
+          </div>
+        </div>
+        {isSelected && (
+          <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", session.textColor.split(" ")[0].replace("text-", "bg-"))}>
+            <CheckCircle className="w-3 h-3 text-white" />
+          </div>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{session.description}</p>
+    </button>
+  )
+}
 
 const StrategyItemCard = ({
   title,
@@ -524,154 +529,195 @@ const TradeReviewDialog = ({
   const outcome = data.pnl === null ? null : data.pnl > 0 ? "WIN" : data.pnl < 0 ? "LOSS" : "BE"
   const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   const fmtTime = (t?: string) => {
-    if (!t) return "—"
+    if (!t) return null
     try {
       return new Date(t).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-    } catch { return "—" }
+    } catch { return null }
   }
 
-  const Row = ({ label, value, mono = false, color }: { label: string; value: React.ReactNode; mono?: boolean; color?: string }) => (
-    <div className="flex items-center justify-between py-1.5">
-      <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
-      <span className={cn("text-sm font-semibold", mono && "font-mono", color)}>{value}</span>
-    </div>
-  )
+  // Build smart nudges for missing optional fields
+  const missingOptional: { label: string; hint: string }[] = []
+  if (!data.stop_loss) missingOptional.push({ label: "Stop loss", hint: "helps track risk management" })
+  if (!data.take_profit) missingOptional.push({ label: "Take profit", hint: "enables R:R tracking" })
+  if (!data.strategy) missingOptional.push({ label: "Strategy", hint: "links to your playbook analytics" })
+  if (!data.mood) missingOptional.push({ label: "Mood", hint: "powers psychology insights" })
+  if (!data.session) missingOptional.push({ label: "Session", hint: "improves session-based analytics" })
+  if (!data.entry_time && !data.exit_time) missingOptional.push({ label: "Entry/exit times", hint: "enables duration tracking" })
+
+  const entryTimeFormatted = fmtTime(data.entry_time)
+  const exitTimeFormatted = fmtTime(data.exit_time)
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-[460px] p-0 gap-0 overflow-hidden border-border/60">
-        {/* Ticket header */}
+      <DialogContent className="sm:max-w-[500px] p-0 gap-0 overflow-hidden border-0 shadow-2xl rounded-2xl bg-card">
+        {/* Top accent bar — color-coded by outcome */}
         <div className={cn(
-          "px-5 py-4 border-b",
-          outcome === "WIN" ? "bg-emerald-500/5 border-emerald-500/20" :
-          outcome === "LOSS" ? "bg-red-500/5 border-red-500/20" :
-          "bg-muted/30 border-border/50"
-        )}>
-          <DialogHeader className="space-y-1">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-base font-bold tracking-tight">Trade Confirmation</DialogTitle>
-              <span className="text-[10px] font-mono text-muted-foreground">
-                {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              </span>
-            </div>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Review your trade details before submitting.
-            </DialogDescription>
+          "h-1.5 w-full",
+          outcome === "WIN" ? "bg-gradient-to-r from-emerald-400 to-emerald-600" :
+          outcome === "LOSS" ? "bg-gradient-to-r from-red-400 to-red-600" :
+          "bg-gradient-to-r from-muted-foreground/20 via-muted-foreground/40 to-muted-foreground/20"
+        )} />
+
+        {/* Hero section */}
+        <div className="px-6 pt-5 pb-4">
+          <DialogHeader className="space-y-0 mb-5">
+            <DialogTitle className="sr-only">Trade Confirmation</DialogTitle>
+            <DialogDescription className="sr-only">Review and confirm your trade details</DialogDescription>
           </DialogHeader>
 
-          {/* Instrument + Direction hero */}
-          <div className="flex items-center gap-3 mt-3">
-            <span className="font-mono text-2xl font-black tracking-tighter">{data.instrument || "—"}</span>
-            <Badge
-              variant="secondary"
-              className={cn(
-                "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border",
-                data.direction === "long"
-                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400"
-                  : "bg-red-500/10 text-red-600 border-red-500/30 dark:text-red-400"
+          {/* Instrument + PnL hero */}
+          <div className="flex items-start justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2.5">
+                <span className="font-mono text-3xl font-black tracking-tighter leading-none">{data.instrument || "—"}</span>
+                <span className={cn(
+                  "text-[10px] font-black uppercase tracking-[0.15em] px-2 py-1 rounded-md border",
+                  data.direction === "long"
+                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400"
+                    : "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400"
+                )}>
+                  {data.direction}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {data.size} {data.size === 1 ? "unit" : "units"} &middot; {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </p>
+            </div>
+
+            {/* PnL display */}
+            <div className="text-right">
+              {outcome && (
+                <span className={cn(
+                  "text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full inline-block mb-1",
+                  outcome === "WIN" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+                  outcome === "LOSS" && "bg-red-500/10 text-red-600 dark:text-red-400",
+                  outcome === "BE" && "bg-muted text-muted-foreground"
+                )}>
+                  {outcome}
+                </span>
               )}
-            >
-              {data.direction}
-            </Badge>
-            {outcome && (
-              <Badge
-                variant="secondary"
-                className={cn(
-                  "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border ml-auto",
-                  outcome === "WIN" && "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
-                  outcome === "LOSS" && "bg-red-500/15 text-red-600 border-red-500/30 dark:text-red-400",
-                  outcome === "BE" && "bg-muted text-muted-foreground border-border"
-                )}
-              >
-                {outcome}
-              </Badge>
+              <div className={cn(
+                "font-mono text-2xl font-black tracking-tight leading-none",
+                data.pnl !== null
+                  ? data.pnl > 0 ? "text-emerald-500" : data.pnl < 0 ? "text-red-500" : "text-muted-foreground"
+                  : "text-muted-foreground/30"
+              )}>
+                {data.pnl !== null ? `${data.pnl > 0 ? "+" : ""}$${fmt(Math.abs(data.pnl))}` : "—"}
+              </div>
+              {data.riskReward !== null && (
+                <p className={cn(
+                  "text-[10px] font-mono font-bold mt-0.5",
+                  data.riskReward >= 2 ? "text-emerald-500" : data.riskReward >= 1 ? "text-amber-500" : "text-red-400"
+                )}>
+                  1:{data.riskReward.toFixed(1)} R:R
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Price grid */}
+        <div className="mx-6 rounded-xl border border-border/50 bg-muted/20 overflow-hidden">
+          <div className="grid grid-cols-2 divide-x divide-border/40">
+            <div className="px-4 py-3">
+              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Entry</span>
+              <span className="font-mono text-sm font-bold">${fmt(data.entry_price)}</span>
+            </div>
+            <div className="px-4 py-3">
+              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Exit</span>
+              <span className="font-mono text-sm font-bold">${fmt(data.exit_price)}</span>
+            </div>
+          </div>
+          {(data.stop_loss > 0 || (data.take_profit && data.take_profit > 0)) && (
+            <div className="grid grid-cols-2 divide-x divide-border/40 border-t border-border/40">
+              <div className="px-4 py-3">
+                <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Stop Loss</span>
+                <span className="font-mono text-sm font-bold text-red-500/80">{data.stop_loss ? `$${fmt(data.stop_loss)}` : "—"}</span>
+              </div>
+              <div className="px-4 py-3">
+                <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Take Profit</span>
+                <span className="font-mono text-sm font-bold text-emerald-500/80">{data.take_profit ? `$${fmt(data.take_profit)}` : "—"}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Timing + context row */}
+        {(entryTimeFormatted || exitTimeFormatted || data.session || data.strategy || data.mood) && (
+          <div className="mx-6 mt-3 flex flex-wrap gap-2">
+            {entryTimeFormatted && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+                <Clock className="w-3 h-3" /> {entryTimeFormatted}
+                {exitTimeFormatted && <> &rarr; {exitTimeFormatted}</>}
+              </span>
+            )}
+            {data.session && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+                <Globe className="w-3 h-3" /> {TRADING_SESSIONS.find(s => s.value === data.session)?.label || data.session}
+              </span>
+            )}
+            {data.strategy && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+                <BookOpen className="w-3 h-3" /> {data.strategy}
+              </span>
+            )}
+            {data.mood && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+                <Brain className="w-3 h-3" /> {data.mood}
+              </span>
+            )}
+            {(data.goodHabitsCount > 0 || data.badHabitsCount > 0) && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+                {data.goodHabitsCount > 0 && <span className="text-emerald-500 font-bold">{data.goodHabitsCount} good</span>}
+                {data.goodHabitsCount > 0 && data.badHabitsCount > 0 && <span className="text-muted-foreground/40">/</span>}
+                {data.badHabitsCount > 0 && <span className="text-red-500 font-bold">{data.badHabitsCount} bad</span>}
+              </span>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Body */}
-        <div className="px-5 py-3 space-y-0.5">
-          {/* Execution section */}
-          <Row label="Entry" value={`$${fmt(data.entry_price)}`} mono />
-          <Row label="Exit" value={`$${fmt(data.exit_price)}`} mono />
-          <Row label="Stop Loss" value={data.stop_loss ? `$${fmt(data.stop_loss)}` : "—"} mono />
-          {data.take_profit ? <Row label="Take Profit" value={`$${fmt(data.take_profit)}`} mono /> : null}
-          <Row label="Size" value={data.size} mono />
-
-          <Separator className="my-2" />
-
-          {/* Timing */}
-          <Row label="Entry Time" value={fmtTime(data.entry_time)} mono />
-          <Row label="Exit Time" value={fmtTime(data.exit_time)} mono />
-          {data.session && <Row label="Session" value={TRADING_SESSIONS.find(s => s.value === data.session)?.label || data.session} />}
-
-          <Separator className="my-2" />
-
-          {/* PnL hero row */}
-          <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Est. P&L</span>
-            <span className={cn(
-              "font-mono text-xl font-black tracking-tight",
-              data.pnl !== null
-                ? data.pnl > 0 ? "text-emerald-500" : data.pnl < 0 ? "text-red-500" : "text-muted-foreground"
-                : "text-muted-foreground/40"
-            )}>
-              {data.pnl !== null ? `${data.pnl > 0 ? "+" : ""}$${fmt(Math.abs(data.pnl))}` : "—"}
-            </span>
+        {/* Smart nudges for missing optional fields */}
+        {missingOptional.length > 0 && (
+          <div className="mx-6 mt-4 rounded-lg border border-border/30 bg-muted/10 p-3">
+            <p className="text-[11px] text-muted-foreground mb-1.5">
+              <span className="font-semibold text-foreground/70">Optional &mdash;</span> you can add these anytime, but they unlock deeper insights:
+            </p>
+            <div className="flex flex-wrap gap-x-3 gap-y-1">
+              {missingOptional.slice(0, 4).map(item => (
+                <span key={item.label} className="text-[10px] text-muted-foreground/70">
+                  <span className="font-medium text-muted-foreground">{item.label}</span> &middot; {item.hint}
+                </span>
+              ))}
+            </div>
           </div>
-          {data.riskReward !== null && (
-            <Row
-              label="Risk : Reward"
-              value={`1 : ${data.riskReward.toFixed(1)}`}
-              mono
-              color={data.riskReward >= 2 ? "text-emerald-500" : data.riskReward >= 1 ? "text-amber-500" : "text-red-500"}
-            />
-          )}
+        )}
 
-          {/* Strategy + Psychology summary */}
-          {(data.strategy || data.mood || data.goodHabitsCount > 0 || data.badHabitsCount > 0) && (
-            <>
-              <Separator className="my-2" />
-              {data.strategy && <Row label="Strategy" value={data.strategy} />}
-              {data.mood && <Row label="Mood" value={<span>{data.moodEmoji} {data.mood}</span>} />}
-              {(data.goodHabitsCount > 0 || data.badHabitsCount > 0) && (
-                <div className="flex items-center justify-between py-1.5">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Habits</span>
-                  <div className="flex items-center gap-2">
-                    {data.goodHabitsCount > 0 && (
-                      <span className="text-xs font-semibold text-emerald-500">{data.goodHabitsCount} good</span>
-                    )}
-                    {data.badHabitsCount > 0 && (
-                      <span className="text-xs font-semibold text-red-500">{data.badHabitsCount} bad</span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <DialogFooter className="px-5 py-3 border-t bg-muted/20 gap-2 sm:gap-2">
-          <Button variant="ghost" onClick={onClose} disabled={isSubmitting} className="flex-1">
+        {/* Footer actions */}
+        <div className="px-6 py-4 mt-2 flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1 h-11 rounded-xl border-border/60 text-muted-foreground hover:text-foreground"
+          >
             Go Back
           </Button>
           <Button
             onClick={onConfirm}
             disabled={isSubmitting}
             className={cn(
-              "flex-1 font-bold",
+              "flex-1 h-11 rounded-xl font-bold shadow-lg transition-all hover:shadow-xl hover:scale-[1.01]",
               outcome === "WIN"
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"
                 : outcome === "LOSS"
-                ? "bg-red-600 hover:bg-red-700 text-white"
-                : "bg-gradient-to-r from-primary to-purple-600"
+                ? "bg-red-600 hover:bg-red-700 text-white shadow-red-500/20"
+                : ""
             )}
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
             Confirm Trade
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )
@@ -1079,9 +1125,6 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-muted">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
             <div>
               <h1 className="text-lg font-bold tracking-tight">{mode === "edit" ? "Edit Trade" : "New Trade Entry"}</h1>
               {/* Draft saved indicator */}

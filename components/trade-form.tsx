@@ -824,7 +824,9 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         pnl: formData.pnl || pnlResult || 0,
         psychologyFactors: combinedBadFactors, // Inject bad habits into trade payload
         goodHabits: combinedGoodFactors, // Add good habits separately
-        account_id: formData.account_id || null // Ensure empty string becomes null for UUID column
+        account_id: formData.account_id || null, // Ensure empty string becomes null for UUID column
+        screenshotBeforeUrl: formData.screenshotBeforeUrl || null,
+        screenshotAfterUrl: formData.screenshotAfterUrl || null
       }
 
       console.log("Submitting trade data:", JSON.stringify(submissionData, null, 2))

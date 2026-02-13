@@ -151,7 +151,7 @@ export type NewTradeInput = Omit<
   Trade,
   "id" | "user_id" | "pnl" | "outcome" | "created_at" | "updated_at" | "risk_reward_ratio" | "account_id"
 > & {
-  account_id?: string
+  account_id?: string | null
   pnl?: number | null
   outcome?: TradeOutcome
 

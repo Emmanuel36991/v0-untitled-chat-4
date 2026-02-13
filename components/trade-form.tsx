@@ -815,8 +815,11 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         exit_time: exitTimeUTC,
         pnl: formData.pnl || pnlResult || 0,
         psychologyFactors: combinedBadFactors, // Inject bad habits into trade payload
-        goodHabits: combinedGoodFactors // Add good habits separately
+        goodHabits: combinedGoodFactors, // Add good habits separately
+        account_id: formData.account_id || null // Ensure empty string becomes null for UUID column
       }
+
+      console.log("Submitting trade data:", JSON.stringify(submissionData, null, 2))
 
       const result = await onSubmitTrade(submissionData)
 
@@ -843,10 +846,19 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         setShowReviewDialog(false)
         toast({ title: "Error", description: result.error || "Failed to save", variant: "destructive" })
       }
-    } catch (err) {
-      console.error(err)
+    } catch (err: any) {
+      console.error("TradeForm submission error:", err)
+      // Additional detailed logging
+      if (err instanceof Error) {
+        console.error("Error message:", err.message)
+        console.error("Error stack:", err.stack)
+      }
       setShowReviewDialog(false)
-      toast({ title: "Error", description: "Unexpected error", variant: "destructive" })
+      toast({
+        title: "Error",
+        description: err.message || "Unexpected error during submission",
+        variant: "destructive"
+      })
     } finally {
       setIsSubmitting(false)
     }

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const tradeSchema = z.object({
+    account_id: z.string().optional().nullable(),
     instrument: z.string().min(1, "Instrument is required"),
     direction: z.enum(["long", "short"]),
     entry_price: z.number().positive("Entry price must be positive"),

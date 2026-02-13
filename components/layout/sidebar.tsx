@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { ConcentrateLogo } from "@/components/ConcentrateLogo" // Assuming ConcentrateLogo is imported from this path
-import { BarChart3, BookOpen, Brain, Calculator, ChevronLeft, ChevronRight, CreditCard, Home, LineChart, PlusCircle, Settings, TrendingUp, Users, Bot, Zap } from 'lucide-react'
+import { BarChart3, BookOpen, Brain, ChevronLeft, ChevronRight, Home, LineChart, PlusCircle, Settings, TrendingUp, Users, Bot, Zap } from 'lucide-react'
 
 interface SidebarProps {
   className?: string
@@ -125,8 +124,8 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="flex h-16 items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            {/* Replaced TradeOkev branding with Concentrate logo */}
-            <ConcentrateLogo size={32} variant="full" />
+            <Zap className="h-6 w-6 text-blue-500" />
+            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Concentrade</span>
           </div>
         )}
         <Button

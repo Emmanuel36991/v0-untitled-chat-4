@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { CommunityPost, CommunityStats, TrendingTopic, TopPerformer } from "@/types/community"
 
 export async function updateCommunityStats(): Promise<CommunityStats | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const fixedStatsId = "550e8400-e29b-41d4-a716-446655440099"
 
   try {
@@ -86,7 +86,7 @@ export async function updateCommunityStats(): Promise<CommunityStats | null> {
 }
 
 export async function getCommunityStats(): Promise<CommunityStats | null> {
-  const supabase = createClient()
+  const supabase = await createClient()
   const fixedStatsId = "550e8400-e29b-41d4-a716-446655440099"
   try {
     const { data, error } = await supabase.from("community_stats").select("*").eq("id", fixedStatsId).maybeSingle() // Changed from .single()
@@ -107,7 +107,7 @@ export async function getCommunityStats(): Promise<CommunityStats | null> {
 }
 
 export async function getCommunityPosts(limit = 20, offset = 0): Promise<CommunityPost[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { data, error } = await supabase
       .from("community_posts")
@@ -134,7 +134,7 @@ export async function getCommunityPosts(limit = 20, offset = 0): Promise<Communi
 }
 
 export async function getTopPerformers(limit = 10): Promise<TopPerformer[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { data, error } = await supabase.rpc("get_top_performers", { limit_count: limit })
     if (error) {
@@ -149,7 +149,7 @@ export async function getTopPerformers(limit = 10): Promise<TopPerformer[]> {
 }
 
 export async function getTrendingTopics(limit = 10): Promise<TrendingTopic[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     await supabase.rpc("update_trending_topics_procedure") // Ensure this procedure exists and works
     const { data, error } = await supabase.rpc("get_trending_topics", { limit_count: limit })
@@ -168,7 +168,7 @@ export async function createPost(
   content: string,
   tags: string[],
 ): Promise<{ success: boolean; error?: string; postId?: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const mockUserId = "550e8400-e29b-41d4-a716-446655440000" // Replace with actual auth user ID
     const { data, error } = await supabase
@@ -194,7 +194,7 @@ export async function createPost(
 }
 
 export async function likePost(postId: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const mockUserId = "550e8400-e29b-41d4-a716-446655440001" // Replace with actual auth user ID
     const { error } = await supabase.from("post_likes").insert({ post_id: postId, user_id: mockUserId })
@@ -210,7 +210,7 @@ export async function likePost(postId: string): Promise<{ success: boolean; erro
 }
 
 export async function unlikePost(postId: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const mockUserId = "550e8400-e29b-41d4-a716-446655440001" // Replace with actual auth user ID
     const { error } = await supabase.from("post_likes").delete().match({ post_id: postId, user_id: mockUserId })
@@ -226,7 +226,7 @@ export async function unlikePost(postId: string): Promise<{ success: boolean; er
 }
 
 export async function followUser(userIdToFollow: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const mockUserId = "550e8400-e29b-41d4-a716-446655440001" // Replace with actual auth user ID
     const { error } = await supabase
@@ -244,7 +244,7 @@ export async function followUser(userIdToFollow: string): Promise<{ success: boo
 }
 
 export async function addComment(postId: string, content: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const mockUserId = "550e8400-e29b-41d4-a716-446655440000"
     const { error } = await supabase.from("post_comments").insert({
@@ -264,7 +264,7 @@ export async function addComment(postId: string, content: string): Promise<{ suc
 }
 
 export async function getRecentActivity(limit = 50): Promise<any[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { data, error } = await supabase
       .from("community_activity")
@@ -286,7 +286,7 @@ export async function getRecentActivity(limit = 50): Promise<any[]> {
 }
 
 export async function updateUserActivity(userId: string): Promise<{ success: boolean }> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     await supabase.from("community_users").update({ last_active: new Date().toISOString() }).eq("id", userId)
     return { success: true }
@@ -297,7 +297,7 @@ export async function updateUserActivity(userId: string): Promise<{ success: boo
 }
 
 export async function getOnlineUsers(): Promise<number> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { count, error } = await supabase
       .from("community_users")

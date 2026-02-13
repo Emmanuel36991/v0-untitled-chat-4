@@ -3,13 +3,14 @@
 import { createClient } from "@/lib/supabase/server"
 import type { Trade, NewTradeInput } from "@/types"
 import { revalidatePath } from "next/cache"
+import { tradeSchema } from "@/lib/validators/trade"
 
 // 1. MAP DB ROW TO TRADE OBJECT
 function mapRowToTrade(row: any): Trade {
   return {
     id: row.id,
     user_id: row.user_id,
-    account_id: row.account_id, 
+    account_id: row.account_id,
     date: typeof row.date === "string" ? row.date : new Date(row.date).toISOString().split("T")[0],
     instrument: row.instrument,
     direction: row.direction,
@@ -114,36 +115,36 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
   const payload: Record<string, any> = {}
 
   Object.entries(trade).forEach(([key, value]) => {
-    if (value === undefined) return 
-    if (Array.isArray(value) && value.length === 0) return 
+    if (value === undefined) return
+    if (Array.isArray(value) && value.length === 0) return
 
     // Handle direct mappings
     if (key === 'playbook_strategy_id') {
-       payload['playbook_strategy_id'] = value
+      payload['playbook_strategy_id'] = value
     } else if (key === 'account_id') {
-       payload['account_id'] = value
+      payload['account_id'] = value
     } else if (key === 'executed_rules') {
-       payload['executed_rules'] = value
+      payload['executed_rules'] = value
     } else if (key === 'setupName') {
-       payload['setup_name'] = value
+      payload['setup_name'] = value
     } else if (key === 'screenshotBeforeUrl') {
-       payload['screenshot_before_url'] = value
+      payload['screenshot_before_url'] = value
     } else if (key === 'screenshotAfterUrl') {
-       payload['screenshot_after_url'] = value
+      payload['screenshot_after_url'] = value
     } else if (key === 'entry_time') {
-       // Convert local datetime-local to proper UTC before storing in timestamptz column
-       payload['trade_start_time'] = localDatetimeToUTC(value as string) 
+      // Convert local datetime-local to proper UTC before storing in timestamptz column
+      payload['trade_start_time'] = localDatetimeToUTC(value as string)
     } else if (key === 'exit_time') {
-       payload['trade_end_time'] = localDatetimeToUTC(value as string)   
+      payload['trade_end_time'] = localDatetimeToUTC(value as string)
     } else {
-       // Snake Case Conversion for standard fields
-       const snakeKey = key
+      // Snake Case Conversion for standard fields
+      const snakeKey = key
         .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2") 
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2")
         .toLowerCase()
-        .replace(/fvg_classic/, "fvg_classic") 
-       
-       payload[snakeKey] = value
+        .replace(/fvg_classic/, "fvg_classic")
+
+      payload[snakeKey] = value
     }
   })
   return payload
@@ -191,13 +192,23 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
 
     if (!user) return { success: false, error: "User not authenticated" }
 
-    const calculatedOutcome = (trade.pnl || 0) > 0 ? 'win' : (trade.pnl || 0) < 0 ? 'loss' : 'breakeven'
+    // Validate input with Zod
+    const validationResult = tradeSchema.safeParse(trade)
+    if (!validationResult.success) {
+      console.error("Validation error:", validationResult.error)
+      return { success: false, error: "Invalid trade data: " + validationResult.error.issues.map(i => i.message).join(", ") }
+    }
+
+    // Use validated data
+    const validTrade = validationResult.data
+
+    const calculatedOutcome = (validTrade.pnl || 0) > 0 ? 'win' : (validTrade.pnl || 0) < 0 ? 'loss' : 'breakeven'
 
     const dbPayload = {
-      ...toDbPayload(trade),
+      ...toDbPayload(validTrade),
       user_id: user.id,
-      outcome: trade.outcome || calculatedOutcome,
-      pnl: trade.pnl || 0
+      outcome: validTrade.outcome || calculatedOutcome,
+      pnl: validTrade.pnl || 0
     }
 
     const { data, error } = await supabase.from("trades").insert(dbPayload).select().single()
@@ -212,11 +223,11 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
     revalidatePath("/playbook")
     revalidatePath("/analytics")
 
-    return { 
-      success: true, 
-      trade: mapRowToTrade(data), 
-      tradeId: data.id, 
-      message: "Trade logged successfully!" 
+    return {
+      success: true,
+      trade: mapRowToTrade(data),
+      tradeId: data.id,
+      message: "Trade logged successfully!"
     }
   } catch (error: any) {
     console.error("Exception in addTrade:", error)
@@ -251,7 +262,7 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
     revalidatePath("/playbook")
     revalidatePath("/analytics")
     revalidatePath("/dashboard")
-    
+
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
     console.error("Exception in updateTrade:", error)
@@ -277,7 +288,7 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
     revalidatePath("/playbook")
     revalidatePath("/analytics")
     revalidatePath("/dashboard")
-    
+
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
     console.error("Exception in deleteTrade:", error)
@@ -328,7 +339,7 @@ export async function addMultipleTrades(trades: NewTradeInput[]) {
     revalidatePath("/playbook")
     revalidatePath("/analytics")
     revalidatePath("/dashboard")
-    
+
     return {
       successCount: data?.length || 0,
       errorCount: trades.length - (data?.length || 0),
@@ -405,7 +416,7 @@ export async function logTradePsychology(tradeId: string, data: {
     }
 
     // Refresh pages to show data immediately
-    revalidatePath("/psychology") 
+    revalidatePath("/psychology")
     revalidatePath("/dashboard")
     revalidatePath("/trades")
 

@@ -4,6 +4,8 @@ export interface UserProfile {
   experienceLevel?: "beginner" | "intermediate" | "advanced" | "expert"
   accountType?: "day_trader" | "swing_trader" | "position_trader" | "institution"
   tradingGoals?: string // e.g., "Consistent profitability, risk management"
+  bio?: string
+  tradingStyle?: string
 }
 
 export interface TradingPreferences {

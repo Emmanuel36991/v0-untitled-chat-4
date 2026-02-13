@@ -46,6 +46,12 @@ import { getStrategies, type PlaybookStrategy, type StrategySetup } from "@/app/
 import { logTradePsychology } from "@/app/actions/trade-actions"
 import { getTradingAccounts } from "@/app/actions/account-actions"
 
+// Sub-components
+import { PriceInput } from "./trade-form/price-input"
+import { SessionCard } from "./trade-form/session-card"
+import { StrategyItemCard } from "./trade-form/strategy-item-card"
+import { TradeSummaryBar } from "./trade-form/trade-summary-bar"
+
 // --- CONSTANTS ---
 const FORM_STORAGE_KEY = "trade_form_draft"
 
@@ -138,7 +144,7 @@ const getInitialFormState = (initialTrade?: Trade): ExtendedTradeInput => {
     tradeStartTime: undefined,
     tradeEndTime: undefined,
     preciseDurationMinutes: undefined,
-    smcMarketStructure: [],
+    smc_market_structure: [],
     psychologyFactors: [],
     screenshotBeforeUrl: "",
     screenshotAfterUrl: "",
@@ -197,130 +203,11 @@ const getSizeUnit = (instrumentSymbol: string, allInstruments: Array<{ symbol: s
 
 // --- COMPONENTS ---
 
-const PriceInput = ({ id, label, value, onChange, icon: Icon, color = "text-foreground", placeholder = "0.00" }: any) => (
-  <div className="space-y-1.5 relative group">
-    <Label htmlFor={id} className={cn("text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", color)}>
-      <Icon className="w-3.5 h-3.5" /> {label}
-    </Label>
-    <div className="relative transition-all duration-300 group-focus-within:scale-[1.01]">
-      <Input
-        type="number"
-        step="any"
-        id={id}
-        name={id}
-        value={value || ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="h-12 pl-3 pr-12 bg-background border-2 border-input group-hover:border-primary/30 focus:border-primary font-mono text-lg shadow-sm"
-      />
-      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium pointer-events-none">
-        USD
-      </div>
-    </div>
-  </div>
-)
+// PriceInput component moved to components/trade-form/price-input.tsx
 
-const SessionCard = ({ session, isSelected, onSelect }: any) => {
-  const Icon = session.icon
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        "flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-200 w-full",
-        isSelected
-          ? cn("bg-background shadow-md ring-1 ring-offset-0", session.borderColor)
-          : "border-border bg-card/50 hover:bg-accent/50",
-      )}
-    >
-      <div className="flex items-center justify-between w-full mb-3">
-        <div className="flex items-center gap-3">
-          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", session.iconBg)}>
-            <Icon className={cn("w-4.5 h-4.5", isSelected ? session.textColor : "text-muted-foreground")} />
-          </div>
-          <div>
-            <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
-              {session.label}
-            </h4>
-            <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
-              {session.time}
-            </span>
-          </div>
-        </div>
-        {isSelected && (
-          <div className={cn("w-5 h-5 rounded-full flex items-center justify-center", session.textColor.split(" ")[0].replace("text-", "bg-"))}>
-            <CheckCircle className="w-3 h-3 text-white" />
-          </div>
-        )}
-      </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{session.description}</p>
-    </button>
-  )
-}
+// SessionCard component moved to components/trade-form/session-card.tsx
 
-const StrategyItemCard = ({
-  title,
-  description,
-  tags,
-  isSelected,
-  onToggle,
-  winRate
-}: {
-  title: string,
-  description?: string,
-  tags: string[],
-  isSelected: boolean,
-  onToggle: () => void,
-  winRate: number
-}) => {
-  let Icon = BookOpen
-  if (tags?.some(t => t.toLowerCase().includes("ict"))) Icon = Crosshair
-  else if (tags?.some(t => t.toLowerCase().includes("smc"))) Icon = Zap
-  else if (tags?.some(t => t.toLowerCase().includes("wyckoff"))) Icon = Layers
-  else if (tags?.some(t => t.toLowerCase().includes("volume"))) Icon = BarChart3
-
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={cn(
-        "relative flex flex-col items-start p-5 rounded-xl border-2 text-left transition-all duration-300 w-full group",
-        "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary",
-        isSelected
-          ? "bg-primary/5 border-primary ring-1 ring-primary shadow-lg shadow-primary/10"
-          : "bg-card border-border/60 hover:bg-accent/30 hover:border-primary/30"
-      )}
-    >
-      <div className="flex justify-between w-full mb-3">
-        <div className={cn("p-2 rounded-lg border shadow-sm transition-colors", isSelected ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted/30 border-border text-muted-foreground group-hover:text-primary")}>
-          <Icon className="w-5 h-5" />
-        </div>
-        {isSelected && (
-          <div className="bg-primary text-primary-foreground rounded-full p-1 shadow-sm animate-in zoom-in duration-300">
-            <CheckCircle className="w-4 h-4" />
-          </div>
-        )}
-      </div>
-
-      <h4 className={cn("font-bold text-base mb-1 leading-tight tracking-tight", isSelected ? "text-primary" : "text-foreground")}>
-        {title}
-      </h4>
-
-      <p className="text-xs text-muted-foreground line-clamp-2 mb-4 h-8 leading-relaxed font-medium">
-        {description || "No description provided."}
-      </p>
-
-      <div className="flex items-center justify-between w-full mt-auto pt-3 border-t border-dashed border-border/50">
-        <div className="flex gap-1.5 overflow-hidden">
-          {tags?.slice(0, 3).map(t => (
-            <Badge key={t} variant="secondary" className="text-[9px] px-1.5 h-5 font-bold bg-muted/50 border border-border/50 text-muted-foreground">{t}</Badge>
-          ))}
-        </div>
-        <span className={cn("text-[10px] font-mono font-bold", (winRate || 0) > 50 ? "text-emerald-500" : "text-muted-foreground")}>{winRate || 0}% WR</span>
-      </div>
-    </button>
-  )
-}
+// StrategyItemCard component moved to components/trade-form/strategy-item-card.tsx
 
 const RuleItem = ({ rule, isChecked, onToggle }: { rule: StrategyRule, isChecked: boolean, onToggle: () => void }) => {
   const category = (rule as any).category || 'default'
@@ -374,125 +261,7 @@ const renderSection = (title: string, Icon: React.ElementType, children: React.R
 )
 
 // --- LIVE PnL / R:R SUMMARY BAR ---
-const TradeSummaryBar = ({
-  pnl,
-  riskReward,
-  direction,
-  entryPrice,
-  stopLoss,
-  size,
-}: {
-  pnl: number | null
-  riskReward: number | null
-  direction: string
-  entryPrice: number
-  stopLoss: number
-  size: number
-}) => {
-  const hasPrice = entryPrice > 0
-  const hasPnl = pnl !== null && pnl !== 0
-  const outcome = pnl === null ? null : pnl > 0 ? "WIN" : pnl < 0 ? "LOSS" : "BE"
-
-  // Calculate risk in dollars
-  const riskDollars = (entryPrice && stopLoss && size)
-    ? Math.abs(entryPrice - stopLoss) * size
-    : null
-
-  if (!hasPrice && !hasPnl) return null
-
-  return (
-    <div className="relative overflow-hidden rounded-xl border border-border/60 bg-muted/30 dark:bg-[oklch(0.11_0.02_264)] backdrop-blur-sm">
-      {/* Subtle top accent line */}
-      <div className={cn(
-        "absolute top-0 left-0 right-0 h-[2px] transition-colors duration-500",
-        hasPnl
-          ? pnl! > 0 ? "bg-emerald-500" : pnl! < 0 ? "bg-red-500" : "bg-muted-foreground/30"
-          : "bg-border/50"
-      )} />
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/40">
-        {/* PnL Cell */}
-        <div className="px-4 py-3 flex flex-col gap-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
-            <DollarSign className="w-3 h-3" /> Est. P&L
-          </span>
-          <span className={cn(
-            "font-mono text-lg font-black tracking-tight transition-colors duration-300",
-            hasPnl
-              ? pnl! > 0 ? "text-emerald-500" : pnl! < 0 ? "text-red-500" : "text-muted-foreground"
-              : "text-muted-foreground/40"
-          )}>
-            {hasPnl ? (
-              <>
-                {pnl! > 0 ? "+" : ""}{pnl!.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </>
-            ) : (
-              "—"
-            )}
-          </span>
-        </div>
-
-        {/* Outcome Cell */}
-        <div className="px-4 py-3 flex flex-col gap-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
-            {outcome === "WIN" ? <ArrowUpRight className="w-3 h-3" /> : outcome === "LOSS" ? <ArrowDownRight className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
-            Outcome
-          </span>
-          <div className="flex items-center gap-2">
-            {outcome ? (
-              <span className={cn(
-                "font-mono text-xs font-black px-2 py-0.5 rounded-md tracking-wider transition-colors duration-300",
-                outcome === "WIN" && "bg-emerald-500/15 text-emerald-500 dark:bg-emerald-500/10",
-                outcome === "LOSS" && "bg-red-500/15 text-red-500 dark:bg-red-500/10",
-                outcome === "BE" && "bg-muted text-muted-foreground"
-              )}>
-                {outcome}
-              </span>
-            ) : (
-              <span className="font-mono text-lg text-muted-foreground/40">—</span>
-            )}
-          </div>
-        </div>
-
-        {/* R:R Cell */}
-        <div className="px-4 py-3 flex flex-col gap-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
-            <Scale className="w-3 h-3" /> Risk : Reward
-          </span>
-          <span className={cn(
-            "font-mono text-lg font-black tracking-tight transition-colors duration-300",
-            riskReward !== null
-              ? riskReward >= 2 ? "text-emerald-500" : riskReward >= 1 ? "text-amber-500" : "text-red-500"
-              : "text-muted-foreground/40"
-          )}>
-            {riskReward !== null ? (
-              <>1 : {riskReward.toFixed(1)}</>
-            ) : (
-              "—"
-            )}
-          </span>
-        </div>
-
-        {/* Risk $ Cell */}
-        <div className="px-4 py-3 flex flex-col gap-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
-            <Shield className="w-3 h-3" /> Risk
-          </span>
-          <span className={cn(
-            "font-mono text-lg font-black tracking-tight transition-colors duration-300",
-            riskDollars !== null ? "text-foreground" : "text-muted-foreground/40"
-          )}>
-            {riskDollars !== null ? (
-              <>${riskDollars.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>
-            ) : (
-              "—"
-            )}
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-}
+// TradeSummaryBar component moved to components/trade-form/trade-summary-bar.tsx
 
 // --- PRE-SUBMIT REVIEW DIALOG ---
 const TradeReviewDialog = ({
@@ -554,8 +323,8 @@ const TradeReviewDialog = ({
         <div className={cn(
           "h-1.5 w-full",
           outcome === "WIN" ? "bg-gradient-to-r from-emerald-400 to-emerald-600" :
-          outcome === "LOSS" ? "bg-gradient-to-r from-red-400 to-red-600" :
-          "bg-gradient-to-r from-muted-foreground/20 via-muted-foreground/40 to-muted-foreground/20"
+            outcome === "LOSS" ? "bg-gradient-to-r from-red-400 to-red-600" :
+              "bg-gradient-to-r from-muted-foreground/20 via-muted-foreground/40 to-muted-foreground/20"
         )} />
 
         {/* Hero section */}
@@ -710,8 +479,8 @@ const TradeReviewDialog = ({
               outcome === "WIN"
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"
                 : outcome === "LOSS"
-                ? "bg-red-600 hover:bg-red-700 text-white shadow-red-500/20"
-                : ""
+                  ? "bg-red-600 hover:bg-red-700 text-white shadow-red-500/20"
+                  : ""
             )}
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
@@ -1110,7 +879,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
           size: formData.size || 0,
           pnl: pnlResult,
           riskReward: riskRewardRatio,
-          session: formData.tradeSession,
+          session: formData.tradeSession ?? undefined,
           strategy: formData.setupName || undefined,
           mood: MOODS.find(m => m.id === psychologyMood)?.label,
           moodEmoji: MOODS.find(m => m.id === psychologyMood)?.emoji,

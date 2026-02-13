@@ -143,12 +143,15 @@ export interface Trade {
 
   psychology_factors?: string[] | null
   good_habits?: string[] | null
+
+  account_id?: string | null
 }
 
 export type NewTradeInput = Omit<
   Trade,
-  "id" | "user_id" | "pnl" | "outcome" | "created_at" | "updated_at" | "risk_reward_ratio"
+  "id" | "user_id" | "pnl" | "outcome" | "created_at" | "updated_at" | "risk_reward_ratio" | "account_id"
 > & {
+  account_id?: string
   pnl?: number | null
   outcome?: TradeOutcome
 
@@ -385,28 +388,29 @@ export interface BacktestParams {
 }
 
 export interface BacktestTrade {
-  entryTime: string
-  exitTime: string
+  entryTime: number
+  exitTime: number
   direction: "long" | "short"
   entryPrice: number
   exitPrice: number
   pnl: number
   pnlPercent: number
-  outcome: "win" | "loss" | "breakeven"
+  size: number
+  exitReason?: string
 }
 
 export interface EquityDataPoint {
-  time: string
+  time: number
   equity: number
 }
 
 export interface DrawdownPoint {
-  time: string
+  time: number
   drawdown: number
 }
 
 export interface PnlDistributionPoint {
-  range: string
+  pnl: number
   count: number
 }
 
@@ -415,22 +419,33 @@ export interface BacktestResults {
   winningTrades: number
   losingTrades: number
   winRate: number
+  lossRate?: number
+  breakevenRate?: number
+  breakevenTrades?: number
   totalPnl: number
   totalPnlPercent: number
-  avgWin: number
-  avgLoss: number
-  largestWin: number
-  largestLoss: number
+  averageWinPnl: number
+  averageLossPnl: number
+  averageWinPnlPercent?: number
+  averageLossPnlPercent?: number
+  riskRewardRatio?: number
+  expectancy?: number
   profitFactor: number
-  sharpeRatio: number
+  sharpeRatio?: number
   maxDrawdown: number
-  maxDrawdownPercent: number
-  finalEquity: number
+  longestWinningStreak?: number
+  longestLosingStreak?: number
+  averageTradeDuration?: number
+  averageHoldingPeriodWin?: number
+  averageHoldingPeriodLoss?: number
   trades: BacktestTrade[]
   equityCurve: EquityDataPoint[]
   drawdownCurve: DrawdownPoint[]
   pnlDistribution: PnlDistributionPoint[]
   logs: string[]
+  startTime?: number
+  endTime?: number
+  totalDurationDays?: number
 }
 
 export interface BacktestStrategyDefinition {

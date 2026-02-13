@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { InstrumentPopularity, InstrumentSentiment, SetupPopularity } from "@/types/social-insights"
 
 export async function getInstrumentPopularity(limit = 5, periodDays = 30): Promise<InstrumentPopularity[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { data, error } = await supabase.rpc("get_instrument_popularity", {
       limit_count: limit,
@@ -32,7 +32,7 @@ export async function getInstrumentPopularity(limit = 5, periodDays = 30): Promi
 }
 
 export async function getOverallInstrumentSentiment(limit = 3, periodDays = 30): Promise<InstrumentSentiment[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { data, error } = await supabase.rpc("get_overall_instrument_sentiment", {
       limit_count: limit,
@@ -60,7 +60,7 @@ export async function getOverallInstrumentSentiment(limit = 3, periodDays = 30):
 }
 
 export async function getSetupPopularity(limit = 5, periodDays = 30): Promise<SetupPopularity[]> {
-  const supabase = createClient()
+  const supabase = await createClient()
   try {
     const { data, error } = await supabase.rpc("get_setup_popularity", {
       limit_count: limit,

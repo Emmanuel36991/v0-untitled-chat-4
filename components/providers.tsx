@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
-import { type ThemeProviderProps } from "next-themes/dist/types"
 import { Toaster } from "@/components/ui/toaster"
 import { AccessibilityToolbar } from "@/components/layout/accessibility-toolbar"
 
-export function Providers({ children, ...props }: ThemeProviderProps) {
+export function Providers({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {

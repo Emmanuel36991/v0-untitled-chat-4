@@ -161,7 +161,7 @@ export default function MarketingLayoutClient({
   children: React.ReactNode
 }) {
   return (
-    <div className="marketing-layout">
+    <div className="marketing-layout dark">
       <ParticleBackground />
       <div className="relative z-10 flex flex-col min-h-screen">
         <MarketingHeader />

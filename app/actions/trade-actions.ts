@@ -186,21 +186,30 @@ export async function getTrades(): Promise<Trade[]> {
 
 // 4. ADD TRADE
 export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult> {
+  console.log("----------------------------------------------------------------")
+  console.log("[SERVER ACTION] addTrade called")
+  console.log("[SERVER ACTION] Input:", JSON.stringify(trade, null, 2))
+
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: "User not authenticated" }
+    if (!user) {
+      console.error("[SERVER ACTION] Error: User not authenticated")
+      return { success: false, error: "User not authenticated" }
+    }
+    console.log("[SERVER ACTION] User authenticated:", user.id)
 
     // Validate input with Zod
     const validationResult = tradeSchema.safeParse(trade)
     if (!validationResult.success) {
-      console.error("Validation error:", validationResult.error)
+      console.error("[SERVER ACTION] Validation error:", JSON.stringify(validationResult.error, null, 2))
       return { success: false, error: "Invalid trade data: " + validationResult.error.issues.map(i => i.message).join(", ") }
     }
 
     // Use validated data
     const validTrade = validationResult.data
+    console.log("[SERVER ACTION] Validation successful")
 
     const calculatedOutcome = (validTrade.pnl || 0) > 0 ? 'win' : (validTrade.pnl || 0) < 0 ? 'loss' : 'breakeven'
 
@@ -210,13 +219,17 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
       outcome: validTrade.outcome || calculatedOutcome,
       pnl: validTrade.pnl || 0
     }
+    console.log("[SERVER ACTION] DB Payload:", JSON.stringify(dbPayload, null, 2))
 
     const { data, error } = await supabase.from("trades").insert(dbPayload).select().single()
 
     if (error) {
-      console.error("Database insert error:", error)
-      return { success: false, error: `Failed to add trade: ${error.message}` }
+      console.error("[SERVER ACTION] Database insert error:", JSON.stringify(error, null, 2))
+      return { success: false, error: `Failed to add trade: ${error.message} (Code: ${error.code})` }
     }
+
+    console.log("[SERVER ACTION] Trade added successfully:", data.id)
+    console.log("----------------------------------------------------------------")
 
     revalidatePath("/trades")
     revalidatePath("/dashboard")
@@ -230,7 +243,7 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
       message: "Trade logged successfully!"
     }
   } catch (error: any) {
-    console.error("Exception in addTrade:", error)
+    console.error("[SERVER ACTION] Exception in addTrade:", error)
     return { success: false, error: `An unexpected error occurred: ${error.message}` }
   }
 }

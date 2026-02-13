@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(ls:*)",
-      "Bash(npx next build:*)"
+      "Bash(npx next build:*)",
+      "Bash(del \"C:\\\\Users\\\\emanu\\\\v0-untitled-chat-4\\\\components\\\\marketing\\\\marketing-nav.tsx\")",
+      "Bash(npm install:*)",
+      "Bash(where:*)",
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(npm.cmd config list:*)",
+      "Bash(npm.cmd config get:*)",
+      "Bash(npm.cmd config:*)",
+      "Bash(timeout 90 npm.cmd install:*)",
+      "Bash(npx:*)",
+      "Bash(npm.cmd pack:*)",
+      "Bash(npm.cmd install:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

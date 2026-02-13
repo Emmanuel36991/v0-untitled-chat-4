@@ -58,7 +58,7 @@ export default function MarketingPage() {
                 Login
               </Link>
               <Link href="/signup" className="btn-primary">
-                Start Free Trial
+                Get Started
               </Link>
             </div>
 
@@ -84,7 +84,7 @@ export default function MarketingPage() {
                 Login
               </Link>
               <Link href="/signup" className="btn-primary mt-4">
-                Start Free Trial
+                Get Started
               </Link>
             </div>
           )}
@@ -115,7 +115,7 @@ export default function MarketingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
             <a href="/signup" className="btn-primary">
               <TrendingUp className="h-5 w-5 mr-2" />
-              Start Free 14-Day Trial
+              Get Started Now
               <ArrowRight className="h-4 w-4 ml-2" />
             </a>
           </div>
@@ -125,10 +125,7 @@ export default function MarketingPage() {
               <span className="stat-number">1,000+</span>
               <span className="stat-label">Active Traders</span>
             </div>
-            <div className="stat-item">
-              <span className="stat-number">14 Days</span>
-              <span className="stat-label">Free Trial</span>
-            </div>
+
             <div className="stat-item flex items-center justify-center gap-2">
               <Shield className="h-6 w-6 text-accent" />
               <div>
@@ -330,7 +327,7 @@ export default function MarketingPage() {
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             <div className="testimonial-card">
               <div className="testimonial-quote">
-                "Concentrade helped me identify my emotional trading patterns. I've significantly reduced my losses and 
+                "Concentrade helped me identify my emotional trading patterns. I've significantly reduced my losses and
                 improved my win rate. The insights have been invaluable for my trading discipline."
               </div>
               <div className="testimonial-author">
@@ -473,7 +470,7 @@ export default function MarketingPage() {
                 </li>
               </ul>
               <a href="/signup" className="btn-primary w-full">
-                Start Free Trial
+                Get Started
               </a>
             </div>
 
@@ -596,11 +593,11 @@ export default function MarketingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/signup" className="btn-primary text-lg px-8 py-4">
               <TrendingUp className="h-6 w-6 mr-2" />
-              Start Your Free Trial
+              Start Your Journey
               <ArrowRight className="h-5 w-5 ml-2" />
             </a>
           </div>
-          <p className="text-sm text-gray-400 mt-4">No credit card required • 14-day free trial • Cancel anytime</p>
+          <p className="text-sm text-gray-400 mt-4">No credit card required • Cancel anytime</p>
         </div>
       </section>
 
@@ -633,7 +630,7 @@ export default function MarketingPage() {
                 </li>
                 <li>
                   <Link href="/signup" className="hover:text-accent">
-                    Free Trial
+                    Sign Up
                   </Link>
                 </li>
               </ul>

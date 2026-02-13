@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Bot, X, Send, MessageSquare, Minimize2, Maximize2 } from "lucide-react"
+import { Sparkles, X, Send, Minimize2, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -133,12 +133,13 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-br from-blue-600 to-purple-600 hover:scale-105 transition-all duration-300 z-50 p-0"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-slate-900 border border-slate-700/50 hover:scale-105 hover:bg-slate-800 transition-all duration-300 z-50 p-0 overflow-hidden group"
       >
-        <Bot className="h-7 w-7 text-white" />
-        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
+        <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 group-hover:opacity-100 transition-opacity" />
+        <Sparkles className="h-6 w-6 text-indigo-400" />
+        <span className="absolute top-3 right-3 flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
         </span>
       </Button>
     )
@@ -152,16 +153,19 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/50 rounded-t-2xl">
+      <div className="flex items-center justify-between p-4 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md rounded-t-2xl">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-            <Bot className="w-5 h-5 text-white" />
+          <div className="p-2 bg-slate-800 rounded-lg border border-slate-700/50">
+            <Sparkles className="w-4 h-4 text-indigo-400" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-sm">TradeGPT</h3>
-            <p className="text-xs text-slate-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Online • Llama 3.3
+            <h3 className="font-semibold text-slate-100 text-sm">Trading Assistant</h3>
+            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
+              Active
             </p>
           </div>
         </div>
@@ -189,11 +193,16 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
       <div className="flex-1 overflow-hidden relative bg-gradient-to-b from-slate-900 to-slate-900/90">
         <ScrollArea className="h-full p-4" ref={scrollRef}>
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8 opacity-50">
-              <MessageSquare className="w-12 h-12 text-blue-500/50" />
-              <p className="text-sm text-slate-400">
-                I'm your AI trading assistant. Ask me about your performance, risk management, or specific setups!
-              </p>
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8">
+              <div className="w-16 h-16 rounded-2xl bg-slate-800/50 flex items-center justify-center border border-slate-700/50 mb-2">
+                <Sparkles className="w-8 h-8 text-indigo-400/80" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-medium text-slate-200">How can I help?</h4>
+                <p className="text-sm text-slate-500 max-w-[200px] mx-auto">
+                  Ask me about market trends, chart patterns, or your trading performance.
+                </p>
+              </div>
             </div>
           )}
 
@@ -202,9 +211,9 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
               <div key={m.id} className={cn("flex w-full", m.role === "user" ? "justify-end" : "justify-start")}>
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                    "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm",
                     m.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-none"
+                      ? "bg-indigo-600 text-white rounded-br-none"
                       : "bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-none",
                   )}
                 >
@@ -216,9 +225,9 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
               <div className="flex justify-start">
                 <div className="bg-slate-800 rounded-2xl rounded-bl-none px-4 py-3 border border-slate-700/50">
                   <div className="flex gap-1.5">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0.1s]" />
-                    <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce" />
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.1s]" />
+                    <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:0.2s]" />
                   </div>
                 </div>
               </div>
@@ -233,13 +242,13 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about your trades..."
-            className="bg-slate-900/50 border-slate-700 text-slate-200 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Type your message..."
+            className="bg-slate-900 border-slate-700 text-slate-200 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-500"
           />
           <Button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
           >
             <Send className="h-4 w-4" />
           </Button>

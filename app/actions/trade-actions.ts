@@ -96,9 +96,12 @@ function mapRowToTrade(row: any): Trade {
   }
 }
 
-// Helper: Convert a datetime-local string (local time, no TZ) to a proper UTC ISO string.
-// datetime-local inputs produce strings like "2026-02-10T16:30" which have NO timezone info.
-// new Date() parses these as LOCAL time per the JS spec, so .toISOString() gives correct UTC.
+// Helper: Ensure a datetime string is stored as a proper UTC ISO string.
+// The client now sends pre-converted UTC ISO strings (e.g. "2026-02-10T14:30:00.000Z").
+// This function validates and normalizes, handling both:
+//   - Already-UTC strings with "Z" or offset (from the client fix)
+//   - Legacy datetime-local strings without timezone (passes through as-is since
+//     on the server "local" = UTC, which is correct for already-UTC values)
 function localDatetimeToUTC(value: string | null | undefined): string | null {
   if (!value || typeof value !== "string" || value.trim() === "") return null
   const d = new Date(value)

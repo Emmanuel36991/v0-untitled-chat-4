@@ -162,12 +162,7 @@ export default function MarketingLayoutClient({
 }) {
   return (
     <div className="marketing-layout dark">
-      <ParticleBackground />
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <MarketingHeader />
-        <main className="flex-1">{children}</main>
-        <MarketingFooter />
-      </div>
+      {children}
     </div>
   )
 }

@@ -6,7 +6,7 @@ import { LucideIcon } from "lucide-react"
 interface PriceInputProps {
   id: string
   label: string
-  value: number
+  value?: number | null
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   icon: LucideIcon
   color?: string

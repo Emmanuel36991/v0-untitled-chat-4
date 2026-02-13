@@ -23,3 +23,47 @@ export async function getTradingAccounts(): Promise<TradingAccount[]> {
 
   return data as TradingAccount[]
 }
+
+export async function createTradingAccount(input: CreateAccountInput) {
+  const result = createAccountSchema.safeParse(input)
+
+  if (!result.success) {
+    return { success: false, error: result.error.errors[0].message }
+  }
+
+  const { name, type, initial_balance } = result.data
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: "User not authenticated" }
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('trading_accounts')
+      .insert({
+        user_id: user.id,
+        name,
+        type,
+        initial_balance,
+        currency: 'USD', // Default currency
+        is_default: false
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating account:', error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath('/trades')
+    revalidatePath('/dashboard')
+
+    return { success: true, account: data as TradingAccount }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}

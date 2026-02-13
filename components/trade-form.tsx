@@ -1,13 +1,15 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   ArrowLeft, Calendar, Clock, Target, TrendingUp, TrendingDown,
   Shield, CheckCircle, ChevronRight, ChevronLeft, Search, Save,
   Loader2, Brain, BarChart3, Globe, Zap, Crosshair, MousePointer,
   ImageIcon, Calculator, Info, Plus, Layers, BookOpen, ListChecks,
-  CandlestickChart, Activity, Ban, GitBranch, Database, Wallet
+  CandlestickChart, Activity, Ban, GitBranch, Database, Wallet,
+  DollarSign, Scale, ArrowUpRight, ArrowDownRight, Minus,
+  ChevronDown, CloudOff, Cloud, X
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +23,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/components/ui/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { cn } from "@/lib/utils"
 import { useUserConfig } from "@/hooks/use-user-config"
 import {
@@ -154,6 +158,41 @@ const getInitialFormState = (initialTrade?: Trade): ExtendedTradeInput => {
     }
   }
   return baseState
+}
+
+// --- HELPERS ---
+
+// Auto-detect trading session from entry time (GMT hours)
+const detectSessionFromTime = (localDatetimeStr: string): string | undefined => {
+  if (!localDatetimeStr) return undefined
+  try {
+    const d = new Date(localDatetimeStr)
+    if (isNaN(d.getTime())) return undefined
+    const gmtHour = d.getUTCHours()
+    // Overlap takes priority: 12:00-16:00 GMT
+    if (gmtHour >= 12 && gmtHour < 16) return "overlap"
+    // New York: 16:00-21:00 GMT (after overlap)
+    if (gmtHour >= 16 && gmtHour < 21) return "new-york"
+    // London: 07:00-12:00 GMT (before overlap)
+    if (gmtHour >= 7 && gmtHour < 12) return "london"
+    // Asian: 21:00-06:00 GMT
+    if (gmtHour >= 21 || gmtHour < 7) return "asian"
+    return undefined
+  } catch {
+    return undefined
+  }
+}
+
+// Get size unit label based on instrument category
+const getSizeUnit = (instrumentSymbol: string, allInstruments: Array<{ symbol: string; category: string }>): string => {
+  const inst = allInstruments.find(i => i.symbol === instrumentSymbol)
+  if (!inst) return "Size"
+  switch (inst.category) {
+    case "futures": return "Contracts"
+    case "forex": return "Lots"
+    case "crypto": return "Coins"
+    default: return "Units"
+  }
 }
 
 // --- COMPONENTS ---
@@ -329,6 +368,315 @@ const renderSection = (title: string, Icon: React.ElementType, children: React.R
   </div>
 )
 
+// --- LIVE PnL / R:R SUMMARY BAR ---
+const TradeSummaryBar = ({
+  pnl,
+  riskReward,
+  direction,
+  entryPrice,
+  stopLoss,
+  size,
+}: {
+  pnl: number | null
+  riskReward: number | null
+  direction: string
+  entryPrice: number
+  stopLoss: number
+  size: number
+}) => {
+  const hasPrice = entryPrice > 0
+  const hasPnl = pnl !== null && pnl !== 0
+  const outcome = pnl === null ? null : pnl > 0 ? "WIN" : pnl < 0 ? "LOSS" : "BE"
+
+  // Calculate risk in dollars
+  const riskDollars = (entryPrice && stopLoss && size)
+    ? Math.abs(entryPrice - stopLoss) * size
+    : null
+
+  if (!hasPrice && !hasPnl) return null
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border/60 bg-muted/30 dark:bg-[oklch(0.11_0.02_264)] backdrop-blur-sm">
+      {/* Subtle top accent line */}
+      <div className={cn(
+        "absolute top-0 left-0 right-0 h-[2px] transition-colors duration-500",
+        hasPnl
+          ? pnl! > 0 ? "bg-emerald-500" : pnl! < 0 ? "bg-red-500" : "bg-muted-foreground/30"
+          : "bg-border/50"
+      )} />
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/40">
+        {/* PnL Cell */}
+        <div className="px-4 py-3 flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+            <DollarSign className="w-3 h-3" /> Est. P&L
+          </span>
+          <span className={cn(
+            "font-mono text-lg font-black tracking-tight transition-colors duration-300",
+            hasPnl
+              ? pnl! > 0 ? "text-emerald-500" : pnl! < 0 ? "text-red-500" : "text-muted-foreground"
+              : "text-muted-foreground/40"
+          )}>
+            {hasPnl ? (
+              <>
+                {pnl! > 0 ? "+" : ""}{pnl!.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </>
+            ) : (
+              "—"
+            )}
+          </span>
+        </div>
+
+        {/* Outcome Cell */}
+        <div className="px-4 py-3 flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+            {outcome === "WIN" ? <ArrowUpRight className="w-3 h-3" /> : outcome === "LOSS" ? <ArrowDownRight className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+            Outcome
+          </span>
+          <div className="flex items-center gap-2">
+            {outcome ? (
+              <span className={cn(
+                "font-mono text-xs font-black px-2 py-0.5 rounded-md tracking-wider transition-colors duration-300",
+                outcome === "WIN" && "bg-emerald-500/15 text-emerald-500 dark:bg-emerald-500/10",
+                outcome === "LOSS" && "bg-red-500/15 text-red-500 dark:bg-red-500/10",
+                outcome === "BE" && "bg-muted text-muted-foreground"
+              )}>
+                {outcome}
+              </span>
+            ) : (
+              <span className="font-mono text-lg text-muted-foreground/40">—</span>
+            )}
+          </div>
+        </div>
+
+        {/* R:R Cell */}
+        <div className="px-4 py-3 flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+            <Scale className="w-3 h-3" /> Risk : Reward
+          </span>
+          <span className={cn(
+            "font-mono text-lg font-black tracking-tight transition-colors duration-300",
+            riskReward !== null
+              ? riskReward >= 2 ? "text-emerald-500" : riskReward >= 1 ? "text-amber-500" : "text-red-500"
+              : "text-muted-foreground/40"
+          )}>
+            {riskReward !== null ? (
+              <>1 : {riskReward.toFixed(1)}</>
+            ) : (
+              "—"
+            )}
+          </span>
+        </div>
+
+        {/* Risk $ Cell */}
+        <div className="px-4 py-3 flex flex-col gap-0.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+            <Shield className="w-3 h-3" /> Risk
+          </span>
+          <span className={cn(
+            "font-mono text-lg font-black tracking-tight transition-colors duration-300",
+            riskDollars !== null ? "text-foreground" : "text-muted-foreground/40"
+          )}>
+            {riskDollars !== null ? (
+              <>${riskDollars.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>
+            ) : (
+              "—"
+            )}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- PRE-SUBMIT REVIEW DIALOG ---
+const TradeReviewDialog = ({
+  open,
+  onClose,
+  onConfirm,
+  isSubmitting,
+  data,
+}: {
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  isSubmitting: boolean
+  data: {
+    instrument: string
+    direction: string
+    entry_price: number
+    exit_price: number
+    stop_loss: number
+    take_profit?: number | null
+    size: number
+    pnl: number | null
+    riskReward: number | null
+    session?: string
+    strategy?: string
+    mood?: string
+    moodEmoji?: string
+    goodHabitsCount: number
+    badHabitsCount: number
+    entry_time?: string
+    exit_time?: string
+  }
+}) => {
+  const outcome = data.pnl === null ? null : data.pnl > 0 ? "WIN" : data.pnl < 0 ? "LOSS" : "BE"
+  const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const fmtTime = (t?: string) => {
+    if (!t) return "—"
+    try {
+      return new Date(t).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+    } catch { return "—" }
+  }
+
+  const Row = ({ label, value, mono = false, color }: { label: string; value: React.ReactNode; mono?: boolean; color?: string }) => (
+    <div className="flex items-center justify-between py-1.5">
+      <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{label}</span>
+      <span className={cn("text-sm font-semibold", mono && "font-mono", color)}>{value}</span>
+    </div>
+  )
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-[460px] p-0 gap-0 overflow-hidden border-border/60">
+        {/* Ticket header */}
+        <div className={cn(
+          "px-5 py-4 border-b",
+          outcome === "WIN" ? "bg-emerald-500/5 border-emerald-500/20" :
+          outcome === "LOSS" ? "bg-red-500/5 border-red-500/20" :
+          "bg-muted/30 border-border/50"
+        )}>
+          <DialogHeader className="space-y-1">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-base font-bold tracking-tight">Trade Confirmation</DialogTitle>
+              <span className="text-[10px] font-mono text-muted-foreground">
+                {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            </div>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Review your trade details before submitting.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Instrument + Direction hero */}
+          <div className="flex items-center gap-3 mt-3">
+            <span className="font-mono text-2xl font-black tracking-tighter">{data.instrument || "—"}</span>
+            <Badge
+              variant="secondary"
+              className={cn(
+                "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border",
+                data.direction === "long"
+                  ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400"
+                  : "bg-red-500/10 text-red-600 border-red-500/30 dark:text-red-400"
+              )}
+            >
+              {data.direction}
+            </Badge>
+            {outcome && (
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 border ml-auto",
+                  outcome === "WIN" && "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
+                  outcome === "LOSS" && "bg-red-500/15 text-red-600 border-red-500/30 dark:text-red-400",
+                  outcome === "BE" && "bg-muted text-muted-foreground border-border"
+                )}
+              >
+                {outcome}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-3 space-y-0.5">
+          {/* Execution section */}
+          <Row label="Entry" value={`$${fmt(data.entry_price)}`} mono />
+          <Row label="Exit" value={`$${fmt(data.exit_price)}`} mono />
+          <Row label="Stop Loss" value={data.stop_loss ? `$${fmt(data.stop_loss)}` : "—"} mono />
+          {data.take_profit ? <Row label="Take Profit" value={`$${fmt(data.take_profit)}`} mono /> : null}
+          <Row label="Size" value={data.size} mono />
+
+          <Separator className="my-2" />
+
+          {/* Timing */}
+          <Row label="Entry Time" value={fmtTime(data.entry_time)} mono />
+          <Row label="Exit Time" value={fmtTime(data.exit_time)} mono />
+          {data.session && <Row label="Session" value={TRADING_SESSIONS.find(s => s.value === data.session)?.label || data.session} />}
+
+          <Separator className="my-2" />
+
+          {/* PnL hero row */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Est. P&L</span>
+            <span className={cn(
+              "font-mono text-xl font-black tracking-tight",
+              data.pnl !== null
+                ? data.pnl > 0 ? "text-emerald-500" : data.pnl < 0 ? "text-red-500" : "text-muted-foreground"
+                : "text-muted-foreground/40"
+            )}>
+              {data.pnl !== null ? `${data.pnl > 0 ? "+" : ""}$${fmt(Math.abs(data.pnl))}` : "—"}
+            </span>
+          </div>
+          {data.riskReward !== null && (
+            <Row
+              label="Risk : Reward"
+              value={`1 : ${data.riskReward.toFixed(1)}`}
+              mono
+              color={data.riskReward >= 2 ? "text-emerald-500" : data.riskReward >= 1 ? "text-amber-500" : "text-red-500"}
+            />
+          )}
+
+          {/* Strategy + Psychology summary */}
+          {(data.strategy || data.mood || data.goodHabitsCount > 0 || data.badHabitsCount > 0) && (
+            <>
+              <Separator className="my-2" />
+              {data.strategy && <Row label="Strategy" value={data.strategy} />}
+              {data.mood && <Row label="Mood" value={<span>{data.moodEmoji} {data.mood}</span>} />}
+              {(data.goodHabitsCount > 0 || data.badHabitsCount > 0) && (
+                <div className="flex items-center justify-between py-1.5">
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Habits</span>
+                  <div className="flex items-center gap-2">
+                    {data.goodHabitsCount > 0 && (
+                      <span className="text-xs font-semibold text-emerald-500">{data.goodHabitsCount} good</span>
+                    )}
+                    {data.badHabitsCount > 0 && (
+                      <span className="text-xs font-semibold text-red-500">{data.badHabitsCount} bad</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <DialogFooter className="px-5 py-3 border-t bg-muted/20 gap-2 sm:gap-2">
+          <Button variant="ghost" onClick={onClose} disabled={isSubmitting} className="flex-1">
+            Go Back
+          </Button>
+          <Button
+            onClick={onConfirm}
+            disabled={isSubmitting}
+            className={cn(
+              "flex-1 font-bold",
+              outcome === "WIN"
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                : outcome === "LOSS"
+                ? "bg-red-600 hover:bg-red-700 text-white"
+                : "bg-gradient-to-r from-primary to-purple-600"
+            )}
+          >
+            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+            Confirm Trade
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 interface TradeFormProps {
   onSubmitTrade: (tradeData: NewTradeInput) => Promise<{ success: boolean; error?: string; tradeId?: string }>
   initialTradeData?: Trade
@@ -374,6 +722,11 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const [psychologyPreThoughts, setPsychologyPreThoughts] = useState("")
   const [psychologyPostThoughts, setPsychologyPostThoughts] = useState("")
   const [psychologyLessons, setPsychologyLessons] = useState("")
+
+  // Review dialog + draft indicator
+  const [showReviewDialog, setShowReviewDialog] = useState(false)
+  const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null)
+  const [hasDraftOnLoad, setHasDraftOnLoad] = useState(false)
 
   // --- EFFECTS ---
 
@@ -427,8 +780,15 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          if (parsed.formData) setFormData(parsed.formData)
-          if (parsed.activeTab) setActiveTab(parsed.activeTab)
+          // Only restore if draft has meaningful data
+          if (parsed.formData && (parsed.formData.instrument || parsed.formData.entry_price)) {
+            setFormData(parsed.formData)
+            if (parsed.activeTab) setActiveTab(parsed.activeTab)
+            if (parsed.timestamp) {
+              setDraftSavedAt(parsed.timestamp)
+              setHasDraftOnLoad(true)
+            }
+          }
         } catch (e) { }
       }
     }
@@ -438,7 +798,11 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   useEffect(() => {
     if (mode === "add") {
       const timer = setTimeout(() => {
-        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({ formData, activeTab, timestamp: Date.now() }))
+        const now = Date.now()
+        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({ formData, activeTab, timestamp: now }))
+        setDraftSavedAt(now)
+        // Clear the "loaded draft" banner after first new save
+        setHasDraftOnLoad(false)
       }, 1000)
       return () => clearTimeout(timer)
     }
@@ -458,6 +822,29 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     }
   }, [formData.entry_time, formData.exit_time])
 
+  // *** AUTO-DETECT SESSION FROM ENTRY TIME ***
+  useEffect(() => {
+    if (formData.entry_time && !formData.tradeSession) {
+      const detected = detectSessionFromTime(formData.entry_time)
+      if (detected) {
+        setFormData(prev => ({ ...prev, tradeSession: detected }))
+      }
+    }
+  }, [formData.entry_time])
+
+  // *** KEYBOARD SHORTCUTS ***
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+Enter: submit from any tab
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault()
+        if (!isSubmitting) handleReviewOpen()
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [isSubmitting, formData, activeTab])
+
   // --- CALCULATIONS ---
   const pnlResult = useMemo(() => {
     if (!formData.entry_price || !formData.exit_price || !formData.size) return null
@@ -470,6 +857,24 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     const reward = Math.abs(formData.take_profit - formData.entry_price)
     return risk === 0 ? 0 : reward / risk
   }, [formData])
+
+  // Instrument list (for size unit label)
+  const allInstruments = useMemo(() => getAllAvailableInstruments(customInstruments), [customInstruments])
+  const sizeUnit = useMemo(() => getSizeUnit(formData.instrument, allInstruments), [formData.instrument, allInstruments])
+
+  // Tab completion checks
+  const isSetupComplete = !!(formData.instrument && formData.direction && formData.entry_price && formData.exit_price && formData.size)
+  const isStrategyComplete = !!(formData.playbook_strategy_id)
+  const isPsychologyComplete = !!(psychologyMood)
+
+  // Discard draft
+  const discardDraft = useCallback(() => {
+    localStorage.removeItem(FORM_STORAGE_KEY)
+    setFormData(getInitialFormState())
+    setActiveTab("setup")
+    setDraftSavedAt(null)
+    setHasDraftOnLoad(false)
+  }, [])
 
   // --- HANDLERS ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -527,37 +932,17 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
   const toggleBadHabit = (id: string) => setBadHabits((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   const toggleGoodHabit = (id: string) => setGoodHabits((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-
+  // Validate and open review dialog (or submit directly if already in dialog)
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
     const missingFields: string[] = []
 
-    if (!formData.instrument) {
-      newErrors.instrument = "Required"
-      missingFields.push("Instrument")
-    }
-    if (!formData.direction) {
-      newErrors.direction = "Required"
-      missingFields.push("Direction (Long/Short)")
-    }
-    if (!formData.entry_price) {
-      newErrors.entry_price = "Required"
-      missingFields.push("Entry Price")
-    }
-    if (!formData.exit_price) {
-      newErrors.exit_price = "Required"
-      missingFields.push("Exit Price")
-    }
-    if (!formData.size) {
-      newErrors.size = "Required"
-      missingFields.push("Position Size")
-    }
-    // Account validation
-    if (!formData.account_id && tradingAccounts.length > 0) {
-      newErrors.account_id = "Please select an account"
-      missingFields.push("Trading Account")
-    }
+    if (!formData.instrument) { newErrors.instrument = "Required"; missingFields.push("Instrument") }
+    if (!formData.direction) { newErrors.direction = "Required"; missingFields.push("Direction (Long/Short)") }
+    if (!formData.entry_price) { newErrors.entry_price = "Required"; missingFields.push("Entry Price") }
+    if (!formData.exit_price) { newErrors.exit_price = "Required"; missingFields.push("Exit Price") }
+    if (!formData.size) { newErrors.size = "Required"; missingFields.push("Position Size") }
+    if (!formData.account_id && tradingAccounts.length > 0) { newErrors.account_id = "Please select an account"; missingFields.push("Trading Account") }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
@@ -566,8 +951,21 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive"
       })
-      return
+      return false
     }
+    return true
+  }
+
+  const handleReviewOpen = () => {
+    if (validateForm()) {
+      setShowReviewDialog(true)
+    }
+  }
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+
+    if (!validateForm()) return
 
     setIsSubmitting(true)
     try {
@@ -624,12 +1022,15 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         }
 
         localStorage.removeItem(FORM_STORAGE_KEY)
+        setShowReviewDialog(false)
         router.push("/dashboard")
       } else {
+        setShowReviewDialog(false)
         toast({ title: "Error", description: result.error || "Failed to save", variant: "destructive" })
       }
     } catch (err) {
       console.error(err)
+      setShowReviewDialog(false)
       toast({ title: "Error", description: "Unexpected error", variant: "destructive" })
     } finally {
       setIsSubmitting(false)
@@ -638,8 +1039,42 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
   if (!isLoaded) return <div className="h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
 
+  // Determine header button color from PnL
+  const submitBtnClass = pnlResult !== null && pnlResult !== 0
+    ? pnlResult > 0
+      ? "rounded-full px-6 bg-emerald-600 hover:bg-emerald-700 text-white"
+      : "rounded-full px-6 bg-red-600 hover:bg-red-700 text-white"
+    : "rounded-full px-6 bg-gradient-to-r from-primary to-purple-600"
+
   return (
     <div className="min-h-screen bg-background/95 pb-24">
+      {/* Review Dialog */}
+      <TradeReviewDialog
+        open={showReviewDialog}
+        onClose={() => setShowReviewDialog(false)}
+        onConfirm={() => handleSubmit()}
+        isSubmitting={isSubmitting}
+        data={{
+          instrument: formData.instrument,
+          direction: formData.direction,
+          entry_price: formData.entry_price || 0,
+          exit_price: formData.exit_price || 0,
+          stop_loss: formData.stop_loss || 0,
+          take_profit: formData.take_profit,
+          size: formData.size || 0,
+          pnl: pnlResult,
+          riskReward: riskRewardRatio,
+          session: formData.tradeSession,
+          strategy: formData.setupName || undefined,
+          mood: MOODS.find(m => m.id === psychologyMood)?.label,
+          moodEmoji: MOODS.find(m => m.id === psychologyMood)?.emoji,
+          goodHabitsCount: goodHabits.length,
+          badHabitsCount: badHabits.length,
+          entry_time: formData.entry_time,
+          exit_time: formData.exit_time,
+        }}
+      />
+
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
@@ -647,13 +1082,40 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-muted">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-bold tracking-tight">New Trade Entry</h1>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">{mode === "edit" ? "Edit Trade" : "New Trade Entry"}</h1>
+              {/* Draft saved indicator */}
+              {mode === "add" && draftSavedAt && (
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1 -mt-0.5">
+                  <Cloud className="w-3 h-3" /> Draft saved
+                </p>
+              )}
+            </div>
           </div>
-          <Button onClick={() => handleSubmit()} disabled={isSubmitting} className="rounded-full px-6 bg-gradient-to-r from-primary to-purple-600">
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Log Trade
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground hidden sm:inline">
+              {"\u2318"}+Enter to submit
+            </span>
+            <Button onClick={handleReviewOpen} disabled={isSubmitting} className={submitBtnClass}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Log Trade
+            </Button>
+          </div>
         </div>
       </header>
+
+      {/* Draft resume banner */}
+      {hasDraftOnLoad && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 py-2 px-4">
+          <div className="container flex items-center justify-between">
+            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
+              Resuming draft from {draftSavedAt ? new Date(draftSavedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "earlier"}
+            </p>
+            <Button variant="ghost" size="sm" className="h-6 text-xs text-amber-700 dark:text-amber-300 hover:text-red-600" onClick={discardDraft}>
+              <X className="w-3 h-3 mr-1" /> Discard
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-5xl mx-auto py-8 px-4">
         {/* MAIN FORM COLUMN */}
@@ -661,9 +1123,18 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex items-center justify-center mb-8">
               <TabsList className="h-14 p-1 bg-muted/50 backdrop-blur-sm rounded-2xl border border-border/50 w-full max-w-2xl grid grid-cols-3 shadow-sm">
-                <TabsTrigger value="setup" className="rounded-xl text-sm font-semibold">1. Setup & Entry</TabsTrigger>
-                <TabsTrigger value="strategy" className="rounded-xl text-sm font-semibold">2. Strategy</TabsTrigger>
-                <TabsTrigger value="psychology" className="rounded-xl text-sm font-semibold">3. Psychology</TabsTrigger>
+                <TabsTrigger value="setup" className="rounded-xl text-sm font-semibold gap-1.5">
+                  {isSetupComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                  1. Setup & Entry
+                </TabsTrigger>
+                <TabsTrigger value="strategy" className="rounded-xl text-sm font-semibold gap-1.5">
+                  {isStrategyComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                  2. Strategy
+                </TabsTrigger>
+                <TabsTrigger value="psychology" className="rounded-xl text-sm font-semibold gap-1.5">
+                  {isPsychologyComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                  3. Psychology
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -737,26 +1208,38 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} icon={MousePointer} color="text-primary" />
+                    <PriceInput id="exit_price" label="Exit Price" value={formData.exit_price} onChange={handleChange} icon={Target} color="text-blue-500" />
                     <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-rose-500" />
-                    <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={Target} color="text-emerald-500" />
+                    <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={TrendingUp} color="text-emerald-500" />
                   </div>
+                  {errors.exit_price && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.exit_price}</p>}
+
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground">Exit Price</Label>
-                      <Input type="number" name="exit_price" value={formData.exit_price || ""} onChange={handleChange} className={cn("h-12 bg-background border-2", errors.exit_price && "border-red-500 ring-2 ring-red-500/20")} />
-                      {errors.exit_price && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.exit_price}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground">Size</Label>
-                      <Input type="number" name="size" value={formData.size || ""} onChange={handleChange} className={cn("h-12 bg-background border-2", errors.size && "border-red-500 ring-2 ring-red-500/20")} />
+                      <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1.5">
+                        <BarChart3 className="w-3.5 h-3.5" /> Position Size
+                        {formData.instrument && <span className="normal-case text-[10px] font-normal text-muted-foreground/70">({sizeUnit})</span>}
+                      </Label>
+                      <Input type="number" name="size" value={formData.size || ""} onChange={handleChange} placeholder="0" className={cn("h-12 bg-background border-2 font-mono text-lg", errors.size && "border-red-500 ring-2 ring-red-500/20")} />
                       {errors.size && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.size}</p>}
                     </div>
                   </div>
+
+                  {/* Live PnL / R:R Summary */}
+                  <TradeSummaryBar
+                    pnl={pnlResult}
+                    riskReward={riskRewardRatio}
+                    direction={formData.direction}
+                    entryPrice={formData.entry_price || 0}
+                    stopLoss={formData.stop_loss || 0}
+                    size={formData.size || 0}
+                  />
+
                   <div className="space-y-3">
                     <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> Session</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {TRADING_SESSIONS.map(session => (
                         <SessionCard key={session.value} session={session} isSelected={formData.tradeSession === session.value} onSelect={() => setFormData(prev => ({ ...prev, tradeSession: session.value }))} />
                       ))}
@@ -882,17 +1365,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
                   <CardFooter className="bg-muted/20 border-t p-4 flex justify-end">
                     <Button
                       size="lg"
-                      onClick={() => {
-                        if (!formData.playbook_strategy_id) {
-                          toast({
-                            title: "Strategy Required",
-                            description: "Please select a strategy before proceeding.",
-                            variant: "destructive"
-                          })
-                          return
-                        }
-                        setActiveTab("psychology")
-                      }}
+                      onClick={() => setActiveTab("psychology")}
                       className="rounded-xl px-8"
                     >
                       Next <ChevronRight className="ml-2 w-4 h-4" />
@@ -902,94 +1375,189 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
               )}
             </TabsContent>
 
-            {/* TAB 3: PSYCHOLOGY (UPDATED) */}
-            <TabsContent value="psychology" className="space-y-8">
-              <div className="flex items-center justify-between"><h2 className="text-2xl font-bold">Psychology</h2><Button variant="outline" size="sm" onClick={() => setActiveTab("strategy")}><ChevronLeft className="w-4 h-4 mr-2" /> Back</Button></div>
-
-              <Card className="border-0 shadow-lg"><CardHeader><CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-primary" /> Emotional State</CardTitle></CardHeader><CardContent><div className="grid grid-cols-3 md:grid-cols-7 gap-3">{MOODS.map(m => (<button key={m.id} type="button" onClick={() => setPsychologyMood(m.id)} className={cn("flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105", psychologyMood === m.id ? m.color : "border-transparent bg-muted/30 hover:bg-muted")}><span className="text-2xl mb-1">{m.emoji}</span><span className="text-xs font-bold">{m.label}</span></button>))}</div></CardContent></Card>
-
-              {/* Good Habits Section */}
-              <Card className="border-2 border-emerald-500/20 bg-emerald-50/5 dark:bg-emerald-950/5">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-emerald-500/10 rounded-lg">
-                      <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base text-emerald-900 dark:text-emerald-100">Good Habits</CardTitle>
-                      <CardDescription className="text-xs text-emerald-700 dark:text-emerald-300">
-                        What did you do right?
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {GOOD_HABITS.map(h => (
-                      <Badge
-                        key={h.id}
-                        variant={goodHabits.includes(h.id) ? "default" : "outline"}
-                        className={cn(
-                          "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
-                          goodHabits.includes(h.id)
-                            ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent shadow-sm"
-                            : "hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/50"
-                        )}
-                        onClick={() => toggleGoodHabit(h.id)}
-                      >
-                        {h.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Bad Habits Section */}
-              <Card className="border-2 border-red-500/20 bg-red-50/5 dark:bg-red-950/5">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-red-500/10 rounded-lg">
-                      <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base text-red-900 dark:text-red-100">Bad Habits</CardTitle>
-                      <CardDescription className="text-xs text-red-700 dark:text-red-300">
-                        What went wrong psychologically?
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {BAD_HABITS.map(h => (
-                      <Badge
-                        key={h.id}
-                        variant={badHabits.includes(h.id) ? "destructive" : "outline"}
-                        className={cn(
-                          "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
-                          badHabits.includes(h.id)
-                            ? "bg-red-500 hover:bg-red-600 text-white border-transparent shadow-sm"
-                            : "hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/50"
-                        )}
-                        onClick={() => toggleBadHabit(h.id)}
-                      >
-                        {h.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="border-0 shadow-md h-full"><CardHeader><CardTitle className="text-base">Pre-Trade</CardTitle></CardHeader><CardContent><Textarea value={psychologyPreThoughts} onChange={(e) => setPsychologyPreThoughts(e.target.value)} className="min-h-[150px] bg-muted/10 border-2" placeholder="Mindset before entering..." /></CardContent></Card>
-                <Card className="border-0 shadow-md h-full"><CardHeader><CardTitle className="text-base">Post-Trade</CardTitle></CardHeader><CardContent><Textarea name="notes" value={formData.notes || ""} onChange={handleChange} className="min-h-[150px] bg-muted/10 border-2" placeholder="Result breakdown..." /></CardContent></Card>
+            {/* TAB 3: PSYCHOLOGY */}
+            <TabsContent value="psychology" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Psychology</h2>
+                <Button variant="outline" size="sm" onClick={() => setActiveTab("strategy")}><ChevronLeft className="w-4 h-4 mr-2" /> Back</Button>
               </div>
 
-              <div className="space-y-3"><Label className="text-xs font-bold uppercase text-muted-foreground">Tags</Label><div className="flex gap-2"><Input value={psychologyCustomTagInput} onChange={(e) => setPsychologyCustomTagInput(e.target.value)} className="max-w-xs" placeholder="Add tag..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPsychologyCustomTag())} /><Button type="button" variant="secondary" onClick={addPsychologyCustomTag}><Plus className="w-4 h-4" /></Button></div><div className="flex flex-wrap gap-2">{psychologyCustomTags.map(t => (<Badge key={t} variant="secondary" onClick={() => removePsychologyCustomTag(t)} className="cursor-pointer hover:bg-destructive/20">{t} &times;</Badge>))}</div></div>
+              {/* Mood — always visible */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-primary" /> Emotional State</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
+                    {MOODS.map(m => (
+                      <button key={m.id} type="button" onClick={() => setPsychologyMood(m.id)} className={cn("flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105", psychologyMood === m.id ? m.color : "border-transparent bg-muted/30 hover:bg-muted")}>
+                        <span className="text-2xl mb-1">{m.emoji}</span>
+                        <span className="text-xs font-bold">{m.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <Card className="border-dashed border-2 bg-muted/5"><CardHeader><CardTitle className="text-sm flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Screenshots</CardTitle></CardHeader><CardContent className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label className="text-xs uppercase">Before</Label><Input placeholder="https://..." name="screenshotBeforeUrl" value={formData.screenshotBeforeUrl || ""} onChange={handleChange} /></div><div className="space-y-2"><Label className="text-xs uppercase">After</Label><Input placeholder="https://..." name="screenshotAfterUrl" value={formData.screenshotAfterUrl || ""} onChange={handleChange} /></div></CardContent></Card>
+              {/* Collapsible sections */}
+              <Accordion type="multiple" defaultValue={["habits"]} className="space-y-4">
+                {/* Habits (good + bad combined) */}
+                <AccordionItem value="habits" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                    <div className="flex items-center gap-2 text-base font-bold">
+                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      Habits
+                      {(goodHabits.length > 0 || badHabits.length > 0) && (
+                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                          ({goodHabits.length} good, {badHabits.length} bad)
+                        </span>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 pb-5 space-y-5">
+                    {/* Good */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1 bg-emerald-500/10 rounded">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">Good Habits</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {GOOD_HABITS.map(h => (
+                          <Badge
+                            key={h.id}
+                            variant={goodHabits.includes(h.id) ? "default" : "outline"}
+                            className={cn(
+                              "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
+                              goodHabits.includes(h.id)
+                                ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent shadow-sm"
+                                : "hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/50"
+                            )}
+                            onClick={() => toggleGoodHabit(h.id)}
+                          >
+                            {h.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <Separator />
+                    {/* Bad */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1 bg-red-500/10 rounded">
+                          <Ban className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                        </div>
+                        <span className="text-sm font-semibold text-red-900 dark:text-red-100">Bad Habits</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {BAD_HABITS.map(h => (
+                          <Badge
+                            key={h.id}
+                            variant={badHabits.includes(h.id) ? "destructive" : "outline"}
+                            className={cn(
+                              "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
+                              badHabits.includes(h.id)
+                                ? "bg-red-500 hover:bg-red-600 text-white border-transparent shadow-sm"
+                                : "hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/50"
+                            )}
+                            onClick={() => toggleBadHabit(h.id)}
+                          >
+                            {h.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
 
-              <div className="flex justify-end pt-4"><Button onClick={() => handleSubmit()} disabled={isSubmitting} size="lg" className="w-full md:w-auto px-12 rounded-xl text-lg shadow-xl shadow-primary/20 bg-gradient-to-r from-primary to-purple-600 hover:scale-105 transition-transform">{isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />} Log Trade</Button></div>
+                {/* Pre/Post Trade Thoughts */}
+                <AccordionItem value="thoughts" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                    <div className="flex items-center gap-2 text-base font-bold">
+                      <BookOpen className="w-4 h-4 text-primary" />
+                      Trade Notes
+                      {(psychologyPreThoughts || formData.notes) && (
+                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                          (filled)
+                        </span>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 pb-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase text-muted-foreground">Pre-Trade Mindset</Label>
+                        <Textarea value={psychologyPreThoughts} onChange={(e) => setPsychologyPreThoughts(e.target.value)} className="min-h-[120px] bg-muted/10 border-2" placeholder="Mindset before entering..." />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase text-muted-foreground">Post-Trade Notes</Label>
+                        <Textarea name="notes" value={formData.notes || ""} onChange={handleChange} className="min-h-[120px] bg-muted/10 border-2" placeholder="Result breakdown..." />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Tags */}
+                <AccordionItem value="tags" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                    <div className="flex items-center gap-2 text-base font-bold">
+                      <Plus className="w-4 h-4 text-muted-foreground" />
+                      Custom Tags
+                      {psychologyCustomTags.length > 0 && (
+                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                          ({psychologyCustomTags.length})
+                        </span>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 pb-5 space-y-3">
+                    <div className="flex gap-2">
+                      <Input value={psychologyCustomTagInput} onChange={(e) => setPsychologyCustomTagInput(e.target.value)} className="max-w-xs" placeholder="Add tag..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPsychologyCustomTag())} />
+                      <Button type="button" variant="secondary" onClick={addPsychologyCustomTag}><Plus className="w-4 h-4" /></Button>
+                    </div>
+                    {psychologyCustomTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {psychologyCustomTags.map(t => (
+                          <Badge key={t} variant="secondary" onClick={() => removePsychologyCustomTag(t)} className="cursor-pointer hover:bg-destructive/20">{t} &times;</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Screenshots */}
+                <AccordionItem value="screenshots" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                    <div className="flex items-center gap-2 text-base font-bold">
+                      <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                      Screenshots
+                      {(formData.screenshotBeforeUrl || formData.screenshotAfterUrl) && (
+                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                          (attached)
+                        </span>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-5 pb-5">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase font-bold text-muted-foreground">Before</Label>
+                        <Input placeholder="https://..." name="screenshotBeforeUrl" value={formData.screenshotBeforeUrl || ""} onChange={handleChange} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase font-bold text-muted-foreground">After</Label>
+                        <Input placeholder="https://..." name="screenshotAfterUrl" value={formData.screenshotAfterUrl || ""} onChange={handleChange} />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleReviewOpen} disabled={isSubmitting} size="lg" className={cn("w-full md:w-auto px-12 rounded-xl text-lg shadow-xl transition-transform hover:scale-105", submitBtnClass)}>
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
+                  Log Trade
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

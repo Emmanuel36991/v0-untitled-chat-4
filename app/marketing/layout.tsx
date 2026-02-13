@@ -8,14 +8,16 @@ export const metadata: Metadata = {
     "The only trading journal that combines professional analytics with emotional intelligence to eliminate costly mistakes and build consistent trading strategies.",
 }
 
+import MarketingLayoutClient from "./MarketingLayoutClient"
+
 export default function MarketingLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <div className="marketing-layout dark">
+    <MarketingLayoutClient>
       {children}
-    </div>
+    </MarketingLayoutClient>
   )
 }

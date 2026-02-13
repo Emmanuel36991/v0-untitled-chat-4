@@ -1,16 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react" // Added useEffect
-import Silk from "@/components/ui/silk-background"
-import Carousel from "@/components/ui/carousel-enhanced"
-import { ConcentradeLogo } from "@/components/concentrade-logo"
+import { useState, useEffect } from "react"
 
 export default function MarketingPageClient() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isMounted, setIsMounted] = useState(false) // Fix 1: Mounted state
+  const [isMounted, setIsMounted] = useState(false)
 
-  // Fix 2: Set mounted to true only after client load
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -24,60 +19,8 @@ export default function MarketingPageClient() {
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-sm border-b border-border z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex items-center space-x-2">
-                <ConcentradeLogo size={32} variant="icon" />
-                <span className="text-xl font-bold text-text-primary">Concentrade</span>
-              </div>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="#features" className="text-text-secondary hover:text-accent transition-smooth">Features</Link>
-              <Link href="#pricing" className="text-text-secondary hover:text-accent transition-smooth">Pricing</Link>
-              <Link href="#reviews" className="text-text-secondary hover:text-accent transition-smooth">Reviews</Link>
-              <button onClick={scrollToDemo} className="text-text-secondary hover:text-accent transition-smooth">Demo</button>
-              <Link href="/login" className="text-text-secondary hover:text-accent transition-smooth">Login</Link>
-              <Link href="/signup" className="btn-primary">Start Free Trial</Link>
-            </div>
-
-            <div className="md:hidden">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-text-secondary hover:text-accent p-2"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {mobileMenuOpen && (
-            <div className="md:hidden border-t border-border">
-              <div className="px-2 pt-2 pb-3 space-y-1">
-                <Link href="#features" className="block px-3 py-2 text-text-secondary hover:text-accent">Features</Link>
-                <Link href="#pricing" className="block px-3 py-2 text-text-secondary hover:text-accent">Pricing</Link>
-                <Link href="#reviews" className="block px-3 py-2 text-text-secondary hover:text-accent">Reviews</Link>
-                <button onClick={scrollToDemo} className="block px-3 py-2 text-text-secondary hover:text-accent w-full text-left">Demo</button>
-                <Link href="/login" className="block px-3 py-2 text-text-secondary hover:text-accent">Login</Link>
-                <Link href="/signup" className="block mx-3 my-2 btn-primary text-center">Start Free Trial</Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
-
       {/* Hero Section */}
-      <section className="pt-16 py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        
-        {/* Fix 3: Only render heavy background on client to prevent hydration mismatch */}
-        {isMounted && (
-          <Silk speed={2} scale={0.8} color="#1e293b" noiseIntensity={0.8} rotation={0.2} className="opacity-30 z-0" />
-        )}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
 
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center space-x-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-2 mb-8">
@@ -129,19 +72,9 @@ export default function MarketingPageClient() {
               <span className="text-text-secondary">SOC 2 Compliant</span>
             </div>
           </div>
-          
-          <div style={{ height: "600px", position: "relative" }}>
-            {/* Fix 4: Only render Carousel on client */}
-            {isMounted && (
-              <Carousel
-                baseWidth={300}
-                autoplay={true}
-                autoplayDelay={3000}
-                pauseOnHover={true}
-                loop={true}
-                round={false}
-              />
-            )}
+
+          <div style={{ height: "100px", position: "relative" }}>
+            {/* Carousel removed due to missing dependency */}
           </div>
         </div>
       </section>

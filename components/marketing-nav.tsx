@@ -1,0 +1,116 @@
+"use client"
+
+import Link from "next/link"
+import { Menu, X } from "lucide-react"
+import { useState } from "react"
+import { ConcentradeLogo } from "@/components/concentrade-logo"
+import { Button } from "@/components/ui/button"
+
+export function MarketingNav() {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+    const scrollToSection = (sectionId: string) => {
+        const element = document.getElementById(sectionId)
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth" })
+        }
+        setMobileMenuOpen(false)
+    }
+
+    return (
+        <nav className="fixed top-0 w-full bg-slate-950/90 backdrop-blur-lg border-b border-indigo-500/20 z-50">
+            <div className="container mx-auto px-4">
+                <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center gap-2">
+                        <ConcentradeLogo size={32} variant="full" />
+                    </div>
+
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center space-x-8">
+                        <button
+                            onClick={() => scrollToSection("features")}
+                            className="text-slate-300 hover:text-white transition-colors duration-200 font-medium"
+                        >
+                            Features
+                        </button>
+                        <button
+                            onClick={() => scrollToSection("pricing")}
+                            className="text-slate-300 hover:text-white transition-colors duration-200 font-medium"
+                        >
+                            Pricing
+                        </button>
+                        <button
+                            onClick={() => scrollToSection("testimonials")}
+                            className="text-slate-300 hover:text-white transition-colors duration-200 font-medium"
+                        >
+                            Reviews
+                        </button>
+                        <button
+                            onClick={() => scrollToSection("demo")}
+                            className="text-slate-300 hover:text-white transition-colors duration-200 font-medium"
+                        >
+                            Demo
+                        </button>
+                        <Button asChild variant="ghost" className="text-slate-300 hover:text-white">
+                            <Link href="/login">Login</Link>
+                        </Button>
+                        <Button
+                            asChild
+                            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200"
+                        >
+                            <Link href="/signup">Start Free Trial</Link>
+                        </Button>
+                    </div>
+
+                    {/* Mobile menu button */}
+                    <button
+                        className="md:hidden text-white p-2"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                    </button>
+                </div>
+
+                {/* Mobile Navigation */}
+                {mobileMenuOpen && (
+                    <div className="md:hidden py-4 space-y-2 border-t border-slate-800">
+                        <button
+                            onClick={() => scrollToSection("features")}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded transition-colors"
+                        >
+                            Features
+                        </button>
+                        <button
+                            onClick={() => scrollToSection("pricing")}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded transition-colors"
+                        >
+                            Pricing
+                        </button>
+                        <button
+                            onClick={() => scrollToSection("testimonials")}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded transition-colors"
+                        >
+                            Reviews
+                        </button>
+                        <button
+                            onClick={() => scrollToSection("demo")}
+                            className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded transition-colors"
+                        >
+                            Demo
+                        </button>
+                        <Button asChild variant="ghost" className="w-full justify-start">
+                            <Link href="/login">Login</Link>
+                        </Button>
+                        <Button
+                            asChild
+                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                        >
+                            <Link href="/signup">Start Free Trial</Link>
+                        </Button>
+                    </div>
+                )}
+            </div>
+        </nav>
+    )
+}

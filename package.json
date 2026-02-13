@@ -53,7 +53,7 @@
     "lightweight-charts": "^4.2.2",
     "lucide-react": "^0.454.0",
     "mathjs": "latest",
-    "next": "15.5.12",
+    "next": "16.1.5",
     "next-themes": "latest",
     "papaparse": "latest",
     "react": "19",

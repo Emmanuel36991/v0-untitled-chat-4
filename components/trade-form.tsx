@@ -777,6 +777,28 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
     }
   }
 
+  // Reset form to initial state
+  const resetForm = useCallback(() => {
+    localStorage.removeItem(FORM_STORAGE_KEY)
+    setFormData(getInitialFormState())
+    setActiveTab("setup")
+    setDraftSavedAt(null)
+    setHasDraftOnLoad(false)
+
+    // Reset all psychology state
+    setPsychologyMood("")
+    setPsychologyTriggers([])
+    setPsychologyPatterns([])
+    setBadHabits([])
+    setGoodHabits([])
+    setPsychologyCustomTags([])
+    setPsychologyCustomTagInput("")
+    setPsychologyPreThoughts("")
+    setPsychologyPostThoughts("")
+    setPsychologyLessons("")
+    setSelectedSetupId(null)
+  }, [])
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
 
@@ -849,8 +871,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
           toast({ title: "Success", description: "Trade logged successfully" })
         }
 
-        localStorage.removeItem(FORM_STORAGE_KEY)
         setShowReviewDialog(false)
+        resetForm()
 
         // Wrap redirect in transition to prevent blocking
         React.startTransition(() => {

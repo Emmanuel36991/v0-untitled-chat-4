@@ -798,16 +798,24 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         ...goodHabits.map(id => GOOD_HABITS.find(h => h.id === id)?.name),
       ].filter(Boolean) as string[];
 
+      // Helper for safe date conversion
+      const toSafeISOString = (dateStr?: string | null) => {
+        if (!dateStr || dateStr.trim() === "") return null
+        try {
+          const d = new Date(dateStr)
+          if (isNaN(d.getTime())) return null
+          return d.toISOString()
+        } catch (e) {
+          console.error("Date conversion error", e)
+          return null
+        }
+      }
+
       // CRITICAL: Convert datetime-local strings to UTC ISO strings ON THE CLIENT.
       // datetime-local inputs give strings like "2026-02-10T16:30" with NO timezone info.
       // new Date() on the CLIENT correctly interprets these as the user's local time.
-      // If we let the server do this conversion, it would use UTC as "local", causing a double-offset.
-      const entryTimeUTC = formData.entry_time
-        ? new Date(formData.entry_time).toISOString()
-        : null
-      const exitTimeUTC = formData.exit_time
-        ? new Date(formData.exit_time).toISOString()
-        : null
+      const entryTimeUTC = toSafeISOString(formData.entry_time)
+      const exitTimeUTC = toSafeISOString(formData.exit_time)
 
       const submissionData = {
         ...formData,
@@ -841,9 +849,14 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
 
         localStorage.removeItem(FORM_STORAGE_KEY)
         setShowReviewDialog(false)
-        router.push("/dashboard")
+
+        // Wrap redirect in transition to prevent blocking
+        React.startTransition(() => {
+          router.push("/dashboard")
+        })
       } else {
         setShowReviewDialog(false)
+        console.error("Trade submission failed:", result.error)
         toast({ title: "Error", description: result.error || "Failed to save", variant: "destructive" })
       }
     } catch (err: any) {

@@ -19,6 +19,7 @@ import {
   SocialIcon,
   CompassIcon,
   SettingsIcon,
+  UpdatesIcon,
 } from "@/components/icons/system-icons"
 import { cn } from "@/lib/utils"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
@@ -117,7 +118,7 @@ export function Navbar() {
           onClick={handleOpenUpdates}
           className="hidden md:flex gap-2 items-center border-border bg-muted/50 hover:bg-muted text-foreground relative shadow-sm"
         >
-          <PulseIcon className="h-4 w-4 fill-current" />
+          <UpdatesIcon className="h-4 w-4 fill-current" />
           <span className="font-medium text-xs uppercase tracking-wide">Updates</span>
 
           {/* Notification Dot */}
@@ -198,7 +199,7 @@ export function Navbar() {
                     onClick={handleOpenUpdates}
                     className="w-full justify-start gap-3 text-base py-6 rounded-xl border-border bg-muted/50 text-foreground"
                   >
-                    <PulseIcon className="h-5 w-5 fill-current" />
+                    <UpdatesIcon className="h-5 w-5 fill-current" />
                     <span className="font-medium">What's New</span>
                     {hasUnreadUpdates && (
                       <Badge className="ml-auto bg-destructive text-destructive-foreground border-0">New</Badge>

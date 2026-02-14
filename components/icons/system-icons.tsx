@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { Brain, Megaphone } from "lucide-react"
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
     className?: string
@@ -126,21 +127,18 @@ export function PlaybookIcon(props: IconProps) {
 
 /**
  * Psychology — Mind / Trading psychology
- * Brain (two lobes + center): mindset, mental game. Clearly reads as "psychology".
+ * Brain icon using Lucide's optimized SVG.
  */
-export function PsychologyIcon(props: IconProps) {
-    return (
-        <SvgTemplate {...props}>
-            {/* Left lobe */}
-            <path d="M8 6c-1.5 0-3 1.2-3 3.2 0 1.2.4 2.2 1 2.9v3.3c0 1.2 1 2.2 2.2 2.2.6 0 1.1-.2 1.5-.6" />
-            {/* Right lobe */}
-            <path d="M16 6c1.5 0 3 1.2 3 3.2 0 1.2-.4 2.2-1 2.9v3.3c0 1.2-1 2.2-2.2 2.2-.6 0-1.1-.2-1.5-.6" />
-            {/* Center fissure */}
-            <path d="M12 5v14" opacity="0.4" />
-            {/* Connector between lobes at bottom */}
-            <path d="M9.5 18c.8.3 1.6.4 2.5.4s1.7-.1 2.5-.4" opacity="0.5" />
-        </SvgTemplate>
-    )
+export function PsychologyIcon({ className, ...props }: IconProps) {
+    return <Brain strokeWidth={1.5} className={cn("w-5 h-5", className)} {...props} />
+}
+
+/**
+ * Updates — Megaphone / Announcements
+ * Megaphone icon for system updates and announcements.
+ */
+export function UpdatesIcon({ className, ...props }: IconProps) {
+    return <Megaphone strokeWidth={1.5} className={cn("w-5 h-5", className)} {...props} />
 }
 
 /**

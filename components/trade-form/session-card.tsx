@@ -18,7 +18,7 @@ interface SessionCardProps {
 }
 
 export const SessionCard = ({ session, isSelected, onSelect }: SessionCardProps) => {
-  const Icon = session.icon
+
   return (
     <button
       type="button"
@@ -32,9 +32,6 @@ export const SessionCard = ({ session, isSelected, onSelect }: SessionCardProps)
     >
       <div className="flex items-center justify-between w-full mb-3">
         <div className="flex items-center gap-3">
-          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center", session.iconBg)}>
-            <Icon className={cn("w-4.5 h-4.5", isSelected ? session.textColor : "text-muted-foreground")} />
-          </div>
           <div>
             <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
               {session.label}

@@ -25,10 +25,10 @@ export const MOODS = [
 ]
 
 export const TRADING_SESSIONS = [
-  { value: "asian", label: "Asian Session", icon: Globe, time: "21:00 - 06:00 GMT", description: "Lower volatility, range-bound markets.", borderColor: "border-orange-200 dark:border-orange-800", textColor: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-950/10", iconBg: "bg-orange-500/15" },
-  { value: "london", label: "London Session", icon: Layers, time: "07:00 - 16:00 GMT", description: "High volume, trend establishment.", borderColor: "border-blue-200 dark:border-blue-800", textColor: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-950/10", iconBg: "bg-blue-500/15" },
+  { value: "asian", label: "Asian Session", icon: Globe, time: "21:00 - 06:00 GMT", description: "Lower volatility, range-bound markets.", borderColor: "border-gray-200 dark:border-gray-800", textColor: "text-gray-600 dark:text-gray-400", bgColor: "bg-gray-50 dark:bg-gray-950/10", iconBg: "bg-gray-500/15" },
+  { value: "london", label: "London Session", icon: Layers, time: "07:00 - 16:00 GMT", description: "High volume, trend establishment.", borderColor: "border-red-200 dark:border-red-800", textColor: "text-red-600 dark:text-red-400", bgColor: "bg-red-50 dark:bg-red-950/10", iconBg: "bg-red-500/15" },
   { value: "new-york", label: "New York Session", icon: TrendingUp, time: "12:00 - 21:00 GMT", description: "Highest volatility, major news releases.", borderColor: "border-green-200 dark:border-green-800", textColor: "text-green-600 dark:text-green-400", bgColor: "bg-green-50 dark:bg-green-950/10", iconBg: "bg-green-500/15" },
-  { value: "overlap", label: "London/NY Overlap", icon: Zap, time: "12:00 - 16:00 GMT", description: "Peak liquidity and momentum.", borderColor: "border-purple-200 dark:border-purple-800", textColor: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-950/10", iconBg: "bg-purple-500/15" },
+  { value: "overlap", label: "London/NY Overlap", icon: Zap, time: "12:00 - 16:00 GMT", description: "Peak liquidity and momentum.", borderColor: "border-blue-200 dark:border-blue-800", textColor: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-950/10", iconBg: "bg-blue-500/15" },
 ]
 
 export const EMOTIONAL_TRIGGERS = [

@@ -43,23 +43,23 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Calendar as CalendarIcon,
   Filter,
-  Brain,
-  Microscope,
   Check,
   Download,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  Trophy,
-  XCircle,
-  Minus,
-  DollarSign,
-  Percent,
-  BarChart3,
-  Clock,
-  Activity,
   ChevronRight,
 } from "lucide-react"
+import {
+  TradeLedgerIcon,
+  ProfitChartIcon,
+  MeanReversionIcon,
+  BreakoutIcon,
+  ScalpIcon,
+  DashboardIcon,
+  PsychologyIcon,
+  PlaybookIcon,
+  MomentumFlowIcon,
+  NeuralSparkIcon,
+  CompassIcon,
+} from "@/components/icons/system-icons"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"
@@ -230,8 +230,8 @@ function DatePickerWithRange({ className, date, setDate }: any) {
                 {tempDate?.from && tempDate?.to
                   ? `${format(tempDate.from, "MMM d, yyyy")} - ${format(tempDate.to, "MMM d, yyyy")}`
                   : tempDate?.from
-                  ? `${format(tempDate.from, "MMM d, yyyy")} - Select end date`
-                  : "Select a date range"}
+                    ? `${format(tempDate.from, "MMM d, yyyy")} - Select end date`
+                    : "Select a date range"}
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -529,7 +529,7 @@ export default function AnalyticsPage() {
                   Overview
                 </TabsTrigger>
                 <TabsTrigger value="intelligence" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm font-semibold">
-                  <Microscope className="w-3 h-3 mr-1.5" /> Insights
+                  <NeuralSparkIcon className="w-3 h-3 mr-1.5" /> Insights
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -588,7 +588,7 @@ export default function AnalyticsPage() {
               {/* P&L */}
               <MetricCard
                 title="Total P&L"
-                icon={DollarSign}
+                icon={TradeLedgerIcon}
                 accentColor={analytics.totalPnL >= 0 ? "emerald" : "rose"}
                 value={`${analytics.totalPnL >= 0 ? "+" : ""}$${analytics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
               >
@@ -610,23 +610,23 @@ export default function AnalyticsPage() {
               </MetricCard>
 
               {/* Win Rate */}
-              <MetricCard title="Win Rate" icon={Percent} accentColor="blue" value={`${analytics.winRate.toFixed(1)}%`} subtitle={`${analytics.wins}W / ${analytics.losses}L`}>
+              <MetricCard title="Win Rate" icon={ProfitChartIcon} accentColor="blue" value={`${analytics.winRate.toFixed(1)}%`} subtitle={`${analytics.wins}W / ${analytics.losses}L`}>
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mt-1">
                   <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${Math.min(analytics.winRate, 100)}%` }} />
                 </div>
               </MetricCard>
 
               {/* R:R */}
-              <MetricCard title="R:R Ratio" icon={Target} accentColor="amber" value={avgRiskReward.toFixed(2)} subtitle={`Profit factor: ${analytics.profitFactor.toFixed(2)}`} />
+              <MetricCard title="R:R Ratio" icon={MeanReversionIcon} accentColor="amber" value={avgRiskReward.toFixed(2)} subtitle={`Profit factor: ${analytics.profitFactor.toFixed(2)}`} />
 
               {/* Wins */}
-              <MetricCard title="Wins" icon={Trophy} accentColor="emerald" value={analytics.wins} subtitle={`of ${analytics.totalTrades} trades`} />
+              <MetricCard title="Wins" icon={BreakoutIcon} accentColor="emerald" value={analytics.wins} subtitle={`of ${analytics.totalTrades} trades`} />
 
               {/* Losses */}
-              <MetricCard title="Losses" icon={XCircle} accentColor="rose" value={analytics.losses} subtitle={`Max DD: $${analytics.maxDrawdown.toFixed(2)}`} />
+              <MetricCard title="Losses" icon={ScalpIcon} accentColor="rose" value={analytics.losses} subtitle={`Max DD: $${analytics.maxDrawdown.toFixed(2)}`} />
 
               {/* Breakeven */}
-              <MetricCard title="Breakeven" icon={Minus} accentColor="gray" value={analytics.breakeven} subtitle={`Avg P&L: $${analytics.avgPnL.toFixed(2)}`} />
+              <MetricCard title="Breakeven" icon={DashboardIcon} accentColor="gray" value={analytics.breakeven} subtitle={`Avg P&L: $${analytics.avgPnL.toFixed(2)}`} />
             </section>
 
 
@@ -654,7 +654,7 @@ export default function AnalyticsPage() {
                   <div className="flex items-center justify-between w-full">
                     <div>
                       <CardTitle className="text-sm font-bold flex items-center gap-2">
-                        <Brain className="w-4 h-4 text-primary" />
+                        <PsychologyIcon className="w-4 h-4 text-primary" />
                         Trader DNA
                       </CardTitle>
                       <CardDescription className="text-xs">Performance hexagram</CardDescription>
@@ -687,7 +687,7 @@ export default function AnalyticsPage() {
               <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-primary" /> Strategy Performance
+                    <PlaybookIcon className="w-4 h-4 text-primary" /> Strategy Performance
                   </CardTitle>
                   <CardDescription className="text-xs">{"P&L and trade count per strategy"}</CardDescription>
                 </CardHeader>
@@ -747,7 +747,7 @@ export default function AnalyticsPage() {
               <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-500" /> Top Instruments
+                    <MomentumFlowIcon className="w-4 h-4 text-emerald-500" /> Top Instruments
                   </CardTitle>
                   <CardDescription className="text-xs">{"Top 5 by P&L with trade volume"}</CardDescription>
                 </CardHeader>
@@ -801,7 +801,7 @@ export default function AnalyticsPage() {
               <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <Target className="w-4 h-4 text-blue-500" /> Trade Outcomes
+                    <MeanReversionIcon className="w-4 h-4 text-blue-500" /> Trade Outcomes
                   </CardTitle>
                   <CardDescription className="text-xs">Win / Loss / Breakeven distribution</CardDescription>
                 </CardHeader>

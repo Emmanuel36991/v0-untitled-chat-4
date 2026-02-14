@@ -70,15 +70,22 @@ import {
   LineChart,
   Inbox,
   Zap,
+  SettingsIcon,
   Plus,
 } from "lucide-react"
 import {
-  EntryMarkerIcon,
-  SyncArrowsIcon,
-  StrategyBlueprintIcon,
+  BreakoutIcon,
+  ScalpIcon,
+  ProfitChartIcon,
+  MomentumFlowIcon,
+  MeanReversionIcon,
+  CompassIcon,
+  NeuralSparkIcon,
   PatternEyeIcon,
-  MeanLineIcon,
-} from "@/components/icons/hand-crafted-icons"
+  AddTradeIcon,
+  TradeLedgerIcon,
+  PlaybookIcon,
+} from "@/components/icons/system-icons"
 
 // --- Charts (Recharts) ---
 import {
@@ -142,15 +149,15 @@ const STRATEGY_COLORS = [
 ]
 
 const STRATEGY_ICONS: Record<string, React.ElementType> = {
-  Breakout: Rocket,
-  Reversal: RefreshCw,
-  "Trend Following": TrendingUp,
-  Scalping: Zap,
-  "Swing Trading": Activity,
-  "Mean Reversion": Target,
-  Momentum: Flame,
-  "Support/Resistance": Shield,
-  Default: Diamond,
+  Breakout: BreakoutIcon,
+  Reversal: MeanReversionIcon,
+  "Trend Following": MomentumFlowIcon,
+  Scalping: ScalpIcon,
+  "Swing Trading": ProfitChartIcon,
+  "Mean Reversion": MeanReversionIcon,
+  Momentum: MomentumFlowIcon,
+  "Support/Resistance": BreakoutIcon,
+  Default: CompassIcon,
 }
 
 const MOTIVATIONAL_QUOTES = [
@@ -324,9 +331,9 @@ const MetricCard = React.memo<MetricCardProps>(
               )}
             >
               {changeType === "positive" ? (
-                <TrendingUp className="h-3 w-3 mr-1 inline" />
+                <BreakoutIcon className="h-3 w-3 mr-1 inline" />
               ) : changeType === "negative" ? (
-                <TrendingDown className="h-3 w-3 mr-1 inline" />
+                <BreakoutIcon className="h-3 w-3 mr-1 inline rotate-180" />
               ) : (
                 <MoreHorizontal className="h-3 w-3 mr-1 inline" />
               )}
@@ -762,7 +769,7 @@ export default function DashboardPage() {
           <div className="space-y-1 relative">
             <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               <span className="flex items-center text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
-                <Flame className="w-3 h-3 mr-1" /> {getGreeting()}
+                <MomentumFlowIcon className="w-3 h-3 mr-1" /> {getGreeting()}
               </span>
               <span>•</span>
               <span>{format(new Date(), "MMMM dd, yyyy")}</span>
@@ -773,7 +780,7 @@ export default function DashboardPage() {
             </AnimatedTitle>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-              <BrainCircuit className="w-4 h-4 text-indigo-500" />
+              <NeuralSparkIcon className="w-4 h-4 text-indigo-500" />
               <span className="italic text-gray-500 dark:text-gray-400">
                 "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>
@@ -908,7 +915,7 @@ export default function DashboardPage() {
             value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
-            icon={MeanLineIcon}
+            icon={MeanReversionIcon}
             iconColor="text-amber-600 dark:text-amber-400"
             trendData={chartData.map((d) => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"
@@ -1403,9 +1410,9 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Add Trade", icon: EntryMarkerIcon, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
-                { label: "Import", icon: SyncArrowsIcon, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
-                { label: "Playbook", icon: StrategyBlueprintIcon, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
+                { label: "Add Trade", icon: AddTradeIcon, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
+                { label: "Import", icon: TradeLedgerIcon, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
+                { label: "Playbook", icon: PlaybookIcon, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
                 { label: "AI Insights", icon: PatternEyeIcon, href: "/analytics?tab=intelligence", color: "bg-rose-600", desc: "Analysis" },
               ].map((action) => (
                 <Link

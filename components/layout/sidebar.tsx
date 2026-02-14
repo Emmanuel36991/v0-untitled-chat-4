@@ -9,18 +9,18 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { ChevronLeft, ChevronRight, Zap } from 'lucide-react'
 import {
-  PulseGridIcon,
-  EntryMarkerIcon,
+  DashboardIcon,
+  AddTradeIcon,
   TradeLedgerIcon,
-  SignalWaveIcon,
+  AnalyticsIcon,
   NeuralSparkIcon,
-  TimeRewindIcon,
+  BacktestIcon,
   PatternEyeIcon,
-  TradingCircleIcon,
-  MindMirrorIcon,
+  SocialIcon,
+  PsychologyIcon,
   CompassIcon,
-  TuningForksIcon,
-} from "@/components/icons/hand-crafted-icons"
+  SettingsIcon,
+} from "@/components/icons/system-icons"
 
 interface SidebarProps {
   className?: string
@@ -39,13 +39,13 @@ const navigation: NavItem[] = [
   {
     name: "Dashboard",
     href: "/dashboard",
-    icon: PulseGridIcon,
+    icon: DashboardIcon,
     description: "Overview and recent activity",
   },
   {
     name: "Add Trade",
     href: "/add-trade",
-    icon: EntryMarkerIcon,
+    icon: AddTradeIcon,
     description: "Log a new trade",
   },
   {
@@ -57,7 +57,7 @@ const navigation: NavItem[] = [
   {
     name: "Analytics",
     href: "/analytics",
-    icon: SignalWaveIcon,
+    icon: AnalyticsIcon,
     description: "Performance insights",
   },
   {
@@ -74,7 +74,7 @@ const secondaryNavigation: NavItem[] = [
   {
     name: "Backtesting",
     href: "/backtesting",
-    icon: TimeRewindIcon,
+    icon: BacktestIcon,
     description: "Test strategies",
   },
   {
@@ -86,13 +86,13 @@ const secondaryNavigation: NavItem[] = [
   {
     name: "Social Insights",
     href: "/social-insights",
-    icon: TradingCircleIcon,
+    icon: SocialIcon,
     description: "Community features",
   },
   {
     name: "Psychology",
     href: "/psychology",
-    icon: MindMirrorIcon,
+    icon: PsychologyIcon,
     description: "Mental game",
   },
   {
@@ -107,7 +107,7 @@ const bottomNavigation: NavItem[] = [
   {
     name: "Settings",
     href: "/settings",
-    icon: TuningForksIcon,
+    icon: SettingsIcon,
     description: "Account preferences",
   },
 ]
@@ -309,7 +309,7 @@ export function Sidebar({ className }: SidebarProps) {
           <Link href="/ai-coach">
             <div className="group rounded-lg p-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200 text-white">
               <div className="flex items-center gap-3 mb-2">
-                <Bot className="h-5 w-5" />
+                <NeuralSparkIcon className="h-5 w-5" />
                 <span className="font-semibold">Try AI Coach</span>
                 <Zap className="h-4 w-4 ml-auto" />
               </div>

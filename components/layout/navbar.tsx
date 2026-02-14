@@ -9,16 +9,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge" // <--- ADDED THIS IMPORT
 import { Menu, Zap } from 'lucide-react'
 import {
-  PulseGridIcon,
+  DashboardIcon,
   TradeLedgerIcon,
-  SignalWaveIcon,
-  StrategyBlueprintIcon,
-  MindMirrorIcon,
-  TimeRewindIcon,
-  TradingCircleIcon,
+  AnalyticsIcon,
+  PlaybookIcon,
+  PsychologyIcon,
+  BacktestIcon,
+  SocialIcon,
   CompassIcon,
-  TuningForksIcon,
-} from "@/components/icons/hand-crafted-icons"
+  SettingsIcon,
+} from "@/components/icons/system-icons"
 import { cn } from "@/lib/utils"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
@@ -26,18 +26,18 @@ import { LATEST_UPDATE_ID } from "@/lib/updates"
 import { UserNav } from "@/components/layout/user-nav"
 
 const mainNavItems = [
-  { name: "Dashboard", href: "/dashboard", icon: PulseGridIcon },
+  { name: "Dashboard", href: "/dashboard", icon: DashboardIcon },
   { name: "Trades", href: "/trades", icon: TradeLedgerIcon },
-  { name: "Analytics", href: "/analytics", icon: SignalWaveIcon },
-  { name: "Playbook", href: "/playbook", icon: StrategyBlueprintIcon },
-  { name: "Psychology", href: "/psychology", icon: MindMirrorIcon },
-  { name: "Backtesting", href: "/backtesting", icon: TimeRewindIcon },
+  { name: "Analytics", href: "/analytics", icon: AnalyticsIcon },
+  { name: "Playbook", href: "/playbook", icon: PlaybookIcon },
+  { name: "Psychology", href: "/psychology", icon: PsychologyIcon },
+  { name: "Backtesting", href: "/backtesting", icon: BacktestIcon },
 ]
 
 const moreNavItems = [
-  { name: "Community", href: "/social-insights", icon: TradingCircleIcon },
+  { name: "Community", href: "/social-insights", icon: SocialIcon },
   { name: "Guides", href: "/guides", icon: CompassIcon },
-  { name: "Settings", href: "/settings", icon: TuningForksIcon },
+  { name: "Settings", href: "/settings", icon: SettingsIcon },
 ]
 
 export function Navbar() {

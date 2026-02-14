@@ -44,17 +44,14 @@ import {
   TrendingDown,
   Target,
   BarChart3,
-  Plus,
   ArrowUpRight,
   ArrowDownRight,
   Award,
   AlertTriangle,
-  BookOpen,
   Activity,
   Clock,
   RefreshCw,
   PieChart,
-  Zap,
   ChevronRight,
   ChevronLeft,
   Flame,
@@ -64,7 +61,6 @@ import {
   Sparkles,
   Hexagon,
   MoreHorizontal,
-  Download,
   AlertCircle,
   BrainCircuit,
   Timer,
@@ -75,6 +71,12 @@ import {
   LineChart,
   Inbox,
 } from "lucide-react"
+import {
+  EntryMarkerIcon,
+  SyncArrowsIcon,
+  StrategyBlueprintIcon,
+  PatternEyeIcon,
+} from "@/components/icons/hand-crafted-icons"
 
 // --- Charts (Recharts) ---
 import {
@@ -1399,10 +1401,10 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
-                { label: "Import", icon: Download, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
-                { label: "Playbook", icon: BookOpen, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
-                { label: "AI Insights", icon: Zap, href: "/analytics?tab=intelligence", color: "bg-rose-600", desc: "Analysis" },
+                { label: "Add Trade", icon: EntryMarkerIcon, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
+                { label: "Import", icon: SyncArrowsIcon, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
+                { label: "Playbook", icon: StrategyBlueprintIcon, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
+                { label: "AI Insights", icon: PatternEyeIcon, href: "/analytics?tab=intelligence", color: "bg-rose-600", desc: "Analysis" },
               ].map((action) => (
                 <Link
                   key={action.label}

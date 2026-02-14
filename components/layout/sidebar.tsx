@@ -7,7 +7,20 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { BarChart3, BookOpen, Brain, ChevronLeft, ChevronRight, Home, LineChart, PlusCircle, Settings, TrendingUp, Users, Bot, Zap } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Zap } from 'lucide-react'
+import {
+  PulseGridIcon,
+  EntryMarkerIcon,
+  TradeLedgerIcon,
+  SignalWaveIcon,
+  NeuralSparkIcon,
+  TimeRewindIcon,
+  PatternEyeIcon,
+  TradingCircleIcon,
+  MindMirrorIcon,
+  CompassIcon,
+  TuningForksIcon,
+} from "@/components/icons/hand-crafted-icons"
 
 interface SidebarProps {
   className?: string
@@ -22,88 +35,79 @@ interface NavItem {
   badgeColor?: string
 }
 
-const navigation = [
+const navigation: NavItem[] = [
   {
     name: "Dashboard",
     href: "/dashboard",
-    icon: Home,
+    icon: PulseGridIcon,
     description: "Overview and recent activity",
   },
   {
     name: "Add Trade",
     href: "/add-trade",
-    icon: PlusCircle,
+    icon: EntryMarkerIcon,
     description: "Log a new trade",
   },
   {
     name: "All Trades",
     href: "/trades",
-    icon: BarChart3,
+    icon: TradeLedgerIcon,
     description: "View and manage trades",
   },
   {
     name: "Analytics",
     href: "/analytics",
-    icon: LineChart,
+    icon: SignalWaveIcon,
     description: "Performance insights",
   },
   {
     name: "AI Coach",
     href: "/ai-coach",
-    icon: Bot,
+    icon: NeuralSparkIcon,
     description: "Personalized trading insights",
     badge: "NEW",
     badgeColor: "bg-gradient-to-r from-blue-500 to-purple-500",
   },
 ]
 
-const secondaryNavigation = [
+const secondaryNavigation: NavItem[] = [
   {
     name: "Backtesting",
     href: "/backtesting",
-    icon: TrendingUp,
+    icon: TimeRewindIcon,
     description: "Test strategies",
   },
   {
     name: "AI Insights",
     href: "/insights",
-    icon: Brain,
+    icon: PatternEyeIcon,
     description: "Setup patterns, psychology & risk analysis",
   },
   {
     name: "Social Insights",
     href: "/social-insights",
-    icon: Users,
+    icon: TradingCircleIcon,
     description: "Community features",
   },
   {
     name: "Psychology",
     href: "/psychology",
-    icon: Brain,
+    icon: MindMirrorIcon,
     description: "Mental game",
   },
   {
     name: "Guides",
     href: "/guides",
-    icon: BookOpen,
+    icon: CompassIcon,
     description: "Learning resources",
   },
 ]
 
-const bottomNavigation = [
-  // TEMPORARY: Subscription disabled for testing - Uncomment when re-enabling payments
-  // {
-  //   name: "Subscription",
-  //   href: "/subscription",
-  //   icon: Sparkles,
-  //   description: "Manage your plan",
-  //   badge: "PRO",
-  //   badgeColor: "bg-gradient-to-r from-amber-500 to-orange-500",
-  // },
+const bottomNavigation: NavItem[] = [
   {
     name: "Settings",
     href: "/settings",
-    icon: Settings,
+    icon: TuningForksIcon,
     description: "Account preferences",
   },
 ]
@@ -293,7 +297,7 @@ export function Sidebar({ className }: SidebarProps) {
         <div className="border-t border-slate-200 dark:border-slate-800 p-3">
           <Link href="/ai-coach">
             <div className="group flex items-center justify-center rounded-lg px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200">
-              <Bot className="h-5 w-5 text-white" />
+              <NeuralSparkIcon className="h-5 w-5 text-white" />
             </div>
           </Link>
         </div>

@@ -7,18 +7,18 @@ import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge" // <--- ADDED THIS IMPORT
+import { Menu, Zap } from 'lucide-react'
 import {
-  LayoutDashboard,
-  List,
-  BarChart3,
-  BookOpen,
-  Users,
-  Menu,
-  ShieldCheck,
-  FileText,
-  Settings,
-  Zap
-} from 'lucide-react'
+  PulseGridIcon,
+  TradeLedgerIcon,
+  SignalWaveIcon,
+  StrategyBlueprintIcon,
+  MindMirrorIcon,
+  TimeRewindIcon,
+  TradingCircleIcon,
+  CompassIcon,
+  TuningForksIcon,
+} from "@/components/icons/hand-crafted-icons"
 import { cn } from "@/lib/utils"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
@@ -26,18 +26,18 @@ import { LATEST_UPDATE_ID } from "@/lib/updates"
 import { UserNav } from "@/components/layout/user-nav"
 
 const mainNavItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Trades", href: "/trades", icon: List },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Playbook", href: "/playbook", icon: BookOpen },
-  { name: "Psychology", href: "/psychology", icon: ShieldCheck },
-  { name: "Backtesting", href: "/backtesting", icon: FileText },
+  { name: "Dashboard", href: "/dashboard", icon: PulseGridIcon },
+  { name: "Trades", href: "/trades", icon: TradeLedgerIcon },
+  { name: "Analytics", href: "/analytics", icon: SignalWaveIcon },
+  { name: "Playbook", href: "/playbook", icon: StrategyBlueprintIcon },
+  { name: "Psychology", href: "/psychology", icon: MindMirrorIcon },
+  { name: "Backtesting", href: "/backtesting", icon: TimeRewindIcon },
 ]
 
 const moreNavItems = [
-  { name: "Community", href: "/social-insights", icon: Users },
-  { name: "Guides", href: "/guides", icon: BookOpen },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Community", href: "/social-insights", icon: TradingCircleIcon },
+  { name: "Guides", href: "/guides", icon: CompassIcon },
+  { name: "Settings", href: "/settings", icon: TuningForksIcon },
 ]
 
 export function Navbar() {

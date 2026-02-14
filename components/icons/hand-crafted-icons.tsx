@@ -198,6 +198,29 @@ export function SyncArrowsIcon({ className }: IconProps) {
   )
 }
 
+// ── Avg Return: Mean Line ────────────────────────────────────────────────────
+export function MeanLineIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={cn("w-5 h-5", className)} strokeWidth="1.8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      {/* Horizontal mean/average line */}
+      <line x1="3" y1="12" x2="21" y2="12" strokeDasharray="4 2" opacity="0.5" />
+      {/* Data points above the mean (wins) */}
+      <circle cx="6" cy="7" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="13" cy="5.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="8" r="1.1" fill="currentColor" stroke="none" opacity="0.7" />
+      {/* Data points below the mean (losses) */}
+      <circle cx="9.5" cy="16" r="1.1" fill="currentColor" stroke="none" opacity="0.7" />
+      <circle cx="16" cy="17.5" r="1" fill="currentColor" stroke="none" opacity="0.5" />
+      {/* Vertical ticks from points to mean line */}
+      <line x1="6" y1="8.3" x2="6" y2="12" strokeWidth="1.2" opacity="0.4" />
+      <line x1="13" y1="6.8" x2="13" y2="12" strokeWidth="1.2" opacity="0.4" />
+      <line x1="9.5" y1="14.9" x2="9.5" y2="12" strokeWidth="1.2" opacity="0.4" />
+      {/* µ symbol hint — small bar on the left */}
+      <line x1="2" y1="10" x2="2" y2="14" strokeWidth="2" opacity="0.8" />
+    </svg>
+  )
+}
+
 // ── Aliases ───────────────────────────────────────────────────────────────────
 export { PulseGridIcon as DashboardIcon }
 export { TimeRewindIcon as BacktestIcon }

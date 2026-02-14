@@ -43,7 +43,6 @@ import {
   TrendingUp,
   TrendingDown,
   Target,
-  BarChart3,
   ArrowUpRight,
   ArrowDownRight,
   Award,
@@ -78,6 +77,7 @@ import {
   SyncArrowsIcon,
   StrategyBlueprintIcon,
   PatternEyeIcon,
+  MeanLineIcon,
 } from "@/components/icons/hand-crafted-icons"
 
 // --- Charts (Recharts) ---
@@ -908,7 +908,7 @@ export default function DashboardPage() {
             value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
-            icon={BarChart3}
+            icon={MeanLineIcon}
             iconColor="text-amber-600 dark:text-amber-400"
             trendData={chartData.map((d) => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"

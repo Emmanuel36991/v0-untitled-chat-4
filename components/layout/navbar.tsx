@@ -69,9 +69,9 @@ export function Navbar() {
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 transition-all duration-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md",
+        "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 transition-all duration-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 hover:shadow-md",
         pathname === href &&
-          "text-gray-900 dark:text-white bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 shadow-md",
+        "text-gray-900 dark:text-white bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 shadow-md",
         className,
       )}
     >
@@ -81,7 +81,7 @@ export function Navbar() {
 
   const NavContent = () => (
     <div className="relative flex h-16 items-center border-b border-gray-200 dark:border-gray-800 px-4 lg:px-6 sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl shadow-sm">
-      
+
       {/* Mount the Dialog Component */}
       <WhatsNewDialog open={showUpdates} onOpenChange={setShowUpdates} />
 
@@ -101,8 +101,8 @@ export function Navbar() {
               href={item.href}
               className="relative text-sm px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-105"
             >
-              <div className="flex items-center gap-2.5">
-                <item.icon className="h-4 w-4 transition-all duration-300" />
+              <div className="flex items-center gap-3">
+                <item.icon className="h-5 w-5 transition-all duration-300" />
                 <span className="font-medium">{item.name}</span>
               </div>
               {pathname === item.href && (
@@ -115,17 +115,17 @@ export function Navbar() {
 
       {/* Right side controls with modern styling */}
       <div className="ml-auto flex items-center gap-3 z-10">
-        
+
         {/* NEW: Updates Button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           onClick={handleOpenUpdates}
           className="hidden md:flex gap-2 items-center border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 relative shadow-sm"
         >
           <Zap className="h-4 w-4 fill-current" />
           <span className="font-medium text-xs uppercase tracking-wide">Updates</span>
-          
+
           {/* Notification Dot */}
           {hasUnreadUpdates && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white dark:border-gray-900 shadow-sm" />
@@ -199,7 +199,7 @@ export function Navbar() {
 
                 {/* Mobile Updates Button */}
                 <div className="mt-6 px-4">
-                   <Button
+                  <Button
                     variant="outline"
                     onClick={handleOpenUpdates}
                     className="w-full justify-start gap-3 text-base py-6 rounded-xl border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-300"

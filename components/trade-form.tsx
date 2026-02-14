@@ -496,13 +496,14 @@ interface TradeFormProps {
   onSubmitTrade: (tradeData: NewTradeInput) => Promise<{ success: boolean; error?: string; tradeId?: string }>
   initialTradeData?: Trade
   mode?: "add" | "edit"
+  onSuccess?: () => void
 }
 
 /* -------------------------------------------------------------------------- */
 /* MAIN FORM COMPONENT                                                        */
 /* -------------------------------------------------------------------------- */
 
-const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormProps) => {
+const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }: TradeFormProps) => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const strategyIdFromUrl = searchParams.get('strategy_id')
@@ -874,10 +875,18 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add" }: TradeFormP
         setShowReviewDialog(false)
         resetForm()
 
-        // Wrap redirect in transition to prevent blocking
-        React.startTransition(() => {
-          router.push("/dashboard")
-        })
+        // Give React a moment to process the state update before redirecting
+        // This ensures the local storage clearing takes effect
+        setTimeout(() => {
+          if (onSuccess) {
+            onSuccess()
+          } else {
+            // Fallback default behavior
+            React.startTransition(() => {
+              router.push("/dashboard")
+            })
+          }
+        }, 100)
       } else {
         setShowReviewDialog(false)
         console.error("Trade submission failed:", result.error)

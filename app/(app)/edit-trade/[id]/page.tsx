@@ -61,8 +61,7 @@ export default function EditTradePage() {
           description: `Trade for ${result.trade.instrument} has been updated.`,
           className: "glass-card border-green-500/50 bg-green-500/10",
         })
-        router.push("/trades")
-        router.refresh()
+        // Navigation handled by onSuccess
         return result
       } else {
         toast({
@@ -154,7 +153,15 @@ export default function EditTradePage() {
         </div>
       </div>
 
-      <TradeForm onSubmitTrade={handleUpdateTrade} initialTradeData={trade} />
+      <TradeForm
+        onSubmitTrade={handleUpdateTrade}
+        initialTradeData={trade}
+        mode="edit"
+        onSuccess={() => {
+          router.push("/trades")
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

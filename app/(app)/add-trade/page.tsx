@@ -34,8 +34,8 @@ export default function AddTradePage() {
           description: `Trade for ${newTradeResult.trade.instrument} has been added to your portfolio.`,
           className: "glass-card border-green-500/50 bg-green-500/10",
         })
-        router.push("/trades")
-        router.refresh()
+        // Navigation is now handled by the onSuccess callback passed to TradeForm
+        // to ensure the form is reset FIRST.
         return newTradeResult
       } else {
         console.log("[v0] Trade add failed, showing error toast")
@@ -76,7 +76,13 @@ export default function AddTradePage() {
         </Button>
       </div>
 
-      <TradeForm onSubmitTrade={handleSubmitTrade} />
+      <TradeForm
+        onSubmitTrade={handleSubmitTrade}
+        onSuccess={() => {
+          router.push("/trades")
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

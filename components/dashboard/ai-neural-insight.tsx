@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { BrainCircuit, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Trade } from "@/types"
-import { saveInsight } from "@/app/actions/insight-actions"
+import { saveInsight, getInsights } from "@/app/actions/insight-actions"
 
 // --- Neural network background nodes ---
 function NeuralBackground({ active }: { active: boolean }) {
@@ -317,11 +317,26 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
     }
   }, [trades, hasEnoughData])
 
-  // Auto-fetch on mount if enough data
+  // On mount, load the most recent saved insight instead of generating a new one
   useEffect(() => {
-    if (hasEnoughData && !hasFetched && state === "idle") {
-      fetchInsight()
-    }
+    if (!hasEnoughData || hasFetched || state !== "idle") return
+
+    let cancelled = false
+    getInsights(1).then((saved) => {
+      if (cancelled) return
+      if (saved.length > 0 && saved[0].insight_text) {
+        setInsightText(saved[0].insight_text)
+        setState("done")
+        setHasFetched(true)
+      } else {
+        // No saved insight exists yet — generate the first one
+        fetchInsight()
+      }
+    }).catch(() => {
+      if (!cancelled) fetchInsight()
+    })
+
+    return () => { cancelled = true }
   }, [hasEnoughData, hasFetched, state, fetchInsight])
 
   // cleanup on unmount

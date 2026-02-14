@@ -235,7 +235,7 @@ const CustomChartTooltip = ({
 }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-3 rounded-xl shadow-xl z-50">
+      <div className="bg-card/90 dark:bg-card/90 backdrop-blur-xl border border-border/50 dark:border-border/50 p-3 rounded-xl shadow-xl z-50">
         <p className="text-xs font-medium text-muted-foreground mb-2 border-b border-gray-100 dark:border-gray-800 pb-1">
           {label}
         </p>
@@ -294,9 +294,12 @@ const MetricCard = React.memo<MetricCardProps>(
   }) => (
     <Card
       className={cn(
-        "relative overflow-hidden border border-gray-200/60 dark:border-gray-800/60 shadow-sm transition-all duration-300 group cursor-pointer",
-        "bg-white dark:bg-gray-900/40 backdrop-blur-xl",
-        "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5"
+        "relative overflow-hidden transition-all duration-300 group cursor-pointer",
+        // Glassmorphism matching AINeuralInsight
+        "bg-card/60 dark:bg-card/40 backdrop-blur-xl",
+        "border border-border/50 dark:border-border/30",
+        "shadow-lg dark:shadow-2xl",
+        "hover:shadow-xl hover:-translate-y-0.5"
       )}
       onClick={onClick}
     >
@@ -454,7 +457,7 @@ const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
                   <Tooltip key={day.toISOString()}>
                     <TooltipTrigger asChild>{CellContent}</TooltipTrigger>
                     <TooltipContent side="top" className="p-0 border-0 bg-transparent shadow-none">
-                      <div className="p-2.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl text-xs">
+                      <div className="p-2.5 bg-card/90 dark:bg-card/90 backdrop-blur-md border border-border/50 dark:border-border/50 rounded-lg shadow-xl text-xs">
                         <p className="font-semibold mb-1">
                           {format(day, "MMM dd, yyyy")}
                         </p>
@@ -898,7 +901,10 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card
               className={cn(
-                "border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800",
+                "overflow-hidden flex flex-col transition-all duration-300",
+                "bg-card/60 dark:bg-card/40 backdrop-blur-xl",
+                "border border-border/50 dark:border-border/30",
+                "shadow-lg dark:shadow-2xl",
                 chartViewMode === "calendar" ? "h-auto" : "h-[550px]"
               )}
             >
@@ -1141,7 +1147,7 @@ export default function DashboardPage() {
 
           {/* Strategy Pie Chart (Right, 1/3 width) */}
           <div className="lg:col-span-1 space-y-6 flex flex-col">
-            <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">
+            <Card className="flex-1 transition-all duration-300 bg-card/60 dark:bg-card/40 backdrop-blur-xl border border-border/50 dark:border-border/30 shadow-lg dark:shadow-2xl">
               <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <PieChart className="w-5 h-5 text-purple-500" />
@@ -1230,7 +1236,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
 
           {/* Recent Trade List */}
-          <Card className="lg:col-span-2 border-0 shadow-lg dark:shadow-2xl overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
+          <Card className="lg:col-span-2 overflow-hidden transition-all duration-300 bg-card/60 dark:bg-card/40 backdrop-blur-xl border border-border/50 dark:border-border/30 shadow-lg dark:shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10 py-5">
               <div className="space-y-1">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -1387,7 +1393,7 @@ export default function DashboardPage() {
                 <Link
                   key={action.label}
                   href={action.href}
-                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                  className="group relative overflow-hidden rounded-2xl transition-all duration-300 bg-card/60 dark:bg-card/40 backdrop-blur-xl border border-border/50 dark:border-border/30 shadow-sm hover:shadow-xl hover:border-primary/30"
                 >
                   <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
                     <div

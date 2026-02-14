@@ -71,8 +71,8 @@ export function Navbar() {
     <Link
       href={href}
       className={cn(
-        "relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-all duration-300 hover:text-foreground hover:bg-muted",
-        pathname === href && "text-foreground font-semibold after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-0.5 after:w-6 after:rounded-full after:bg-primary",
+        "relative flex items-center gap-3 rounded-xl px-5 py-3 text-base font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:bg-muted",
+        pathname === href && "text-foreground font-bold after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-8 after:rounded-full after:bg-primary",
         className,
       )}
     >
@@ -81,14 +81,14 @@ export function Navbar() {
   )
 
   const NavContent = () => (
-    <div className="relative flex h-16 items-center border-b border-border px-4 lg:px-6 sticky top-0 z-50 bg-background/80 backdrop-blur-xl shadow-sm transition-all duration-300">
+    <div className="relative flex h-20 items-center border-b border-border px-4 lg:px-6 sticky top-0 z-50 bg-background/80 backdrop-blur-xl shadow-sm transition-all duration-300">
 
       {/* Mount the Dialog Component */}
       <WhatsNewDialog open={showUpdates} onOpenChange={setShowUpdates} />
 
       {/* Logo with modern styling */}
       <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-8 z-10">
-        <ConcentradeLogo size={40} variant="full" className="group-hover:scale-105 transition-transform duration-300" />
+        <ConcentradeLogo size={46} variant="full" className="group-hover:scale-105 transition-transform duration-300" />
       </Link>
 
       {/* Desktop Navigation with modern styling */}
@@ -97,11 +97,11 @@ export function Navbar() {
           <div key={item.name} className="relative group">
             <NavLink
               href={item.href}
-              className="relative text-sm px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-105"
+              className="relative text-base px-5 py-3 rounded-xl transition-all duration-300 hover:scale-105"
             >
               <div className="flex items-center gap-3">
-                <item.icon className="h-5 w-5 transition-all duration-300" />
-                <span className="font-medium">{item.name}</span>
+                <item.icon className="h-6 w-6 transition-all duration-300 stroke-[2.5]" />
+                <span className="font-bold">{item.name}</span>
               </div>
             </NavLink>
           </div>
@@ -116,10 +116,10 @@ export function Navbar() {
           variant="outline"
           size="sm"
           onClick={handleOpenUpdates}
-          className="hidden md:flex gap-2 items-center border-border bg-muted/50 hover:bg-muted text-foreground relative shadow-sm"
+          className="hidden md:flex gap-2 items-center border-border bg-muted/50 hover:bg-muted text-foreground relative shadow-sm h-10 px-4"
         >
-          <UpdatesIcon className="h-4 w-4 fill-current" />
-          <span className="font-medium text-xs uppercase tracking-wide">Updates</span>
+          <UpdatesIcon className="h-5 w-5 fill-current" />
+          <span className="font-bold text-sm uppercase tracking-wide">Updates</span>
 
           {/* Notification Dot */}
           {hasUnreadUpdates && (
@@ -137,9 +137,9 @@ export function Navbar() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-10 w-10 relative border-border bg-card/50 hover:bg-muted transition-all duration-300 shadow-sm hover:shadow-md"
+                className="h-12 w-12 relative border-border bg-card/50 hover:bg-muted transition-all duration-300 shadow-sm hover:shadow-md"
               >
-                <Menu className="h-5 w-5 text-muted-foreground" />
+                <Menu className="h-6 w-6 text-muted-foreground" />
                 <span className="sr-only">Open Navigation Menu</span>
               </Button>
             </SheetTrigger>
@@ -148,9 +148,9 @@ export function Navbar() {
               className="flex flex-col w-full sm:w-[320px] p-0 bg-card border-border"
             >
               {/* Mobile menu header */}
-              <div className="flex h-16 items-center border-b border-border px-6 bg-muted/50">
+              <div className="flex h-20 items-center border-b border-border px-6 bg-muted/50">
                 <Link href="/dashboard" className="flex items-center gap-3 font-bold group">
-                  <ConcentradeLogo size={32} variant="full" />
+                  <ConcentradeLogo size={40} variant="full" />
                 </Link>
               </div>
 
@@ -161,11 +161,11 @@ export function Navbar() {
                     <NavLink
                       key={item.name}
                       href={item.href}
-                      className="text-base py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                      className="text-lg py-4 px-5 rounded-xl transition-all duration-300 hover:scale-[1.02]"
                     >
-                      <div className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5" />
-                        <span className="font-medium">{item.name}</span>
+                      <div className="flex items-center gap-4">
+                        <item.icon className="h-6 w-6 stroke-[2.5]" />
+                        <span className="font-bold">{item.name}</span>
                       </div>
                     </NavLink>
                   ))}
@@ -173,7 +173,7 @@ export function Navbar() {
 
                 {/* Mobile secondary navigation */}
                 <div className="mt-8">
-                  <h4 className="mb-4 px-4 text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                  <h4 className="mb-4 px-4 text-sm font-bold uppercase text-muted-foreground tracking-wider">
                     More
                   </h4>
                   <nav className="grid gap-2 px-4">
@@ -181,11 +181,11 @@ export function Navbar() {
                       <NavLink
                         key={item.name}
                         href={item.href}
-                        className="text-base py-3 px-4 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                        className="text-lg py-4 px-5 rounded-xl transition-all duration-300 hover:scale-[1.02]"
                       >
-                        <div className="flex items-center gap-3">
-                          <item.icon className="h-5 w-5" />
-                          <span className="font-medium">{item.name}</span>
+                        <div className="flex items-center gap-4">
+                          <item.icon className="h-6 w-6 stroke-[2.5]" />
+                          <span className="font-bold">{item.name}</span>
                         </div>
                       </NavLink>
                     ))}
@@ -197,12 +197,12 @@ export function Navbar() {
                   <Button
                     variant="outline"
                     onClick={handleOpenUpdates}
-                    className="w-full justify-start gap-3 text-base py-6 rounded-xl border-border bg-muted/50 text-foreground"
+                    className="w-full justify-start gap-4 text-lg py-8 rounded-xl border-border bg-muted/50 text-foreground font-bold"
                   >
-                    <UpdatesIcon className="h-5 w-5 fill-current" />
-                    <span className="font-medium">What's New</span>
+                    <UpdatesIcon className="h-6 w-6 fill-current" />
+                    <span className="font-bold">What's New</span>
                     {hasUnreadUpdates && (
-                      <Badge className="ml-auto bg-destructive text-destructive-foreground border-0">New</Badge>
+                      <Badge className="ml-auto bg-destructive text-destructive-foreground border-0 text-sm py-1 px-2">New</Badge>
                     )}
                   </Button>
                 </div>
@@ -210,9 +210,9 @@ export function Navbar() {
 
               {/* Mobile menu footer */}
               <div className="border-t border-border p-4 bg-muted/50">
-                <div className="text-xs text-center text-muted-foreground flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="font-medium">System Online</span>
+                <div className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2 font-medium">
+                  <div className="w-2.5 h-2.5 bg-primary rounded-full"></div>
+                  <span>System Online</span>
                 </div>
               </div>
             </SheetContent>

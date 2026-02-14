@@ -132,7 +132,7 @@ export function VisualMap({ className }: { className?: string }) {
     <Card className={cn("overflow-hidden border-border/60 bg-card shadow-xl", className)}>
       <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 py-3 bg-muted/10">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-500/10 rounded-md text-indigo-500">
+          <div className="p-2 bg-primary/10 rounded-xl text-primary">
             <Network className="w-5 h-5" />
           </div>
           <div>
@@ -172,18 +172,9 @@ export function VisualMap({ className }: { className?: string }) {
             <rect width="100%" height="100%" fill="url(#hft-grid)" />
             <rect width="100%" height="100%" fill="url(#hft-grid-large)" />
             {/* Center crosshair */}
-            <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeDasharray="8 8" strokeWidth="0.5" className="text-indigo-500/20"/>
-            <line x1="0" y1="50%" x2="100%" y2="100%" stroke="currentColor" strokeDasharray="8 8" strokeWidth="0.5" className="text-indigo-500/20"/>
+            <line x1="50%" y1="0" x2="50%" y2="100%" stroke="currentColor" strokeDasharray="8 8" strokeWidth="0.5" className="text-primary/20"/>
+            <line x1="0" y1="50%" x2="100%" y2="100%" stroke="currentColor" strokeDasharray="8 8" strokeWidth="0.5" className="text-primary/20"/>
           </svg>
-          {/* Scan line effect */}
-          <div 
-            className="absolute inset-0 pointer-events-none animate-pulse"
-            style={{
-              background: isDark
-                ? 'linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.02) 50%, transparent 100%)'
-                : 'linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.03) 50%, transparent 100%)'
-            }}
-          />
         </div>
 
         {/* --- FORCE GRAPH --- */}
@@ -324,10 +315,10 @@ export function VisualMap({ className }: { className?: string }) {
             <div className="bg-background/95 backdrop-blur-md border border-border/60 rounded-lg p-4 shadow-2xl w-60">
               <div className="flex items-center justify-between mb-3 pb-2 border-b border-border/40">
                 <div className="flex items-center gap-2">
-                  <div className={cn("w-3 h-3 rounded-full", 
-                    selectedNode.type === 'strategy' ? "bg-indigo-500" : 
-                    selectedNode.type === 'setup' ? "bg-blue-500" :
-                    selectedNode.type === 'psych_positive' ? "bg-emerald-500" : "bg-rose-500"
+                  <div className={cn("w-3 h-3 rounded-full",
+                    selectedNode.type === 'strategy' ? "bg-primary" :
+                    selectedNode.type === 'setup' ? "bg-info" :
+                    selectedNode.type === 'psych_positive' ? "bg-success" : "bg-destructive"
                   )} />
                   <span className="font-bold text-sm truncate max-w-[160px]">{selectedNode.label}</span>
                 </div>
@@ -354,13 +345,13 @@ export function VisualMap({ className }: { className?: string }) {
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Win Rate</span>
-                  <span className={cn("font-medium", (selectedNode.stats?.winRate || 0) >= 50 ? "text-emerald-500" : "text-muted-foreground")}>
+                  <span className={cn("font-medium", (selectedNode.stats?.winRate || 0) >= 50 ? "text-success" : "text-muted-foreground")}>
                     {selectedNode.stats?.winRate || 0}%
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Net P&L</span>
-                  <span className={cn("font-medium", (selectedNode.stats?.pnl || 0) >= 0 ? "text-emerald-500" : "text-rose-500")}>
+                  <span className={cn("font-medium", (selectedNode.stats?.pnl || 0) >= 0 ? "text-success" : "text-destructive")}>
                     ${(selectedNode.stats?.pnl || 0).toLocaleString()}
                   </span>
                 </div>
@@ -404,26 +395,26 @@ export function VisualMap({ className }: { className?: string }) {
         {/* --- LEGEND (Bottom Left) --- */}
         <div className="absolute bottom-4 left-4 z-20 flex gap-3 text-[10px] font-mono text-muted-foreground bg-background/70 backdrop-blur-sm px-3 py-2 rounded-lg border border-border/30">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.5)]"/>
+            <div className="w-2.5 h-2.5 rounded-full bg-primary"/>
             <span>Strategy</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full border-2 border-blue-500"/>
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-info"/>
             <span>Setup</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50 border border-emerald-500"/>
+            <div className="w-2.5 h-2.5 rounded-full bg-success/50 border border-success"/>
             <span>+Psych</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50 border border-rose-500"/>
+            <div className="w-2.5 h-2.5 rounded-full bg-destructive/50 border border-destructive"/>
             <span>-Psych</span>
           </div>
         </div>
 
         {/* --- STATUS INDICATOR (Top Left) --- */}
         <div className="absolute top-4 left-4 z-20 flex items-center gap-2 text-[10px] font-mono text-muted-foreground bg-background/50 backdrop-blur-sm px-2.5 py-1.5 rounded-md border border-border/20">
-          <div className={cn("w-1.5 h-1.5 rounded-full", loading ? "bg-amber-500 animate-pulse" : "bg-emerald-500")} />
+          <div className={cn("w-1.5 h-1.5 rounded-full", loading ? "bg-warning" : "bg-success")} />
           <span>{loading ? "SYNCING" : "ACTIVE"}</span>
           <span className="text-muted-foreground/50">|</span>
           <span>{data.nodes.length} NODES</span>

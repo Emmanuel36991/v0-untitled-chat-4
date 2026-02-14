@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
 import {
   Plus, Search, Trash2, Edit2, MoreHorizontal,
   Loader2, TrendingUp, Trophy, Layers, BookOpen,
@@ -45,10 +44,10 @@ import { EnhancedVisualMap } from "@/components/playbook/enhanced-visual-map"
 
 // ---------- CONSTANTS ----------
 const CONFLUENCE_CATEGORIES = [
-  { id: "price", label: "Price Action", icon: CandlestickChart, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", dot: "bg-emerald-500" },
-  { id: "time", label: "Time / Session", icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", dot: "bg-amber-500" },
-  { id: "indicator", label: "Indicator", icon: Activity, color: "text-sky-400", bg: "bg-sky-500/10", border: "border-sky-500/20", dot: "bg-sky-500" },
-  { id: "structure", label: "Structure", icon: Layers, color: "text-violet-400", bg: "bg-violet-500/10", border: "border-violet-500/20", dot: "bg-violet-500" },
+  { id: "price", label: "Price Action", icon: CandlestickChart, color: "text-success", bg: "bg-success/10", border: "border-success/20", dot: "bg-success" },
+  { id: "time", label: "Time / Session", icon: Clock, color: "text-warning", bg: "bg-warning/10", border: "border-warning/20", dot: "bg-warning" },
+  { id: "indicator", label: "Indicator", icon: Activity, color: "text-info", bg: "bg-info/10", border: "border-info/20", dot: "bg-info" },
+  { id: "structure", label: "Structure", icon: Layers, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", dot: "bg-primary" },
 ]
 
 // ---------- SPARKLINE ----------
@@ -57,7 +56,7 @@ function MiniEquityCurve({ data, positive }: { data: number[]; positive: boolean
     if (!data || data.length < 2) return [{ v: 0 }, { v: 1 }]
     return data.map((v) => ({ v }))
   }, [data])
-  const color = positive ? "#10b981" : "#ef4444"
+  const color = positive ? "hsl(var(--success))" : "hsl(var(--destructive))"
 
   return (
     <div className="absolute inset-0 opacity-[0.07] pointer-events-none">
@@ -228,20 +227,18 @@ function StrategyEngine({
             {/* Confluence list */}
             <ScrollArea className="flex-1">
               <div className="p-4 space-y-1.5">
-                <AnimatePresence>
-                  {confluences.map((rule) => {
+                  {confluences.map((rule, i) => {
                     const cat = CONFLUENCE_CATEGORIES.find((c) => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
                     return (
-                      <motion.div key={rule.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }} className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm group hover:border-primary/30 transition-colors", cat.border, "bg-card/60")}>
+                      <div key={rule.id} className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm group hover:border-primary/30 transition-colors animate-fade-in-up", cat.border, "bg-card/60")} style={{ animationDelay: `${i * 50}ms` }}>
                         <span className={cn("w-2 h-2 rounded-full shrink-0", cat.dot)} />
                         <span className="flex-1 font-medium truncate text-foreground/90 text-xs">{rule.text}</span>
                         <button onClick={() => removeConfluence(rule.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5">
                           <Trash2 className="w-3 h-3" />
                         </button>
-                      </motion.div>
+                      </div>
                     )
                   })}
-                </AnimatePresence>
                 {confluences.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <div className="p-3 rounded-xl bg-muted/50 mb-3">
@@ -274,9 +271,8 @@ function StrategyEngine({
 
             <ScrollArea className="flex-1">
               <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <AnimatePresence>
-                  {setups.map((setup) => (
-                    <motion.div key={setup.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col bg-card border border-border rounded-xl overflow-hidden">
+                  {setups.map((setup, i) => (
+                    <div key={setup.id} className="flex flex-col bg-card border border-border rounded-xl overflow-hidden animate-fade-in-up" style={{ animationDelay: `${i * 80}ms` }}>
                       <div className="px-4 py-3 border-b border-border flex justify-between items-center">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="p-1.5 bg-primary/10 text-primary rounded-lg shrink-0">
@@ -310,9 +306,8 @@ function StrategyEngine({
                           })
                         )}
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
-                </AnimatePresence>
 
                 {setups.length === 0 && (
                   <div className="col-span-full flex flex-col items-center justify-center py-20">
@@ -366,7 +361,7 @@ function StrategyCard({
   const ruleCount = strat.rules?.length || 0
 
   return (
-    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="group">
+    <div className="group animate-fade-in-up">
       <Card className="h-full border-border bg-card overflow-hidden hover:border-primary/25 transition-all duration-200 flex flex-col relative">
         {/* Subtle equity curve background */}
         <div className="h-28 relative flex flex-col justify-between p-5 border-b border-border">
@@ -418,7 +413,7 @@ function StrategyCard({
           <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
             <div className="px-4 py-3 text-center">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Win Rate</p>
-              <p className={cn("text-lg font-bold tabular-nums", winRate >= 50 ? "text-emerald-500" : winRate > 0 ? "text-amber-500" : "text-muted-foreground")}>{winRate}%</p>
+              <p className={cn("text-lg font-bold tabular-nums", winRate >= 50 ? "text-success" : winRate > 0 ? "text-warning" : "text-muted-foreground")}>{winRate}%</p>
             </div>
             <div className="px-4 py-3 text-center">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Trades</p>
@@ -426,7 +421,7 @@ function StrategyCard({
             </div>
             <div className="px-4 py-3 text-center">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net P&L</p>
-              <p className={cn("text-lg font-bold font-mono tabular-nums", isProfitable ? "text-emerald-500" : "text-rose-500")}>
+              <p className={cn("text-lg font-bold font-mono tabular-nums", isProfitable ? "text-success" : "text-destructive")}>
                 {isProfitable ? "+" : ""}${Math.abs(strat.pnl || 0).toLocaleString()}
               </p>
             </div>
@@ -458,7 +453,7 @@ function StrategyCard({
           </div>
         </CardContent>
       </Card>
-    </motion.div>
+    </div>
   )
 }
 
@@ -562,10 +557,10 @@ export default function PlaybookPage() {
             icon={TrendingUp}
             label="Total P&L"
             value={`${totalPnL >= 0 ? "+" : "-"}$${Math.abs(totalPnL).toLocaleString()}`}
-            accent={totalPnL >= 0 ? "bg-emerald-500/10 text-emerald-500 ring-emerald-500/20" : "bg-rose-500/10 text-rose-500 ring-rose-500/20"}
+            accent={totalPnL >= 0 ? "bg-success/10 text-success ring-success/20" : "bg-destructive/10 text-destructive ring-destructive/20"}
           />
-          <StatPill icon={BarChart3} label="Total Trades" value={String(totalTrades)} sub={`${avgWinRate}% avg win rate`} accent="bg-sky-500/10 text-sky-500 ring-sky-500/20" />
-          <StatPill icon={Trophy} label="Top Performer" value={bestStrategy?.name || "N/A"} sub={bestStrategy ? `${bestStrategy.win_rate}% win rate` : undefined} accent="bg-amber-500/10 text-amber-500 ring-amber-500/20" />
+          <StatPill icon={BarChart3} label="Total Trades" value={String(totalTrades)} sub={`${avgWinRate}% avg win rate`} accent="bg-info/10 text-info ring-info/20" />
+          <StatPill icon={Trophy} label="Top Performer" value={bestStrategy?.name || "N/A"} sub={bestStrategy ? `${bestStrategy.win_rate}% win rate` : undefined} accent="bg-warning/10 text-warning ring-warning/20" />
         </div>
 
         {/* Strategy Cards */}

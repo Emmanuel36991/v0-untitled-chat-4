@@ -43,7 +43,7 @@ export function StrategyNetworkGraph({
     // Create nodes for individual strategies
     const radius = 200
     const angleStep = (2 * Math.PI) / strategies.length
-    
+
     strategies.forEach((strategy, index) => {
       const angle = index * angleStep
       nodeMap.set(strategy.id, {
@@ -87,10 +87,12 @@ export function StrategyNetworkGraph({
   }, [strategies, mergedStrategies, relationships])
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Link2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+    <Card className="overflow-hidden border-border bg-card">
+      <CardHeader className="border-b border-border py-3 bg-card/50">
+        <CardTitle className="text-base font-bold flex items-center gap-2.5">
+          <div className="p-1.5 bg-primary/10 rounded-lg">
+            <Link2 className="w-4 h-4 text-primary" />
+          </div>
           Strategy Network Visualization
         </CardTitle>
       </CardHeader>
@@ -104,19 +106,19 @@ export function StrategyNetworkGraph({
         >
           {/* Background */}
           <rect width="600" height="600" fill="transparent" />
-          
+
           {/* Grid pattern */}
           <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <pattern id="network-grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path
                 d="M 40 0 L 0 0 0 40"
                 fill="none"
-                stroke="currentColor"
+                stroke="hsl(var(--border))"
                 strokeWidth="0.5"
-                className="text-gray-200 dark:text-gray-800"
+                opacity="0.3"
               />
             </pattern>
-            
+
             {/* Glow filters */}
             <filter id="glow">
               <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -126,19 +128,19 @@ export function StrategyNetworkGraph({
               </feMerge>
             </filter>
           </defs>
-          
-          <rect width="600" height="600" fill="url(#grid)" opacity="0.5" />
+
+          <rect width="600" height="600" fill="url(#network-grid)" opacity="0.5" />
 
           {/* Draw edges (connections) */}
           {edges.map((edge, index) => {
             const fromNode = nodes.find(n => n.id === edge.from)
             const toNode = nodes.find(n => n.id === edge.to)
-            
+
             if (!fromNode || !toNode) return null
-            
+
             const strokeWidth = (edge.strength / 100) * 4 + 1
             const opacity = edge.strength / 100
-            
+
             return (
               <g key={`edge-${index}`}>
                 <line
@@ -146,7 +148,7 @@ export function StrategyNetworkGraph({
                   y1={fromNode.y}
                   x2={toNode.x}
                   y2={toNode.y}
-                  stroke="rgb(34, 197, 94)"
+                  stroke="hsl(var(--success))"
                   strokeWidth={strokeWidth}
                   opacity={opacity * 0.6}
                   strokeDasharray={edge.strength === 100 ? "0" : "5,5"}
@@ -155,11 +157,10 @@ export function StrategyNetworkGraph({
                 <text
                   x={(fromNode.x + toNode.x) / 2}
                   y={(fromNode.y + toNode.y) / 2}
-                  fill="rgb(34, 197, 94)"
+                  fill="hsl(var(--success))"
                   fontSize="10"
                   fontWeight="bold"
                   textAnchor="middle"
-                  className="dark:fill-emerald-400"
                 >
                   {edge.strength}%
                 </text>
@@ -170,68 +171,66 @@ export function StrategyNetworkGraph({
           {/* Draw nodes */}
           {nodes.map((node) => {
             const isMerged = node.type === 'merged'
-            const radius = isMerged ? 40 : 30
-            const color = isMerged ? 'rgb(168, 85, 247)' : 'rgb(59, 130, 246)'
-            
+            const nodeRadius = isMerged ? 40 : 30
+            const color = isMerged ? 'hsl(var(--primary))' : 'hsl(var(--info))'
+
             return (
               <g key={node.id} filter="url(#glow)">
                 {/* Node circle */}
                 <circle
                   cx={node.x}
                   cy={node.y}
-                  r={radius}
+                  r={nodeRadius}
                   fill={color}
-                  stroke="white"
+                  stroke="hsl(var(--background))"
                   strokeWidth="3"
-                  className="transition-all hover:r-[35] cursor-pointer"
+                  className="cursor-pointer"
                   opacity="0.9"
                 />
-                
+
                 {/* Good habits indicator */}
                 {node.goodHabits && node.goodHabits.length > 0 && (
                   <circle
-                    cx={node.x + radius - 10}
-                    cy={node.y - radius + 10}
+                    cx={node.x + nodeRadius - 10}
+                    cy={node.y - nodeRadius + 10}
                     r="8"
-                    fill="rgb(34, 197, 94)"
-                    stroke="white"
+                    fill="hsl(var(--success))"
+                    stroke="hsl(var(--background))"
                     strokeWidth="2"
                   />
                 )}
-                
+
                 {/* Win rate indicator */}
                 <text
                   x={node.x}
                   y={node.y + 5}
-                  fill="white"
+                  fill="hsl(var(--primary-foreground))"
                   fontSize="14"
                   fontWeight="bold"
                   textAnchor="middle"
                 >
                   {(node.winRate * 100).toFixed(0)}%
                 </text>
-                
+
                 {/* Node label */}
                 <text
                   x={node.x}
-                  y={node.y + radius + 20}
-                  fill="currentColor"
+                  y={node.y + nodeRadius + 20}
+                  fill="hsl(var(--foreground))"
                   fontSize="12"
                   fontWeight="600"
                   textAnchor="middle"
-                  className="text-gray-900 dark:text-gray-100"
                 >
                   {node.name.length > 15 ? node.name.slice(0, 15) + '...' : node.name}
                 </text>
-                
+
                 {/* Stats */}
                 <text
                   x={node.x}
-                  y={node.y + radius + 35}
-                  fill="currentColor"
+                  y={node.y + nodeRadius + 35}
+                  fill="hsl(var(--muted-foreground))"
                   fontSize="10"
                   textAnchor="middle"
-                  className="text-gray-600 dark:text-gray-400"
                 >
                   {node.tradesCount} trades • ${node.pnl.toFixed(0)}
                 </text>
@@ -241,22 +240,22 @@ export function StrategyNetworkGraph({
         </svg>
 
         {/* Legend */}
-        <div className="mt-6 flex flex-wrap gap-4 justify-center text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-blue-500" />
-            <span className="text-muted-foreground">Individual Strategy</span>
+        <div className="mt-6 flex flex-wrap gap-4 justify-center text-[10px] font-mono text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-info" />
+            <span>Individual Strategy</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-purple-500" />
-            <span className="text-muted-foreground">Merged Strategy</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-primary" />
+            <span>Merged Strategy</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-emerald-500" />
-            <span className="text-muted-foreground">Good Habits Present</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-success" />
+            <span>Good Habits Present</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-0.5 bg-emerald-500" />
-            <span className="text-muted-foreground">Connection Strength</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-0.5 bg-success" />
+            <span>Connection Strength</span>
           </div>
         </div>
       </CardContent>

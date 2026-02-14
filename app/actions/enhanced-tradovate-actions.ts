@@ -10,13 +10,14 @@ import {
   TradovateRateLimitError,
 } from "@/lib/tradovate/enhanced-api"
 import { logger } from "@/lib/logger"
+import { createErrorResponse } from "@/lib/error-handler"
 
 const SESSION_COOKIE_NAME = "tradovate_session"
 const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
-  maxAge: 60 * 60 * 24, // 24 hours
+  maxAge: 60 * 60 * 24 * 7, // 7 days
 }
 
 export async function authenticateTradovateEnhanced(
@@ -53,39 +54,7 @@ export async function authenticateTradovateEnhanced(
 
     return { success: true, session }
   } catch (error: any) {
-    logger.error("Enhanced auth: Authentication failed:", error)
-
-    // Handle specific error types
-    if (error instanceof TradovateAuthError) {
-      return {
-        success: false,
-        error: error.message,
-        errorCode: "AUTH_ERROR",
-      }
-    }
-
-    if (error instanceof TradovateRateLimitError) {
-      return {
-        success: false,
-        error: error.message,
-        errorCode: "RATE_LIMIT",
-      }
-    }
-
-    if (error instanceof TradovateNetworkError) {
-      return {
-        success: false,
-        error: `Network error: ${error.message}`,
-        errorCode: "NETWORK_ERROR",
-      }
-    }
-
-    // Generic error
-    return {
-      success: false,
-      error: error.message || "Authentication failed. Please try again.",
-      errorCode: "UNKNOWN_ERROR",
-    }
+    return createErrorResponse("authenticateTradovate", error)
   }
 }
 
@@ -130,12 +99,7 @@ export async function syncTradovateDataEnhanced(): Promise<{
       },
     }
   } catch (error: any) {
-    logger.error("Data sync failed:", error)
-    return {
-      success: false,
-      error: error.message || "Data sync failed",
-      tradesImported: 0,
-    }
+    return createErrorResponse("syncTradovateData", error)
   }
 }
 
@@ -165,11 +129,7 @@ export async function testTradovateConnection(): Promise<{
       },
     }
   } catch (error: any) {
-    logger.error("Connection test failed:", error)
-    return {
-      success: false,
-      error: error.message || "Connection test failed",
-    }
+    return createErrorResponse("testTradovateConnection", error)
   }
 }
 
@@ -186,11 +146,45 @@ export async function getTradovateSessionEnhanced(): Promise<TradovateSession | 
     const session: TradovateSession = JSON.parse(sessionCookie.value)
     logger.debug(`Retrieved session for user: ${session.userName} (${session.isDemo ? "DEMO" : "LIVE"})`)
 
-    // Check if session is expired
+    // Check if session is expired or close to expiring (within 10 minutes)
     if (session.expirationTime) {
       const expirationTime = new Date(session.expirationTime)
-      if (expirationTime < new Date()) {
-        logger.info("Session expired, logging out")
+      const now = new Date()
+      const timeUntilExpiration = expirationTime.getTime() - now.getTime()
+
+      // If less than 10 minutes remaining and we have a refresh token, try to renew
+      if (timeUntilExpiration < 10 * 60 * 1000 && session.refreshToken) {
+        try {
+          logger.info("Session close to expiration, attempting to renew token...")
+          const api = new EnhancedTradovateAPI(session.isDemo)
+          const refreshResponse = await api.renewAccessToken(session.refreshToken)
+
+          if (refreshResponse.accessToken) {
+            // Update session with new tokens
+            session.accessToken = refreshResponse.accessToken
+            if (refreshResponse.mdAccessToken) session.mdAccessToken = refreshResponse.mdAccessToken
+            if (refreshResponse.expirationTime) session.expirationTime = refreshResponse.expirationTime
+            if (refreshResponse.refreshToken) session.refreshToken = refreshResponse.refreshToken // Rotate refresh token if new one provided
+
+            logger.info("Token renewal successful, updating session cookie")
+
+            // Update cookie
+            cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(session), SESSION_COOKIE_OPTIONS)
+          } else {
+            logger.warn("Token renewal failed: No new access token received")
+          }
+        } catch (error) {
+          logger.error("Error refreshing token:", error)
+          // If already expired and refresh failed, logout
+          if (timeUntilExpiration <= 0) {
+            logger.info("Session expired and refresh failed, logging out")
+            await logoutTradovateEnhanced()
+            return null
+          }
+        }
+      } else if (expirationTime < now) {
+        // Expired and no refresh token
+        logger.info("Session expired (no refresh token), logging out")
         await logoutTradovateEnhanced()
         return null
       }

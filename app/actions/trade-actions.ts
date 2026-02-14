@@ -5,6 +5,7 @@ import type { Trade, NewTradeInput } from "@/types"
 import { revalidatePath } from "next/cache"
 import { tradeSchema } from "@/lib/validators/trade"
 import { logger } from "@/lib/logger"
+import { createErrorResponse } from "@/lib/error-handler"
 
 // 1. MAP DB ROW TO TRADE OBJECT
 function mapRowToTrade(row: any): Trade {
@@ -242,8 +243,7 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
       message: "Trade logged successfully!"
     }
   } catch (error: any) {
-    logger.error("[SERVER ACTION] Exception in addTrade:", error)
-    return { success: false, error: `An unexpected error occurred: ${error.message}` }
+    return createErrorResponse("addTrade", error)
   }
 }
 
@@ -277,8 +277,7 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
 
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
-    logger.error("Exception in updateTrade:", error)
-    return { success: false, error: error.message }
+    return createErrorResponse("updateTrade", error)
   }
 }
 
@@ -303,8 +302,7 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
 
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
-    logger.error("Exception in deleteTrade:", error)
-    return { success: false, error: error.message }
+    return createErrorResponse("deleteTrade", error)
   }
 }
 
@@ -325,7 +323,7 @@ export async function deleteAllTrades(): Promise<SubmitTradeResult> {
     revalidatePath("/dashboard")
     return { success: true, message: "All trades deleted successfully!" }
   } catch (error: any) {
-    return { success: false, error: error.message }
+    return createErrorResponse("deleteAllTrades", error)
   }
 }
 
@@ -357,12 +355,7 @@ export async function addMultipleTrades(trades: NewTradeInput[]) {
       errorCount: trades.length - (data?.length || 0),
     }
   } catch (error: any) {
-    logger.error("Exception in addMultipleTrades:", error)
-    return {
-      successCount: 0,
-      errorCount: trades.length,
-      error: `An unexpected error occurred: ${error.message || "Unknown error"}`,
-    }
+    return createErrorResponse("addMultipleTrades", error, { successCount: 0, errorCount: trades.length })
   }
 }
 
@@ -434,8 +427,7 @@ export async function logTradePsychology(tradeId: string, data: {
 
     return { success: true }
   } catch (error: any) {
-    logger.error("Exception in logTradePsychology:", error)
-    return { success: false, error: error.message }
+    return createErrorResponse("logTradePsychology", error)
   }
 }
 

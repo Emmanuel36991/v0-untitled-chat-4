@@ -96,11 +96,11 @@ import {
 import { CurrencySelector } from "@/components/currency-selector"
 import { formatPnLEnhanced } from "@/lib/format-pnl-enhanced"
 import { formatCurrencyValue } from "@/lib/currency-config"
-import { generateAIInsights } from "@/lib/ai-insights-generator"
 import { getTradingAccounts } from "@/app/actions/account-actions"
 import { getStrategies } from "@/app/actions/playbook-actions"
 import { EmptyState } from "@/components/empty-state"
 import { OnboardingChecklist } from "@/components/onboarding-checklist"
+import { AINeuralInsight } from "@/components/dashboard/ai-neural-insight"
 
 // ==========================================
 // 1. DATA MODELS & TYPES
@@ -735,13 +735,6 @@ export default function DashboardPage() {
       .slice(0, 5) // Top 5
   }, [filteredTrades])
 
-  // Generate AI Insights
-  const aiInsights = useMemo(() => {
-    return generateAIInsights(filteredTrades, [], 30) // TODO: Pass actual playbook strategies when available
-  }, [filteredTrades])
-
-  // Pick top insight to display
-  const topInsight = aiInsights[0] || null
 
   // --- Render ---
 
@@ -1445,54 +1438,8 @@ export default function DashboardPage() {
               ))}
             </div>
 
-            {/* AI Insight Card */}
-            <Card className="border-0 shadow-xl bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative overflow-hidden rounded-2xl">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white opacity-[0.08] rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-500 opacity-20 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
-
-              <CardHeader className="relative z-10 pb-2">
-                <div className="flex items-center justify-between mb-1">
-                  <Badge
-                    variant="secondary"
-                    className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md px-3 py-1"
-                  >
-                    <Sparkles className="w-3 h-3 mr-1.5 text-yellow-300" /> AI Insight
-                  </Badge>
-                  <span className="text-[10px] font-medium opacity-70">Just now</span>
-                </div>
-                <CardTitle className="text-lg font-bold tracking-tight">
-                  {topInsight ? topInsight.title : 'AI Insights'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="relative z-10 space-y-4">
-                {topInsight ? (
-                  <>
-                    <p className={cn(
-                      "text-sm font-medium leading-relaxed opacity-90",
-                      topInsight.severity === 'positive' && "text-indigo-50",
-                      topInsight.severity === 'warning' && "text-yellow-100",
-                      topInsight.severity === 'critical' && "text-rose-100",
-                      topInsight.severity === 'neutral' && "text-indigo-50"
-                    )}>
-                      {topInsight.message}
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-indigo-50 font-medium leading-relaxed opacity-90">
-                    Keep trading to unlock AI insights... Trade data will be analyzed to identify patterns and opportunities.
-                  </p>
-                )}
-                <Button
-                  variant="secondary"
-                  className="w-full bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg font-bold border-0"
-                  asChild
-                >
-                  <Link href="/analytics?tab=intelligence">
-                    View All Insights
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* AI Neural Insight */}
+            <AINeuralInsight trades={trades} />
           </div>
         </div>
       </div>

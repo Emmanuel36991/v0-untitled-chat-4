@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { handleApiError } from "@/lib/error-handler"
 
 export const dynamic = "force-dynamic"
 
@@ -44,10 +45,6 @@ export async function GET() {
       totalTradesInDb: trades?.length || 0,
     })
   } catch (error) {
-    console.error("Unexpected error in /api/trades:", error)
-    return NextResponse.json(
-      { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 },
-    )
+    return handleApiError("GET /api/trades", error)
   }
 }

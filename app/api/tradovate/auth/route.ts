@@ -6,6 +6,7 @@ import {
   TradovateRateLimitError,
 } from "@/lib/tradovate/enhanced-api"
 import { logger } from "@/lib/logger"
+import { handleApiError } from "@/lib/error-handler"
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,51 +45,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    logger.error("API: Authentication error:", error)
-
-    // Handle specific error types
-    if (error instanceof TradovateAuthError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-          errorCode: "AUTH_ERROR",
-        },
-        { status: 401 },
-      )
-    }
-
-    if (error instanceof TradovateRateLimitError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-          errorCode: "RATE_LIMIT",
-        },
-        { status: 429 },
-      )
-    }
-
-    if (error instanceof TradovateNetworkError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: error.message,
-          errorCode: "NETWORK_ERROR",
-        },
-        { status: error.status || 500 },
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Authentication failed",
-        errorCode: "UNKNOWN_ERROR",
-        details: process.env.NODE_ENV === "development" ? error.message : undefined,
-      },
-      { status: 500 },
-    )
+    return handleApiError("POST /api/tradovate/auth", error)
   }
 }
 

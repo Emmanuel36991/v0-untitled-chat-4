@@ -268,6 +268,7 @@ export class EnhancedTradovateAPI {
           userId: authResponse.userId,
           name: authResponse.name,
           hasAccessToken: !!authResponse.accessToken,
+          hasRefreshToken: !!authResponse.refreshToken,
           hasError: !!authResponse.errorText,
         })
 
@@ -314,6 +315,7 @@ export class EnhancedTradovateAPI {
           expirationTime: authResponse.expirationTime || "",
           accounts: accounts,
           isDemo: this.isDemo,
+          refreshToken: authResponse.refreshToken,
         }
 
         return session
@@ -350,6 +352,22 @@ export class EnhancedTradovateAPI {
   async getPositions(accountId: number): Promise<TradovatePosition[]> {
     const response = await this.makeRequest<{ positions: TradovatePosition[] }>(`/position/list?accountId=${accountId}`)
     return response.positions || []
+  }
+
+  async renewAccessToken(refreshToken: string): Promise<TradovateAuthResponse> {
+    logger.info("Renewing access token...")
+    return this.makeRequest<TradovateAuthResponse>(
+      "/oauth/token",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          grant_type: "refresh_token",
+          refresh_token: refreshToken,
+          client_id: TRADOVATE_CONFIG.APP_ID,
+        }),
+      },
+      false, // No auth header needed for token renewal
+    )
   }
 
   async getOrders(accountId: number): Promise<TradovateOrder[]> {

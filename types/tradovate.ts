@@ -17,6 +17,7 @@ export interface TradovateAuthResponse {
   accessToken?: string
   mdAccessToken?: string
   expirationTime?: string
+  refreshToken?: string
 }
 
 export interface TradovateAccount {
@@ -138,6 +139,7 @@ export interface TradovateSession {
   expirationTime: string
   accounts: TradovateAccount[]
   isDemo: boolean
+  refreshToken?: string
 }
 
 export interface ProcessedTradovateTrade {

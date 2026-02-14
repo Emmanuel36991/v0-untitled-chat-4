@@ -70,6 +70,8 @@ import {
   Calendar,
   LineChart,
   Inbox,
+  Zap,
+  Plus,
 } from "lucide-react"
 import {
   EntryMarkerIcon,

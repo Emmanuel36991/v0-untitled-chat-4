@@ -59,6 +59,14 @@
 
   /* Semantic overlay color */
   --overlay: oklch(0.1 0.02 264 / 0.85);
+
+  /* Semantic colors for light mode */
+  --success: oklch(0.55 0.20 150);
+  --success-foreground: oklch(0.99 0.002 150);
+  --warning: oklch(0.72 0.22 60);
+  --warning-foreground: oklch(0.15 0.02 60);
+  --info: oklch(0.55 0.22 230);
+  --info-foreground: oklch(0.99 0.002 230);
 }
 
 .dark {
@@ -801,6 +809,17 @@ select {
 /* Prevent global transitions from interfering with Chart.js resizing/rendering */
 canvas {
   transition: none !important;
+}
+
+/* Respect user motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ========================================= */

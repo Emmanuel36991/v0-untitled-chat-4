@@ -74,7 +74,7 @@ const navigation: NavItem[] = [
     icon: NeuralSparkIcon,
     description: "Personalized trading insights",
     badge: "NEW",
-    badgeColor: "bg-gradient-to-r from-blue-500 to-purple-500",
+    badgeColor: "bg-primary text-primary-foreground",
   },
 ]
 
@@ -127,24 +127,24 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300",
+        "flex flex-col border-r border-border bg-card transition-all duration-300",
         isCollapsed ? "w-16" : "w-64",
         className,
       )}
     >
       {/* Header */}
-      <div className="flex h-16 items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex h-16 items-center justify-between px-4 border-b border-border">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <PulseIcon className="h-6 w-6 text-blue-500" />
-            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Concentrade</span>
+            <PulseIcon className="h-6 w-6 text-primary" />
+            <span className="font-bold text-lg tracking-tight text-foreground">Concentrade</span>
           </div>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="h-8 w-8 hover:bg-muted"
         >
           {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </Button>
@@ -161,16 +161,16 @@ export function Sidebar({ className }: SidebarProps) {
                 <Link key={item.name} href={item.href}>
                   <div
                     className={cn(
-                      "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800",
+                      "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted",
                       isActive
-                        ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500"
-                        : "text-slate-700 dark:text-slate-300",
+                        ? "bg-muted text-foreground font-semibold border-l-[3px] border-l-primary"
+                        : "text-muted-foreground",
                     )}
                   >
                     <item.icon
                       className={cn(
                         "h-5 w-5 flex-shrink-0",
-                        isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400",
+                        isActive ? "text-primary" : "text-muted-foreground",
                       )}
                     />
                     {!isCollapsed && (
@@ -179,8 +179,8 @@ export function Sidebar({ className }: SidebarProps) {
                         {item.badge && (
                           <span
                             className={cn(
-                              "px-2 py-0.5 text-xs font-medium text-white rounded-full",
-                              item.badgeColor || "bg-blue-500",
+                              "px-2 py-0.5 text-xs font-medium rounded-full",
+                              item.badgeColor || "bg-primary text-primary-foreground",
                             )}
                           >
                             {item.badge}
@@ -200,7 +200,7 @@ export function Sidebar({ className }: SidebarProps) {
           {!isCollapsed && (
             <div className="space-y-1">
               <div className="px-3 py-2">
-                <h3 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Tools & Analysis
                 </h3>
               </div>
@@ -210,16 +210,16 @@ export function Sidebar({ className }: SidebarProps) {
                   <Link key={item.name} href={item.href}>
                     <div
                       className={cn(
-                        "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800",
+                        "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted",
                         isActive
-                          ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500"
-                          : "text-slate-700 dark:text-slate-300",
+                          ? "bg-muted text-foreground font-semibold border-l-[3px] border-l-primary"
+                          : "text-muted-foreground",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-5 w-5 flex-shrink-0",
-                          isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400",
+                          isActive ? "text-primary" : "text-muted-foreground",
                         )}
                       />
                       <span className="flex-1">{item.name}</span>
@@ -238,16 +238,16 @@ export function Sidebar({ className }: SidebarProps) {
                   <Link key={item.name} href={item.href}>
                     <div
                       className={cn(
-                        "group flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800",
+                        "group flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted",
                         isActive
-                          ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 text-blue-700 dark:text-blue-300"
-                          : "text-slate-700 dark:text-slate-300",
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-5 w-5",
-                          isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400",
+                          isActive ? "text-primary" : "text-muted-foreground",
                         )}
                       />
                     </div>
@@ -260,23 +260,23 @@ export function Sidebar({ className }: SidebarProps) {
       </ScrollArea>
 
       {/* Bottom Navigation */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-3 space-y-1">
+      <div className="border-t border-border p-3 space-y-1">
         {bottomNavigation.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link key={item.name} href={item.href}>
               <div
                 className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800",
+                  "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-muted",
                   isActive
-                    ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500"
-                    : "text-slate-700 dark:text-slate-300",
+                    ? "bg-muted text-foreground font-semibold border-l-[3px] border-l-primary"
+                    : "text-muted-foreground",
                 )}
               >
                 <item.icon
                   className={cn(
                     "h-5 w-5 flex-shrink-0",
-                    isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-500 dark:text-slate-400",
+                    isActive ? "text-primary" : "text-muted-foreground",
                   )}
                 />
                 {!isCollapsed && (
@@ -285,8 +285,8 @@ export function Sidebar({ className }: SidebarProps) {
                     {item.badge && (
                       <span
                         className={cn(
-                          "px-2 py-0.5 text-xs font-medium text-white rounded-full",
-                          item.badgeColor || "bg-blue-500",
+                          "px-2 py-0.5 text-xs font-medium rounded-full",
+                          item.badgeColor || "bg-primary text-primary-foreground",
                         )}
                       >
                         {item.badge}
@@ -302,10 +302,10 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* AI Coach Promotion (when collapsed) */}
       {isCollapsed && (
-        <div className="border-t border-slate-200 dark:border-slate-800 p-3">
+        <div className="border-t border-border p-3">
           <Link href="/ai-coach">
-            <div className="group flex items-center justify-center rounded-lg px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200">
-              <NeuralSparkIcon className="h-5 w-5 text-white" />
+            <div className="group flex items-center justify-center rounded-lg px-3 py-2 bg-primary hover:bg-primary/90 transition-all duration-200 text-primary-foreground card-enhanced">
+              <NeuralSparkIcon className="h-5 w-5" />
             </div>
           </Link>
         </div>
@@ -313,15 +313,15 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* AI Coach Promotion (when expanded) */}
       {!isCollapsed && pathname !== "/ai-coach" && (
-        <div className="border-t border-slate-200 dark:border-slate-800 p-3">
+        <div className="border-t border-border p-3">
           <Link href="/ai-coach">
-            <div className="group rounded-lg p-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transition-all duration-200 text-white">
+            <div className="group rounded-lg p-4 bg-primary hover:bg-primary/90 transition-all duration-200 text-primary-foreground card-enhanced">
               <div className="flex items-center gap-3 mb-2">
                 <NeuralSparkIcon className="h-5 w-5" />
                 <span className="font-semibold">Try AI Coach</span>
                 <PulseIcon className="h-4 w-4 ml-auto" />
               </div>
-              <p className="text-xs text-white/80">Get personalized trading insights powered by AI</p>
+              <p className="text-xs text-primary-foreground/80">Get personalized trading insights powered by AI</p>
             </div>
           </Link>
         </div>

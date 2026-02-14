@@ -23,6 +23,7 @@ import { deleteTrade } from "@/app/actions/trade-actions"
 import { useToast } from "@/components/ui/use-toast"
 import { useAIAdvisor } from "@/hooks/use-ai-advisor"
 import { AdvisorPanel } from "@/components/ai/advisor-panel"
+import { EmptyState } from "@/components/empty-state"
 
 interface SimpleTradeTableProps {
   trades: Trade[]
@@ -90,10 +91,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
   const getOutcomeBadge = (outcome: string | null) => {
     if (!outcome || outcome === null || outcome === undefined) {
       return (
-        <Badge
-          variant="secondary"
-          className="bg-gradient-to-r from-gray-400 to-gray-500 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
-        >
+        <Badge variant="secondary" className="badge-animated text-muted-foreground border border-border">
           N/A
         </Badge>
       )
@@ -102,27 +100,27 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
     switch (outcome.toLowerCase()) {
       case "win":
         return (
-          <Badge className="bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-pulse">
+          <Badge className="badge-animated bg-success/15 text-success border border-success/20">
             <TrendingUp className="h-3 w-3 mr-1" />
             Win
           </Badge>
         )
       case "loss":
         return (
-          <Badge className="bg-gradient-to-r from-red-500 via-rose-500 to-red-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <Badge className="badge-animated bg-destructive/15 text-destructive border border-destructive/20">
             <TrendingDown className="h-3 w-3 mr-1" />
             Loss
           </Badge>
         )
       case "breakeven":
         return (
-          <Badge className="bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <Badge className="badge-animated bg-warning/15 text-warning border border-warning/20">
             Breakeven
           </Badge>
         )
       default:
         return (
-          <Badge className="bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <Badge className="badge-animated bg-primary/15 text-primary border border-primary/20">
             {outcome}
           </Badge>
         )
@@ -133,10 +131,10 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
     if (direction === "long") {
       return (
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-gradient-to-br from-green-400 via-emerald-500 to-green-600 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-pulse">
-            <ArrowUpRight className="h-4 w-4 text-white" />
+          <div className="p-1.5 bg-success/15 rounded-lg">
+            <ArrowUpRight className="h-4 w-4 text-success" />
           </div>
-          <span className="capitalize font-semibold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          <span className="capitalize font-medium text-success">
             Long
           </span>
         </div>
@@ -144,10 +142,10 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
     }
     return (
       <div className="flex items-center gap-2">
-        <div className="p-1.5 bg-gradient-to-br from-red-400 via-rose-500 to-red-600 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
-          <ArrowDownRight className="h-4 w-4 text-white" />
+        <div className="p-1.5 bg-destructive/15 rounded-lg">
+          <ArrowDownRight className="h-4 w-4 text-destructive" />
         </div>
-        <span className="capitalize font-semibold bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent">
+        <span className="capitalize font-medium text-destructive">
           Short
         </span>
       </div>
@@ -156,27 +154,19 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
 
   if (trades.length === 0) {
     return (
-      <Card className="border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <CardContent className="py-20 text-center">
-          <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur-2xl opacity-30 animate-pulse" />
-            <div className="relative w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl">
-              <Database className="h-12 w-12 text-white" />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent mb-2">
-            No trades yet
-          </h3>
-          <p className="text-muted-foreground text-lg mb-6">Start tracking your trading journey today!</p>
-          <Button
-            asChild
-            className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-          >
-            <Link href="/add-trade">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Your First Trade
-            </Link>
-          </Button>
+      <Card className="border-2 border-dashed border-border bg-card">
+        <CardContent className="py-20">
+          <EmptyState
+            icon={Database}
+            title="No trades yet"
+            description="Start tracking your trading journey today!"
+            action={{
+              label: "Add Your First Trade",
+              href: "/add-trade",
+              variant: "default",
+            }}
+            className="animate-fade-in-up"
+          />
         </CardContent>
       </Card>
     )
@@ -184,16 +174,14 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
 
   return (
     <>
-      <Card className="shadow-2xl border-2 border-transparent bg-gradient-to-r from-white via-white to-white dark:from-gray-900 dark:via-gray-900 dark:to-gray-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-10 pointer-events-none" />
-
+      <Card className="shadow-lg border-border bg-card relative overflow-hidden">
         <CardHeader className="relative">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl shadow-lg">
-              <Database className="h-5 w-5 text-white" />
+            <div className="p-2 bg-primary rounded-xl">
+              <Database className="h-5 w-5 text-primary-foreground" />
             </div>
             <div>
-              <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <CardTitle className="text-2xl text-foreground">
                 Trade Database
               </CardTitle>
               <CardDescription className="text-base">Complete trading history</CardDescription>
@@ -204,43 +192,30 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">DATE</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">INSTRUMENT</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">DIRECTION</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">SIZE</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">ENTRY</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">EXIT</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">P&L (DOLLARS)</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">OUTCOME</TableHead>
-                  <TableHead className="font-bold text-gray-700 dark:text-gray-300">R:R</TableHead>
-                  <TableHead className="text-right font-bold text-gray-700 dark:text-gray-300">ACTIONS</TableHead>
+                <TableRow className="border-b-2 border-border">
+                  <TableHead className="font-bold text-foreground">DATE</TableHead>
+                  <TableHead className="font-bold text-foreground">INSTRUMENT</TableHead>
+                  <TableHead className="font-bold text-foreground">DIRECTION</TableHead>
+                  <TableHead className="font-bold text-foreground">SIZE</TableHead>
+                  <TableHead className="font-bold text-foreground">ENTRY</TableHead>
+                  <TableHead className="font-bold text-foreground">EXIT</TableHead>
+                  <TableHead className="font-bold text-foreground">P&L (DOLLARS)</TableHead>
+                  <TableHead className="font-bold text-foreground">OUTCOME</TableHead>
+                  <TableHead className="font-bold text-foreground">R:R</TableHead>
+                  <TableHead className="text-right font-bold text-foreground">ACTIONS</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {trades.map((trade, index) => {
                   const isWin = trade.outcome === "win"
                   const isLoss = trade.outcome === "loss"
-                  const rowBg = isWin
-                    ? "bg-gradient-to-r from-green-50/50 via-emerald-50/30 to-green-50/50 dark:from-green-950/20 dark:via-emerald-950/10 dark:to-green-950/20"
-                    : isLoss
-                      ? "bg-gradient-to-r from-red-50/50 via-rose-50/30 to-red-50/50 dark:from-red-950/20 dark:via-rose-950/10 dark:to-red-950/20"
-                      : index % 2 === 0
-                        ? "bg-gradient-to-r from-blue-50/30 via-purple-50/20 to-pink-50/30 dark:from-blue-950/10 dark:via-purple-950/5 dark:to-pink-950/10"
-                        : "bg-white dark:bg-gray-900"
 
                   return (
                     <TableRow
                       key={trade.id}
-                      className={`${rowBg} hover:bg-gradient-to-r hover:from-blue-100/50 hover:via-purple-100/50 hover:to-pink-100/50 dark:hover:from-blue-900/20 dark:hover:via-purple-900/20 dark:hover:to-pink-900/20 transition-all duration-300 hover:shadow-lg border-l-4 ${
-                        isWin
-                          ? "border-l-green-500"
-                          : isLoss
-                            ? "border-l-red-500"
-                            : "border-l-transparent hover:border-l-purple-500"
-                      }`}
+                      className="hover:bg-muted/50 transition-colors border-l-4 border-l-transparent data-[state=selected]:bg-muted"
                     >
-                      <TableCell className="font-medium text-gray-900 dark:text-gray-100">
+                      <TableCell className="font-medium text-foreground font-mono">
                         {new Date(trade.date).toLocaleDateString("en-US", {
                           month: "2-digit",
                           day: "2-digit",
@@ -248,41 +223,39 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                         })}
                       </TableCell>
                       <TableCell>
-                        <Badge className="bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105">
+                        <Badge variant="secondary" className="font-medium">
                           {trade.instrument || "—"}
                         </Badge>
                       </TableCell>
                       <TableCell>{getDirectionIcon(trade.direction)}</TableCell>
-                      <TableCell className="font-mono font-semibold text-gray-900 dark:text-gray-100">
+                      <TableCell className="font-mono font-semibold text-foreground">
                         {trade.size}
                       </TableCell>
-                      <TableCell className="font-mono text-gray-900 dark:text-gray-100">
+                      <TableCell className="font-mono text-foreground">
                         {formatPrice(trade.entry_price)}
                       </TableCell>
-                      <TableCell className="font-mono text-gray-900 dark:text-gray-100">
+                      <TableCell className="font-mono text-foreground">
                         {formatPrice(trade.exit_price)}
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`font-bold text-lg ${
-                            (trade.pnl || 0) >= 0
-                              ? "bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent"
-                              : "bg-gradient-to-r from-red-600 to-rose-600 bg-clip-text text-transparent"
+                          className={`font-mono font-bold text-lg ${
+                            (trade.pnl || 0) >= 0 ? "text-success" : "text-destructive"
                           }`}
                         >
                           {formatPnL(trade.pnl)}
                         </span>
                       </TableCell>
                       <TableCell>{getOutcomeBadge(trade.outcome)}</TableCell>
-                      <TableCell className="font-mono text-gray-900 dark:text-gray-100 font-semibold">
+                      <TableCell className="font-mono text-foreground font-semibold">
                         {trade.risk_reward_ratio !== null && trade.risk_reward_ratio !== undefined ? (
-                          <span className="text-gray-900 dark:text-gray-100">
+                          <span className="text-foreground">
                             {typeof trade.risk_reward_ratio === "number"
                               ? trade.risk_reward_ratio.toFixed(2)
                               : trade.risk_reward_ratio}
                           </span>
                         ) : (
-                          <span className="text-gray-600 dark:text-gray-400 font-normal">N/A</span>
+                          <span className="text-muted-foreground font-normal">N/A</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -292,7 +265,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                             variant="ghost"
                             // FIX: Use openAdvisor properly
                             onClick={() => openAdvisor("Trade Analysis", "trade", trade)}
-                            className="hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 hover:scale-110"
+                            className="hover:bg-muted hover:text-foreground"
                             title="Get AI insights for this trade"
                           >
                             <AddTradeIcon className="h-4 w-4" />
@@ -301,7 +274,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                             asChild
                             size="sm"
                             variant="ghost"
-                            className="hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:scale-110"
+                            className="hover:bg-muted hover:text-foreground"
                           >
                             <Link href={`/trade-details/${trade.id}`}>
                               <Eye className="h-4 w-4" />
@@ -311,7 +284,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                             asChild
                             size="sm"
                             variant="ghost"
-                            className="hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 hover:scale-110"
+                            className="hover:bg-muted hover:text-foreground"
                           >
                             <Link href={`/edit-trade/${trade.id}`}>
                               <Edit3 className="h-4 w-4" />
@@ -320,7 +293,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all duration-300 hover:scale-110"
+                            className="hover:bg-destructive/10 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteClick(trade.id)}
                           >
                             <Trash2 className="h-4 w-4" />

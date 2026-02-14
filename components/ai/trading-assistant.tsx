@@ -3,7 +3,8 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Sparkles, X, Send, Minimize2, Maximize2 } from "lucide-react"
+import { X, Send, Minimize2, Maximize2 } from "lucide-react"
+import { SparkIcon } from "@/components/icons/system-icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -136,7 +137,7 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-slate-900 border border-slate-700/50 hover:scale-105 hover:bg-slate-800 transition-all duration-300 z-50 p-0 overflow-hidden group"
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 group-hover:opacity-100 transition-opacity" />
-        <Sparkles className="h-6 w-6 text-indigo-400" />
+        <SparkIcon className="h-6 w-6 text-indigo-400" />
         <span className="absolute top-3 right-3 flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
@@ -156,7 +157,7 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
       <div className="flex items-center justify-between p-4 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md rounded-t-2xl">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-slate-800 rounded-lg border border-slate-700/50">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
+            <SparkIcon className="w-4 h-4 text-indigo-400" />
           </div>
           <div>
             <h3 className="font-semibold text-slate-100 text-sm">Trading Assistant</h3>
@@ -195,7 +196,7 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8">
               <div className="w-16 h-16 rounded-2xl bg-slate-800/50 flex items-center justify-center border border-slate-700/50 mb-2">
-                <Sparkles className="w-8 h-8 text-indigo-400/80" />
+                <SparkIcon className="w-8 h-8 text-indigo-400/80" />
               </div>
               <div className="space-y-1">
                 <h4 className="font-medium text-slate-200">How can I help?</h4>

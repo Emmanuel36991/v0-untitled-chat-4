@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Plus, Search, Trash2, Edit2, MoreHorizontal,
   Loader2, TrendingUp, Trophy, Layers, BookOpen,
-  Clock, CandlestickChart, Activity, Zap, Database,
+  Clock, CandlestickChart, Activity, Database,
   GitBranch, Check, ArrowRight, LayoutGrid, BarChart3,
   ChevronRight, Target, Layers as LayersIcon,
   FileText, SlidersHorizontal,
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { EmptyState } from "@/components/empty-state"
 import {
   getStrategies,
@@ -259,7 +260,7 @@ function StrategyEngine({
             <div className="px-6 py-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary" /> Setups
+                  <PulseIcon className="w-4 h-4 text-primary" /> Setups
                 </h2>
                 <p className="text-xs text-muted-foreground">Combine confluences into actionable trade setups.</p>
               </div>

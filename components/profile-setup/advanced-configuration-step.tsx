@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Toggle } from "@/components/ui/toggle"
-import { Settings, TrendingUp, Clock, Zap } from "lucide-react"
+import { Settings, TrendingUp, Clock } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import type { TradingPreferences } from "@/types/user-config"
 
 interface AdvancedConfigurationStepProps {
@@ -75,7 +76,7 @@ export function AdvancedConfigurationStep({ tradingPreferences, onUpdate }: Adva
       {/* Default Risk-Reward Ratio */}
       <div className="space-y-4">
         <label className="text-sm font-medium text-foreground flex items-center gap-2">
-          <Zap className="w-4 h-4 text-primary" />
+          <PulseIcon className="w-4 h-4 text-primary" />
           Default Risk-Reward Ratio
         </label>
         <p className="text-sm text-muted-foreground mb-3">Set your target R:R for new trades (e.g., 2 = 1:2 ratio)</p>

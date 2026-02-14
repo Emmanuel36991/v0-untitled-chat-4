@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bell, X, Zap, CheckCircle2, Megaphone, Star } from "lucide-react"
+import { Bell, X, CheckCircle2, Megaphone, Star } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -33,7 +34,7 @@ export function WhatsNewDialog({
           </div>
           <div className="relative z-10">
             <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white border-0 mb-2 w-fit">
-              <Zap className="w-3 h-3 mr-1 fill-current" /> What's New
+              <PulseIcon className="w-3 h-3 mr-1 fill-current" /> What's New
             </Badge>
             <DialogTitle className="text-2xl font-bold text-white">System Updates & Announcements</DialogTitle>
           </div>

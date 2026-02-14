@@ -7,7 +7,8 @@ import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge" // <--- ADDED THIS IMPORT
-import { Menu, Zap } from 'lucide-react'
+import { Menu } from 'lucide-react'
+import { PulseIcon } from "@/components/icons/system-icons"
 import {
   DashboardIcon,
   TradeLedgerIcon,
@@ -123,7 +124,7 @@ export function Navbar() {
           onClick={handleOpenUpdates}
           className="hidden md:flex gap-2 items-center border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 relative shadow-sm"
         >
-          <Zap className="h-4 w-4 fill-current" />
+          <PulseIcon className="h-4 w-4 fill-current" />
           <span className="font-medium text-xs uppercase tracking-wide">Updates</span>
 
           {/* Notification Dot */}
@@ -204,7 +205,7 @@ export function Navbar() {
                     onClick={handleOpenUpdates}
                     className="w-full justify-start gap-3 text-base py-6 rounded-xl border-indigo-200 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-300"
                   >
-                    <Zap className="h-5 w-5 fill-current" />
+                    <PulseIcon className="h-5 w-5 fill-current" />
                     <span className="font-medium">What's New</span>
                     {hasUnreadUpdates && (
                       <Badge className="ml-auto bg-red-500 text-white border-0">New</Badge>

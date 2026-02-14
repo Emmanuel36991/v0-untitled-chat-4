@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Brain, TrendingUp, TrendingDown, Heart, Zap, AlertTriangle, CheckCircle, BarChart3 } from "lucide-react"
+import { Brain, TrendingUp, TrendingDown, Heart, AlertTriangle, CheckCircle, BarChart3 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 
 // Mock psychology data
 const emotionalData = {
@@ -315,7 +316,7 @@ export default function DemoPsychology() {
         <Card className="bg-slate-800/50 border-purple-500/20">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Zap className="h-5 w-5 text-purple-400" />
+              <PulseIcon className="h-5 w-5 text-purple-400" />
               Recommendations
             </CardTitle>
           </CardHeader>

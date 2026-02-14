@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, PlusCircle, Zap } from 'lucide-react'
+import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, PlusCircle } from 'lucide-react'
+import { AddTradeIcon } from "@/components/icons/system-icons"
 import Link from "next/link"
 import { useState } from "react"
 import {
@@ -294,7 +295,7 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                             className="hover:bg-purple-100 dark:hover:bg-purple-900/30 hover:text-purple-600 dark:hover:text-purple-400 transition-all duration-300 hover:scale-110"
                             title="Get AI insights for this trade"
                           >
-                            <Zap className="h-4 w-4" />
+                            <AddTradeIcon className="h-4 w-4" />
                           </Button>
                           <Button
                             asChild

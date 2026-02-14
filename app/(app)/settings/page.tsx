@@ -6,12 +6,13 @@ import { useSubscription } from "@/hooks/use-subscription"
 import { useTheme } from "next-themes"
 import {
   User, Activity, Palette, Bell, Loader2, Save,
-  Plus, X, Search, BookOpen, Layers, Zap,
+  Plus, X, Search, BookOpen, Layers,
   Monitor, Moon, Sun, Check, Trash2, Sliders,
   Shield, Download, AlertTriangle, CreditCard,
   Mail, Lock, Key, ExternalLink, Eye, EyeOff,
   Calendar, ArrowUpRight, Clock
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -763,7 +764,7 @@ export default function SettingsPage() {
                 {/* Account Tip */}
                 <div className="p-4 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl text-white shadow-xl">
                    <div className="flex items-start gap-3">
-                      <Zap className="w-5 h-5 mt-0.5 text-yellow-300 fill-yellow-300" />
+                      <PulseIcon className="w-5 h-5 mt-0.5 text-yellow-300 fill-yellow-300" />
                       <div>
                         <h4 className="font-bold text-sm">Pro Tip</h4>
                         <p className="text-xs text-indigo-100 mt-1 leading-relaxed">

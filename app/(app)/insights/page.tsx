@@ -11,9 +11,10 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { 
   TrendingUp, TrendingDown, Target, Brain, Shield, 
-  Activity, AlertTriangle, CheckCircle2, Zap, 
+  Activity, AlertTriangle, CheckCircle2,
   BarChart3, RefreshCw, ArrowRight, Microscope, BarChart3 as ChartIcon
 } from 'lucide-react'
+import { SparkIcon, PulseIcon } from "@/components/icons/system-icons"
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
 import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
 import { analyzeAndCalculateRisk } from "@/lib/insights/risk-calculator"
@@ -143,7 +144,7 @@ export default function InsightsPage() {
                    </>
                  ) : (
                    <>
-                     <Zap className="mr-2 h-4 w-4" /> Generate AI Report
+                     <SparkIcon className="mr-2 h-4 w-4" /> Generate AI Report
                    </>
                  )}
                </Button>
@@ -270,7 +271,7 @@ export default function InsightsPage() {
                 <CardHeader>
                    <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-emerald-500" /> Edge Enablers
+                        <PulseIcon className="w-5 h-5 text-emerald-500" /> Edge Enablers
                       </CardTitle>
                       <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">Positive Impact</Badge>
                    </div>

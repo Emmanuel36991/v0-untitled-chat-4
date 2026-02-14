@@ -19,7 +19,6 @@ import {
   Lock,
   User,
   AlertCircle,
-  Zap,
   Eye,
   EyeOff,
   HelpCircle,
@@ -27,6 +26,7 @@ import {
   WifiOff,
   CheckCircle,
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 
 interface ConnectionStatus {
   isOnline: boolean
@@ -334,7 +334,7 @@ export default function TradovateLoginPage() {
                         </>
                       ) : (
                         <>
-                          <Zap className="mr-2 h-4 w-4" />
+                          <PulseIcon className="mr-2 h-4 w-4" />
                           Connect to Tradovate {isDemo ? "Demo" : "Live"}
                         </>
                       )}

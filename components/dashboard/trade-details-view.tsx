@@ -31,7 +31,6 @@ import {
   ArrowDownRight,
   Calendar,
   Activity,
-  Zap,
   Shield,
   Brain,
   Eye,
@@ -45,6 +44,7 @@ import {
   PieChartIcon,
   TrendingUpIcon,
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import type { Trade } from "@/types"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
@@ -257,7 +257,7 @@ export function TradeDetailsView({ trade, className }: TradeDetailsViewProps) {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <Activity className="h-6 w-6 text-purple-400" />
-              <Zap className="h-4 w-4 text-purple-400" />
+              <PulseIcon className="h-4 w-4 text-purple-400" />
             </div>
             <CardTitle className="text-sm font-medium text-muted-foreground">Position Size</CardTitle>
           </CardHeader>

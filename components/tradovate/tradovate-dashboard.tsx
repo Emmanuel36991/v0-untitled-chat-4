@@ -22,8 +22,8 @@ import {
   AlertCircle,
   TrendingUp,
   Database,
-  Zap,
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 
 interface TradovateDashboardProps {
   session: TradovateSession
@@ -289,7 +289,7 @@ export function TradovateDashboard({ session, accountInfo }: TradovateDashboardP
                     </>
                   ) : (
                     <>
-                      <Zap className="h-8 w-8" />
+                      <PulseIcon className="h-8 w-8" />
                       <span className="font-semibold">Sync Trades Now</span>
                       <span className="text-xs opacity-75">Import from Tradovate</span>
                     </>

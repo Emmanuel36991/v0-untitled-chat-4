@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { 
-  BarChart3, LineChart, Settings, Play, History, 
-  Bell, Calculator, Zap, Lock, Calendar, RefreshCw 
+import {
+  BarChart3, LineChart, Settings, Play, History,
+  Bell, Calculator, Lock, Calendar, RefreshCw
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { toast } from "sonner"
 
 export default function BacktestingPage() {
@@ -68,7 +69,7 @@ export default function BacktestingPage() {
               {/* Feature Teasers */}
               <div className="grid grid-cols-2 gap-3 text-left">
                 <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 flex items-center gap-3">
-                  <Zap className="w-5 h-5 text-yellow-400" />
+                  <PulseIcon className="w-5 h-5 text-yellow-400" />
                   <span className="text-sm font-medium text-slate-300">Instant Replay</span>
                 </div>
                 <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 flex items-center gap-3">

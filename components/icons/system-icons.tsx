@@ -223,15 +223,23 @@ export function BreakoutIcon(props: IconProps) {
 }
 
 /**
- * Scalp — Lightning-fast execution impulse
- * A sharp, angular bolt representing speed and precision.
- * Open shape with clean geometric segments.
+ * Scalp — Precision execution mark
+ * A crosshair with a sharp price tick through center — represents
+ * the surgical precision of a scalp trade. Distinctly NOT a lightning bolt.
  */
 export function ScalpIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Sharp angular bolt — 3 precise segments */}
-            <path d="M13 3L7 12h4.5L9 21l9-11h-5l2-7z" />
+            {/* Crosshair horizontal */}
+            <line x1="3" y1="12" x2="9" y2="12" opacity="0.35" />
+            <line x1="15" y1="12" x2="21" y2="12" opacity="0.35" />
+            {/* Crosshair vertical */}
+            <line x1="12" y1="3" x2="12" y2="9" opacity="0.35" />
+            <line x1="12" y1="15" x2="12" y2="21" opacity="0.35" />
+            {/* Sharp price tick through center — the execution */}
+            <path d="M8 15l2-3 2 1 2-5 2 4" />
+            {/* Center dot — point of execution */}
+            <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
         </SvgTemplate>
     )
 }
@@ -255,22 +263,23 @@ export function ProfitChartIcon(props: IconProps) {
 }
 
 /**
- * Momentum Flow — Smooth flowing stream lines
- * Three parallel bezier curves flowing rightward with increasing intensity.
- * Open ends for a sense of continuous motion.
+ * Momentum Flow — Accelerating wave with forward thrust
+ * A smooth accelerating curve that widens as it moves right,
+ * with a leading arrowhead suggesting forward momentum.
  */
 export function MomentumFlowIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Top stream — subtle */}
-            <path d="M3 8c3 0 5-2 8-2s5 2 8 2" opacity="0.35" />
-            {/* Middle stream — primary */}
-            <path d="M3 12c3 0 5-3 8-3s5 3 8 3" />
-            {/* Bottom stream — subtle */}
-            <path d="M3 16c3 0 5-2 8-2s5 2 8 2" opacity="0.35" />
-            {/* Trailing speed lines at right */}
-            <path d="M19 10l2.5-1" opacity="0.25" />
-            <path d="M19 14l2.5 1" opacity="0.25" />
+            {/* Primary momentum wave — accelerating rightward */}
+            <path d="M3 12C5 12 7 8 10 8s4 4 6 4 3-4 5-4" />
+            {/* Secondary echo wave — offset below, fading */}
+            <path d="M5 16C7 16 8 13 10.5 13s3 3 5 3 2.5-3 4.5-3" opacity="0.3" />
+            {/* Leading arrowhead — forward thrust */}
+            <path d="M18 8l3 0" />
+            <path d="M19 6l2 2-2 2" />
+            {/* Trailing velocity marks at left */}
+            <line x1="2" y1="10" x2="4" y2="10" opacity="0.2" />
+            <line x1="2" y1="14" x2="3.5" y2="14" opacity="0.15" />
         </SvgTemplate>
     )
 }
@@ -376,6 +385,49 @@ export function SocialIcon(props: IconProps) {
             {/* Second person — offset, partial for depth */}
             <circle cx="17" cy="8" r="2.5" />
             <path d="M19 21v-1.5a4 4 0 0 0-2-3.5" opacity="0.5" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Pulse — Quick action / energy / updates indicator
+ * A refined pulse/signal icon — replaces generic Lucide Zap across the app.
+ * Circular radar pulse with a center dot.
+ */
+export function PulseIcon(props: IconProps) {
+    return (
+        <SvgTemplate {...props}>
+            {/* Outer pulse ring */}
+            <circle cx="12" cy="12" r="9" opacity="0.2" />
+            {/* Middle pulse ring */}
+            <circle cx="12" cy="12" r="5.5" opacity="0.4" />
+            {/* Inner ring */}
+            <circle cx="12" cy="12" r="2.5" />
+            {/* Center dot */}
+            <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+            {/* Emission rays — suggesting active signal */}
+            <path d="M12 3v2" opacity="0.3" />
+            <path d="M12 19v2" opacity="0.3" />
+            <path d="M3 12h2" opacity="0.3" />
+            <path d="M19 12h2" opacity="0.3" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Spark — AI/Intelligence sparkle
+ * A refined 4-point star with radiating dots. Premium alternative to Lucide Sparkles.
+ */
+export function SparkIcon(props: IconProps) {
+    return (
+        <SvgTemplate {...props}>
+            {/* Primary 4-point star */}
+            <path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5z" />
+            {/* Small secondary star */}
+            <path d="M18 3l0.5 1.5L20 5l-1.5 0.5L18 7l-0.5-1.5L16 5l1.5-0.5z" opacity="0.5" />
+            {/* Tertiary dot */}
+            <circle cx="6" cy="18" r="1" opacity="0.35" />
+            <circle cx="18" cy="18" r="0.75" opacity="0.25" />
         </SvgTemplate>
     )
 }

@@ -10,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   TrendingUp, TrendingDown, Brain, Shield,
-  AlertTriangle, CheckCircle2, Zap, BrainCircuit,
+  AlertTriangle, CheckCircle2,
   ArrowUp, ArrowDown, Clock, Crosshair, Trash2,
 } from "lucide-react"
+import { NeuralSparkIcon, PulseIcon } from "@/components/icons/system-icons"
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell,
@@ -146,7 +147,7 @@ function RecommendationCard({ rec, delay }: { rec: SmartRecommendation; delay?: 
   const iconMap = {
     strength: <TrendingUp className="w-4 h-4 text-emerald-500" />,
     warning: <AlertTriangle className="w-4 h-4 text-amber-500" />,
-    tip: <Zap className="w-4 h-4 text-sky-500" />,
+    tip: <PulseIcon className="w-4 h-4 text-sky-500" />,
   }
   const glowMap: Record<string, "emerald" | "amber" | "sky"> = {
     strength: "emerald", warning: "amber", tip: "sky",
@@ -235,7 +236,7 @@ function AIHistorySection() {
         <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
           <div className="relative mb-6">
             <div className="w-16 h-16 rounded-2xl bg-primary/5 dark:bg-primary/10 flex items-center justify-center border border-primary/10">
-              <BrainCircuit className="w-8 h-8 text-primary/40" />
+              <NeuralSparkIcon className="w-8 h-8 text-primary/40" />
             </div>
           </div>
           <h3 className="text-lg font-bold text-foreground mb-2">No Insights Yet</h3>
@@ -283,7 +284,7 @@ function AIHistorySection() {
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
-                      <BrainCircuit className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+                      <NeuralSparkIcon className="w-3.5 h-3.5 text-primary/60 shrink-0" />
                       <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
                         {formatDistanceToNow(new Date(insight.created_at), { addSuffix: true })}
                       </span>
@@ -362,7 +363,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
       <GlassCard>
         <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center">
           <div className="w-16 h-16 bg-primary/5 dark:bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/10">
-            <BrainCircuit className="w-8 h-8 text-primary/40" />
+            <NeuralSparkIcon className="w-8 h-8 text-primary/40" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">No Trades to Analyze</h2>
           <p className="text-sm text-muted-foreground max-w-md mb-6">
@@ -426,7 +427,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
             transition={{ delay: 0.3 }}
             className="flex items-center gap-2 mb-3"
           >
-            <Zap className="w-4 h-4 text-primary" />
+            <PulseIcon className="w-4 h-4 text-primary" />
             <h3 className="text-sm font-bold text-foreground tracking-tight">Smart Recommendations</h3>
           </motion.div>
           <div className="grid gap-3 md:grid-cols-2">
@@ -446,7 +447,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
         <Tabs defaultValue="ai-history" className="w-full">
           <TabsList className="w-full justify-start bg-card/60 dark:bg-card/40 backdrop-blur-lg border border-border/40 rounded-xl h-11 p-1 gap-0.5">
             <TabsTrigger value="ai-history" className="text-xs gap-1.5 rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">
-              <BrainCircuit className="w-3.5 h-3.5" /> AI History
+              <NeuralSparkIcon className="w-3.5 h-3.5" /> AI History
             </TabsTrigger>
             <TabsTrigger value="patterns" className="text-xs gap-1.5 rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">
               <Crosshair className="w-3.5 h-3.5" /> Patterns

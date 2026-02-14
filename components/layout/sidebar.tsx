@@ -7,12 +7,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { ChevronLeft, ChevronRight, Zap } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { PulseIcon } from "@/components/icons/system-icons"
 import {
   DashboardIcon,
   AddTradeIcon,
   TradeLedgerIcon,
   AnalyticsIcon,
+  PlaybookIcon,
   NeuralSparkIcon,
   BacktestIcon,
   PatternEyeIcon,
@@ -59,6 +61,12 @@ const navigation: NavItem[] = [
     href: "/analytics",
     icon: AnalyticsIcon,
     description: "Performance insights",
+  },
+  {
+    name: "Playbook",
+    href: "/playbook",
+    icon: PlaybookIcon,
+    description: "Strategy playbook",
   },
   {
     name: "AI Coach",
@@ -128,7 +136,7 @@ export function Sidebar({ className }: SidebarProps) {
       <div className="flex h-16 items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <Zap className="h-6 w-6 text-blue-500" />
+            <PulseIcon className="h-6 w-6 text-blue-500" />
             <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">Concentrade</span>
           </div>
         )}
@@ -311,7 +319,7 @@ export function Sidebar({ className }: SidebarProps) {
               <div className="flex items-center gap-3 mb-2">
                 <NeuralSparkIcon className="h-5 w-5" />
                 <span className="font-semibold">Try AI Coach</span>
-                <Zap className="h-4 w-4 ml-auto" />
+                <PulseIcon className="h-4 w-4 ml-auto" />
               </div>
               <p className="text-xs text-white/80">Get personalized trading insights powered by AI</p>
             </div>

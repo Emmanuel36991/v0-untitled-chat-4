@@ -36,7 +36,6 @@ import {
   BookOpen,
   BarChart3,
   FilterX,
-  Zap,
   Activity,
   Eye,
   ChevronDown,
@@ -47,6 +46,7 @@ import {
   Search,
 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { AddTradeIcon } from "@/components/icons/system-icons"
 import type { TradeFilters } from "@/components/trades/advanced-trade-filters"
 import { EnhancedPnLCell } from "@/components/trades/enhanced-pnl-cell"
 import { PnLDisplaySelector } from "@/components/trades/pnl-display-selector"
@@ -784,7 +784,7 @@ export function TradeTable({
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                   <Button asChild className="bg-primary hover:bg-primary/90 px-8 py-4 text-lg">
                     <Link href="/add-trade">
-                      <Zap className="mr-3 h-6 w-6" /> Log First Trade
+                      <AddTradeIcon className="mr-3 h-6 w-6" /> Log First Trade
                     </Link>
                   </Button>
                 </div>

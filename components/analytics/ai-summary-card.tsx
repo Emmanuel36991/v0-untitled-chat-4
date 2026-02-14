@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Sparkles, Loader2, RefreshCw } from "lucide-react"
+import { Loader2, RefreshCw } from "lucide-react"
+import { SparkIcon } from "@/components/icons/system-icons"
 import { getPeriodStatistics } from "@/app/actions/analytics-actions"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -169,7 +170,7 @@ export function AiSummaryCard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <SparkIcon className="h-5 w-5 text-primary" />
               AI Performance Report
             </CardTitle>
             <CardDescription>

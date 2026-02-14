@@ -24,13 +24,18 @@ import {
   RefreshCw,
   PieChart,
   LineChart,
-  Zap,
   ChevronRight,
   TrendingUp as TrendUp,
   Star,
-  Rocket,
-  Diamond,
 } from "lucide-react"
+import {
+  BreakoutIcon,
+  ScalpIcon,
+  MomentumFlowIcon,
+  MeanReversionIcon,
+  CompassIcon,
+  PulseIcon,
+} from "@/components/icons/system-icons"
 import {
   Area,
   AreaChart,
@@ -100,12 +105,12 @@ const STRATEGY_COLORS = [
 
 // Strategy icons mapping (same as real dashboard)
 const STRATEGY_ICONS = {
-  Breakout: Rocket,
-  Reversal: RefreshCw,
-  "Trend Following": TrendingUp,
-  Scalping: Zap,
+  Breakout: BreakoutIcon,
+  Reversal: MeanReversionIcon,
+  "Trend Following": MomentumFlowIcon,
+  Scalping: ScalpIcon,
   "Swing Trading": Activity,
-  Default: Diamond,
+  Default: CompassIcon,
 }
 
 const getStrategyIcon = (strategyName: string) => {
@@ -928,7 +933,7 @@ export default function DemoDashboard() {
                 disabled
               >
                 <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-md">
-                  <Zap className="h-6 w-6 text-white" />
+                  <PulseIcon className="h-6 w-6 text-white" />
                 </div>
                 <span className="text-sm font-bold text-green-700 dark:text-green-300">Risk Calc</span>
               </Button>

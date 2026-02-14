@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Copy, TrendingUp, CheckCircle, AlertCircle, ExternalLink, Zap, Shield, Clock } from "lucide-react"
+import { Copy, TrendingUp, CheckCircle, AlertCircle, ExternalLink, Shield, Clock } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { createTradingViewConnection } from "@/app/actions/tradingview-actions"
 import { toast } from "@/hooks/use-toast"
 
@@ -197,7 +198,7 @@ export function QuickConnectModal({ onConnectionCreated, onClose }: QuickConnect
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="glass-card p-4 border-green-500/20">
-            <Zap className="h-6 w-6 text-green-400 mx-auto mb-2" />
+            <PulseIcon className="h-6 w-6 text-green-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-green-400">Instant Sync</p>
             <p className="text-xs text-muted-foreground">Real-time trade logging</p>
           </Card>
@@ -298,7 +299,7 @@ export function QuickConnectModal({ onConnectionCreated, onClose }: QuickConnect
                 </>
               ) : (
                 <>
-                  <Zap className="mr-2 h-4 w-4" />
+                  <PulseIcon className="mr-2 h-4 w-4" />
                   Create Webhook Connection
                 </>
               )}

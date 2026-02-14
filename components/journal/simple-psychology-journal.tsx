@@ -24,13 +24,13 @@ import {
   ChevronDown,
   ChevronUp,
   Brain,
-  Zap,
   Save,
   X,
   History,
   Target,
   Activity
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { useToast } from "@/hooks/use-toast"
 
 // --- Data Constants (Preserved) ---
@@ -361,7 +361,7 @@ export default function SimplePsychologyJournal() {
                         <div className="space-y-4">
                           <div className="flex justify-between items-center">
                             <Label className="text-xs font-mono text-zinc-400 uppercase flex items-center gap-2">
-                              <Zap className="w-3 h-3 text-emerald-500" /> Focus Level
+                              <PulseIcon className="w-3 h-3 text-emerald-500" /> Focus Level
                             </Label>
                             <span className="text-sm font-mono text-emerald-400 font-bold">{focus[0]}/10</span>
                           </div>

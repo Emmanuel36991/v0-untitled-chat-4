@@ -3,7 +3,8 @@
 import React, { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendingUp, TrendingDown, Target, Brain, Shield, CheckCircle, AlertTriangle, Zap, Award, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Target, Brain, Shield, CheckCircle, AlertTriangle, Award, BarChart3 } from 'lucide-react'
+import { PulseIcon } from "@/components/icons/system-icons"
 import { analyzeSetupPatterns } from "@/lib/insights/setup-analyzer"
 import { analyzePsychologyPatterns } from "@/lib/insights/psychology-analyzer"
 import { analyzeAndCalculateRisk } from "@/lib/insights/risk-calculator"
@@ -214,7 +215,7 @@ export function InsightsWindows({ trades }: InsightsWindowsProps) {
             <Card className="border-0 shadow-lg bg-indigo-50 dark:bg-indigo-950/30">
               <CardContent className="p-4">
                 <div className="flex items-start space-x-2">
-                  <Zap className="h-5 w-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                  <PulseIcon className="h-5 w-5 text-indigo-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm italic text-slate-700 dark:text-slate-300">{riskAnalysis.kellyCriterion.advice}</p>
                 </div>
               </CardContent>

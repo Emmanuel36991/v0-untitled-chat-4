@@ -5,14 +5,14 @@ import { motion } from "framer-motion"
 import SimplePsychologyJournal from "@/components/journal/simple-psychology-journal"
 import PsychologyAnalytics from "@/components/journal/psychology-analytics"
 import { 
-  Activity, 
-  Brain, 
-  Target, 
-  Zap, 
+  Activity,
+  Brain,
+  Target,
   CalendarDays,
   ShieldAlert,
   BarChart3
 } from "lucide-react"
+import { PulseIcon } from "@/components/icons/system-icons"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
@@ -97,7 +97,7 @@ export default function PsychologyPageClient({ stats }: Props) {
             label="Current Streak" 
             value={stats?.currentStreak || "0"} 
             subtext="DAYS"
-            icon={Zap} 
+            icon={PulseIcon} 
             trend={stats && stats.currentStreak >= 7 ? `+${Math.floor(stats.currentStreak / 7)} weeks` : stats && stats.currentStreak > 0 ? "Building" : "Start Today"}
             trendColor={stats && stats.currentStreak >= 7 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-500"}
           />

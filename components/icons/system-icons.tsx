@@ -125,28 +125,63 @@ export function PlaybookIcon(props: IconProps) {
 }
 
 /**
- * Psychology — Neural Node Network
- * Abstract mind-as-network: central node with orbital connections.
- * Gaps at intersections create depth.
+ * Psychology — Mind / Trading psychology
+ * Brain (two lobes + center): mindset, mental game. Clearly reads as "psychology".
  */
 export function PsychologyIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Central node */}
-            <circle cx="12" cy="12" r="2.5" />
-            {/* Orbital nodes */}
-            <circle cx="5" cy="7" r="1.5" />
-            <circle cx="19" cy="7" r="1.5" />
-            <circle cx="5" cy="18" r="1.5" />
-            <circle cx="19" cy="18" r="1.5" />
-            {/* Connection lines — broken/gapped where they meet center node */}
-            <path d="M6.3 8L9.8 10.3" opacity="0.5" />
-            <path d="M17.7 8L14.2 10.3" opacity="0.5" />
-            <path d="M6.3 17L9.8 13.7" opacity="0.5" />
-            <path d="M17.7 17L14.2 13.7" opacity="0.5" />
-            {/* Cross connections between outer nodes — subtle */}
-            <path d="M6.5 7h11" opacity="0.15" />
-            <path d="M6.5 18h11" opacity="0.15" />
+            {/* Left lobe */}
+            <path d="M8 6c-1.5 0-3 1.2-3 3.2 0 1.2.4 2.2 1 2.9v3.3c0 1.2 1 2.2 2.2 2.2.6 0 1.1-.2 1.5-.6" />
+            {/* Right lobe */}
+            <path d="M16 6c1.5 0 3 1.2 3 3.2 0 1.2-.4 2.2-1 2.9v3.3c0 1.2-1 2.2-2.2 2.2-.6 0-1.1-.2-1.5-.6" />
+            {/* Center fissure */}
+            <path d="M12 5v14" opacity="0.4" />
+            {/* Connector between lobes at bottom */}
+            <path d="M9.5 18c.8.3 1.6.4 2.5.4s1.7-.1 2.5-.4" opacity="0.5" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Avg Return — Average P&L per trade
+ * Bar chart with a horizontal mean line: "average return" per execution.
+ */
+export function AvgReturnIcon(props: IconProps) {
+    return (
+        <SvgTemplate {...props}>
+            {/* Three bars of varying heights (individual returns) */}
+            <line x1="5" y1="18" x2="5" y2="12" />
+            <line x1="12" y1="18" x2="12" y2="6" />
+            <line x1="19" y1="18" x2="19" y2="9" />
+            {/* Horizontal line = average */}
+            <line x1="3" y1="10" x2="21" y2="10" strokeWidth="1.8" opacity="0.9" />
+            {/* Baseline */}
+            <path d="M3 18h18" opacity="0.25" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Profit Factor — Gross profit / Gross loss (ratio)
+ * Balance scale: wins vs losses, ratio of the two.
+ */
+export function ProfitFactorIcon(props: IconProps) {
+    return (
+        <SvgTemplate {...props}>
+            {/* Central pivot */}
+            <path d="M12 4v6" />
+            <path d="M10 10l2-2 2 2" />
+            {/* Beam */}
+            <line x1="5" y1="14" x2="19" y2="14" />
+            {/* Left pan (e.g. loss) — lower */}
+            <line x1="5" y1="14" x2="5" y2="18" />
+            <circle cx="5" cy="20" r="2" />
+            {/* Right pan (e.g. profit) — higher when factor > 1 */}
+            <line x1="19" y1="14" x2="19" y2="18" />
+            <circle cx="19" cy="20" r="2" />
+            {/* Support line under beam */}
+            <path d="M12 10v1" opacity="0.5" />
         </SvgTemplate>
     )
 }

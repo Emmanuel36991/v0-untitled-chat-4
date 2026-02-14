@@ -45,7 +45,6 @@ import {
   Target,
   ArrowUpRight,
   ArrowDownRight,
-  Award,
   AlertTriangle,
   Activity,
   Clock,
@@ -78,6 +77,8 @@ import {
   AddTradeIcon,
   TradeLedgerIcon,
   PlaybookIcon,
+  AvgReturnIcon,
+  ProfitFactorIcon,
 } from "@/components/icons/system-icons"
 
 // --- Charts (Recharts) ---
@@ -353,30 +354,6 @@ const MetricCard = React.memo<MetricCardProps>(
             </p>
           )}
         </div>
-
-        {/* Sparkline Background */}
-        {trendData && trendData.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-16 w-full opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  fill="currentColor"
-                  className={
-                    changeType === "positive"
-                      ? "text-green-500"
-                      : changeType === "negative"
-                        ? "text-red-500"
-                        : "text-gray-500"
-                  }
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
       </CardContent>
     </Card>
   )
@@ -898,7 +875,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={Award}
+            icon={ProfitFactorIcon}
             iconColor="text-emerald-600 dark:text-emerald-400"
             subtitle="Gross Profit / Gross Loss"
           />
@@ -908,7 +885,7 @@ export default function DashboardPage() {
             value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
-            icon={MeanReversionIcon}
+            icon={AvgReturnIcon}
             iconColor="text-amber-600 dark:text-amber-400"
             trendData={chartData.map((d) => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"

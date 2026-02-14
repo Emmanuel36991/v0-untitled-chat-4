@@ -8,97 +8,6 @@ import { cn } from "@/lib/utils"
 import type { Trade } from "@/types"
 import { saveInsight, getInsights } from "@/app/actions/insight-actions"
 
-// --- Neural network background nodes ---
-function NeuralBackground({ active }: { active: boolean }) {
-  const nodes = useRef(
-    Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2.5 + 1,
-      delay: Math.random() * 3,
-      duration: Math.random() * 2 + 2,
-    }))
-  ).current
-
-  const connections = useRef(
-    Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      from: Math.floor(Math.random() * 18),
-      to: Math.floor(Math.random() * 18),
-      delay: Math.random() * 2,
-    }))
-  ).current
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-        {connections.map((conn) => {
-          const from = nodes[conn.from]
-          const to = nodes[conn.to]
-          return (
-            <motion.line
-              key={`conn-${conn.id}`}
-              x1={from.x}
-              y1={from.y}
-              x2={to.x}
-              y2={to.y}
-              stroke="currentColor"
-              className="text-primary/[0.06] dark:text-primary/[0.1]"
-              strokeWidth="0.15"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={
-                active
-                  ? {
-                      pathLength: [0, 1, 1, 0],
-                      opacity: [0, 0.6, 0.6, 0],
-                    }
-                  : { pathLength: 1, opacity: 0.3 }
-              }
-              transition={
-                active
-                  ? {
-                      duration: 2.5,
-                      delay: conn.delay,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }
-                  : { duration: 1 }
-              }
-            />
-          )
-        })}
-        {nodes.map((node) => (
-          <motion.circle
-            key={`node-${node.id}`}
-            cx={node.x}
-            cy={node.y}
-            r={node.size}
-            className="fill-primary/[0.08] dark:fill-primary/[0.15]"
-            animate={
-              active
-                ? {
-                    r: [node.size, node.size * 1.8, node.size],
-                    opacity: [0.3, 0.8, 0.3],
-                  }
-                : {
-                    r: node.size,
-                    opacity: 0.4,
-                  }
-            }
-            transition={{
-              duration: node.duration,
-              delay: node.delay,
-              repeat: active ? Infinity : 0,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </svg>
-    </div>
-  )
-}
-
 // --- Scanning line effect ---
 function ScanLine({ active }: { active: boolean }) {
   if (!active) return null
@@ -170,44 +79,6 @@ function StreamingText({ text, isStreaming }: { text: string; isStreaming: boole
           />
         )}
       </p>
-    </div>
-  )
-}
-
-// --- State label chips ---
-function StateChip({
-  state,
-}: {
-  state: "idle" | "thinking" | "streaming" | "done" | "error"
-}) {
-  const config = {
-    idle: { label: "Ready", color: "text-muted-foreground" },
-    thinking: { label: "Analyzing Patterns", color: "text-primary" },
-    streaming: { label: "Transmitting", color: "text-primary" },
-    done: { label: "Insight Locked", color: "text-emerald-500 dark:text-emerald-400" },
-    error: { label: "Signal Lost", color: "text-destructive" },
-  }
-  const { label, color } = config[state]
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="relative flex items-center justify-center w-1.5 h-1.5">
-        <div
-          className={cn(
-            "w-1.5 h-1.5 rounded-full",
-            state === "thinking" || state === "streaming"
-              ? "bg-primary animate-pulse"
-              : state === "done"
-                ? "bg-emerald-500"
-                : state === "error"
-                  ? "bg-destructive"
-                  : "bg-muted-foreground/40"
-          )}
-        />
-      </div>
-      <span className={cn("text-[10px] font-semibold uppercase tracking-[0.08em]", color)}>
-        {label}
-      </span>
     </div>
   )
 }
@@ -370,9 +241,6 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
           "hover:-translate-y-0.5 transition-transform duration-300"
         )}
       >
-        {/* Neural background */}
-        <NeuralBackground active={isActive} />
-
         {/* Scan line */}
         <ScanLine active={isActive} />
 
@@ -391,12 +259,9 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <PulseRing active={isActive} />
-              <div>
-                <h3 className="text-sm font-bold text-foreground tracking-tight">
-                  AI Insight
-                </h3>
-                <StateChip state={state} />
-              </div>
+              <h3 className="text-sm font-bold text-foreground tracking-tight">
+                AI Insight
+              </h3>
             </div>
 
             <div className="flex items-center gap-2">

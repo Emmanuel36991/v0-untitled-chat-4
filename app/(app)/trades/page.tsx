@@ -7,6 +7,7 @@ import { parseCSV, convertTradesToInput, getSupportedBrokers, detectBrokerFormat
 import type { BrokerType, ParseResult } from "@/lib/csv-parsers/types"
 import { getTrades, addMultipleTrades, deleteAllTrades } from "@/app/actions/trade-actions"
 import { getTradingAccounts, createTradingAccount } from "@/app/actions/account-actions"
+import { PortfolioManagerDialog } from "@/components/trades/portfolio-manager"
 import { SimpleTradeTable } from "./SimpleTradeTable"
 import type { Trade, NewTradeInput } from "@/types"
 import type { TradingAccount, AccountType } from "@/types/accounts"
@@ -86,6 +87,7 @@ export default function TradesPage() {
    const [isConnectionDialogOpen, setIsConnectionDialogOpen] = useState(false)
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
    const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false)
+   const [isPortfolioManagerOpen, setIsPortfolioManagerOpen] = useState(false)
 
    // New Account Form State
    const [newAccountName, setNewAccountName] = useState("")
@@ -357,6 +359,20 @@ export default function TradesPage() {
                                  </div>
                               </SelectItem>
                            ))}
+                           {accounts.length > 0 && <Separator className="my-1" />}
+                           <div className="p-1">
+                              <Button
+                                 variant="ghost"
+                                 size="sm"
+                                 className="w-full justify-start text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                                 onClick={(e) => {
+                                    e.preventDefault();
+                                    setIsPortfolioManagerOpen(true)
+                                 }}
+                              >
+                                 <Settings2 className="mr-2 h-3 w-3" /> Manage Portfolios
+                              </Button>
+                           </div>
                         </SelectContent>
                      </Select>
 
@@ -565,6 +581,17 @@ export default function TradesPage() {
                   <SimpleConnectionModal onClose={() => setIsConnectionDialogOpen(false)} onConnectionCreated={() => fetchData(true)} />
                </DialogContent>
             </Dialog>
+
+            {/* Portfolio Manager Modal */}
+            <PortfolioManagerDialog
+               open={isPortfolioManagerOpen}
+               onOpenChange={setIsPortfolioManagerOpen}
+               accounts={accounts}
+               trades={trades}
+               selectedAccountId={selectedAccountId}
+               onAccountsChange={() => fetchData(false)}
+               onSelectAccount={setSelectedAccountId}
+            />
 
             {/* Delete Confirmation Modal */}
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

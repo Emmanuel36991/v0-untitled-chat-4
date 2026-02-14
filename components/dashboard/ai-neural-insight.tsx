@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { BrainCircuit, RotateCcw, Sparkles } from "lucide-react"
+import { BrainCircuit, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Trade } from "@/types"
+import { saveInsight } from "@/app/actions/insight-actions"
 
 // --- Neural network background nodes ---
 function NeuralBackground({ active }: { active: boolean }) {
@@ -179,7 +180,7 @@ function StateChip({
   state: "idle" | "thinking" | "streaming" | "done" | "error"
 }) {
   const config = {
-    idle: { label: "Neural Link Ready", color: "text-muted-foreground" },
+    idle: { label: "Ready", color: "text-muted-foreground" },
     thinking: { label: "Analyzing Patterns", color: "text-primary" },
     streaming: { label: "Transmitting", color: "text-primary" },
     done: { label: "Insight Locked", color: "text-emerald-500 dark:text-emerald-400" },
@@ -303,11 +304,16 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
 
       setState("done")
       setHasFetched(true)
+
+      // Persist insight to database
+      if (fullText.trim()) {
+        saveInsight(fullText.trim(), recentTrades).catch(() => {})
+      }
     } catch (err: any) {
       if (err?.name === "AbortError") return
       console.error("Neural insight error:", err)
       setState("error")
-      setInsightText("Neural link interrupted. Tap to reconnect.")
+      setInsightText("Connection interrupted. Tap to reconnect.")
     }
   }, [trades, hasEnoughData])
 
@@ -371,7 +377,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
               <PulseRing active={isActive} />
               <div>
                 <h3 className="text-sm font-bold text-foreground tracking-tight">
-                  Neural Insight
+                  AI Insight
                 </h3>
                 <StateChip state={state} />
               </div>
@@ -401,14 +407,6 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
                   Re-analyze
                 </motion.button>
               )}
-              <Sparkles
-                className={cn(
-                  "w-4 h-4",
-                  isActive
-                    ? "text-primary animate-pulse"
-                    : "text-muted-foreground/30"
-                )}
-              />
             </div>
           </div>
 
@@ -423,7 +421,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
                 className="py-3"
               >
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Need at least 3 trades to activate the neural link.
+                  Need at least 3 trades to activate AI analysis.
                   Keep logging entries to unlock AI pattern detection.
                 </p>
                 <div className="mt-3 flex items-center gap-2">

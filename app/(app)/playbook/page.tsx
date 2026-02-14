@@ -41,6 +41,7 @@ import {
 } from "@/app/actions/playbook-actions"
 import { VisualMap } from "@/components/playbook/visual-map"
 import { EnhancedVisualMap } from "@/components/playbook/enhanced-visual-map"
+import { StrategyDesigner } from "@/components/playbook/strategy-designer"
 
 // ---------- CONSTANTS ----------
 const CONFLUENCE_CATEGORIES = [
@@ -72,258 +73,6 @@ function MiniEquityCurve({ data, positive }: { data: number[]; positive: boolean
         </AreaChart>
       </ResponsiveContainer>
     </div>
-  )
-}
-
-// ---------- STRATEGY ENGINE (Sheet Builder) ----------
-function StrategyEngine({
-  open,
-  onOpenChange,
-  onSave,
-  initialData,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSave: (strat: Partial<PlaybookStrategy>) => Promise<void>
-  initialData?: PlaybookStrategy | null
-}) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [confluences, setConfluences] = useState<StrategyRule[]>([])
-  const [newConfluenceText, setNewConfluenceText] = useState("")
-  const [newConfluenceType, setNewConfluenceType] = useState("price")
-  const [setups, setSetups] = useState<StrategySetup[]>([])
-  const [newSetupName, setNewSetupName] = useState("")
-
-  useEffect(() => {
-    if (open) {
-      if (initialData) {
-        setName(initialData.name)
-        let desc = initialData.description || ""
-        if (desc.trim().startsWith("{")) desc = ""
-        setDescription(desc)
-        setConfluences(initialData.rules || [])
-        setSetups(initialData.setups || [])
-      } else {
-        setName(""); setDescription(""); setConfluences([]); setSetups([])
-      }
-    }
-  }, [open, initialData])
-
-  const addConfluence = () => {
-    if (!newConfluenceText.trim()) return
-    const newRule: StrategyRule = { id: Math.random().toString(36).substr(2, 9), text: newConfluenceText, phase: "setup", required: true }
-    Object.assign(newRule, { category: newConfluenceType })
-    setConfluences((p) => [...p, newRule])
-    setNewConfluenceText("")
-  }
-
-  const removeConfluence = (id: string) => {
-    setConfluences((p) => p.filter((r) => r.id !== id))
-    setSetups((p) => p.map((s) => ({ ...s, activeConfluences: s.activeConfluences.filter((cid) => cid !== id) })))
-  }
-
-  const addSetup = () => {
-    if (!newSetupName.trim()) return
-    setSetups((p) => [...p, { id: Math.random().toString(36).substr(2, 9), name: newSetupName, activeConfluences: [] }])
-    setNewSetupName("")
-  }
-
-  const toggleConfluenceInSetup = (setupId: string, ruleId: string) => {
-    setSetups((p) => p.map((s) => {
-      if (s.id !== setupId) return s
-      const has = s.activeConfluences.includes(ruleId)
-      return { ...s, activeConfluences: has ? s.activeConfluences.filter((x) => x !== ruleId) : [...s.activeConfluences, ruleId] }
-    }))
-  }
-
-  const removeSetup = (id: string) => setSetups((p) => p.filter((s) => s.id !== id))
-
-  const handleSaveInternal = async () => {
-    if (!name) return toast({ title: "Name Required", description: "Give your strategy a name.", variant: "destructive" })
-    setIsSubmitting(true)
-    try {
-      await onSave({ id: initialData?.id, name, description, rules: confluences, setups })
-      onOpenChange(false)
-    } catch {
-      toast({ title: "Error", description: "Failed to save strategy.", variant: "destructive" })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="max-w-[95vw] md:max-w-[1400px] w-full flex flex-col bg-background p-0 border-l border-border shadow-2xl">
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-border bg-card/50 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2.5 bg-primary/10 rounded-xl text-primary shrink-0">
-              <GitBranch className="w-5 h-5" />
-            </div>
-            <div className="min-w-0">
-              <SheetTitle className="text-xl font-bold tracking-tight">Strategy Engine</SheetTitle>
-              <p className="text-xs text-muted-foreground truncate">Define confluences, then combine them into actionable setups.</p>
-            </div>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button size="sm" onClick={handleSaveInternal} disabled={isSubmitting} className="gap-1.5 font-semibold shadow-sm">
-              {isSubmitting ? <Loader2 className="animate-spin h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
-              Save
-            </Button>
-          </div>
-        </div>
-
-        {/* Split workspace */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* LEFT: Confluence Pool */}
-          <div className="w-full md:w-[420px] border-r border-border flex flex-col bg-card/30">
-            {/* Identity */}
-            <div className="p-5 border-b border-border space-y-3">
-              <div>
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5 block">Strategy Name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. ICT Silver Bullet" className="font-bold text-base h-10 bg-background" />
-              </div>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Core thesis or philosophy..." className="bg-background min-h-[48px] resize-none text-xs leading-relaxed" />
-            </div>
-
-            {/* Pool header */}
-            <div className="px-5 py-3 border-b border-border flex justify-between items-center">
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                <Database className="w-3.5 h-3.5 text-primary" /> Confluence Pool
-              </h3>
-              <Badge variant="secondary" className="text-[10px] font-mono h-5">{confluences.length}</Badge>
-            </div>
-
-            {/* Add confluence */}
-            <div className="p-4 border-b border-border bg-background/50">
-              <div className="flex gap-1.5">
-                <Select value={newConfluenceType} onValueChange={setNewConfluenceType}>
-                  <SelectTrigger className="w-[110px] h-8 text-[11px] font-semibold bg-card border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CONFLUENCE_CATEGORIES.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <span className="flex items-center gap-1.5">
-                          <span className={cn("w-1.5 h-1.5 rounded-full", c.dot)} />
-                          {c.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <div className="flex-1 relative">
-                  <Input value={newConfluenceText} onChange={(e) => setNewConfluenceText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addConfluence()} placeholder="Add factor..." className="h-8 text-xs pr-8 bg-card" />
-                  <Button size="icon" onClick={addConfluence} className="h-6 w-6 absolute right-1 top-1 bg-primary/15 text-primary hover:bg-primary hover:text-primary-foreground rounded-md">
-                    <Plus className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Confluence list */}
-            <ScrollArea className="flex-1">
-              <div className="p-4 space-y-1.5">
-                  {confluences.map((rule, i) => {
-                    const cat = CONFLUENCE_CATEGORIES.find((c) => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
-                    return (
-                      <div key={rule.id} className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm group hover:border-primary/30 transition-colors animate-fade-in-up", cat.border, "bg-card/60")} style={{ animationDelay: `${i * 50}ms` }}>
-                        <span className={cn("w-2 h-2 rounded-full shrink-0", cat.dot)} />
-                        <span className="flex-1 font-medium truncate text-foreground/90 text-xs">{rule.text}</span>
-                        <button onClick={() => removeConfluence(rule.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity p-0.5">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )
-                  })}
-                {confluences.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="p-3 rounded-xl bg-muted/50 mb-3">
-                      <Layers className="w-6 h-6 text-muted-foreground/30" />
-                    </div>
-                    <p className="text-xs font-medium text-muted-foreground">No confluences yet</p>
-                    <p className="text-[10px] text-muted-foreground/60 mt-0.5">Add your raw trading concepts above</p>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-
-          {/* RIGHT: Setup Builder */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="px-6 py-4 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div>
-                <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
-                  <PulseIcon className="w-4 h-4 text-primary" /> Setups
-                </h2>
-                <p className="text-xs text-muted-foreground">Combine confluences into actionable trade setups.</p>
-              </div>
-              <div className="flex gap-2">
-                <Input value={newSetupName} onChange={(e) => setNewSetupName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addSetup()} placeholder="e.g. Silver Bullet" className="w-52 h-8 text-xs bg-card" />
-                <Button size="sm" onClick={addSetup} className="gap-1.5 h-8 text-xs shrink-0">
-                  <Plus className="w-3.5 h-3.5" /> Add
-                </Button>
-              </div>
-            </div>
-
-            <ScrollArea className="flex-1">
-              <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
-                  {setups.map((setup, i) => (
-                    <div key={setup.id} className="flex flex-col bg-card border border-border rounded-xl overflow-hidden animate-fade-in-up" style={{ animationDelay: `${i * 80}ms` }}>
-                      <div className="px-4 py-3 border-b border-border flex justify-between items-center">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="p-1.5 bg-primary/10 text-primary rounded-lg shrink-0">
-                            <Target className="w-3.5 h-3.5" />
-                          </div>
-                          <span className="font-bold text-sm truncate">{setup.name}</span>
-                          {setup.activeConfluences.length > 0 && (
-                            <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] h-5 shrink-0">{setup.activeConfluences.length} active</Badge>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={() => removeSetup(setup.id)} className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                      <div className="p-3 space-y-1">
-                        {confluences.length === 0 ? (
-                          <div className="text-center py-6 text-xs text-muted-foreground/60 italic">Add confluences to the pool first</div>
-                        ) : (
-                          confluences.map((rule) => {
-                            const isActive = setup.activeConfluences.includes(rule.id)
-                            const cat = CONFLUENCE_CATEGORIES.find((c) => c.id === (rule as any).category) || CONFLUENCE_CATEGORIES[0]
-                            return (
-                              <div key={rule.id} onClick={() => toggleConfluenceInSetup(setup.id, rule.id)} className={cn("flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer transition-all select-none text-xs", isActive ? "bg-primary/5 border-primary/30" : "bg-transparent border-transparent hover:bg-muted/50 opacity-50 hover:opacity-80")}>
-                                <div className={cn("w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors", isActive ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/25")}>
-                                  {isActive && <Check className="w-2.5 h-2.5" />}
-                                </div>
-                                <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", cat.dot)} />
-                                <span className={cn("font-medium truncate", isActive ? "text-foreground" : "text-muted-foreground")}>{rule.text}</span>
-                              </div>
-                            )
-                          })
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                {setups.length === 0 && (
-                  <div className="col-span-full flex flex-col items-center justify-center py-20">
-                    <div className="p-4 rounded-2xl bg-muted/30 mb-4">
-                      <LayoutGrid className="w-8 h-8 text-muted-foreground/25" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-foreground">No setups yet</h3>
-                    <p className="text-xs text-muted-foreground mt-1 max-w-xs text-center leading-relaxed">Create trade setups like "Silver Bullet" or "London Killzone" by combining your confluences.</p>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
   )
 }
 
@@ -616,7 +365,7 @@ export default function PlaybookPage() {
                 <LayersIcon className="w-4 h-4 text-primary" /> Ecosystem Map
               </h2>
             </div>
-            <EnhancedVisualMap strategies={strategies} />
+            <EnhancedVisualMap strategies={strategies as any} />
             <div className="mt-6">
               <VisualMap className="w-full shadow-sm border-border" />
             </div>
@@ -624,7 +373,7 @@ export default function PlaybookPage() {
         )}
       </div>
 
-      <StrategyEngine
+      <StrategyDesigner
         open={isBuilderOpen}
         onOpenChange={setIsBuilderOpen}
         onSave={handleSave}

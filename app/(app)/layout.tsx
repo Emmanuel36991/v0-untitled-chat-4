@@ -2,6 +2,7 @@ import type React from "react"
 import { Navbar } from "@/components/layout/navbar"
 import { AppFooter } from "@/components/layout/app-footer"
 import { Toaster } from "@/components/ui/toaster"
+import { ThemeSyncFromUserConfig } from "@/components/theme-sync-from-config"
 import { cn } from "@/lib/utils"
 
 // AI Integration Imports
@@ -34,6 +35,7 @@ export default async function AppLayout({
 
   return (
     <div className={cn("flex flex-col min-h-screen bg-background text-foreground antialiased")}>
+      <ThemeSyncFromUserConfig />
       <Navbar />
       <main className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 overflow-x-hidden relative">
         {children}

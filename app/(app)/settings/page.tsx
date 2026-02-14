@@ -74,23 +74,20 @@ const PRESET_STRATEGIES: Strategy[] = [
 
 // --- COMPONENTS ---
 
-function ThemeSelector() {
+function ThemeSelector({ onSaveTheme }: { onSaveTheme?: (theme: "light" | "dark" | "system") => void }) {
   const { setTheme, theme, resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // Avoid hydration mismatch
   useEffect(() => setMounted(true), [])
 
-  if (!mounted) return <div className="h-24 w-full bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl" />
-
-  const activeTheme = theme === "system" ? "system" : resolvedTheme
+  if (!mounted) return <div className="h-24 w-full bg-muted animate-pulse rounded-xl" />
 
   return (
     <div className="grid grid-cols-3 gap-4">
       {[
-        { name: "light", label: "Light", icon: Sun },
-        { name: "dark", label: "Dark", icon: Moon },
-        { name: "system", label: "System", icon: Monitor },
+        { name: "light" as const, label: "Light", icon: Sun },
+        { name: "dark" as const, label: "Dark", icon: Moon },
+        { name: "system" as const, label: "System", icon: Monitor },
       ].map((t) => {
         const Icon = t.icon
         const isActive = theme === t.name
@@ -99,18 +96,19 @@ function ThemeSelector() {
           <button
             key={t.name}
             onClick={() => {
-                setTheme(t.name)
-                toast.success(`Theme set to ${t.label}`)
+              setTheme(t.name)
+              onSaveTheme?.(t.name)
+              toast.success(`Theme set to ${t.label}. It will sync across all your devices.`)
             }}
             className={cn(
-              "flex flex-col items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all duration-200",
+              "flex flex-col items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 card-enhanced",
               isActive
-                ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 ring-1 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-950"
-                : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900"
+                ? "border-primary bg-primary/10 text-primary ring-2 ring-primary ring-offset-2 ring-offset-background"
+                : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
-            <div className={cn("p-2 rounded-full", isActive ? "bg-indigo-100 dark:bg-indigo-900" : "bg-slate-100 dark:bg-slate-800")}>
-               <Icon className="w-5 h-5" />
+            <div className={cn("p-2 rounded-full", isActive ? "bg-primary/20" : "bg-muted")}>
+              <Icon className="w-5 h-5" />
             </div>
             <span className="text-xs font-bold">{t.label}</span>
           </button>
@@ -851,7 +849,7 @@ export default function SettingsPage() {
                  <CardDescription>Select a theme that fits your trading environment.</CardDescription>
                </CardHeader>
                <CardContent>
-                  <ThemeSelector />
+                  <ThemeSelector onSaveTheme={(theme) => updateConfig({ theme })} />
                </CardContent>
             </Card>
           </TabsContent>

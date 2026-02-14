@@ -70,6 +70,8 @@ export interface PrivacyPreferences {
   deletionRequestedAt?: string | null
 }
 
+export type ThemePreference = "light" | "dark" | "system"
+
 export interface UserConfiguration {
   version: number
   userProfile: UserProfile
@@ -77,6 +79,8 @@ export interface UserConfiguration {
   notificationPreferences: NotificationPreferences
   privacyPreferences: PrivacyPreferences
   profileSetupComplete: boolean
+  /** Persisted theme; synced across devices. Default "dark". */
+  theme?: ThemePreference
 }
 
 export const LATEST_CONFIG_VERSION = 1
@@ -84,6 +88,7 @@ export const USER_CONFIG_STORAGE_KEY = "tradeTrackUserConfig"
 
 export const DEFAULT_USER_CONFIGURATION: UserConfiguration = {
   version: LATEST_CONFIG_VERSION,
+  theme: "dark",
   userProfile: {},
   tradingPreferences: {
     showAllConceptsInForm: false,

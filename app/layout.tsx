@@ -39,8 +39,8 @@ export default function RootLayout({
         <div id="app-root">
           <Providers
             attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
+            defaultTheme="dark"
+            enableSystem={true}
             disableTransitionOnChange
             storageKey="concentrade-theme"
           >

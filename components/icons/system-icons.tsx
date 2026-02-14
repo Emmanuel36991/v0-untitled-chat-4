@@ -1,15 +1,15 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-// import { motion } from "framer-motion" // Optional for future animations
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
     className?: string
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SYSTEM ICONS — BESPOKE FINANCIAL UI
-// Visual DNA: 1.5px Stroke, Rounded Caps, Lucide-Compatible Sizing
+// SYSTEM ICONS — SLEEK & PREMIUM DESIGN SYSTEM
+// Grid: 24×24 · Stroke: 1.5px · Corners: 2px · Broken-line depth · Open shapes
+// Visual DNA: Linear / Vercel / Stripe aesthetic
 // ══════════════════════════════════════════════════════════════════════════════
 
 const SvgTemplate = ({ className, children, ...props }: IconProps) => (
@@ -30,218 +30,352 @@ const SvgTemplate = ({ className, children, ...props }: IconProps) => (
 
 // ── NAVIGATION ICONS ──────────────────────────────────────────────────────────
 
+/**
+ * Dashboard — Bento Grid Layout
+ * Asymmetric bento-grid with broken intersections for depth.
+ * The gap between cells creates visual breathing room.
+ */
 export function DashboardIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <rect x="3" y="3" width="7" height="7" rx="2" />
-            <rect x="14" y="3" width="7" height="7" rx="2" strokeDasharray="4 2" />
-            <rect x="14" y="14" width="7" height="7" rx="2" />
-            <rect x="3" y="14" width="7" height="7" rx="2" />
-            <path d="M10 10 L14 14" opacity="0.5" />
+            {/* Top-left: wide cell */}
+            <rect x="3" y="3" width="10" height="7" rx="2" />
+            {/* Top-right: square cell */}
+            <rect x="15" y="3" width="6" height="7" rx="2" />
+            {/* Bottom-left: square cell */}
+            <rect x="3" y="12" width="6" height="9" rx="2" />
+            {/* Bottom-right: wide cell */}
+            <rect x="11" y="12" width="10" height="9" rx="2" />
+            {/* Subtle data dots inside bottom-right cell for depth */}
+            <circle cx="15" cy="17" r="0.75" fill="currentColor" stroke="none" />
+            <circle cx="17.5" cy="17" r="0.75" fill="currentColor" stroke="none" opacity="0.5" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Trades — Sleek Tabular Ledger
+ * Horizontal ruled lines with left accent marks.
+ * Broken lines at varying lengths create a data-table feel.
+ */
 export function TradeLedgerIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <path d="M22 6l-10 7L2 6" />
-            <path d="M7 15h10" opacity="0.5" />
-            <path d="M7 11h5" opacity="0.5" />
+            {/* Vertical left rail — open at top */}
+            <path d="M4 6v14" opacity="0.3" />
+            {/* Row lines with varying lengths for realism */}
+            <line x1="7" y1="7" x2="20" y2="7" />
+            <line x1="7" y1="11" x2="17" y2="11" opacity="0.6" />
+            <line x1="7" y1="15" x2="20" y2="15" />
+            <line x1="7" y1="19" x2="15" y2="19" opacity="0.6" />
+            {/* Left accent ticks — broken from the rail for depth */}
+            <line x1="4" y1="7" x2="5.5" y2="7" />
+            <line x1="4" y1="11" x2="5.5" y2="11" />
+            <line x1="4" y1="15" x2="5.5" y2="15" />
+            <line x1="4" y1="19" x2="5.5" y2="19" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Analytics — Smooth Ascending Curve
+ * A gentle bezier curve ascending right with a vertical Y-axis.
+ * Open at the end to suggest continuation.
+ */
 export function AnalyticsIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M3 17l6-6 4 4 8-8" />
-            <path d="M14 7h7v7" />
-            <path d="M3 21h18" opacity="0.2" />
+            {/* Y-axis — open at top (no cap) */}
+            <path d="M3 20V5" />
+            {/* X-axis — open at right */}
+            <path d="M3 20h18" opacity="0.3" />
+            {/* Smooth ascending bezier curve */}
+            <path d="M4 17C6 17 8 16 10 14S13 9 16 7c1.5-1 3-1.5 5-1.5" />
+            {/* Subtle area hint below curve */}
+            <path d="M4 17C6 17 8 16 10 14S13 9 16 7c1.5-1 3-1.5 5-1.5V20H4z" fill="currentColor" opacity="0.04" stroke="none" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Playbook — Geometric Blueprint / Open Book
+ * Two pages with precise schematic lines and a node-connection detail.
+ */
 export function PlaybookIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            <path d="M12 8v8" opacity="0.5" />
-            <path d="M9 12h6" opacity="0.5" />
+            {/* Spine */}
+            <path d="M12 4v16" opacity="0.3" />
+            {/* Left page — open at top for breathing */}
+            <path d="M4 6c2-0.5 5-1 8-0.5" />
+            <path d="M4 6v14c2-0.5 5-1 8-0.5" />
+            <path d="M12 19.5V4" opacity="0" />
+            {/* Right page */}
+            <path d="M20 6c-2-0.5-5-1-8-0.5" />
+            <path d="M20 6v14c-2-0.5-5-1-8-0.5" />
+            {/* Left page: schematic lines */}
+            <line x1="6.5" y1="10" x2="10" y2="10" opacity="0.4" />
+            <line x1="6.5" y1="13" x2="9" y2="13" opacity="0.4" />
+            {/* Right page: flow diagram dots */}
+            <circle cx="15" cy="10" r="1" />
+            <circle cx="18" cy="13" r="1" />
+            <path d="M15.7 10.7L17.3 12.3" opacity="0.5" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Psychology — Neural Node Network
+ * Abstract mind-as-network: central node with orbital connections.
+ * Gaps at intersections create depth.
+ */
 export function PsychologyIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M12 5a7 7 0 0 1 7 7c0 2.5-1.5 5.5-3 6.5" />
-            <path d="M12 5a7 7 0 0 0-7 7c0 2.5 1.5 5.5 3 6.5" />
-            <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
-            <path d="M12 15v7" />
+            {/* Central node */}
+            <circle cx="12" cy="12" r="2.5" />
+            {/* Orbital nodes */}
+            <circle cx="5" cy="7" r="1.5" />
+            <circle cx="19" cy="7" r="1.5" />
+            <circle cx="5" cy="18" r="1.5" />
+            <circle cx="19" cy="18" r="1.5" />
+            {/* Connection lines — broken/gapped where they meet center node */}
+            <path d="M6.3 8L9.8 10.3" opacity="0.5" />
+            <path d="M17.7 8L14.2 10.3" opacity="0.5" />
+            <path d="M6.3 17L9.8 13.7" opacity="0.5" />
+            <path d="M17.7 17L14.2 13.7" opacity="0.5" />
+            {/* Cross connections between outer nodes — subtle */}
+            <path d="M6.5 7h11" opacity="0.15" />
+            <path d="M6.5 18h11" opacity="0.15" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Settings — Fine-Tuned Slider Controls
+ * Three vertical tracks with slider thumbs at different positions.
+ * Broken tracks at the thumb create the signature gap/depth effect.
+ */
+export function SettingsIcon(props: IconProps) {
+    return (
+        <SvgTemplate {...props}>
+            {/* Track 1 — thumb at top */}
+            <line x1="6" y1="4" x2="6" y2="7" />
+            <line x1="6" y1="11" x2="6" y2="20" />
+            <circle cx="6" cy="9" r="2" />
+            {/* Track 2 — thumb at bottom */}
+            <line x1="12" y1="4" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12" y2="20" />
+            <circle cx="12" cy="15" r="2" />
+            {/* Track 3 — thumb at middle */}
+            <line x1="18" y1="4" x2="18" y2="9" />
+            <line x1="18" y1="13" x2="18" y2="20" />
+            <circle cx="18" cy="11" r="2" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Add Trade — Plus with precision crosshair feel
+ */
+export function AddTradeIcon(props: IconProps) {
+    return (
+        <SvgTemplate {...props}>
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Backtest — Clock with rewind arrow
+ */
 export function BacktestIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
-            <path d="M12 7v5l4 2" />
+            <path d="M12 7v5l3 2" />
         </SvgTemplate>
     )
 }
 
-export function SettingsIcon(props: IconProps) {
-    return (
-        <SvgTemplate {...props}>
-            <path d="M6 10V5" />
-            <path d="M6 20v-6" />
-            <path d="M12 10V5" />
-            <path d="M12 20v-6" />
-            <path d="M18 10V5" />
-            <path d="M18 20v-6" />
-            <circle cx="6" cy="12" r="2" />
-            <circle cx="12" cy="12" r="2" />
-            <circle cx="18" cy="12" r="2" />
-        </SvgTemplate>
-    )
-}
-
-export function AddTradeIcon(props: IconProps) {
-    return (
-        <SvgTemplate {...props}>
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-        </SvgTemplate>
-    )
-}
-
-// ── STRATEGY & METAPHOR REPLACEMENTS (THE BESPOKE 5) ──────────────────────────
+// ── STRATEGY & FINANCIAL ICONS ──────────────────────────────────────────────
 
 /**
- * REPLACES: Rocket (🚀)
- * METAPHOR: Price breaking through resistance
+ * Breakout — Arrow piercing through resistance line
+ * A horizontal resistance line with a bold arrow breaking upward through it.
+ * The gap/break in the line where the arrow crosses is the signature detail.
  */
 export function BreakoutIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M3 15h18" strokeDasharray="4 2" opacity="0.6" />
-            <path d="M7 15v4" opacity="0.4" />
-            <path d="M12 11v8" opacity="0.4" />
-            <path d="M17 15v-8" />
-            <path d="M17 7l-3 3" />
-            <path d="M17 7l3 3" />
+            {/* Resistance line — broken where arrow pierces */}
+            <line x1="3" y1="13" x2="9.5" y2="13" opacity="0.5" />
+            <line x1="14.5" y1="13" x2="21" y2="13" opacity="0.5" />
+            {/* Price action approaching from below */}
+            <path d="M5 19l4-3 3 1.5" opacity="0.4" />
+            {/* Breakout arrow — piercing through */}
+            <path d="M12 16V5" />
+            <path d="M8.5 8.5L12 5l3.5 3.5" />
         </SvgTemplate>
     )
 }
 
 /**
- * REPLACES: Zap (⚡) for Scalping
- * METAPHOR: High frequency, jagged price tick
+ * Scalp — Lightning-fast execution impulse
+ * A sharp, angular bolt representing speed and precision.
+ * Open shape with clean geometric segments.
  */
 export function ScalpIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M22 2L11 13" />
-            <path d="M22 2L15 22L11 13" />
-            <path d="M11 13L2 13" />
+            {/* Sharp angular bolt — 3 precise segments */}
+            <path d="M13 3L7 12h4.5L9 21l9-11h-5l2-7z" />
         </SvgTemplate>
     )
 }
 
 /**
- * REPLACES: Award/Trophy (🎖️) for Profit/Wins
- * METAPHOR: Rising stack / Ledger profit
+ * Profit Chart — Stepped Ascent
+ * Clean rising steps with an upward trajectory.
+ * Open at top-right to suggest continued growth.
  */
 export function ProfitChartIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <rect x="3" y="13" width="6" height="8" rx="1" />
-            <rect x="15" y="3" width="6" height="18" rx="1" />
-            <path d="M9 13l6-6" opacity="0.5" strokeDasharray="2 2" />
+            {/* Baseline */}
+            <path d="M3 20h18" opacity="0.25" />
+            {/* Stepped ascent — each step higher */}
+            <path d="M4 16h3v-3h3v-3h3v-3h3V4h4" />
+            {/* Subtle filled area below steps */}
+            <path d="M4 16h3v-3h3v-3h3v-3h3V4h4v16H4z" fill="currentColor" opacity="0.04" stroke="none" />
         </SvgTemplate>
     )
 }
 
 /**
- * REPLACES: Flame (🔥) for Momentum
- * METAPHOR: Increasing velocity/acceleration arrows
+ * Momentum Flow — Smooth flowing stream lines
+ * Three parallel bezier curves flowing rightward with increasing intensity.
+ * Open ends for a sense of continuous motion.
  */
 export function MomentumFlowIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            {/* Top stream — subtle */}
+            <path d="M3 8c3 0 5-2 8-2s5 2 8 2" opacity="0.35" />
+            {/* Middle stream — primary */}
+            <path d="M3 12c3 0 5-3 8-3s5 3 8 3" />
+            {/* Bottom stream — subtle */}
+            <path d="M3 16c3 0 5-2 8-2s5 2 8 2" opacity="0.35" />
+            {/* Trailing speed lines at right */}
+            <path d="M19 10l2.5-1" opacity="0.25" />
+            <path d="M19 14l2.5 1" opacity="0.25" />
         </SvgTemplate>
     )
 }
 
 /**
- * REPLACES: Target (🎯) for Mean Reversion
- * METAPHOR: Price returning to center mean
+ * Mean Reversion — Crosshair target with return arrows
+ * Central crosshair with small arrows converging inward.
+ * Gaps at crosshair intersections for the broken-line depth effect.
  */
 export function MeanReversionIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M3 12h18" opacity="0.3" />
-            <path d="M3 7c2 0 3 5 5 5s3-5 5-5 3 5 5 5 3-5 5-5" />
-            <path d="M12 12v3" />
-            <circle cx="12" cy="16" r="1" fill="currentColor" />
+            {/* Outer ring */}
+            <circle cx="12" cy="12" r="8" opacity="0.3" />
+            {/* Inner ring */}
+            <circle cx="12" cy="12" r="3" />
+            {/* Crosshair lines — broken at inner circle */}
+            <line x1="12" y1="4" x2="12" y2="9" />
+            <line x1="12" y1="15" x2="12" y2="20" />
+            <line x1="4" y1="12" x2="9" y2="12" />
+            <line x1="15" y1="12" x2="20" y2="12" />
+            {/* Return arrows converging to center */}
+            <path d="M6 6l2.5 2.5" opacity="0.5" />
+            <path d="M18 6l-2.5 2.5" opacity="0.5" />
+            <path d="M6 18l2.5-2.5" opacity="0.5" />
+            <path d="M18 18l-2.5-2.5" opacity="0.5" />
+            {/* Center dot */}
+            <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
         </SvgTemplate>
     )
 }
-
 
 // ── AI & ADVANCED FEATURES ────────────────────────────────────────────────────
 
 /**
- * REPLACES: Sparkles/Generic Brain
- * METAPHOR: Neural network nodes connecting
+ * Neural Spark — AI / Neural network abstraction
+ * Central hub with radiating connection nodes.
  */
 export function NeuralSparkIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <circle cx="12" cy="12" r="3" />
-            <circle cx="6" cy="6" r="1.5" opacity="0.7" />
-            <circle cx="18" cy="6" r="1.5" opacity="0.7" />
-            <circle cx="6" cy="18" r="1.5" opacity="0.7" />
-            <circle cx="18" cy="18" r="1.5" opacity="0.7" />
-            <path d="M8.5 8.5l1.5 1.5" opacity="0.4" />
-            <path d="M14 14l1.5 1.5" opacity="0.4" />
-            <path d="M15.5 8.5l-1.5 1.5" opacity="0.4" />
-            <path d="M8.5 15.5l1.5-1.5" opacity="0.4" />
+            {/* Central hub */}
+            <circle cx="12" cy="12" r="2.5" />
+            {/* Orbital nodes */}
+            <circle cx="12" cy="4" r="1.5" />
+            <circle cx="19" cy="8" r="1.5" />
+            <circle cx="19" cy="16" r="1.5" />
+            <circle cx="12" cy="20" r="1.5" />
+            <circle cx="5" cy="16" r="1.5" />
+            <circle cx="5" cy="8" r="1.5" />
+            {/* Connections — broken at node boundaries */}
+            <path d="M12 5.5V9.5" opacity="0.4" />
+            <path d="M17.7 8.8L14.2 10.6" opacity="0.4" />
+            <path d="M17.7 15.2L14.2 13.4" opacity="0.4" />
+            <path d="M12 18.5V14.5" opacity="0.4" />
+            <path d="M6.3 15.2L9.8 13.4" opacity="0.4" />
+            <path d="M6.3 8.8L9.8 10.6" opacity="0.4" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Pattern Eye — Market pattern recognition
+ */
 export function PatternEyeIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
             <circle cx="12" cy="12" r="3" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Compass — Navigation / Guides
+ */
 export function CompassIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <circle cx="12" cy="12" r="10" />
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            <circle cx="12" cy="12" r="9" />
+            {/* Cardinal ticks */}
+            <line x1="12" y1="3" x2="12" y2="5" />
+            <line x1="12" y1="19" x2="12" y2="21" />
+            <line x1="3" y1="12" x2="5" y2="12" />
+            <line x1="19" y1="12" x2="21" y2="12" />
+            {/* Diamond needle */}
+            <polygon points="12,6 14,12 12,18 10,12" fill="currentColor" stroke="none" opacity="0.15" />
+            <path d="M12 6l2 6-2 6-2-6z" />
+            <circle cx="12" cy="12" r="1.5" />
         </SvgTemplate>
     )
 }
 
+/**
+ * Social — Trading community
+ */
 export function SocialIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            <circle cx="9" cy="7" r="3" />
+            <path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" />
+            {/* Second person — offset, partial for depth */}
+            <circle cx="17" cy="8" r="2.5" />
+            <path d="M19 21v-1.5a4 4 0 0 0-2-3.5" opacity="0.5" />
         </SvgTemplate>
     )
 }

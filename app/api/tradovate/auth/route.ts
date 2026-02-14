@@ -5,13 +5,13 @@ import {
   TradovateNetworkError,
   TradovateRateLimitError,
 } from "@/lib/tradovate/enhanced-api"
+import { logger } from "@/lib/logger"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { username, password, isDemo = false } = body
-
-    console.log(`API: Authenticating ${username} on ${isDemo ? "DEMO" : "LIVE"} environment`)
+    logger.info(`API: Authenticating ${username} on ${isDemo ? "DEMO" : "LIVE"} environment`)
 
     if (!username || !password) {
       return NextResponse.json(
@@ -29,8 +29,7 @@ export async function POST(request: NextRequest) {
 
     // Attempt authentication
     const session = await api.authenticate(username, password)
-
-    console.log(`API: Authentication successful for ${username}`)
+    logger.info(`API: Authentication successful for ${username}`)
 
     return NextResponse.json({
       success: true,
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error("API: Authentication error:", error)
+    logger.error("API: Authentication error:", error)
 
     // Handle specific error types
     if (error instanceof TradovateAuthError) {

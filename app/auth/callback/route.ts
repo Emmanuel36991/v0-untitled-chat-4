@@ -1,16 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { getSafeRedirectUrl } from "@/lib/security/redirect-validation"
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
   // "next" is where to redirect after successful login (default to dashboard)
-  const next = searchParams.get("next") ?? "/dashboard"
+  const next = searchParams.get("next")
+  const safeNext = getSafeRedirectUrl(next, "/dashboard")
 
   if (code) {
-    const cookieStore = cookies()
-    
+    const cookieStore = await cookies()
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,13 +30,13 @@ export async function GET(request: NextRequest) {
         },
       }
     )
-    
+
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error) {
       // Check if user has completed profile setup
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (user) {
         // Check if user_config exists and profileSetupComplete is true
         const { data: configData } = await supabase
@@ -42,21 +44,21 @@ export async function GET(request: NextRequest) {
           .select("config")
           .eq("user_id", user.id)
           .maybeSingle()
-        
+
         // If no config record exists, this is a new user - redirect to profile setup
         // If config exists but profileSetupComplete is false, also redirect to profile setup
         const config = configData?.config as any
         const profileSetupComplete = config?.profileSetupComplete ?? false
-        
+
         if (!configData || !profileSetupComplete) {
           return NextResponse.redirect(`${origin}/signup/profile-setup?step=1`)
         }
       }
-      
+
       // Profile setup is complete, proceed to dashboard
-      return NextResponse.redirect(`${origin}${next}`)
+      return NextResponse.redirect(`${origin}${safeNext}`)
     }
-    
+
     // Authentication error - redirect to login with error
     return NextResponse.redirect(`${origin}/login?error=Could not authenticate user`)
   }

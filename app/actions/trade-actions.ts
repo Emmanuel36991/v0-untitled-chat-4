@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { Trade, NewTradeInput } from "@/types"
 import { revalidatePath } from "next/cache"
 import { tradeSchema } from "@/lib/validators/trade"
+import { logger } from "@/lib/logger"
 
 // 1. MAP DB ROW TO TRADE OBJECT
 function mapRowToTrade(row: any): Trade {
@@ -173,43 +174,42 @@ export async function getTrades(): Promise<Trade[]> {
       .order("date", { ascending: true })
 
     if (error) {
-      console.error("Error fetching trades:", error)
+      logger.error("Error fetching trades:", error)
       return []
     }
 
     return data?.map(mapRowToTrade) || []
   } catch (error) {
-    console.error("Exception in getTrades:", error)
+    logger.error("Exception in getTrades:", error)
     return []
   }
 }
 
 // 4. ADD TRADE
 export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult> {
-  console.log("----------------------------------------------------------------")
-  console.log("[SERVER ACTION] addTrade called")
-  console.log("[SERVER ACTION] Input:", JSON.stringify(trade, null, 2))
+  logger.info("[SERVER ACTION] addTrade called")
+  logger.debug("[SERVER ACTION] Input:", JSON.stringify(trade, null, 2))
 
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      console.error("[SERVER ACTION] Error: User not authenticated")
+      logger.error("[SERVER ACTION] Error: User not authenticated")
       return { success: false, error: "User not authenticated" }
     }
-    console.log("[SERVER ACTION] User authenticated:", user.id)
+    logger.info("[SERVER ACTION] User authenticated:", user.id)
 
     // Validate input with Zod
     const validationResult = tradeSchema.safeParse(trade)
     if (!validationResult.success) {
-      console.error("[SERVER ACTION] Validation error:", JSON.stringify(validationResult.error, null, 2))
+      logger.error("[SERVER ACTION] Validation error:", JSON.stringify(validationResult.error, null, 2))
       return { success: false, error: "Invalid trade data: " + validationResult.error.issues.map(i => i.message).join(", ") }
     }
 
     // Use validated data
     const validTrade = validationResult.data
-    console.log("[SERVER ACTION] Validation successful")
+    logger.info("[SERVER ACTION] Validation successful")
 
     const calculatedOutcome = (validTrade.pnl || 0) > 0 ? 'win' : (validTrade.pnl || 0) < 0 ? 'loss' : 'breakeven'
 
@@ -219,17 +219,16 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
       outcome: validTrade.outcome || calculatedOutcome,
       pnl: validTrade.pnl || 0
     }
-    console.log("[SERVER ACTION] DB Payload:", JSON.stringify(dbPayload, null, 2))
+    logger.debug("[SERVER ACTION] DB Payload:", JSON.stringify(dbPayload, null, 2))
 
     const { data, error } = await supabase.from("trades").insert(dbPayload).select().single()
 
     if (error) {
-      console.error("[SERVER ACTION] Database insert error:", JSON.stringify(error, null, 2))
+      logger.error("[SERVER ACTION] Database insert error:", JSON.stringify(error, null, 2))
       return { success: false, error: `Failed to add trade: ${error.message} (Code: ${error.code})` }
     }
 
-    console.log("[SERVER ACTION] Trade added successfully:", data.id)
-    console.log("----------------------------------------------------------------")
+    logger.info("[SERVER ACTION] Trade added successfully:", data.id)
 
     revalidatePath("/trades")
     revalidatePath("/dashboard")
@@ -243,7 +242,7 @@ export async function addTrade(trade: NewTradeInput): Promise<SubmitTradeResult>
       message: "Trade logged successfully!"
     }
   } catch (error: any) {
-    console.error("[SERVER ACTION] Exception in addTrade:", error)
+    logger.error("[SERVER ACTION] Exception in addTrade:", error)
     return { success: false, error: `An unexpected error occurred: ${error.message}` }
   }
 }
@@ -267,7 +266,7 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
       .single()
 
     if (error) {
-      console.error("Error updating trade:", error)
+      logger.error("Error updating trade:", error)
       return { success: false, error: error.message }
     }
 
@@ -278,7 +277,7 @@ export async function updateTrade(id: string, trade: Partial<NewTradeInput>): Pr
 
     return { success: true, trade: mapRowToTrade(data), message: "Trade updated successfully!" }
   } catch (error: any) {
-    console.error("Exception in updateTrade:", error)
+    logger.error("Exception in updateTrade:", error)
     return { success: false, error: error.message }
   }
 }
@@ -293,7 +292,7 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
     const { error } = await supabase.from("trades").delete().eq("id", id).eq("user_id", user.id)
 
     if (error) {
-      console.error("Error deleting trade:", error)
+      logger.error("Error deleting trade:", error)
       return { success: false, error: error.message }
     }
 
@@ -304,7 +303,7 @@ export async function deleteTrade(id: string): Promise<SubmitTradeResult> {
 
     return { success: true, message: "Trade deleted successfully!" }
   } catch (error: any) {
-    console.error("Exception in deleteTrade:", error)
+    logger.error("Exception in deleteTrade:", error)
     return { success: false, error: error.message }
   }
 }
@@ -344,7 +343,7 @@ export async function addMultipleTrades(trades: NewTradeInput[]) {
     const { data, error } = await supabase.from("trades").insert(tradesWithUserId).select()
 
     if (error) {
-      console.error("Error adding multiple trades:", error)
+      logger.error("Error adding multiple trades:", error)
       return { successCount: 0, errorCount: trades.length, error: `Failed to add trades: ${error.message}` }
     }
 
@@ -358,7 +357,7 @@ export async function addMultipleTrades(trades: NewTradeInput[]) {
       errorCount: trades.length - (data?.length || 0),
     }
   } catch (error: any) {
-    console.error("Exception in addMultipleTrades:", error)
+    logger.error("Exception in addMultipleTrades:", error)
     return {
       successCount: 0,
       errorCount: trades.length,
@@ -383,7 +382,7 @@ export async function getTradeById(id: string): Promise<Trade | null> {
 
     return mapRowToTrade(data)
   } catch (error) {
-    console.error("Exception in getTradeById:", error)
+    logger.error("Exception in getTradeById:", error)
     throw error
   }
 }
@@ -424,7 +423,7 @@ export async function logTradePsychology(tradeId: string, data: {
     })
 
     if (error) {
-      console.error("Error logging psychology:", error)
+      logger.error("Error logging psychology:", error)
       return { success: false, error: error.message }
     }
 
@@ -435,7 +434,7 @@ export async function logTradePsychology(tradeId: string, data: {
 
     return { success: true }
   } catch (error: any) {
-    console.error("Exception in logTradePsychology:", error)
+    logger.error("Exception in logTradePsychology:", error)
     return { success: false, error: error.message }
   }
 }

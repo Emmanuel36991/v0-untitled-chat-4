@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import { createClient } from "@supabase/supabase-js"
+import { logger } from "@/lib/logger"
 
 // Use service role key for webhooks since there's no user session
 const supabaseAdmin = createClient(
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   // Verify webhook signature
   if (!verifyWebhookSignature(body, signature, salt, timestamp)) {
-    console.error("Webhook signature verification failed")
+    logger.error("Webhook signature verification failed")
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
   }
 
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     event = JSON.parse(body)
   } catch (err) {
-    console.error("Failed to parse webhook body:", err)
+    logger.error("Failed to parse webhook body:", err)
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
         const subscriptionId = eventData.subscription_id
         const customerId = eventData.customer_id
 
-        console.log(`[v0] Payment succeeded for subscription: ${subscriptionId}`)
+        logger.info(`[v0] Payment succeeded for subscription: ${subscriptionId}`)
 
         if (subscriptionId) {
           // Update subscription status to active
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
             .eq("rapyd_subscription_id", subscriptionId)
 
           if (error) {
-            console.error("Error updating subscription after payment:", error)
+            logger.error("Error updating subscription after payment:", error)
           }
         }
         break
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
       case "CUSTOMER_SUBSCRIPTION_CREATED": {
         const subscription = eventData
 
-        console.log(`[v0] Subscription created: ${subscription.id}`)
+        logger.info(`[v0] Subscription created: ${subscription.id}`)
 
         // Determine tier from plan amount
         const planAmount = subscription.subscription_items?.data?.[0]?.plan?.amount || 0
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
             .eq("user_id", existingSubscription.user_id)
 
           if (error) {
-            console.error("Error creating/updating subscription:", error)
+            logger.error("Error creating/updating subscription:", error)
           }
         }
         break
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
       case "SUBSCRIPTION_UPDATED": {
         const subscription = eventData
 
-        console.log(`[v0] Subscription updated: ${subscription.id}`)
+        logger.info(`[v0] Subscription updated: ${subscription.id}`)
 
         // Determine tier from plan amount
         const planAmount = subscription.subscription_items?.data?.[0]?.plan?.amount || 0
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
           .eq("rapyd_subscription_id", subscription.id)
 
         if (error) {
-          console.error("Error updating subscription:", error)
+          logger.error("Error updating subscription:", error)
         }
         break
       }
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
       case "SUBSCRIPTION_CANCELED": {
         const subscription = eventData
 
-        console.log(`[v0] Subscription canceled: ${subscription.id}`)
+        logger.info(`[v0] Subscription canceled: ${subscription.id}`)
 
         const { error } = await supabaseAdmin
           .from("subscriptions")
@@ -176,7 +177,7 @@ export async function POST(request: NextRequest) {
           .eq("rapyd_subscription_id", subscription.id)
 
         if (error) {
-          console.error("Error canceling subscription:", error)
+          logger.error("Error canceling subscription:", error)
         }
         break
       }
@@ -185,7 +186,7 @@ export async function POST(request: NextRequest) {
       case "PAYMENT_FAILED": {
         const subscriptionId = eventData.subscription_id
 
-        console.log(`[v0] Payment failed for subscription: ${subscriptionId}`)
+        logger.info(`[v0] Payment failed for subscription: ${subscriptionId}`)
 
         if (subscriptionId) {
           const { error } = await supabaseAdmin
@@ -197,7 +198,7 @@ export async function POST(request: NextRequest) {
             .eq("rapyd_subscription_id", subscriptionId)
 
           if (error) {
-            console.error("Error updating subscription status after failed payment:", error)
+            logger.error("Error updating subscription status after failed payment:", error)
           }
         }
         break
@@ -206,7 +207,7 @@ export async function POST(request: NextRequest) {
       case "SUBSCRIPTION_PAST_DUE": {
         const subscription = eventData
 
-        console.log(`[v0] Subscription past due: ${subscription.id}`)
+        logger.info(`[v0] Subscription past due: ${subscription.id}`)
 
         const { error } = await supabaseAdmin
           .from("subscriptions")
@@ -217,7 +218,7 @@ export async function POST(request: NextRequest) {
           .eq("rapyd_subscription_id", subscription.id)
 
         if (error) {
-          console.error("Error updating subscription to past_due:", error)
+          logger.error("Error updating subscription to past_due:", error)
         }
         break
       }
@@ -225,7 +226,7 @@ export async function POST(request: NextRequest) {
       case "SUBSCRIPTION_UNPAID": {
         const subscription = eventData
 
-        console.log(`[v0] Subscription unpaid: ${subscription.id}`)
+        logger.info(`[v0] Subscription unpaid: ${subscription.id}`)
 
         const { error } = await supabaseAdmin
           .from("subscriptions")
@@ -236,16 +237,16 @@ export async function POST(request: NextRequest) {
           .eq("rapyd_subscription_id", subscription.id)
 
         if (error) {
-          console.error("Error updating subscription to unpaid:", error)
+          logger.error("Error updating subscription to unpaid:", error)
         }
         break
       }
 
       default:
-        console.log(`[v0] Unhandled Rapyd webhook event type: ${eventType}`)
+        logger.warn(`[v0] Unhandled Rapyd webhook event type: ${eventType}`)
     }
   } catch (error) {
-    console.error("Error processing Rapyd webhook:", error)
+    logger.error("Error processing Rapyd webhook:", error)
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 })
   }
 

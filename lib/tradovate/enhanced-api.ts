@@ -9,6 +9,7 @@ import type {
   TradovateMasterInstrument,
   TradovateSession,
 } from "@/types/tradovate"
+import { logger } from "@/lib/logger"
 
 export class TradovateError extends Error {
   constructor(
@@ -73,7 +74,7 @@ export class EnhancedTradovateAPI {
   constructor(isDemo = false) {
     this.isDemo = isDemo
     this.baseUrl = isDemo ? TRADOVATE_CONFIG.DEMO_URL : TRADOVATE_CONFIG.LIVE_URL
-    console.log(`EnhancedTradovateAPI initialized for ${isDemo ? "DEMO" : "LIVE"} environment: ${this.baseUrl}`)
+    logger.debug(`EnhancedTradovateAPI initialized for ${isDemo ? "DEMO" : "LIVE"} environment: ${this.baseUrl}`)
   }
 
   private async rateLimitCheck(): Promise<void> {
@@ -83,7 +84,7 @@ export class EnhancedTradovateAPI {
     // Simple rate limiting: max 1 request per second
     if (timeSinceLastRequest < 1000) {
       const waitTime = 1000 - timeSinceLastRequest
-      console.log(`Rate limiting: waiting ${waitTime}ms`)
+      logger.debug(`Rate limiting: waiting ${waitTime}ms`)
       await new Promise((resolve) => setTimeout(resolve, waitTime))
     }
 
@@ -100,7 +101,7 @@ export class EnhancedTradovateAPI {
     await this.rateLimitCheck()
 
     const url = `${this.baseUrl}${endpoint}`
-    console.log(`Making request to: ${url} (attempt ${retryCount + 1})`)
+    logger.debug(`Making request to: ${url} (attempt ${retryCount + 1})`)
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -119,7 +120,7 @@ export class EnhancedTradovateAPI {
       signal: AbortSignal.timeout(TRADOVATE_CONFIG.TIMEOUT),
     }
 
-    console.log(`Request config:`, {
+    logger.debug(`Request config:`, {
       method: options.method || "GET",
       url,
       headers: { ...headers, Authorization: headers.Authorization ? "[PRESENT]" : "[NONE]" },
@@ -128,7 +129,7 @@ export class EnhancedTradovateAPI {
 
     try {
       const response = await fetch(url, requestConfig)
-      console.log(`Response status: ${response.status} ${response.statusText}`)
+      logger.debug(`Response status: ${response.status} ${response.statusText}`)
 
       // Handle different HTTP status codes
       if (response.status === 429) {
@@ -158,7 +159,7 @@ export class EnhancedTradovateAPI {
           errorData = { error: `HTTP ${response.status}: ${response.statusText}` }
         }
 
-        console.error("API Error:", errorData)
+        logger.error("API Error:", errorData)
         throw new TradovateNetworkError(
           errorData.errorText || errorData.error || `HTTP ${response.status}: ${response.statusText}`,
           response.status,
@@ -166,7 +167,7 @@ export class EnhancedTradovateAPI {
       }
 
       const data = await response.json()
-      console.log("Response data received:", Object.keys(data))
+      logger.debug("Response data received:", Object.keys(data))
       return data
     } catch (error: any) {
       console.error(`Request failed (attempt ${retryCount + 1}):`, error.message)
@@ -177,7 +178,7 @@ export class EnhancedTradovateAPI {
         (error.name === "AbortError" || error.name === "TypeError" || error instanceof TradovateNetworkError)
       ) {
         const delay = TRADOVATE_CONFIG.RETRY_DELAY * Math.pow(2, retryCount)
-        console.log(`Retrying in ${delay}ms...`)
+        logger.warn(`Retrying in ${delay}ms...`)
         await new Promise((resolve) => setTimeout(resolve, delay))
         return this.makeRequest<T>(endpoint, options, requiresAuth, retryCount + 1)
       }
@@ -187,7 +188,7 @@ export class EnhancedTradovateAPI {
   }
 
   async authenticate(username: string, password: string): Promise<TradovateSession> {
-    console.log(`Authenticating user: ${username} on ${this.isDemo ? "DEMO" : "LIVE"} environment`)
+    logger.info(`Authenticating user: ${username} on ${this.isDemo ? "DEMO" : "LIVE"} environment`)
 
     if (!username || !password) {
       throw new TradovateAuthError("Username and password are required")
@@ -251,8 +252,8 @@ export class EnhancedTradovateAPI {
 
     for (const method of authMethods) {
       try {
-        console.log(`Trying authentication method: ${method.name} at ${method.endpoint}`)
-        console.log("Sending payload:", { ...method.payload, password: "[REDACTED]" })
+        logger.info(`Trying authentication method: ${method.name} at ${method.endpoint}`)
+        logger.debug("Sending payload:", { ...method.payload, password: "[REDACTED]" })
 
         const authResponse = await this.makeRequest<TradovateAuthResponse>(
           method.endpoint,
@@ -263,7 +264,7 @@ export class EnhancedTradovateAPI {
           false,
         )
 
-        console.log("Auth response received:", {
+        logger.debug("Auth response received:", {
           userId: authResponse.userId,
           name: authResponse.name,
           hasAccessToken: !!authResponse.accessToken,
@@ -271,37 +272,37 @@ export class EnhancedTradovateAPI {
         })
 
         if (authResponse.errorText) {
-          console.log(`Auth method ${method.name} failed:`, authResponse.errorText)
+          logger.warn(`Auth method ${method.name} failed:`, authResponse.errorText)
           lastError = new TradovateAuthError(authResponse.errorText)
           continue
         }
 
         if (!authResponse.accessToken) {
-          console.log(`Auth method ${method.name} failed: No access token received`)
+          logger.warn(`Auth method ${method.name} failed: No access token received`)
           lastError = new TradovateAuthError("No access token received from Tradovate")
           continue
         }
 
         if (!authResponse.userId) {
-          console.log(`Auth method ${method.name} failed: No user ID received`)
+          logger.warn(`Auth method ${method.name} failed: No user ID received`)
           lastError = new TradovateAuthError("No user ID received from Tradovate")
           continue
         }
 
         // Success!
-        console.log(`Authentication successful with method: ${method.name}`)
+        logger.info(`Authentication successful with method: ${method.name}`)
         this.accessToken = authResponse.accessToken
         this.mdAccessToken = authResponse.mdAccessToken || ""
 
-        console.log("Authentication successful, fetching accounts...")
+        logger.info("Authentication successful, fetching accounts...")
 
         // Fetch user accounts
         let accounts: TradovateAccount[] = []
         try {
           accounts = await this.getAccounts()
-          console.log(`Found ${accounts.length} accounts`)
+          logger.info(`Found ${accounts.length} accounts`)
         } catch (error) {
-          console.warn("Could not fetch accounts:", error)
+          logger.warn("Could not fetch accounts:", error)
           // Continue without accounts - some users might not have account access
         }
 
@@ -317,14 +318,14 @@ export class EnhancedTradovateAPI {
 
         return session
       } catch (error: any) {
-        console.log(`Auth method ${method.name} failed:`, error.message)
+        logger.warn(`Auth method ${method.name} failed:`, error.message)
         lastError = error
         continue
       }
     }
 
     // All methods failed
-    console.error("All authentication methods failed. Last error:", lastError)
+    logger.error("All authentication methods failed. Last error:", lastError)
 
     if (
       lastError instanceof TradovateAuthError ||
@@ -371,6 +372,15 @@ export class EnhancedTradovateAPI {
       "/masterInstrument/list",
     )
     return response.masterInstruments || []
+  }
+
+  async processTradesFromOrders(accountId: number): Promise<any[]> {
+    logger.info(`Processing trades for account ${accountId}`)
+    // This is a placeholder for the actual logic to process trades
+    // In a real implementation, this would fetch orders and fills and combine them
+    const fills = await this.getFills(accountId)
+    logger.info(`Found ${fills.length} fills`)
+    return fills
   }
 
   setTokens(accessToken: string, mdAccessToken: string) {

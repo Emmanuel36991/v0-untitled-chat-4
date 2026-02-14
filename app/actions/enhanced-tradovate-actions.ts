@@ -9,6 +9,7 @@ import {
   TradovateNetworkError,
   TradovateRateLimitError,
 } from "@/lib/tradovate/enhanced-api"
+import { logger } from "@/lib/logger"
 
 const SESSION_COOKIE_NAME = "tradovate_session"
 const SESSION_COOKIE_OPTIONS = {
@@ -28,7 +29,7 @@ export async function authenticateTradovateEnhanced(
   session?: TradovateSession
   errorCode?: string
 }> {
-  console.log(`Enhanced auth: Authenticating ${username} on ${isDemo ? "DEMO" : "LIVE"} environment`)
+  logger.info(`Enhanced auth: Authenticating ${username} on ${isDemo ? "DEMO" : "LIVE"} environment`)
 
   try {
     // Validate inputs
@@ -44,7 +45,7 @@ export async function authenticateTradovateEnhanced(
     const api = new EnhancedTradovateAPI(isDemo)
     const session = await api.authenticate(username.trim(), password)
 
-    console.log("Enhanced auth: Authentication successful, storing session")
+    logger.info("Enhanced auth: Authentication successful, storing session")
 
     // Store session in secure cookie
     const cookieStore = await cookies()
@@ -52,7 +53,7 @@ export async function authenticateTradovateEnhanced(
 
     return { success: true, session }
   } catch (error: any) {
-    console.error("Enhanced auth: Authentication failed:", error)
+    logger.error("Enhanced auth: Authentication failed:", error)
 
     // Handle specific error types
     if (error instanceof TradovateAuthError) {
@@ -100,7 +101,7 @@ export async function syncTradovateDataEnhanced(): Promise<{
       return { success: false, error: "No active Tradovate session", tradesImported: 0 }
     }
 
-    console.log(`Syncing data for user: ${session.userName}`)
+    logger.info(`Syncing data for user: ${session.userName}`)
 
     // Create API instance and set tokens
     const api = new EnhancedTradovateAPI(session.isDemo)
@@ -112,11 +113,11 @@ export async function syncTradovateDataEnhanced(): Promise<{
     }
 
     const account = session.accounts[0]
-    console.log(`Using account: ${account.name} (ID: ${account.id})`)
+    logger.info(`Using account: ${account.name} (ID: ${account.id})`)
 
     // Fetch and process trades
     const processedTrades = await api.processTradesFromOrders(account.id)
-    console.log(`Processed ${processedTrades.length} trades`)
+    logger.info(`Processed ${processedTrades.length} trades`)
 
     // Here you would save the trades to your database
     // For now, we'll just return the count
@@ -129,7 +130,7 @@ export async function syncTradovateDataEnhanced(): Promise<{
       },
     }
   } catch (error: any) {
-    console.error("Data sync failed:", error)
+    logger.error("Data sync failed:", error)
     return {
       success: false,
       error: error.message || "Data sync failed",
@@ -164,7 +165,7 @@ export async function testTradovateConnection(): Promise<{
       },
     }
   } catch (error: any) {
-    console.error("Connection test failed:", error)
+    logger.error("Connection test failed:", error)
     return {
       success: false,
       error: error.message || "Connection test failed",
@@ -178,18 +179,18 @@ export async function getTradovateSessionEnhanced(): Promise<TradovateSession | 
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)
 
     if (!sessionCookie?.value) {
-      console.log("No session cookie found")
+      logger.debug("No session cookie found")
       return null
     }
 
     const session: TradovateSession = JSON.parse(sessionCookie.value)
-    console.log(`Retrieved session for user: ${session.userName} (${session.isDemo ? "DEMO" : "LIVE"})`)
+    logger.debug(`Retrieved session for user: ${session.userName} (${session.isDemo ? "DEMO" : "LIVE"})`)
 
     // Check if session is expired
     if (session.expirationTime) {
       const expirationTime = new Date(session.expirationTime)
       if (expirationTime < new Date()) {
-        console.log("Session expired, logging out")
+        logger.info("Session expired, logging out")
         await logoutTradovateEnhanced()
         return null
       }
@@ -197,13 +198,13 @@ export async function getTradovateSessionEnhanced(): Promise<TradovateSession | 
 
     return session
   } catch (error) {
-    console.error("Error getting Tradovate session:", error)
+    logger.error("Error getting Tradovate session:", error)
     return null
   }
 }
 
 export async function logoutTradovateEnhanced(): Promise<void> {
-  console.log("Logging out of Tradovate")
+  logger.info("Logging out of Tradovate")
   const cookieStore = await cookies()
   cookieStore.delete(SESSION_COOKIE_NAME)
 }

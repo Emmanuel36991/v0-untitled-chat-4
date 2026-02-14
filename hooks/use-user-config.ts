@@ -63,7 +63,6 @@ export function useUserConfig() {
         data: { session },
       } = await supabase.auth.getSession()
 
-      console.log("[v0] Loading user config, authenticated:", !!session?.user)
 
       if (session?.user) {
         setIsSyncing(true)
@@ -71,7 +70,6 @@ export function useUserConfig() {
         setIsSyncing(false)
 
         if (dbConfig && dbConfig.profileSetupComplete !== undefined) {
-          console.log("[v0] Found database config for user, using it")
           setConfig(dbConfig)
           try {
             localStorage.setItem(USER_CONFIG_STORAGE_KEY, JSON.stringify(dbConfig))
@@ -79,7 +77,6 @@ export function useUserConfig() {
             console.error("Failed to cache config to localStorage:", error)
           }
         } else {
-          console.log("[v0] No database config found, starting fresh for new user")
           const freshConfig = { ...DEFAULT_USER_CONFIGURATION }
           setConfig(freshConfig)
           try {
@@ -89,7 +86,6 @@ export function useUserConfig() {
           }
         }
       } else {
-        console.log("[v0] No authentication, using default config")
         setConfig(DEFAULT_USER_CONFIGURATION)
       }
 

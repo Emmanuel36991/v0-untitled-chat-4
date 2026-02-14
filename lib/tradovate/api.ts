@@ -30,12 +30,10 @@ export class TradovateAPI {
   constructor(isDemo = false) {
     this.isDemo = isDemo
     this.baseUrl = isDemo ? TRADOVATE_CONFIG.DEMO_URL : TRADOVATE_CONFIG.LIVE_URL
-    console.log(`TradovateAPI initialized for ${isDemo ? "DEMO" : "LIVE"} environment: ${this.baseUrl}`)
   }
 
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}, requiresAuth = true): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    console.log(`Making request to: ${url}`)
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -53,7 +51,6 @@ export class TradovateAPI {
       headers,
     })
 
-    console.log(`Response status: ${response.status} ${response.statusText}`)
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
@@ -62,12 +59,10 @@ export class TradovateAPI {
     }
 
     const data = await response.json()
-    console.log("Response data:", data)
     return data
   }
 
   async authenticate(username: string, password: string): Promise<TradovateSession> {
-    console.log(`Authenticating user: ${username} on ${this.isDemo ? "DEMO" : "LIVE"} environment`)
 
     // CORRECT Tradovate authentication - try the actual working endpoint
     const credentials = {
@@ -79,14 +74,12 @@ export class TradovateAPI {
       sec: TRADOVATE_CONFIG.SEC,
     }
 
-    console.log("Sending credentials:", { ...credentials, password: "[REDACTED]" })
 
     try {
       // Try the CORRECT endpoint: /auth/request (this is the actual Tradovate endpoint)
       let authResponse: TradovateAuthResponse
 
       try {
-        console.log("Trying /auth/request endpoint...")
         authResponse = await this.makeRequest<TradovateAuthResponse>(
           "/auth/request",
           {
@@ -97,7 +90,6 @@ export class TradovateAPI {
         )
       } catch (error: any) {
         if (error.message.includes("404")) {
-          console.log("Standard endpoint failed, trying /auth/accesstokenrequest...")
           // Fallback to the other endpoint
           authResponse = await this.makeRequest<TradovateAuthResponse>(
             "/auth/accesstokenrequest",
@@ -112,10 +104,6 @@ export class TradovateAPI {
         }
       }
 
-      console.log("Auth response:", {
-        ...authResponse,
-        accessToken: authResponse.accessToken ? "[PRESENT]" : "[MISSING]",
-      })
 
       if (authResponse.errorText) {
         throw new Error(authResponse.errorText)
@@ -128,11 +116,9 @@ export class TradovateAPI {
       this.accessToken = authResponse.accessToken
       this.mdAccessToken = authResponse.mdAccessToken || ""
 
-      console.log("Authentication successful, fetching accounts...")
 
       // Fetch user accounts
       const accounts = await this.getAccounts()
-      console.log(`Found ${accounts.length} accounts`)
 
       const session: TradovateSession = {
         accessToken: authResponse.accessToken,
@@ -210,7 +196,6 @@ export class TradovateAPI {
   }
 
   async processTradesFromOrders(accountId: number): Promise<ProcessedTradovateTrade[]> {
-    console.log(`Processing trades for account: ${accountId}`)
 
     const [orders, contracts, masterInstruments] = await Promise.all([
       this.getOrdersWithFills(accountId),
@@ -218,7 +203,6 @@ export class TradovateAPI {
       this.getMasterInstruments(),
     ])
 
-    console.log(`Found ${orders.length} orders, ${contracts.length} contracts, ${masterInstruments.length} instruments`)
 
     // Create lookup maps
     const contractMap = contracts.reduce(
@@ -242,7 +226,6 @@ export class TradovateAPI {
       (order) => order.orderState === "Filled" && order.fills && order.fills.length > 0,
     )
 
-    console.log(`Found ${filledOrders.length} filled orders`)
 
     const ordersByContract = filledOrders.reduce(
       (acc, order) => {
@@ -355,7 +338,6 @@ export class TradovateAPI {
       }
     }
 
-    console.log(`Processed ${trades.length} trades`)
     return trades.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 

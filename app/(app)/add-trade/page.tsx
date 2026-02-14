@@ -20,15 +20,11 @@ export default function AddTradePage() {
     tradeData: NewTradeInput,
   ): Promise<{ success: boolean; trade?: Trade; tradeId?: string; error?: string }> => {
     try {
-      console.log("[v0] handleSubmitTrade called in add-trade page")
-      console.log("[v0] Trade data received:", JSON.stringify(tradeData, null, 2))
 
       const newTradeResult = await addTrade(tradeData)
 
-      console.log("[v0] addTrade result:", JSON.stringify(newTradeResult, null, 2))
 
       if (newTradeResult.success && newTradeResult.trade) {
-        console.log("[v0] Trade added successfully, showing success toast")
         toast({
           title: "🚀 Trade Logged Successfully!",
           description: `Trade for ${newTradeResult.trade.instrument} has been added to your portfolio.`,
@@ -38,7 +34,6 @@ export default function AddTradePage() {
         // to ensure the form is reset FIRST.
         return newTradeResult
       } else {
-        console.log("[v0] Trade add failed, showing error toast")
         toast({
           title: "❌ Error Adding Trade",
           description: newTradeResult.error || "An unexpected error occurred. Please try again.",

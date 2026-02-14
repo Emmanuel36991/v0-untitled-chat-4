@@ -23,7 +23,6 @@ export async function GET() {
       return NextResponse.json({ error: "User not authenticated" }, { status: 401 })
     }
 
-    console.log("Fetching trades for user:", user.id)
 
     // Fetch trades for the authenticated user
     const { data: trades, error: tradesError } = await supabase
@@ -37,7 +36,6 @@ export async function GET() {
       return NextResponse.json({ error: "Failed to fetch trades", details: tradesError.message }, { status: 500 })
     }
 
-    console.log(`Found ${trades?.length || 0} trades for user ${user.id}`)
 
     return NextResponse.json({
       trades: trades || [],

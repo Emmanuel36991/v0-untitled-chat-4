@@ -538,7 +538,6 @@ export default function DashboardPage() {
         getTradingAccounts(),
         getStrategies(),
       ])
-      console.log("[v0] Dashboard - Fetched trades:", fetchedTrades?.length || 0)
       setTrades(fetchedTrades || [])
       setHasAccounts((accounts?.length ?? 0) > 0)
       setHasStrategies((strategies?.length ?? 0) > 0)

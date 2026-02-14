@@ -116,7 +116,7 @@ const CumulativePLChart = React.memo(({ trades }: CumulativePLChartProps) => {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Chart */}
-        <div className="h-80">
+        <div className="h-80 w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
               <defs>
@@ -144,7 +144,7 @@ const CumulativePLChart = React.memo(({ trades }: CumulativePLChartProps) => {
                   color: "#f9fafb",
                 }}
                 labelStyle={{ color: "#d1d5db" }}
-                formatter={(value: any, name: string) => [
+                formatter={(value: any, name: any) => [
                   displayFormat === "dollars"
                     ? `$${Number(value).toFixed(2)}`
                     : `${Number(value).toFixed(2)} ${displayFormat}`,

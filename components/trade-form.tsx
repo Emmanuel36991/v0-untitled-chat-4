@@ -852,7 +852,6 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
         screenshotAfterUrl: formData.screenshotAfterUrl || null
       }
 
-      console.log("Submitting trade data:", JSON.stringify(submissionData, null, 2))
 
       const result = await onSubmitTrade(submissionData)
 

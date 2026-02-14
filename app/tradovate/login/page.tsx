@@ -100,7 +100,6 @@ export default function TradovateLoginPage() {
     setIsLoading(true)
     setError("")
 
-    console.log(`Attempting login for ${username} on ${isDemo ? "DEMO" : "LIVE"} environment`)
 
     try {
       const result = await authenticateTradovateEnhanced(username, password, isDemo)

@@ -20,14 +20,12 @@ export async function authenticateTradovate(
   password: string,
   isDemo = false, // Changed default to false for live
 ): Promise<{ success: boolean; error?: string; session?: TradovateSession }> {
-  console.log(`Authenticating with Tradovate: ${username} (${isDemo ? "DEMO" : "LIVE"})`)
 
   try {
     // Create new API instance for the specified environment
     const api = new TradovateAPI(isDemo)
     const session = await api.authenticate(username, password)
 
-    console.log("Authentication successful, storing session")
 
     // Store session in secure cookie
     const cookieStore = await cookies()
@@ -49,18 +47,15 @@ export async function getTradovateSession(): Promise<TradovateSession | null> {
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME)
 
     if (!sessionCookie?.value) {
-      console.log("No session cookie found")
       return null
     }
 
     const session: TradovateSession = JSON.parse(sessionCookie.value)
-    console.log(`Retrieved session for user: ${session.userName} (${session.isDemo ? "DEMO" : "LIVE"})`)
 
     // Check if session is expired
     if (session.expirationTime) {
       const expirationTime = new Date(session.expirationTime)
       if (expirationTime < new Date()) {
-        console.log("Session expired, logging out")
         await logoutTradovate()
         return null
       }
@@ -74,7 +69,6 @@ export async function getTradovateSession(): Promise<TradovateSession | null> {
 }
 
 export async function logoutTradovate(): Promise<void> {
-  console.log("Logging out of Tradovate")
   const cookieStore = await cookies()
   cookieStore.delete(SESSION_COOKIE_NAME)
 }
@@ -90,7 +84,6 @@ export async function syncTradovateData(): Promise<{
       return { success: false, error: "Not authenticated with Tradovate" }
     }
 
-    console.log(`Syncing data for ${session.accounts.length} accounts`)
 
     // Set up API with session tokens
     const api = new TradovateAPI(session.isDemo)
@@ -100,11 +93,9 @@ export async function syncTradovateData(): Promise<{
     let allTrades: ProcessedTradovateTrade[] = []
 
     for (const account of session.accounts) {
-      console.log(`Processing account: ${account.name} (ID: ${account.id})`)
       try {
         const accountTrades = await api.processTradesFromOrders(account.id)
         allTrades = [...allTrades, ...accountTrades]
-        console.log(`Found ${accountTrades.length} trades for account ${account.name}`)
       } catch (error) {
         console.error(`Error processing account ${account.id}:`, error)
         // Continue with other accounts
@@ -112,11 +103,9 @@ export async function syncTradovateData(): Promise<{
     }
 
     if (allTrades.length === 0) {
-      console.log("No trades found to import")
       return { success: true, tradesImported: 0 }
     }
 
-    console.log(`Converting ${allTrades.length} trades to import format`)
 
     // Convert to our trade format
     const tradesToImport: NewTradeInput[] = allTrades.map((trade) => ({
@@ -135,10 +124,8 @@ export async function syncTradovateData(): Promise<{
     }))
 
     // Import trades
-    console.log("Importing trades to database")
     const result = await addMultipleTrades(tradesToImport)
 
-    console.log(`Successfully imported ${result.successCount} trades`)
 
     return {
       success: true,

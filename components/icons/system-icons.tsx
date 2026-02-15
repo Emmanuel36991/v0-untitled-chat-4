@@ -79,48 +79,56 @@ export function TradeLedgerIcon(props: IconProps) {
 }
 
 /**
- * Analytics — Smooth Ascending Curve
- * A gentle bezier curve ascending right with a vertical Y-axis.
- * Open at the end to suggest continuation.
+ * Analytics — Candlestick Chart Pattern
+ * Three OHLC candlestick bars with wicks — the universal symbol
+ * for market price action and technical analysis.
  */
 export function AnalyticsIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Y-axis — open at top (no cap) */}
-            <path d="M3 20V5" />
-            {/* X-axis — open at right */}
-            <path d="M3 20h18" opacity="0.3" />
-            {/* Smooth ascending bezier curve */}
-            <path d="M4 17C6 17 8 16 10 14S13 9 16 7c1.5-1 3-1.5 5-1.5" />
-            {/* Subtle area hint below curve */}
-            <path d="M4 17C6 17 8 16 10 14S13 9 16 7c1.5-1 3-1.5 5-1.5V20H4z" fill="currentColor" opacity="0.04" stroke="none" />
+            {/* X-axis baseline */}
+            <path d="M3 20h18" opacity="0.2" />
+            {/* Candle 1 — bearish (tall) */}
+            <line x1="6" y1="5" x2="6" y2="18" opacity="0.4" />
+            <rect x="4.5" y="7" width="3" height="7" rx="0.5" fill="currentColor" opacity="0.15" />
+            <rect x="4.5" y="7" width="3" height="7" rx="0.5" />
+            {/* Candle 2 — bullish (short, higher) */}
+            <line x1="12" y1="4" x2="12" y2="15" opacity="0.4" />
+            <rect x="10.5" y="6" width="3" height="5" rx="0.5" fill="currentColor" opacity="0.08" />
+            <rect x="10.5" y="6" width="3" height="5" rx="0.5" />
+            {/* Candle 3 — bullish (medium, highest) */}
+            <line x1="18" y1="3" x2="18" y2="13" opacity="0.4" />
+            <rect x="16.5" y="5" width="3" height="4" rx="0.5" fill="currentColor" opacity="0.08" />
+            <rect x="16.5" y="5" width="3" height="4" rx="0.5" />
         </SvgTemplate>
     )
 }
 
 /**
- * Playbook — Geometric Blueprint / Open Book
- * Two pages with precise schematic lines and a node-connection detail.
+ * Playbook — Detailed Notebook
+ * A spiral-bound notebook with ruled lines, margin, and a bookmark ribbon.
+ * Feels tactile and purposeful — a trader's strategy journal.
  */
 export function PlaybookIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Spine */}
-            <path d="M12 4v16" opacity="0.3" />
-            {/* Left page — open at top for breathing */}
-            <path d="M4 6c2-0.5 5-1 8-0.5" />
-            <path d="M4 6v14c2-0.5 5-1 8-0.5" />
-            <path d="M12 19.5V4" opacity="0" />
-            {/* Right page */}
-            <path d="M20 6c-2-0.5-5-1-8-0.5" />
-            <path d="M20 6v14c-2-0.5-5-1-8-0.5" />
-            {/* Left page: schematic lines */}
-            <line x1="6.5" y1="10" x2="10" y2="10" opacity="0.4" />
-            <line x1="6.5" y1="13" x2="9" y2="13" opacity="0.4" />
-            {/* Right page: flow diagram dots */}
-            <circle cx="15" cy="10" r="1" />
-            <circle cx="18" cy="13" r="1" />
-            <path d="M15.7 10.7L17.3 12.3" opacity="0.5" />
+            {/* Notebook cover */}
+            <rect x="5" y="3" width="14" height="18" rx="2" fill="currentColor" opacity="0.04" />
+            <rect x="5" y="3" width="14" height="18" rx="2" />
+            {/* Spiral rings */}
+            <circle cx="5" cy="7" r="1" fill="currentColor" opacity="0.3" />
+            <circle cx="5" cy="12" r="1" fill="currentColor" opacity="0.3" />
+            <circle cx="5" cy="17" r="1" fill="currentColor" opacity="0.3" />
+            {/* Margin line */}
+            <line x1="8.5" y1="3" x2="8.5" y2="21" opacity="0.15" />
+            {/* Ruled lines */}
+            <line x1="10" y1="8" x2="17" y2="8" opacity="0.35" />
+            <line x1="10" y1="11" x2="16" y2="11" opacity="0.35" />
+            <line x1="10" y1="14" x2="17" y2="14" opacity="0.35" />
+            <line x1="10" y1="17" x2="14" y2="17" opacity="0.35" />
+            {/* Bookmark ribbon */}
+            <path d="M16 3v5l1.5-1.5L19 8V3" fill="currentColor" opacity="0.12" stroke="none" />
+            <path d="M16 3v5l1.5-1.5L19 8V3" opacity="0.5" />
         </SvgTemplate>
     )
 }
@@ -142,44 +150,39 @@ export function UpdatesIcon({ className, ...props }: IconProps) {
 }
 
 /**
- * Avg Return — Average P&L per trade
- * Bar chart with a horizontal mean line: "average return" per execution.
+ * Avg Return — Average profit per trade
+ * Dollar sign with averaging tilde (~) — represents the mean P&L per execution.
+ * Clear, financial, and instantly recognizable.
  */
 export function AvgReturnIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Three bars of varying heights (individual returns) */}
-            <line x1="5" y1="18" x2="5" y2="12" />
-            <line x1="12" y1="18" x2="12" y2="6" />
-            <line x1="19" y1="18" x2="19" y2="9" />
-            {/* Horizontal line = average */}
-            <line x1="3" y1="10" x2="21" y2="10" strokeWidth="1.8" opacity="0.9" />
-            {/* Baseline */}
-            <path d="M3 18h18" opacity="0.25" />
+            {/* Dollar sign */}
+            <path d="M12 4v16" opacity="0.3" />
+            <path d="M8 7c0-1.5 1.5-2 3-2h2c1.5 0 3 0.5 3 2s-1.5 2-3 2h-2c-1.5 0-3 0.5-3 2s1.5 2 3 2h2c1.5 0 3-0.5 3-2" />
+            {/* Averaging tilde symbol */}
+            <path d="M4 16c0.5-0.5 1-0.5 1.5 0s1 0.5 1.5 0" opacity="0.6" strokeWidth="1.5" />
+            <path d="M17 16c0.5-0.5 1-0.5 1.5 0s1 0.5 1.5 0" opacity="0.6" strokeWidth="1.5" />
         </SvgTemplate>
     )
 }
 
 /**
- * Profit Factor — Gross profit / Gross loss (ratio)
- * Balance scale: wins vs losses, ratio of the two.
+ * Profit Factor — Ratio of gross profit to gross loss
+ * Multiplication/ratio symbol with upward trend arrow.
+ * Represents the profit multiplier concept (e.g., 2.5x means $2.50 profit per $1 loss).
  */
 export function ProfitFactorIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Central pivot */}
-            <path d="M12 4v6" />
-            <path d="M10 10l2-2 2 2" />
-            {/* Beam */}
-            <line x1="5" y1="14" x2="19" y2="14" />
-            {/* Left pan (e.g. loss) — lower */}
-            <line x1="5" y1="14" x2="5" y2="18" />
-            <circle cx="5" cy="20" r="2" />
-            {/* Right pan (e.g. profit) — higher when factor > 1 */}
-            <line x1="19" y1="14" x2="19" y2="18" />
-            <circle cx="19" cy="20" r="2" />
-            {/* Support line under beam */}
-            <path d="M12 10v1" opacity="0.5" />
+            {/* Ratio/multiplication symbol — stylized "×" */}
+            <path d="M7 7l10 10" opacity="0.4" />
+            <path d="M17 7l-10 10" opacity="0.4" />
+            {/* Upward trending arrow (profit multiplier) */}
+            <path d="M4 16l6-6 4 4 6-6" strokeWidth="1.8" />
+            {/* Arrow head */}
+            <path d="M17 8l3-3 3 3" strokeWidth="1.8" />
+            <path d="M20 5v5" opacity="0" />
         </SvgTemplate>
     )
 }

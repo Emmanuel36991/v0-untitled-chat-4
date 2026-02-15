@@ -521,6 +521,7 @@ export default function DashboardPage() {
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
+            isHot={stats.totalPnL > 0 && stats.winRate > 50}
           />
 
           <MetricCard
@@ -540,6 +541,7 @@ export default function DashboardPage() {
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
             ]} // Simple trend simulation
             subtitle={`Current Streak: ${stats.consecutiveWins} Wins`}
+            isHot={stats.consecutiveWins >= 3}
           />
 
           <MetricCard

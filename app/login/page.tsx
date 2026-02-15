@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Github, AlertCircle } from "lucide-react"
+import { Eye, EyeOff, ArrowRight, Github, AlertCircle } from "lucide-react"
 import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [focusedField, setFocusedField] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
   const router = useRouter()
 
@@ -173,26 +172,17 @@ export default function LoginPage() {
                 <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
                   Email address
                 </Label>
-                <div className="relative">
-                  <div
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 ${focusedField === "email" ? "text-indigo-400" : "text-slate-600"}`}
-                  >
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => setFocusedField("email")}
-                    onBlur={() => setFocusedField(null)}
-                    className="pl-11 h-11 bg-slate-950/60 border-slate-800 text-slate-200 rounded-xl placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all"
-                    disabled={isLoading}
-                    suppressHydrationWarning
-                  />
-                </div>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-4 h-11 bg-slate-950/60 border-slate-800 text-slate-200 rounded-xl placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all"
+                  disabled={isLoading}
+                  suppressHydrationWarning
+                />
               </motion.div>
 
               <motion.div
@@ -214,11 +204,6 @@ export default function LoginPage() {
                   </button>
                 </div>
                 <div className="relative">
-                  <div
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 ${focusedField === "password" ? "text-indigo-400" : "text-slate-600"}`}
-                  >
-                    <Lock className="h-4 w-4" />
-                  </div>
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -226,9 +211,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    onFocus={() => setFocusedField("password")}
-                    onBlur={() => setFocusedField(null)}
-                    className="pl-11 pr-11 h-11 bg-slate-950/60 border-slate-800 text-slate-200 rounded-xl placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
+                    className="pl-4 pr-11 h-11 bg-slate-950/60 border-slate-800 text-slate-200 rounded-xl placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500/50 transition-all [&::-ms-reveal]:hidden [&::-ms-clear]:hidden [&::-webkit-credentials-auto-fill-button]:hidden"
                     disabled={isLoading}
                     suppressHydrationWarning
                   />

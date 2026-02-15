@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   Calendar, Clock, Target, TrendingUp, TrendingDown,
@@ -547,6 +548,21 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
   const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null)
   const [hasDraftOnLoad, setHasDraftOnLoad] = useState(false)
 
+  // Quick Entry mode
+  const [quickEntryMode, setQuickEntryMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('trade_quick_entry') === 'true'
+    }
+    return false
+  })
+  const toggleQuickEntry = () => {
+    setQuickEntryMode(prev => {
+      const next = !prev
+      localStorage.setItem('trade_quick_entry', String(next))
+      return next
+    })
+  }
+
   // --- EFFECTS ---
 
   // 1. Fetch Strategies and Accounts
@@ -714,6 +730,21 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
     const isNumeric = type === "number" || ["entry_price", "exit_price", "stop_loss", "size", "take_profit", "durationMinutes", "preciseDurationMinutes"].includes(name)
     setFormData((prev) => ({ ...prev, [name]: isNumeric ? (value === "" ? undefined : Number.parseFloat(value)) : value }))
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }))
+  }
+
+  // Inline validation on blur — validates required fields immediately
+  const REQUIRED_FIELDS: Record<string, string> = {
+    instrument: "Instrument is required",
+    direction: "Direction is required",
+    entry_price: "Entry price is required",
+    exit_price: "Exit price is required",
+    size: "Position size is required",
+  }
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    if (name in REQUIRED_FIELDS && (!value || value === "0")) {
+      setErrors((prev) => ({ ...prev, [name]: REQUIRED_FIELDS[name] }))
+    }
   }
 
   const handleStrategySelect = (strat: PlaybookStrategy) => {
@@ -978,6 +1009,20 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {mode === "add" && (
+              <Button
+                variant={quickEntryMode ? "default" : "outline"}
+                size="sm"
+                onClick={toggleQuickEntry}
+                className={cn(
+                  "rounded-full gap-1.5 text-xs font-semibold transition-all",
+                  quickEntryMode && "bg-primary text-primary-foreground shadow-md"
+                )}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Quick
+              </Button>
+            )}
             <span className="text-xs text-muted-foreground hidden sm:inline">
               {"\u2318"}+Enter to submit
             </span>
@@ -1005,68 +1050,61 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
       <div className="max-w-5xl mx-auto py-8 px-4">
         {/* MAIN FORM COLUMN */}
         <div className="space-y-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-center mb-8">
-              <TabsList className="h-14 p-1 bg-muted/50 backdrop-blur-sm rounded-2xl border border-border/50 w-full max-w-2xl grid grid-cols-3 shadow-sm">
-                <TabsTrigger value="setup" className="rounded-xl text-sm font-semibold gap-1.5">
-                  {isSetupComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
-                  1. Setup & Entry
-                </TabsTrigger>
-                <TabsTrigger value="strategy" className="rounded-xl text-sm font-semibold gap-1.5">
-                  {isStrategyComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
-                  2. Strategy
-                </TabsTrigger>
-                <TabsTrigger value="psychology" className="rounded-xl text-sm font-semibold gap-1.5">
-                  {isPsychologyComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
-                  3. Psychology
-                </TabsTrigger>
-              </TabsList>
-            </div>
 
-            {/* TAB 1: SETUP */}
-            <TabsContent value="setup" className="space-y-8">
-              <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
-                <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> Instrument & Account</CardTitle></CardHeader>
-                <CardContent className="space-y-6">
+          {/* QUICK ENTRY MODE */}
+          <AnimatePresence mode="wait">
+            {quickEntryMode && mode === "add" ? (
+              <motion.div
+                key="quick-entry"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Card className="border-0 shadow-xl bg-card/50 backdrop-blur-sm ring-1 ring-primary/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-primary" /> Quick Trade Entry
+                    </CardTitle>
+                    <CardDescription>Log the essentials fast. You can always edit later.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Account */}
+                    {tradingAccounts.length > 0 && (
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                          <Wallet className="w-3 h-3" /> Account
+                        </Label>
+                        <Select
+                          value={formData.account_id || ""}
+                          onValueChange={(val) => setFormData(prev => ({ ...prev, account_id: val }))}
+                        >
+                          <SelectTrigger className={cn("w-full h-11 bg-background", errors.account_id && "border-red-500 ring-1 ring-red-500")}>
+                            <SelectValue placeholder="Select Account" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {tradingAccounts.map(account => (
+                              <SelectItem key={account.id} value={account.id}>
+                                <span className="font-medium">{account.name}</span>
+                                <span className="ml-2 text-muted-foreground text-xs">({account.type})</span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
-                  {/* --- ACCOUNT SELECTOR --- */}
-                  {tradingAccounts.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                        <Wallet className="w-3 h-3" /> Select Account
-                      </Label>
-                      <Select
-                        value={formData.account_id || ""}
-                        onValueChange={(val) => setFormData(prev => ({ ...prev, account_id: val }))}
-                      >
-                        <SelectTrigger className={cn("w-full h-11 bg-background border-input", errors.account_id && "border-red-500 ring-1 ring-red-500")}>
-                          <SelectValue placeholder="Select Trading Account (e.g. Topstep, Funded)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {tradingAccounts.map(account => (
-                            <SelectItem key={account.id} value={account.id}>
-                              <span className="font-medium">{account.name}</span>
-                              <span className="ml-2 text-muted-foreground text-xs">({account.type})</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.account_id && <p className="text-xs text-red-500">{errors.account_id}</p>}
-                    </div>
-                  )}
-
-                  {/* Recently Traded Chips */}
-                  {recentInstruments.length > 0 && (
-                    <div className="space-y-1.5">
-                      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <Clock className="w-3 h-3" /> Recently Traded
-                      </span>
+                    {/* Recently Traded + Instrument Search */}
+                    {recentInstruments.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {recentInstruments.map(symbol => (
                           <button
                             key={symbol}
                             type="button"
-                            onClick={() => setFormData(prev => ({ ...prev, instrument: symbol }))}
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, instrument: symbol }))
+                              if (errors.instrument) setErrors(prev => ({ ...prev, instrument: "" }))
+                            }}
                             className={cn(
                               "px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
                               formData.instrument === symbol
@@ -1078,406 +1116,542 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                           </button>
                         ))}
                       </div>
+                    )}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input placeholder="Search instrument..." className="pl-10 h-11 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                     </div>
-                  )}
-
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Search Instrument (e.g. ES, BTC)..." className="pl-10 h-12 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                  </div>
-                  <ScrollArea className={cn("h-[200px] w-full rounded-xl border bg-muted/10 p-4", errors.instrument && "border-red-500 ring-2 ring-red-500/20")}>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
-                        <button key={inst.symbol} type="button" onClick={() => setFormData(prev => ({ ...prev, instrument: inst.symbol }))} className={cn("flex flex-col items-start p-3 rounded-xl border transition-all text-left", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background")}>
-                          <span className="font-bold text-sm">{inst.symbol}</span>
-                          <span className="text-xs text-muted-foreground">{inst.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  {errors.instrument && <p className="text-xs text-red-500 mt-2 animate-in slide-in-from-top-1">{errors.instrument}</p>}
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
-                <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Crosshair className="w-5 h-5 text-primary" /> Execution</CardTitle></CardHeader>
-                <CardContent className="space-y-8">
-                  <div className={cn("grid grid-cols-2 gap-4 p-1 bg-muted/50 rounded-2xl", errors.direction && "ring-2 ring-red-500/20 border border-red-500")}>
-                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'long' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-profit text-profit-foreground shadow-lg" : "text-muted-foreground hover:bg-profit/10")}>Long</button>
-                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'short' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-loss text-loss-foreground shadow-lg" : "text-muted-foreground hover:bg-loss/10")}>Short</button>
-                  </div>
-                  {errors.direction && <p className="text-xs text-red-500 mt-1 animate-in slide-in-from-top-1">{errors.direction}</p>}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/20 rounded-xl border border-border/50">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground">Entry Time</Label>
-                      <Input type="datetime-local" name="entry_time" value={formData.entry_time || ""} onChange={handleChange} className="bg-background h-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground">Exit Time</Label>
-                      <Input type="datetime-local" name="exit_time" value={formData.exit_time || ""} onChange={handleChange} className="bg-background h-10" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} icon={MousePointer} color="text-primary" />
-                    <PriceInput id="exit_price" label="Exit Price" value={formData.exit_price} onChange={handleChange} icon={Target} color="text-blue-500" />
-                    <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-loss" />
-                    <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={TrendingUp} color="text-profit" />
-                  </div>
-                  {errors.exit_price && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.exit_price}</p>}
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1.5">
-                        <BarChart3 className="w-3.5 h-3.5" /> Position Size
-                        {formData.instrument && <span className="normal-case text-xs font-normal text-muted-foreground/70">({sizeUnit})</span>}
-                      </Label>
-                      <Input type="number" name="size" value={formData.size || ""} onChange={handleChange} placeholder="0" className={cn("h-12 bg-background border-2 font-mono text-lg", errors.size && "border-red-500 ring-2 ring-red-500/20")} />
-                      {errors.size && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.size}</p>}
-                    </div>
-                  </div>
-
-                  {/* Live PnL / R:R Summary */}
-                  <TradeSummaryBar
-                    pnl={pnlResult}
-                    riskReward={riskRewardRatio}
-                    direction={formData.direction}
-                    entryPrice={formData.entry_price || 0}
-                    stopLoss={formData.stop_loss || 0}
-                    size={formData.size || 0}
-                  />
-
-                  <div className="space-y-3">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> Session</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {TRADING_SESSIONS.map(session => (
-                        <SessionCard key={session.value} session={session} isSelected={formData.tradeSession === session.value} onSelect={() => setFormData(prev => ({ ...prev, tradeSession: session.value }))} />
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="bg-muted/20 border-t p-4 flex justify-end"><Button size="lg" onClick={() => setActiveTab("strategy")} className="rounded-xl px-8">Next <ChevronRight className="ml-2 w-4 h-4" /></Button></CardFooter>
-              </Card>
-            </TabsContent>
-
-            {/* TAB 2: STRATEGY (Unchanged Logic, just visual) */}
-            <TabsContent value="strategy" className="space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Strategy & Confluences</h2>
-                <Button variant="outline" size="sm" onClick={() => setActiveTab("setup")}><ChevronLeft className="w-4 h-4 mr-2" /> Back</Button>
-              </div>
-
-              {strategies.length === 0 && (
-                <Card className="border-2 border-amber-500/50 bg-amber-50/10 dark:bg-amber-950/10">
-                  <CardHeader>
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-amber-500/10 rounded-lg">
-                        <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <ScrollArea className={cn("h-[120px] rounded-xl border bg-muted/10 p-3", errors.instrument && "border-red-500 ring-2 ring-red-500/20")}>
+                      <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+                        {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
+                          <button key={inst.symbol} type="button" onClick={() => { setFormData(prev => ({ ...prev, instrument: inst.symbol })); if (errors.instrument) setErrors(prev => ({ ...prev, instrument: "" })) }} className={cn("p-2 rounded-lg border text-center transition-all text-sm font-bold", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background hover:border-primary/30")}>
+                            {inst.symbol}
+                          </button>
+                        ))}
                       </div>
-                      <div className="flex-1">
-                        <CardTitle className="text-amber-900 dark:text-amber-100">No Playbook Strategies Found</CardTitle>
-                        <CardDescription className="text-amber-700 dark:text-amber-300 mt-1">
-                          You need to create at least one strategy in your playbook before adding trades.
-                          Strategies help you track which setups work best for your trading style.
-                        </CardDescription>
+                    </ScrollArea>
+                    {errors.instrument && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.instrument}</p>}
+
+                    {/* Direction */}
+                    <div className={cn("grid grid-cols-2 gap-3 p-1 bg-muted/50 rounded-xl", errors.direction && "ring-2 ring-red-500/20 border border-red-500")}>
+                      <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'long' }))} className={cn("flex items-center justify-center gap-2 py-3 rounded-lg font-bold transition-all", formData.direction === 'long' ? "bg-profit text-profit-foreground shadow-lg" : "text-muted-foreground hover:bg-profit/10")}>Long</button>
+                      <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'short' }))} className={cn("flex items-center justify-center gap-2 py-3 rounded-lg font-bold transition-all", formData.direction === 'short' ? "bg-loss text-loss-foreground shadow-lg" : "text-muted-foreground hover:bg-loss/10")}>Short</button>
+                    </div>
+                    {errors.direction && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.direction}</p>}
+
+                    {/* Prices + Size in a compact grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <PriceInput id="entry_price" label="Entry" value={formData.entry_price} onChange={handleChange} onBlur={handleBlur} error={errors.entry_price} icon={MousePointer} color="text-primary" />
+                      <PriceInput id="exit_price" label="Exit" value={formData.exit_price} onChange={handleChange} onBlur={handleBlur} error={errors.exit_price} icon={Target} color="text-blue-500" />
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                          <BarChart3 className="w-3.5 h-3.5" /> Size
+                        </Label>
+                        <Input type="number" name="size" value={formData.size || ""} onChange={handleChange} onBlur={handleBlur} placeholder="0" className={cn("h-12 bg-background border-2 font-mono text-lg", errors.size && "border-red-500 ring-2 ring-red-500/20")} />
+                        {errors.size && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.size}</p>}
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardFooter className="bg-amber-50/30 dark:bg-amber-950/20 border-t border-amber-200/30 dark:border-amber-800/30 flex gap-3">
-                    <Button
-                      variant="default"
-                      className="bg-amber-600 hover:bg-amber-700 text-white"
-                      onClick={() => router.push("/playbook")}
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Strategy
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setActiveTab("setup")}
-                    >
-                      Go Back
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )}
 
-              {strategies.length > 0 && renderSection("Select Strategy", BookOpen,
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {strategies.map(strat => {
-                    const isSelected = formData.playbook_strategy_id === strat.id
-                    return (
-                      <div key={strat.id} className="flex flex-col gap-4">
-                        <StrategyItemCard
-                          title={strat.name}
-                          description={strat.description || ""}
-                          tags={strat.tags || []}
-                          winRate={strat.win_rate || 0}
-                          isSelected={isSelected}
-                          onToggle={() => handleStrategySelect(strat)}
-                        />
-
-                        {isSelected && (
-                          <div className="ml-4 pl-4 border-l-2 border-primary/20 space-y-4 animate-in slide-in-from-top-2">
-                            {strat.setups && strat.setups.length > 0 && (
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary tracking-wider">
-                                  <GitBranch className="w-3 h-3" /> Active Setups
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                  {strat.setups.map(setup => (
-                                    <Badge
-                                      key={setup.id}
-                                      variant={selectedSetupId === setup.id ? "default" : "outline"}
-                                      className="cursor-pointer px-3 py-1.5 hover:bg-primary/20 transition-colors"
-                                      onClick={() => handleSetupSelect(setup, strat.name)}
-                                    >
-                                      {selectedSetupId === setup.id && <CheckCircle className="w-3 h-3 mr-1" />}
-                                      {setup.name}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {strat.rules && strat.rules.length > 0 && (
-                              <div className="space-y-2 pt-2">
-                                <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground tracking-wider">
-                                  <Database className="w-3 h-3" /> Confluence Checklist
-                                </div>
-                                <div className="space-y-2">
-                                  {strat.rules.map(rule => (
-                                    <RuleItem
-                                      key={rule.id}
-                                      rule={rule}
-                                      isChecked={formData.executed_rules?.includes(rule.id) || false}
-                                      onToggle={() => handleRuleToggle(rule.id)}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>,
-                "text-indigo-600", "bg-indigo-50/10", "border-indigo-200 dark:border-indigo-900"
-              )}
-
-              {strategies.length > 0 && (
-                <Card className="border-0 shadow-md bg-card">
-                  <CardContent className="p-6">
-                    <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
-                    <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
+                    {/* Live PnL Summary */}
+                    <TradeSummaryBar
+                      pnl={pnlResult}
+                      riskReward={riskRewardRatio}
+                      direction={formData.direction}
+                      entryPrice={formData.entry_price || 0}
+                      stopLoss={formData.stop_loss || 0}
+                      size={formData.size || 0}
+                    />
                   </CardContent>
                   <CardFooter className="bg-muted/20 border-t p-4 flex justify-end">
-                    <Button
-                      size="lg"
-                      onClick={() => setActiveTab("psychology")}
-                      className="rounded-xl px-8"
-                    >
-                      Next <ChevronRight className="ml-2 w-4 h-4" />
+                    <Button onClick={handleReviewOpen} disabled={isSubmitting} size="lg" className={cn("rounded-xl px-10 shadow-lg", submitBtnClass)}>
+                      {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                      Log Trade
                     </Button>
                   </CardFooter>
                 </Card>
-              )}
-            </TabsContent>
-
-            {/* TAB 3: PSYCHOLOGY */}
-            <TabsContent value="psychology" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Psychology</h2>
-                <Button variant="outline" size="sm" onClick={() => setActiveTab("strategy")}><ChevronLeft className="w-4 h-4 mr-2" /> Back</Button>
-              </div>
-
-              {/* Mood — always visible */}
-              <Card className="border-0 shadow-lg">
-                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-primary" /> Emotional State</CardTitle></CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
-                    {MOODS.map(m => (
-                      <button key={m.id} type="button" onClick={() => setPsychologyMood(m.id)} className={cn("flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105", psychologyMood === m.id ? m.color : "border-transparent bg-muted/30 hover:bg-muted")}>
-                        <span className="text-2xl mb-1">{m.emoji}</span>
-                        <span className="text-xs font-bold">{m.label}</span>
-                      </button>
-                    ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="full-form"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <div className="flex items-center justify-center mb-8">
+                    <TabsList className="h-14 p-1 bg-muted/50 backdrop-blur-sm rounded-2xl border border-border/50 w-full max-w-2xl grid grid-cols-3 shadow-sm">
+                      <TabsTrigger value="setup" className="rounded-xl text-sm font-semibold gap-1.5">
+                        {isSetupComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
+                        1. Setup & Entry
+                      </TabsTrigger>
+                      <TabsTrigger value="strategy" className="rounded-xl text-sm font-semibold gap-1.5">
+                        {isStrategyComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
+                        2. Strategy
+                      </TabsTrigger>
+                      <TabsTrigger value="psychology" className="rounded-xl text-sm font-semibold gap-1.5">
+                        {isPsychologyComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
+                        3. Psychology
+                      </TabsTrigger>
+                    </TabsList>
                   </div>
-                </CardContent>
-              </Card>
 
-              {/* Collapsible sections */}
-              <Accordion type="multiple" defaultValue={["habits"]} className="space-y-4">
-                {/* Habits (good + bad combined) */}
-                <AccordionItem value="habits" className="border rounded-xl overflow-hidden bg-card shadow-sm">
-                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                    <div className="flex items-center gap-2 text-base font-bold">
-                      <CheckCircle className="w-4 h-4 text-profit" />
-                      Habits
-                      {(goodHabits.length > 0 || badHabits.length > 0) && (
-                        <span className="text-xs font-normal text-muted-foreground ml-1">
-                          ({goodHabits.length} good, {badHabits.length} bad)
-                        </span>
-                      )}
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-5 pb-5 space-y-5">
-                    {/* Good */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1 bg-profit/10 rounded">
-                          <CheckCircle className="w-3.5 h-3.5 text-profit" />
+                  {/* TAB 1: SETUP */}
+                  <TabsContent value="setup" className="space-y-8">
+                    <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
+                      <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> Instrument & Account</CardTitle></CardHeader>
+                      <CardContent className="space-y-6">
+
+                        {/* --- ACCOUNT SELECTOR --- */}
+                        {tradingAccounts.length > 0 && (
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                              <Wallet className="w-3 h-3" /> Select Account
+                            </Label>
+                            <Select
+                              value={formData.account_id || ""}
+                              onValueChange={(val) => setFormData(prev => ({ ...prev, account_id: val }))}
+                            >
+                              <SelectTrigger className={cn("w-full h-11 bg-background border-input", errors.account_id && "border-red-500 ring-1 ring-red-500")}>
+                                <SelectValue placeholder="Select Trading Account (e.g. Topstep, Funded)" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {tradingAccounts.map(account => (
+                                  <SelectItem key={account.id} value={account.id}>
+                                    <span className="font-medium">{account.name}</span>
+                                    <span className="ml-2 text-muted-foreground text-xs">({account.type})</span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {errors.account_id && <p className="text-xs text-red-500">{errors.account_id}</p>}
+                          </div>
+                        )}
+
+                        {/* Recently Traded Chips */}
+                        {recentInstruments.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                              <Clock className="w-3 h-3" /> Recently Traded
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                              {recentInstruments.map(symbol => (
+                                <button
+                                  key={symbol}
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({ ...prev, instrument: symbol }))}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
+                                    formData.instrument === symbol
+                                      ? "bg-primary/10 border-primary text-primary shadow-sm"
+                                      : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                                  )}
+                                >
+                                  {symbol}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input placeholder="Search Instrument (e.g. ES, BTC)..." className="pl-10 h-12 bg-background" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                         </div>
-                        <span className="text-sm font-semibold text-foreground">Good Habits</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {GOOD_HABITS.map(h => (
-                          <Badge
-                            key={h.id}
-                            variant={goodHabits.includes(h.id) ? "default" : "outline"}
-                            className={cn(
-                              "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
-                              goodHabits.includes(h.id)
-                                ? "bg-profit hover:bg-profit/90 text-profit-foreground border-transparent shadow-sm"
-                                : "hover:bg-profit/10 hover:text-profit hover:border-profit/50"
-                            )}
-                            onClick={() => toggleGoodHabit(h.id)}
-                          >
-                            {h.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <Separator />
-                    {/* Bad */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1 bg-loss/10 rounded">
-                          <Ban className="w-3.5 h-3.5 text-loss" />
+                        <ScrollArea className={cn("h-[200px] w-full rounded-xl border bg-muted/10 p-4", errors.instrument && "border-red-500 ring-2 ring-red-500/20")}>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
+                              <button key={inst.symbol} type="button" onClick={() => setFormData(prev => ({ ...prev, instrument: inst.symbol }))} className={cn("flex flex-col items-start p-3 rounded-xl border transition-all text-left", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background")}>
+                                <span className="font-bold text-sm">{inst.symbol}</span>
+                                <span className="text-xs text-muted-foreground">{inst.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                        {errors.instrument && <p className="text-xs text-red-500 mt-2 animate-in slide-in-from-top-1">{errors.instrument}</p>}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-0 shadow-lg bg-card/50 backdrop-blur-sm ring-1 ring-border/50">
+                      <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Crosshair className="w-5 h-5 text-primary" /> Execution</CardTitle></CardHeader>
+                      <CardContent className="space-y-8">
+                        <div className={cn("grid grid-cols-2 gap-4 p-1 bg-muted/50 rounded-2xl", errors.direction && "ring-2 ring-red-500/20 border border-red-500")}>
+                          <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'long' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-profit text-profit-foreground shadow-lg" : "text-muted-foreground hover:bg-profit/10")}>Long</button>
+                          <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'short' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-loss text-loss-foreground shadow-lg" : "text-muted-foreground hover:bg-loss/10")}>Short</button>
                         </div>
-                        <span className="text-sm font-semibold text-foreground">Bad Habits</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {BAD_HABITS.map(h => (
-                          <Badge
-                            key={h.id}
-                            variant={badHabits.includes(h.id) ? "destructive" : "outline"}
-                            className={cn(
-                              "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
-                              badHabits.includes(h.id)
-                                ? "bg-loss hover:bg-loss/90 text-loss-foreground border-transparent shadow-sm"
-                                : "hover:bg-loss/10 hover:text-loss hover:border-loss/50"
-                            )}
-                            onClick={() => toggleBadHabit(h.id)}
+                        {errors.direction && <p className="text-xs text-red-500 mt-1 animate-in slide-in-from-top-1">{errors.direction}</p>}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/20 rounded-xl border border-border/50">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Entry Time</Label>
+                            <Input type="datetime-local" name="entry_time" value={formData.entry_time || ""} onChange={handleChange} className="bg-background h-10" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Exit Time</Label>
+                            <Input type="datetime-local" name="exit_time" value={formData.exit_time || ""} onChange={handleChange} className="bg-background h-10" />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} onBlur={handleBlur} error={errors.entry_price} icon={MousePointer} color="text-primary" />
+                          <PriceInput id="exit_price" label="Exit Price" value={formData.exit_price} onChange={handleChange} onBlur={handleBlur} error={errors.exit_price} icon={Target} color="text-blue-500" />
+                          <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-loss" />
+                          <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={TrendingUp} color="text-profit" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1.5">
+                              <BarChart3 className="w-3.5 h-3.5" /> Position Size
+                              {formData.instrument && <span className="normal-case text-xs font-normal text-muted-foreground/70">({sizeUnit})</span>}
+                            </Label>
+                            <Input type="number" name="size" value={formData.size || ""} onChange={handleChange} onBlur={handleBlur} placeholder="0" className={cn("h-12 bg-background border-2 font-mono text-lg", errors.size && "border-red-500 ring-2 ring-red-500/20")} />
+                            {errors.size && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.size}</p>}
+                          </div>
+                        </div>
+
+                        {/* Live PnL / R:R Summary */}
+                        <TradeSummaryBar
+                          pnl={pnlResult}
+                          riskReward={riskRewardRatio}
+                          direction={formData.direction}
+                          entryPrice={formData.entry_price || 0}
+                          stopLoss={formData.stop_loss || 0}
+                          size={formData.size || 0}
+                        />
+
+                        <div className="space-y-3">
+                          <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2"><Clock className="w-3 h-3" /> Session</Label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {TRADING_SESSIONS.map(session => (
+                              <SessionCard key={session.value} session={session} isSelected={formData.tradeSession === session.value} onSelect={() => setFormData(prev => ({ ...prev, tradeSession: session.value }))} />
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="bg-muted/20 border-t p-4 flex justify-end"><Button size="lg" onClick={() => setActiveTab("strategy")} className="rounded-xl px-8">Next <ChevronRight className="ml-2 w-4 h-4" /></Button></CardFooter>
+                    </Card>
+                  </TabsContent>
+
+                  {/* TAB 2: STRATEGY (Unchanged Logic, just visual) */}
+                  <TabsContent value="strategy" className="space-y-8">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold">Strategy & Confluences</h2>
+                      <Button variant="outline" size="sm" onClick={() => setActiveTab("setup")}><ChevronLeft className="w-4 h-4 mr-2" /> Back</Button>
+                    </div>
+
+                    {strategies.length === 0 && (
+                      <Card className="border-2 border-amber-500/50 bg-amber-50/10 dark:bg-amber-950/10">
+                        <CardHeader>
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-amber-500/10 rounded-lg">
+                              <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                            </div>
+                            <div className="flex-1">
+                              <CardTitle className="text-amber-900 dark:text-amber-100">No Playbook Strategies Found</CardTitle>
+                              <CardDescription className="text-amber-700 dark:text-amber-300 mt-1">
+                                You need to create at least one strategy in your playbook before adding trades.
+                                Strategies help you track which setups work best for your trading style.
+                              </CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardFooter className="bg-amber-50/30 dark:bg-amber-950/20 border-t border-amber-200/30 dark:border-amber-800/30 flex gap-3">
+                          <Button
+                            variant="default"
+                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                            onClick={() => router.push("/playbook")}
                           >
-                            {h.name}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                {/* Pre/Post Trade Thoughts */}
-                <AccordionItem value="thoughts" className="border rounded-xl overflow-hidden bg-card shadow-sm">
-                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                    <div className="flex items-center gap-2 text-base font-bold">
-                      <BookOpen className="w-4 h-4 text-primary" />
-                      Trade Notes
-                      {(psychologyPreThoughts || formData.notes) && (
-                        <span className="text-xs font-normal text-muted-foreground ml-1">
-                          (filled)
-                        </span>
-                      )}
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-5 pb-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase text-muted-foreground">Pre-Trade Mindset</Label>
-                        <Textarea value={psychologyPreThoughts} onChange={(e) => setPsychologyPreThoughts(e.target.value)} className="min-h-[120px] bg-muted/10 border-2" placeholder="Mindset before entering..." />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase text-muted-foreground">Post-Trade Notes</Label>
-                        <Textarea name="notes" value={formData.notes || ""} onChange={handleChange} className="min-h-[120px] bg-muted/10 border-2" placeholder="Result breakdown..." />
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-
-                {/* Tags */}
-                <AccordionItem value="tags" className="border rounded-xl overflow-hidden bg-card shadow-sm">
-                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                    <div className="flex items-center gap-2 text-base font-bold">
-                      <Plus className="w-4 h-4 text-muted-foreground" />
-                      Custom Tags
-                      {psychologyCustomTags.length > 0 && (
-                        <span className="text-xs font-normal text-muted-foreground ml-1">
-                          ({psychologyCustomTags.length})
-                        </span>
-                      )}
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-5 pb-5 space-y-3">
-                    <div className="flex gap-2">
-                      <Input value={psychologyCustomTagInput} onChange={(e) => setPsychologyCustomTagInput(e.target.value)} className="max-w-xs" placeholder="Add tag..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPsychologyCustomTag())} />
-                      <Button type="button" variant="secondary" onClick={addPsychologyCustomTag}><Plus className="w-4 h-4" /></Button>
-                    </div>
-                    {psychologyCustomTags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {psychologyCustomTags.map(t => (
-                          <Badge key={t} variant="secondary" onClick={() => removePsychologyCustomTag(t)} className="cursor-pointer hover:bg-destructive/20">{t} &times;</Badge>
-                        ))}
-                      </div>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Strategy
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setActiveTab("setup")}
+                          >
+                            Go Back
+                          </Button>
+                        </CardFooter>
+                      </Card>
                     )}
-                  </AccordionContent>
-                </AccordionItem>
 
-                {/* Screenshots */}
-                <AccordionItem value="screenshots" className="border rounded-xl overflow-hidden bg-card shadow-sm">
-                  <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
-                    <div className="flex items-center gap-2 text-base font-bold">
-                      <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                      Screenshots
-                      {(formData.screenshotBeforeUrl || formData.screenshotAfterUrl) && (
-                        <span className="text-xs font-normal text-muted-foreground ml-1">
-                          (attached)
-                        </span>
-                      )}
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-5 pb-5">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs uppercase font-bold text-muted-foreground">Before</Label>
-                        <Input placeholder="https://..." name="screenshotBeforeUrl" value={formData.screenshotBeforeUrl || ""} onChange={handleChange} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs uppercase font-bold text-muted-foreground">After</Label>
-                        <Input placeholder="https://..." name="screenshotAfterUrl" value={formData.screenshotAfterUrl || ""} onChange={handleChange} />
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                    {strategies.length > 0 && renderSection("Select Strategy", BookOpen,
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {strategies.map(strat => {
+                          const isSelected = formData.playbook_strategy_id === strat.id
+                          return (
+                            <div key={strat.id} className="flex flex-col gap-4">
+                              <StrategyItemCard
+                                title={strat.name}
+                                description={strat.description || ""}
+                                tags={strat.tags || []}
+                                winRate={strat.win_rate || 0}
+                                isSelected={isSelected}
+                                onToggle={() => handleStrategySelect(strat)}
+                              />
 
-              <div className="flex justify-end pt-4">
-                <Button onClick={handleReviewOpen} disabled={isSubmitting} size="lg" className={cn("w-full md:w-auto px-12 rounded-xl text-lg shadow-xl transition-transform hover:scale-105", submitBtnClass)}>
-                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
-                  Log Trade
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+                              {isSelected && (
+                                <div className="ml-4 pl-4 border-l-2 border-primary/20 space-y-4 animate-in slide-in-from-top-2">
+                                  {strat.setups && strat.setups.length > 0 && (
+                                    <div className="space-y-2">
+                                      <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary tracking-wider">
+                                        <GitBranch className="w-3 h-3" /> Active Setups
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {strat.setups.map(setup => (
+                                          <Badge
+                                            key={setup.id}
+                                            variant={selectedSetupId === setup.id ? "default" : "outline"}
+                                            className="cursor-pointer px-3 py-1.5 hover:bg-primary/20 transition-colors"
+                                            onClick={() => handleSetupSelect(setup, strat.name)}
+                                          >
+                                            {selectedSetupId === setup.id && <CheckCircle className="w-3 h-3 mr-1" />}
+                                            {setup.name}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {strat.rules && strat.rules.length > 0 && (
+                                    <div className="space-y-2 pt-2">
+                                      <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                                        <Database className="w-3 h-3" /> Confluence Checklist
+                                      </div>
+                                      <div className="space-y-2">
+                                        {strat.rules.map(rule => (
+                                          <RuleItem
+                                            key={rule.id}
+                                            rule={rule}
+                                            isChecked={formData.executed_rules?.includes(rule.id) || false}
+                                            onToggle={() => handleRuleToggle(rule.id)}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>,
+                      "text-indigo-600", "bg-indigo-50/10", "border-indigo-200 dark:border-indigo-900"
+                    )}
+
+                    {strategies.length > 0 && (
+                      <Card className="border-0 shadow-md bg-card">
+                        <CardContent className="p-6">
+                          <Label className="mb-3 block font-bold text-sm uppercase text-muted-foreground">Trade Narrative</Label>
+                          <Input value={formData.setupName || ""} onChange={handleChange} name="setupName" className="h-12 text-lg bg-muted/30 border-2" placeholder="e.g. London Silver Bullet..." />
+                        </CardContent>
+                        <CardFooter className="bg-muted/20 border-t p-4 flex justify-end">
+                          <Button
+                            size="lg"
+                            onClick={() => setActiveTab("psychology")}
+                            className="rounded-xl px-8"
+                          >
+                            Next <ChevronRight className="ml-2 w-4 h-4" />
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    )}
+                  </TabsContent>
+
+                  {/* TAB 3: PSYCHOLOGY */}
+                  <TabsContent value="psychology" className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-2xl font-bold">Psychology</h2>
+                      <Button variant="outline" size="sm" onClick={() => setActiveTab("strategy")}><ChevronLeft className="w-4 h-4 mr-2" /> Back</Button>
+                    </div>
+
+                    {/* Mood — always visible */}
+                    <Card className="border-0 shadow-lg">
+                      <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Brain className="w-5 h-5 text-primary" /> Emotional State</CardTitle></CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-3 md:grid-cols-7 gap-3">
+                          {MOODS.map(m => (
+                            <button key={m.id} type="button" onClick={() => setPsychologyMood(m.id)} className={cn("flex flex-col items-center p-3 rounded-xl border-2 transition-all hover:scale-105", psychologyMood === m.id ? m.color : "border-transparent bg-muted/30 hover:bg-muted")}>
+                              <span className="text-2xl mb-1">{m.emoji}</span>
+                              <span className="text-xs font-bold">{m.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Collapsible sections */}
+                    <Accordion type="multiple" defaultValue={["habits"]} className="space-y-4">
+                      {/* Habits (good + bad combined) */}
+                      <AccordionItem value="habits" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                        <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                          <div className="flex items-center gap-2 text-base font-bold">
+                            <CheckCircle className="w-4 h-4 text-profit" />
+                            Habits
+                            {(goodHabits.length > 0 || badHabits.length > 0) && (
+                              <span className="text-xs font-normal text-muted-foreground ml-1">
+                                ({goodHabits.length} good, {badHabits.length} bad)
+                              </span>
+                            )}
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 pb-5 space-y-5">
+                          {/* Good */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1 bg-profit/10 rounded">
+                                <CheckCircle className="w-3.5 h-3.5 text-profit" />
+                              </div>
+                              <span className="text-sm font-semibold text-foreground">Good Habits</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {GOOD_HABITS.map(h => (
+                                <Badge
+                                  key={h.id}
+                                  variant={goodHabits.includes(h.id) ? "default" : "outline"}
+                                  className={cn(
+                                    "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
+                                    goodHabits.includes(h.id)
+                                      ? "bg-profit hover:bg-profit/90 text-profit-foreground border-transparent shadow-sm"
+                                      : "hover:bg-profit/10 hover:text-profit hover:border-profit/50"
+                                  )}
+                                  onClick={() => toggleGoodHabit(h.id)}
+                                >
+                                  {h.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <Separator />
+                          {/* Bad */}
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1 bg-loss/10 rounded">
+                                <Ban className="w-3.5 h-3.5 text-loss" />
+                              </div>
+                              <span className="text-sm font-semibold text-foreground">Bad Habits</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {BAD_HABITS.map(h => (
+                                <Badge
+                                  key={h.id}
+                                  variant={badHabits.includes(h.id) ? "destructive" : "outline"}
+                                  className={cn(
+                                    "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
+                                    badHabits.includes(h.id)
+                                      ? "bg-loss hover:bg-loss/90 text-loss-foreground border-transparent shadow-sm"
+                                      : "hover:bg-loss/10 hover:text-loss hover:border-loss/50"
+                                  )}
+                                  onClick={() => toggleBadHabit(h.id)}
+                                >
+                                  {h.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* Pre/Post Trade Thoughts */}
+                      <AccordionItem value="thoughts" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                        <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                          <div className="flex items-center gap-2 text-base font-bold">
+                            <BookOpen className="w-4 h-4 text-primary" />
+                            Trade Notes
+                            {(psychologyPreThoughts || formData.notes) && (
+                              <span className="text-xs font-normal text-muted-foreground ml-1">
+                                (filled)
+                              </span>
+                            )}
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 pb-5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase text-muted-foreground">Pre-Trade Mindset</Label>
+                              <Textarea value={psychologyPreThoughts} onChange={(e) => setPsychologyPreThoughts(e.target.value)} className="min-h-[120px] bg-muted/10 border-2" placeholder="Mindset before entering..." />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs font-bold uppercase text-muted-foreground">Post-Trade Notes</Label>
+                              <Textarea name="notes" value={formData.notes || ""} onChange={handleChange} className="min-h-[120px] bg-muted/10 border-2" placeholder="Result breakdown..." />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* Tags */}
+                      <AccordionItem value="tags" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                        <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                          <div className="flex items-center gap-2 text-base font-bold">
+                            <Plus className="w-4 h-4 text-muted-foreground" />
+                            Custom Tags
+                            {psychologyCustomTags.length > 0 && (
+                              <span className="text-xs font-normal text-muted-foreground ml-1">
+                                ({psychologyCustomTags.length})
+                              </span>
+                            )}
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 pb-5 space-y-3">
+                          <div className="flex gap-2">
+                            <Input value={psychologyCustomTagInput} onChange={(e) => setPsychologyCustomTagInput(e.target.value)} className="max-w-xs" placeholder="Add tag..." onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addPsychologyCustomTag())} />
+                            <Button type="button" variant="secondary" onClick={addPsychologyCustomTag}><Plus className="w-4 h-4" /></Button>
+                          </div>
+                          {psychologyCustomTags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {psychologyCustomTags.map(t => (
+                                <Badge key={t} variant="secondary" onClick={() => removePsychologyCustomTag(t)} className="cursor-pointer hover:bg-destructive/20">{t} &times;</Badge>
+                              ))}
+                            </div>
+                          )}
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      {/* Screenshots */}
+                      <AccordionItem value="screenshots" className="border rounded-xl overflow-hidden bg-card shadow-sm">
+                        <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+                          <div className="flex items-center gap-2 text-base font-bold">
+                            <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                            Screenshots
+                            {(formData.screenshotBeforeUrl || formData.screenshotAfterUrl) && (
+                              <span className="text-xs font-normal text-muted-foreground ml-1">
+                                (attached)
+                              </span>
+                            )}
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-5 pb-5">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-xs uppercase font-bold text-muted-foreground">Before</Label>
+                              <Input placeholder="https://..." name="screenshotBeforeUrl" value={formData.screenshotBeforeUrl || ""} onChange={handleChange} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs uppercase font-bold text-muted-foreground">After</Label>
+                              <Input placeholder="https://..." name="screenshotAfterUrl" value={formData.screenshotAfterUrl || ""} onChange={handleChange} />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+
+                    <div className="flex justify-end pt-4">
+                      <Button onClick={handleReviewOpen} disabled={isSubmitting} size="lg" className={cn("w-full md:w-auto px-12 rounded-xl text-lg shadow-xl transition-transform hover:scale-105", submitBtnClass)}>
+                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <CheckCircle className="w-5 h-5 mr-2" />}
+                        Log Trade
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 
 export { TradeForm }
 export type { TradeFormProps }
 export default TradeForm
-

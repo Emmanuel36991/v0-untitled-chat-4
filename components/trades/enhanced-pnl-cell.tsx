@@ -31,8 +31,8 @@ export function EnhancedPnLCell({ trade, displayFormat, showMultipleFormats = fa
   const isBreakeven = pnlResult.adjustedPnL === 0
 
   const getColorClasses = () => {
-    if (isBreakeven) return "text-orange-600 dark:text-orange-400"
-    return isProfit ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+    if (isBreakeven) return "text-warning"
+    return isProfit ? "text-profit" : "text-loss"
   }
 
   const getIcon = () => {
@@ -41,10 +41,10 @@ export function EnhancedPnLCell({ trade, displayFormat, showMultipleFormats = fa
   }
 
   const getBackgroundClasses = () => {
-    if (isBreakeven) return "bg-orange-50/50 dark:bg-orange-950/20 border-orange-200/50 dark:border-orange-800/50"
+    if (isBreakeven) return "bg-warning/10 border-warning/20"
     return isProfit
-      ? "bg-green-50/50 dark:bg-green-950/20 border-green-200/50 dark:border-green-800/50"
-      : "bg-red-50/50 dark:bg-red-950/20 border-red-200/50 dark:border-red-800/50"
+      ? "bg-profit/10 border-profit/20"
+      : "bg-loss/10 border-loss/20"
   }
 
   return (
@@ -61,7 +61,7 @@ export function EnhancedPnLCell({ trade, displayFormat, showMultipleFormats = fa
           {displayFormat !== "dollars" && (
             <Badge
               variant="outline"
-              className="text-xs font-medium px-2 py-1 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors duration-200"
+              className="text-xs font-medium px-2 py-1 bg-card/50 backdrop-blur-sm hover:bg-card transition-colors duration-200"
             >
               {formatPnLDisplay(pnlResult, "dollars", trade.instrument)}
             </Badge>
@@ -69,7 +69,7 @@ export function EnhancedPnLCell({ trade, displayFormat, showMultipleFormats = fa
           {displayFormat !== "points" && (
             <Badge
               variant="outline"
-              className="text-xs font-medium px-2 py-1 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors duration-200"
+              className="text-xs font-medium px-2 py-1 bg-card/50 backdrop-blur-sm hover:bg-card transition-colors duration-200"
             >
               {formatPnLDisplay(pnlResult, "points", trade.instrument)}
             </Badge>
@@ -77,7 +77,7 @@ export function EnhancedPnLCell({ trade, displayFormat, showMultipleFormats = fa
           {displayFormat !== "percentage" && (
             <Badge
               variant="outline"
-              className="text-xs font-medium px-2 py-1 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors duration-200"
+              className="text-xs font-medium px-2 py-1 bg-card/50 backdrop-blur-sm hover:bg-card transition-colors duration-200"
             >
               {formatPnLDisplay(pnlResult, "percentage", trade.instrument)}
             </Badge>

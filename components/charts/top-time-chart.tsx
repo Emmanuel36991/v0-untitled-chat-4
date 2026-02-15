@@ -51,7 +51,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       <p className="text-xs font-semibold text-foreground">
         {data.hourLabel}
       </p>
-      <p className={`text-sm font-bold font-mono ${data.pnl >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+      <p className={`text-sm font-bold font-mono ${data.pnl >= 0 ? "text-profit" : "text-loss"}`}>
         {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
       </p>
       <p className="text-[10px] text-muted-foreground capitalize">{data.outcome}</p>
@@ -90,7 +90,7 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
   // Compute tick values from actual data
   const allHours = useMemo(() => {
     const hours = new Set<number>()
-    ;[...winData, ...lossData].forEach((d) => hours.add(d.hour))
+      ;[...winData, ...lossData].forEach((d) => hours.add(d.hour))
     return Array.from(hours).sort((a, b) => a - b)
   }, [winData, lossData])
 
@@ -145,7 +145,7 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
               <Scatter
                 name="Wins"
                 data={winData}
-                fill="#10b981"
+                fill="var(--profit)"
                 fillOpacity={0.85}
                 r={5}
                 shape="circle"
@@ -153,7 +153,7 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
               <Scatter
                 name="Losses"
                 data={lossData}
-                fill="#f43f5e"
+                fill="var(--loss)"
                 fillOpacity={0.85}
                 r={5}
                 shape="circle"
@@ -164,11 +164,11 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
         {hasData && (
           <div className="flex items-center justify-center gap-5 pt-1 pb-1">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="inline-block h-2 w-2 rounded-full bg-profit" />
               Profit
             </div>
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-rose-500" />
+              <span className="inline-block h-2 w-2 rounded-full bg-loss" />
               Loss
             </div>
           </div>

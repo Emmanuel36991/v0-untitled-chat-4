@@ -28,18 +28,18 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
     const monthEnd = endOfMonth(currentMonth)
     const calendarStart = startOfWeek(monthStart, { weekStartsOn: 0 })
     const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
-    
+
     const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
-    
+
     return days.map(date => {
-      const dayTrades = trades.filter(trade => 
+      const dayTrades = trades.filter(trade =>
         trade.entry_time && isSameDay(new Date(trade.entry_time), date)
       )
-      
+
       const pnl = dayTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0)
       const wins = dayTrades.filter(t => (t.pnl || 0) > 0).length
       const winRate = dayTrades.length > 0 ? (wins / dayTrades.length) * 100 : 0
-      
+
       return {
         date,
         pnl,
@@ -53,17 +53,17 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
   const monthStats = useMemo(() => {
     const monthStart = startOfMonth(currentMonth)
     const monthEnd = endOfMonth(currentMonth)
-    
+
     const monthTrades = trades.filter(trade => {
       if (!trade.entry_time) return false
       const tradeDate = new Date(trade.entry_time)
       return tradeDate >= monthStart && tradeDate <= monthEnd
     })
-    
+
     const totalPnl = monthTrades.reduce((sum, t) => sum + (t.pnl || 0), 0)
     const wins = monthTrades.filter(t => (t.pnl || 0) > 0).length
     const winRate = monthTrades.length > 0 ? (wins / monthTrades.length) * 100 : 0
-    
+
     return {
       totalTrades: monthTrades.length,
       totalPnl,
@@ -73,13 +73,13 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
   }, [trades, currentMonth])
 
   const getPnlColor = (pnl: number) => {
-    if (pnl === 0) return 'bg-gray-100 dark:bg-gray-800/40'
+    if (pnl === 0) return 'bg-muted/40'
     if (pnl > 0) {
       const intensity = Math.min(Math.abs(pnl) / 5000, 1)
-      return `bg-emerald-500/[${Math.max(intensity, 0.15)}]`
+      return `bg-profit/[${Math.max(intensity, 0.15)}]`
     } else {
       const intensity = Math.min(Math.abs(pnl) / 5000, 1)
-      return `bg-rose-500/[${Math.max(intensity, 0.15)}]`
+      return `bg-loss/[${Math.max(intensity, 0.15)}]`
     }
   }
 
@@ -87,7 +87,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
     if (pnl === 0) return {}
     const intensity = Math.min(Math.abs(pnl) / 5000, 1)
     const alpha = Math.max(intensity, 0.15)
-    
+
     if (pnl > 0) {
       return { backgroundColor: `rgba(16, 185, 129, ${alpha})` }
     } else {
@@ -108,7 +108,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
               {format(currentMonth, 'MMMM yyyy')}
             </h3>
           </div>
-          
+
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -147,7 +147,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
             <span className="text-muted-foreground">Win Rate:</span>
             <span className={cn(
               "font-semibold",
-              monthStats.winRate >= 50 ? "text-emerald-500" : "text-rose-500"
+              monthStats.winRate >= 50 ? "text-profit" : "text-loss"
             )}>
               {monthStats.winRate.toFixed(1)}%
             </span>
@@ -156,7 +156,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
             <span className="text-muted-foreground">P&L:</span>
             <span className={cn(
               "font-semibold",
-              monthStats.totalPnl >= 0 ? "text-emerald-500" : "text-rose-500"
+              monthStats.totalPnl >= 0 ? "text-profit" : "text-loss"
             )}>
               ${monthStats.totalPnl.toLocaleString()}
             </span>
@@ -184,12 +184,12 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
             const isCurrentDay = isToday(day.date)
             const isSelectedDay = selectedDate && isSameDay(selectedDate, day.date)
             const hasTrades = day.trades.length > 0
-            
+
             const handleDayClick = () => {
               setSelectedDate(isSelectedDay ? null : day.date)
               console.log('[v0] Selected date:', format(day.date, 'yyyy-MM-dd'), 'Trades:', day.trades.length, 'PnL:', day.pnl)
             }
-            
+
             return (
               <div
                 key={index}
@@ -212,8 +212,8 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                     "text-sm font-bold",
                     !day.isCurrentMonth && "text-muted-foreground/50",
                     day.isCurrentMonth && !hasTrades && "text-muted-foreground",
-                    day.isCurrentMonth && hasTrades && day.pnl >= 0 && "text-emerald-700 dark:text-emerald-300",
-                    day.isCurrentMonth && hasTrades && day.pnl < 0 && "text-rose-700 dark:text-rose-300",
+                    day.isCurrentMonth && hasTrades && day.pnl >= 0 && "text-profit",
+                    day.isCurrentMonth && hasTrades && day.pnl < 0 && "text-loss",
                     isCurrentDay && "text-primary font-extrabold",
                     isSelectedDay && "text-primary font-extrabold"
                   )}>
@@ -226,7 +226,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                   <div className="flex flex-col items-center justify-center flex-1 px-2">
                     <div className={cn(
                       "flex items-center gap-1 text-sm font-bold",
-                      day.pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                      day.pnl >= 0 ? "text-profit" : "text-loss"
                     )}>
                       {day.pnl >= 0 ? (
                         <TrendingUp className="w-4 h-4" />
@@ -247,7 +247,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                       </div>
                       <div className={cn(
                         "font-medium",
-                        day.winRate >= 50 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+                        day.winRate >= 50 ? "text-profit" : "text-loss"
                       )}>
                         {day.winRate.toFixed(0)}%
                       </div>
@@ -274,7 +274,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                           <span className="text-muted-foreground">P&L:</span>
                           <span className={cn(
                             "font-bold",
-                            day.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
+                            day.pnl >= 0 ? "text-profit" : "text-loss"
                           )}>
                             {day.pnl >= 0 ? '+' : ''}{day.pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                           </span>
@@ -283,7 +283,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                           <span className="text-muted-foreground">Win Rate:</span>
                           <span className={cn(
                             "font-semibold",
-                            day.winRate >= 50 ? "text-emerald-500" : "text-rose-500"
+                            day.winRate >= 50 ? "text-profit" : "text-loss"
                           )}>
                             {day.winRate.toFixed(1)}%
                           </span>
@@ -301,15 +301,15 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
       {/* Legend */}
       <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/30" />
+          <div className="w-3 h-3 rounded bg-profit/20 border border-profit/30" />
           <span>Profitable</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-rose-500/20 border border-rose-500/30" />
+          <div className="w-3 h-3 rounded bg-loss/20 border border-loss/30" />
           <span>Loss</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-gray-200 dark:bg-gray-800 border border-border" />
+          <div className="w-3 h-3 rounded bg-muted border border-border" />
           <span>No Trades</span>
         </div>
       </div>

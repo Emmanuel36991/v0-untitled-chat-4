@@ -222,6 +222,8 @@ function TradingViewChart({
           className,
         )}
         style={{ backgroundColor: CHART_COLORS.background }}
+        role="img"
+        aria-label="Trading chart - no data available"
       >
         No chart data available.
       </div>
@@ -233,6 +235,8 @@ function TradingViewChart({
       ref={containerRef}
       className={cn("w-full h-full min-h-[300px]", className)}
       style={{ backgroundColor: CHART_COLORS.background }}
+      role="img"
+      aria-label={`${instrument} candlestick trading chart`}
     />
   )
 }

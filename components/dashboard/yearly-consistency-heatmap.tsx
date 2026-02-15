@@ -21,51 +21,51 @@ function getPnLColor(pnl: number, tradeCount: number): string {
   if (tradeCount === 0) {
     return 'bg-muted/40 dark:bg-muted/20' // No trade - gray
   }
-  
+
   if (pnl > 0) {
     // Green shades for profit
-    if (pnl >= 500) return 'bg-emerald-600 dark:bg-emerald-500'
-    if (pnl >= 200) return 'bg-emerald-500 dark:bg-emerald-400'
-    if (pnl >= 100) return 'bg-emerald-400 dark:bg-emerald-500/70'
-    if (pnl >= 50) return 'bg-emerald-300 dark:bg-emerald-500/50'
-    return 'bg-emerald-200 dark:bg-emerald-500/30'
+    if (pnl >= 500) return 'bg-profit dark:bg-profit'
+    if (pnl >= 200) return 'bg-profit/80 dark:bg-profit/80'
+    if (pnl >= 100) return 'bg-profit/60 dark:bg-profit/60'
+    if (pnl >= 50) return 'bg-profit/40 dark:bg-profit/40'
+    return 'bg-profit/25 dark:bg-profit/25'
   } else if (pnl < 0) {
     // Red shades for loss
     const absLoss = Math.abs(pnl)
-    if (absLoss >= 500) return 'bg-rose-600 dark:bg-rose-500'
-    if (absLoss >= 200) return 'bg-rose-500 dark:bg-rose-400'
-    if (absLoss >= 100) return 'bg-rose-400 dark:bg-rose-500/70'
-    if (absLoss >= 50) return 'bg-rose-300 dark:bg-rose-500/50'
-    return 'bg-rose-200 dark:bg-rose-500/30'
+    if (absLoss >= 500) return 'bg-loss dark:bg-loss'
+    if (absLoss >= 200) return 'bg-loss/80 dark:bg-loss/80'
+    if (absLoss >= 100) return 'bg-loss/60 dark:bg-loss/60'
+    if (absLoss >= 50) return 'bg-loss/40 dark:bg-loss/40'
+    return 'bg-loss/25 dark:bg-loss/25'
   }
-  
+
   // Breakeven
-  return 'bg-amber-300 dark:bg-amber-500/50'
+  return 'bg-warning/50 dark:bg-warning/50'
 }
 
 export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatmapProps) {
   const [hoveredDay, setHoveredDay] = useState<DayData | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
-  
+
   const safeTrades = Array.isArray(trades) ? trades : []
 
   // Generate the last 365 days and map trades to them
   const { weeks, monthLabels } = useMemo(() => {
     const today = new Date()
     const days: DayData[] = []
-    
+
     // Generate last 365 days
     for (let i = 364; i >= 0; i--) {
       const date = subDays(today, i)
-      
+
       // Find trades for this day
       const dayTrades = safeTrades.filter((trade) => {
         if (!trade?.date) return false
         return isSameDay(new Date(trade.date), date)
       })
-      
+
       const pnl = dayTrades.reduce((sum, trade) => sum + (trade?.pnl || 0), 0)
-      
+
       days.push({
         date,
         dateString: format(date, 'yyyy-MM-dd'),
@@ -73,15 +73,15 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
         tradeCount: dayTrades.length,
       })
     }
-    
+
     // Organize into weeks (7 rows x ~52 columns)
     // Each column is a week, each row is a day of the week (0=Sun to 6=Sat)
     const weeksArray: (DayData | null)[][] = []
     let currentWeek: (DayData | null)[] = Array(7).fill(null)
-    
+
     days.forEach((day, index) => {
       const dayOfWeek = getDay(day.date) // 0 = Sunday, 6 = Saturday
-      
+
       // If this is the first day, we need to pad the beginning
       if (index === 0) {
         const firstDayOfWeek = dayOfWeek
@@ -97,16 +97,16 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
         currentWeek[dayOfWeek] = day
       }
     })
-    
+
     // Push the last week
     if (currentWeek.some(d => d !== null)) {
       weeksArray.push(currentWeek)
     }
-    
+
     // Generate month labels
     const labels: { month: string; weekIndex: number }[] = []
     let lastMonth = ''
-    
+
     weeksArray.forEach((week, weekIndex) => {
       const firstDayOfWeek = week.find(d => d !== null)
       if (firstDayOfWeek) {
@@ -117,7 +117,7 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
         }
       }
     })
-    
+
     return { weeks: weeksArray, monthLabels: labels }
   }, [safeTrades])
 
@@ -148,7 +148,7 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
           ))}
         </div>
       </div>
-      
+
       {/* Heatmap grid */}
       <div className="flex gap-1">
         {/* Day of week labels */}
@@ -163,7 +163,7 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
             </div>
           ))}
         </div>
-        
+
         {/* Weeks grid */}
         <div className="flex gap-[3px] overflow-x-auto pb-2">
           {weeks.map((week, weekIndex) => (
@@ -184,20 +184,20 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
           ))}
         </div>
       </div>
-      
+
       {/* Legend */}
       <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
         <span>Less</span>
         <div className="flex items-center gap-1">
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-rose-500" title="Loss" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-rose-300 dark:bg-rose-500/50" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-loss" title="Loss" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-loss/40" />
           <div className="w-[11px] h-[11px] rounded-[2px] bg-muted/40 dark:bg-muted/20" title="No Trade" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-emerald-300 dark:bg-emerald-500/50" />
-          <div className="w-[11px] h-[11px] rounded-[2px] bg-emerald-500" title="Profit" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-profit/40" />
+          <div className="w-[11px] h-[11px] rounded-[2px] bg-profit" title="Profit" />
         </div>
         <span>More</span>
       </div>
-      
+
       {/* Tooltip */}
       {hoveredDay && (
         <div
@@ -217,10 +217,10 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
                 className={cn(
                   'font-mono font-bold',
                   hoveredDay.pnl > 0
-                    ? 'text-emerald-500'
+                    ? 'text-profit'
                     : hoveredDay.pnl < 0
-                    ? 'text-rose-500'
-                    : 'text-muted-foreground'
+                      ? 'text-loss'
+                      : 'text-muted-foreground'
                 )}
               >
                 {hoveredDay.pnl >= 0 ? '+' : ''}${hoveredDay.pnl.toLocaleString(undefined, { maximumFractionDigits: 2 })}

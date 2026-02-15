@@ -5,11 +5,6 @@ import Link from "next/link"
 import {
   format,
   subDays,
-  isSameDay,
-  eachDayOfInterval,
-  startOfMonth,
-  endOfMonth,
-  getDay,
   addMonths,
   subMonths,
 } from "date-fns"
@@ -106,40 +101,21 @@ import { getStrategies } from "@/app/actions/playbook-actions"
 import { EmptyState } from "@/components/empty-state"
 import { OnboardingChecklist } from "@/components/onboarding-checklist"
 import { AINeuralInsight } from "@/components/dashboard/ai-neural-insight"
-
-// ==========================================
-// 1. DATA MODELS & TYPES
-// ==========================================
-
-interface MetricCardProps {
-  title: string
-  value: string | number
-  change?: string
-  changeType?: "positive" | "negative" | "neutral"
-  icon: React.ElementType
-  iconColor: string
-  trendData?: any[]
-  subtitle?: string
-  tooltipInfo?: string
-  onClick?: () => void
-}
-
-interface CalendarHeatmapProps {
-  trades: Trade[]
-  currentDate: Date
-}
+import { MetricCard } from "@/components/dashboard/metric-card"
+import { CalendarHeatmap } from "@/components/dashboard/calendar-heatmap"
+import { CustomChartTooltip } from "@/components/dashboard/custom-chart-tooltip"
 
 // ==========================================
 // 2. CONSTANTS & CONFIGURATION
 // ==========================================
 
 const STRATEGY_COLORS = [
-  { bg: "bg-blue-500", stroke: "#3b82f6" },
-  { bg: "bg-purple-500", stroke: "#a855f7" },
-  { bg: "bg-emerald-500", stroke: "#10b981" },
-  { bg: "bg-amber-500", stroke: "#f59e0b" },
-  { bg: "bg-rose-500", stroke: "#f43f5e" },
-  { bg: "bg-cyan-500", stroke: "#06b6d4" },
+  { bg: "bg-chart-1", stroke: "var(--chart-1)" },
+  { bg: "bg-chart-2", stroke: "var(--chart-2)" },
+  { bg: "bg-chart-3", stroke: "var(--chart-3)" },
+  { bg: "bg-chart-4", stroke: "var(--chart-4)" },
+  { bg: "bg-chart-5", stroke: "var(--chart-5)" },
+  { bg: "bg-primary", stroke: "var(--primary)" },
 ]
 
 const STRATEGY_ICONS: Record<string, React.ElementType> = {
@@ -209,285 +185,12 @@ const getGreeting = () => {
 // 4. SUB-COMPONENTS
 // ==========================================
 
-// --- Animated Title Component ---
 const AnimatedTitle = React.memo<{ children: React.ReactNode; className?: string }>(
   ({ children, className }) => (
-    <h1
-      className={cn(
-        "text-3xl font-extrabold tracking-tight",
-        "bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-slate-700 to-gray-900 dark:from-white dark:via-slate-200 dark:to-white",
-        className
-      )}
-    >
+    <h1 className={cn("text-3xl font-extrabold tracking-tight text-foreground", className)}>
       {children}
     </h1>
   )
-)
-
-// --- Custom Chart Tooltip ---
-const CustomChartTooltip = ({
-  active,
-  payload,
-  label,
-  currency = false,
-  currencyCode = "USD",
-  convertFn,
-}: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-700 p-3 rounded-xl shadow-xl z-50">
-        <p className="text-xs font-medium text-muted-foreground mb-2 border-b border-gray-100 dark:border-gray-800 pb-1">
-          {label}
-        </p>
-        {payload.map((entry: any, index: number) => {
-          const value = typeof entry.value === "number" && convertFn
-            ? convertFn(entry.value)
-            : entry.value
-
-          return (
-            <div key={index} className="flex items-center justify-between gap-4 py-1">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ backgroundColor: entry.color }}
-                />
-                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 capitalize">
-                  {entry.name === "cumulativePnl" ? "Net P&L" : entry.name}
-                </p>
-              </div>
-              <p
-                className={cn(
-                  "text-xs font-bold font-mono",
-                  typeof value === "number" && value > 0
-                    ? "text-green-600 dark:text-green-400"
-                    : typeof value === "number" && value < 0
-                      ? "text-red-600 dark:text-red-400"
-                      : "text-gray-900 dark:text-gray-100"
-                )}
-              >
-                {typeof value === "number"
-                  ? formatCurrencyValue(value, currencyCode as any, { showSign: true })
-                  : value}
-              </p>
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-  return null
-}
-
-// --- Metric Card Component ---
-const MetricCard = React.memo<MetricCardProps>(
-  ({
-    title,
-    value,
-    change,
-    changeType = "neutral",
-    icon: Icon,
-    iconColor,
-    trendData,
-    subtitle,
-    tooltipInfo,
-    onClick,
-  }) => (
-    <Card
-      className={cn(
-        "relative overflow-hidden border border-gray-200/60 dark:border-gray-800/60 shadow-sm transition-all duration-300 group cursor-pointer",
-        "bg-white dark:bg-gray-900/40 backdrop-blur-xl",
-        "hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5"
-      )}
-      onClick={onClick}
-    >
-      <CardContent className="p-6 relative z-10">
-        <div className="flex justify-between items-start mb-3">
-          <div
-            className={cn(
-              "p-2.5 rounded-xl transition-all duration-300 group-hover:scale-110",
-              iconColor,
-              "bg-opacity-10 dark:bg-opacity-20"
-            )}
-          >
-            <Icon className="h-5 w-5" />
-          </div>
-          {change && (
-            <Badge
-              variant="secondary"
-              className={cn(
-                "font-mono text-[10px] px-2 py-0.5 border-0",
-                changeType === "positive" &&
-                "text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10",
-                changeType === "negative" &&
-                "text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10",
-                changeType === "neutral" &&
-                "text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
-              )}
-            >
-              {changeType === "positive" ? (
-                <BreakoutIcon className="h-3 w-3 mr-1 inline" />
-              ) : changeType === "negative" ? (
-                <BreakoutIcon className="h-3 w-3 mr-1 inline rotate-180" />
-              ) : (
-                <MoreHorizontal className="h-3 w-3 mr-1 inline" />
-              )}
-              {change}
-            </Badge>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-            {title}
-            {tooltipInfo && (
-              <AlertCircle className="h-3 w-3 text-muted-foreground/50" />
-            )}
-          </div>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl font-bold tracking-tight text-foreground font-mono">
-              {value}
-            </h3>
-          </div>
-          {subtitle && (
-            <p className="text-[11px] text-muted-foreground/80 font-medium pt-1">
-              {subtitle}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-)
-
-// --- Calendar Heatmap Component (Fixed Logic) ---
-const CalendarHeatmap = React.memo<CalendarHeatmapProps>(
-  ({ trades, currentDate }) => {
-    const daysInMonth = useMemo(() => {
-      const start = startOfMonth(currentDate)
-      const end = endOfMonth(currentDate)
-      const days = eachDayOfInterval({ start, end })
-      const startDay = getDay(start)
-      // Pad empty days at start of month
-      return Array(startDay).fill(null).concat(days)
-    }, [currentDate])
-
-    const getDayData = (day: Date | null) => {
-      if (!day) return null
-      // Use embedded PnL calculation if 'pnl' property is missing from raw trade
-      const dayTrades = trades.filter((t) => isSameDay(new Date(t.date), day))
-      const pnl = dayTrades.reduce((acc, t) => {
-        const val =
-          t.pnl !== undefined
-            ? t.pnl
-            : calculateInstrumentPnL(
-              t.instrument,
-              t.direction,
-              t.entry_price,
-              t.exit_price,
-              t.size
-            ).adjustedPnL
-        return acc + val
-      }, 0)
-      return { day, pnl, count: dayTrades.length }
-    }
-
-    return (
-      <div className="w-full select-none">
-        <div className="grid grid-cols-7 gap-2 mb-3">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-            <div
-              key={d}
-              className="text-center text-[10px] uppercase font-bold text-muted-foreground tracking-wider"
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          <TooltipProvider delayDuration={100}>
-            {daysInMonth.map((day, idx) => {
-              const data = getDayData(day)
-              // Empty slot for padding
-              if (!day) return <div key={`empty-${idx}`} className="aspect-square" />
-
-              // Determine color intensity
-              let bgClass = "bg-gray-100 dark:bg-gray-800/50"
-              let opacity = 1
-
-              if (data && data.count > 0) {
-                if (data.pnl > 0) bgClass = "bg-emerald-500"
-                else if (data.pnl < 0) bgClass = "bg-rose-500"
-                else bgClass = "bg-amber-400"
-
-                // Dynamic opacity based on PnL size (capped at 1000 for max opacity)
-                opacity = Math.min(Math.abs(data.pnl) / 1000, 1) * 0.6 + 0.4
-              }
-
-              const CellContent = (
-                <div
-                  className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 dark:ring-offset-gray-950"
-                >
-                  <div
-                    className={cn(
-                      "absolute inset-0 rounded-md transition-colors duration-300",
-                      bgClass
-                    )}
-                    style={{ opacity: data && data.count > 0 ? opacity : 1 }}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span
-                      className={cn(
-                        "text-[10px] font-medium transition-colors",
-                        data && data.count > 0
-                          ? "text-white/90"
-                          : "text-gray-400 dark:text-gray-600"
-                      )}
-                    >
-                      {format(day, "d")}
-                    </span>
-                  </div>
-                </div>
-              )
-
-              if (data && data.count > 0) {
-                return (
-                  <Tooltip key={day.toISOString()}>
-                    <TooltipTrigger asChild>{CellContent}</TooltipTrigger>
-                    <TooltipContent side="top" className="p-0 border-0 bg-transparent shadow-none">
-                      <div className="p-2.5 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl text-xs">
-                        <p className="font-semibold mb-1">
-                          {format(day, "MMM dd, yyyy")}
-                        </p>
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between gap-4">
-                            <span className="text-muted-foreground">Net P&L:</span>
-                            <span
-                              className={cn(
-                                "font-mono font-bold",
-                                data.pnl >= 0 ? "text-emerald-500" : "text-rose-500"
-                              )}
-                            >
-                              {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between gap-4">
-                            <span className="text-muted-foreground">Trades:</span>
-                            <span className="font-mono">{data.count}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                )
-              }
-
-              return <div key={day.toISOString()}>{CellContent}</div>
-            })}
-          </TooltipProvider>
-        </div>
-      </div>
-    )
-  }
 )
 
 // ==========================================
@@ -735,7 +438,7 @@ export default function DashboardPage() {
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6">
           <div className="space-y-1 relative">
             <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              <span className="flex items-center text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full">
+              <span className="flex items-center text-warning bg-warning/10 px-2 py-0.5 rounded-full">
                 <MomentumFlowIcon className="w-3 h-3 mr-1" /> {getGreeting()}
               </span>
               <span>•</span>
@@ -747,8 +450,8 @@ export default function DashboardPage() {
             </AnimatedTitle>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-              <NeuralSparkIcon className="w-4 h-4 text-indigo-500" />
-              <span className="italic text-gray-500 dark:text-gray-400">
+              <NeuralSparkIcon className="w-4 h-4 text-primary" />
+              <span className="italic text-muted-foreground">
                 "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>
             </div>
@@ -756,7 +459,7 @@ export default function DashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
             {/* Period Selector */}
-            <div className="bg-white dark:bg-gray-900/60 p-1 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center gap-1 backdrop-blur-sm">
+            <div className="bg-card p-1 rounded-xl shadow-sm border border-border flex items-center gap-1 backdrop-blur-sm">
               {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
                 <Button
                   key={period}
@@ -767,7 +470,7 @@ export default function DashboardPage() {
                     "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
                     selectedPeriod === period
                       ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   {period.toUpperCase()}
@@ -785,7 +488,7 @@ export default function DashboardPage() {
 
             <Separator
               orientation="vertical"
-              className="h-8 hidden xl:block mx-1 bg-gray-200 dark:bg-gray-800"
+              className="h-8 hidden xl:block mx-1 bg-border"
             />
 
             <div className="flex items-center gap-2">
@@ -794,7 +497,7 @@ export default function DashboardPage() {
                 size="icon"
                 onClick={() => loadTrades(false)}
                 className={cn(
-                  "rounded-xl h-10 w-10 border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800",
+                  "rounded-xl h-10 w-10 border-border hover:bg-muted",
                   isRefreshing && "animate-spin text-primary"
                 )}
                 title="Refresh Data"
@@ -803,7 +506,7 @@ export default function DashboardPage() {
               </Button>
 
               <Button
-                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-[1.02]"
+                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 asChild
               >
                 <Link href="/add-trade">
@@ -837,7 +540,7 @@ export default function DashboardPage() {
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
             icon={Wallet}
-            iconColor="text-blue-600 dark:text-blue-400"
+            iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
           />
@@ -854,7 +557,7 @@ export default function DashboardPage() {
                   : "negative"
             }
             icon={Target}
-            iconColor="text-purple-600 dark:text-purple-400"
+            iconColor="text-chart-2"
             trendData={[
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
             ]} // Simple trend simulation
@@ -873,7 +576,7 @@ export default function DashboardPage() {
                   : "negative"
             }
             icon={ProfitFactorIcon}
-            iconColor="text-emerald-600 dark:text-emerald-400"
+            iconColor="text-chart-3"
             subtitle="Gross Profit / Gross Loss"
           />
 
@@ -883,7 +586,7 @@ export default function DashboardPage() {
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
             icon={AvgReturnIcon}
-            iconColor="text-amber-600 dark:text-amber-400"
+            iconColor="text-chart-4"
             trendData={chartData.map((d) => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"
           />
@@ -896,11 +599,11 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card
               className={cn(
-                "border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-gray-200 dark:ring-gray-800",
+                "border-0 shadow-lg backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-border",
                 chartViewMode === "calendar" ? "h-auto" : "h-[550px]"
               )}
             >
-              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800/50">
+              <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
                 <div className="space-y-1">
                   <CardTitle className="text-lg font-bold flex items-center gap-2">
                     <Activity className="w-5 h-5 text-primary" />
@@ -916,22 +619,22 @@ export default function DashboardPage() {
                   onValueChange={(v: any) => setChartViewMode(v)}
                   className="w-auto"
                 >
-                  <TabsList className="h-9 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <TabsList className="h-9 p-1 bg-muted rounded-lg">
                     <TabsTrigger
                       value="cumulative"
-                      className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm"
+                      className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
                     >
                       Growth
                     </TabsTrigger>
                     <TabsTrigger
                       value="daily"
-                      className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm"
+                      className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
                     >
                       Daily P&L
                     </TabsTrigger>
                     <TabsTrigger
                       value="calendar"
-                      className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm"
+                      className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"
                     >
                       Calendar
                     </TabsTrigger>
@@ -1010,12 +713,12 @@ export default function DashboardPage() {
                               >
                                 <stop
                                   offset="5%"
-                                  stopColor="#3b82f6"
+                                  stopColor="var(--primary)"
                                   stopOpacity={0.2}
                                 />
                                 <stop
                                   offset="95%"
-                                  stopColor="#3b82f6"
+                                  stopColor="var(--primary)"
                                   stopOpacity={0}
                                 />
                               </linearGradient>
@@ -1023,21 +726,21 @@ export default function DashboardPage() {
                             <CartesianGrid
                               strokeDasharray="3 3"
                               vertical={false}
-                              stroke="#e5e7eb"
+                              stroke="var(--border)"
                               opacity={0.2}
                             />
                             <XAxis
                               dataKey="date"
                               axisLine={false}
                               tickLine={false}
-                              tick={{ fontSize: 11, fill: "#6b7280" }}
+                              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                               minTickGap={40}
                               dy={10}
                             />
                             <YAxis
                               axisLine={false}
                               tickLine={false}
-                              tick={{ fontSize: 11, fill: "#6b7280" }}
+                              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                               tickFormatter={(value) => {
                                 if (displayFormat === "dollars") {
                                   const symbol = selectedCurrency === "USD" ? "$" : selectedCurrency === "EUR" ? "€" : selectedCurrency === "GBP" ? "£" : selectedCurrency === "JPY" ? "¥" : "$"
@@ -1054,14 +757,14 @@ export default function DashboardPage() {
                             <RechartsTooltip
                               content={<CustomChartTooltip currency currencyCode={selectedCurrency} convertFn={convert} />}
                               cursor={{
-                                stroke: "#3b82f6",
+                                stroke: "var(--primary)",
                                 strokeWidth: 1,
                                 strokeDasharray: "4 4",
                               }}
                             />
                             <ReferenceLine
                               y={0}
-                              stroke="#9ca3af"
+                              stroke="var(--muted-foreground)"
                               strokeDasharray="3 3"
                               opacity={0.5}
                             />
@@ -1069,7 +772,7 @@ export default function DashboardPage() {
                               name="Cumulative P&L"
                               type="monotone"
                               dataKey="cumulativePnl"
-                              stroke="#3b82f6"
+                              stroke="var(--primary)"
                               strokeWidth={2.5}
                               fillOpacity={1}
                               fill="url(#colorPnLMain)"
@@ -1084,21 +787,21 @@ export default function DashboardPage() {
                             <CartesianGrid
                               strokeDasharray="3 3"
                               vertical={false}
-                              stroke="#e5e7eb"
+                              stroke="var(--border)"
                               opacity={0.2}
                             />
                             <XAxis
                               dataKey="date"
                               axisLine={false}
                               tickLine={false}
-                              tick={{ fontSize: 11, fill: "#6b7280" }}
+                              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                               minTickGap={40}
                               dy={10}
                             />
                             <YAxis
                               axisLine={false}
                               tickLine={false}
-                              tick={{ fontSize: 11, fill: "#6b7280" }}
+                              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                               tickFormatter={(value) => `$${value}`}
                               width={60}
                             />
@@ -1108,7 +811,7 @@ export default function DashboardPage() {
                             />
                             <ReferenceLine
                               y={0}
-                              stroke="#9ca3af"
+                              stroke="var(--muted-foreground)"
                               opacity={0.5}
                             />
                             <Bar
@@ -1121,7 +824,7 @@ export default function DashboardPage() {
                                 <Cell
                                   key={`cell-${index}`}
                                   fill={
-                                    entry.tradePnl >= 0 ? "#10b981" : "#f43f5e"
+                                    entry.tradePnl >= 0 ? "var(--profit)" : "var(--loss)"
                                   }
                                   fillOpacity={0.9}
                                 />
@@ -1139,10 +842,10 @@ export default function DashboardPage() {
 
           {/* Strategy Pie Chart (Right, 1/3 width) */}
           <div className="lg:col-span-1 space-y-6 flex flex-col">
-            <Card className="flex-1 border-0 shadow-lg dark:shadow-2xl dark:bg-gray-900/60 ring-1 ring-gray-200 dark:ring-gray-800 backdrop-blur-sm">
-              <CardHeader className="pb-2 border-b border-gray-100 dark:border-gray-800/50">
+            <Card className="flex-1 border-0 shadow-lg ring-1 ring-border backdrop-blur-sm">
+              <CardHeader className="pb-2 border-b border-border">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <PieChart className="w-5 h-5 text-purple-500" />
+                  <PieChart className="w-5 h-5 text-chart-5" />
                   Strategy Edge
                 </CardTitle>
               </CardHeader>
@@ -1175,10 +878,10 @@ export default function DashboardPage() {
                     </RechartsPieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-3xl font-bold tracking-tighter text-gray-900 dark:text-white">
+                    <span className="text-3xl font-bold tracking-tighter text-foreground">
                       {strategyData.length}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">
+                    <span className="text-xs uppercase font-bold text-muted-foreground tracking-wide">
                       Setups
                     </span>
                   </div>
@@ -1190,13 +893,13 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={strategy.name}
-                        className="flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div
                             className={`w-2.5 h-2.5 rounded-full shrink-0 ${color.bg}`}
                           />
-                          <span className="font-medium text-gray-700 dark:text-gray-300 truncate" title={strategy.name}>
+                          <span className="font-medium text-foreground/80 truncate" title={strategy.name}>
                             {strategy.name}
                           </span>
                         </div>
@@ -1208,8 +911,8 @@ export default function DashboardPage() {
                             className={cn(
                               "font-mono font-bold",
                               strategy.pnl >= 0
-                                ? "text-green-600 dark:text-green-500"
-                                : "text-red-600 dark:text-red-500"
+                                ? "text-profit"
+                                : "text-loss"
                             )}
                           >
                             ${strategy.pnl.toFixed(0)}
@@ -1228,11 +931,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-8">
 
           {/* Recent Trade List */}
-          <Card className="lg:col-span-2 border-0 shadow-lg dark:shadow-2xl overflow-hidden bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-gray-800">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/10 py-5">
+          <Card className="lg:col-span-2 border-0 shadow-lg overflow-hidden bg-card ring-1 ring-border">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/30 py-5">
               <div className="space-y-1">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-500" />
+                  <Clock className="w-5 h-5 text-chart-1" />
                   Recent Execution Log
                 </CardTitle>
               </div>
@@ -1240,7 +943,7 @@ export default function DashboardPage() {
                 variant="outline"
                 size="sm"
                 asChild
-                className="group border-gray-200 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800"
+                className="group border-border hover:bg-muted"
               >
                 <Link href="/trades" className="text-xs font-semibold">
                   View All{" "}
@@ -1260,15 +963,15 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={trade.id}
-                    className="flex items-center justify-between p-4 sm:p-5 hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-all border-b last:border-0 border-gray-100 dark:border-gray-800/50 group cursor-pointer"
+                    className="flex items-center justify-between p-4 sm:p-5 hover:bg-muted/50 transition-colors border-b last:border-0 border-border group cursor-pointer"
                   >
                     <div className="flex items-center gap-5">
                       <div
                         className={cn(
                           "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm border transition-colors",
                           isWin
-                            ? "bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
-                            : "bg-rose-50 border-rose-100 text-rose-600 dark:bg-rose-500/10 dark:border-rose-500/20 dark:text-rose-400"
+                            ? "bg-profit/10 border-profit/20 text-profit"
+                            : "bg-loss/10 border-loss/20 text-loss"
                         )}
                       >
                         {isLong ? (
@@ -1280,14 +983,14 @@ export default function DashboardPage() {
 
                       <div className="space-y-1">
                         <div className="flex items-center gap-2.5">
-                          <span className="font-bold text-gray-900 dark:text-gray-100 text-base">
+                          <span className="font-bold text-foreground text-base">
                             {trade.instrument}
                           </span>
                           <Badge
                             variant={isLong ? "default" : "destructive"}
                             className={cn(
-                              "text-[10px] px-1.5 py-0 h-5 font-bold uppercase tracking-wide opacity-80",
-                              isLong ? "bg-blue-600" : "bg-orange-600"
+                              "text-xs px-1.5 py-0 h-5 font-bold uppercase tracking-wide opacity-80",
+                              isLong ? "bg-long" : "bg-short"
                             )}
                           >
                             {trade.direction}
@@ -1298,8 +1001,8 @@ export default function DashboardPage() {
                             <Calendar className="w-3 h-3" />
                             {format(new Date(trade.date), "MMM dd • HH:mm")}
                           </span>
-                          <span className="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700" />
-                          <span className="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-400">
+                          <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                          <span className="flex items-center gap-1.5 font-medium text-muted-foreground">
                             <StrategyIcon className="w-3 h-3" />
                             {trade.setup_name || "Discretionary"}
                           </span>
@@ -1309,10 +1012,10 @@ export default function DashboardPage() {
 
                     <div className="flex items-center gap-8">
                       <div className="hidden md:block text-right space-y-1">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                        <p className="text-xs uppercase font-bold text-muted-foreground tracking-wider">
                           Prices
                         </p>
-                        <p className="text-xs font-mono font-medium text-gray-700 dark:text-gray-300">
+                        <p className="text-xs font-mono font-medium text-foreground/80">
                           <span className="opacity-60">
                             {trade.entry_price}
                           </span>{" "}
@@ -1326,8 +1029,8 @@ export default function DashboardPage() {
                           className={cn(
                             "font-bold text-base font-mono",
                             isWin
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-rose-600 dark:text-rose-400"
+                              ? "text-profit"
+                              : "text-loss"
                           )}
                         >
                           {tradePnl > 0 ? "+" : ""}
@@ -1336,10 +1039,10 @@ export default function DashboardPage() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            "text-[9px] h-4 px-1.5 border-0 uppercase font-bold",
+                            "text-xs h-4 px-1.5 border-0 uppercase font-bold",
                             isWin
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20"
-                              : "bg-rose-100 text-rose-700 dark:bg-rose-500/20"
+                              ? "bg-profit/15 text-profit"
+                              : "bg-loss/15 text-loss"
                           )}
                         >
                           {trade.outcome}
@@ -1349,7 +1052,7 @@ export default function DashboardPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-muted-foreground"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity rounded-full hover:bg-muted text-muted-foreground"
                         asChild
                       >
                         <Link href={`/trade-details/${trade.id}`}>
@@ -1377,15 +1080,15 @@ export default function DashboardPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Add Trade", icon: AddTradeIcon, href: "/add-trade", color: "bg-blue-600", desc: "Log Entry" },
-                { label: "Import", icon: TradeLedgerIcon, href: "/import", color: "bg-indigo-600", desc: "Sync Data" },
-                { label: "Playbook", icon: PlaybookIcon, href: "/playbook", color: "bg-amber-600", desc: "Strategies" },
-                { label: "AI Insights", icon: PatternEyeIcon, href: "/analytics?tab=intelligence", color: "bg-rose-600", desc: "Analysis" },
+                { label: "Add Trade", icon: AddTradeIcon, href: "/add-trade", color: "bg-primary", desc: "Log Entry" },
+                { label: "Import", icon: TradeLedgerIcon, href: "/import", color: "bg-chart-5", desc: "Sync Data" },
+                { label: "Playbook", icon: PlaybookIcon, href: "/playbook", color: "bg-warning", desc: "Strategies" },
+                { label: "AI Insights", icon: PatternEyeIcon, href: "/analytics?tab=intelligence", color: "bg-loss", desc: "Analysis" },
               ].map((action) => (
                 <Link
                   key={action.label}
                   href={action.href}
-                  className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-xl hover:border-primary/30 transition-all duration-300"
+                  className="group relative overflow-hidden rounded-2xl bg-card shadow-sm border border-border hover:shadow-xl hover:border-primary/30 transition-all duration-200"
                 >
                   <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
                     <div
@@ -1397,10 +1100,10 @@ export default function DashboardPage() {
                       <action.icon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 text-left">
-                      <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 leading-tight">
+                      <h4 className="font-bold text-sm text-foreground leading-tight">
                         {action.label}
                       </h4>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
                         {action.desc}
                       </p>
                     </div>

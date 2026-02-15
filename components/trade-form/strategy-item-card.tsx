@@ -62,7 +62,7 @@ export const StrategyItemCard = ({
             <Badge key={t} variant="secondary" className="text-[9px] px-1.5 h-5 font-bold bg-muted/50 border border-border/50 text-muted-foreground">{t}</Badge>
           ))}
         </div>
-        <span className={cn("text-[10px] font-mono font-bold", (winRate || 0) > 50 ? "text-emerald-500" : "text-muted-foreground")}>{winRate || 0}% WR</span>
+        <span className={cn("text-[10px] font-mono font-bold", (winRate || 0) > 50 ? "text-profit" : "text-muted-foreground")}>{winRate || 0}% WR</span>
       </div>
     </button>
   )

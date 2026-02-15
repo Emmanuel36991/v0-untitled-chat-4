@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useEffect, useRef, useState, useCallback } from "react"
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import {
   createChart,
@@ -14,20 +14,24 @@ import { Loader2, AlertTriangle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-// --- Theme Colors ---
-const COLORS = {
-  background: "#09090b",
-  toolbar: "rgba(9, 9, 11, 0.5)",
-  text: "#71717a",
-  grid: "#18181b",
-  border: "#27272a",
-  crosshairLabel: "#6366f1",
-  bullish: "#22c55e",
-  bearish: "#ef4444",
-  volumeBullish: "rgba(34, 197, 94, 0.15)",
-  volumeBearish: "rgba(239, 68, 68, 0.15)",
-  maLine: "#f59e0b",
-} as const
+// --- Theme Colors (resolved from CSS variables at runtime) ---
+function getChartColors() {
+  const style = getComputedStyle(document.documentElement)
+  const get = (name: string) => style.getPropertyValue(name).trim()
+  return {
+    background: get("--background") ? `oklch(${get("--background")})` : "#09090b",
+    toolbar: get("--card") ? `color-mix(in oklch, oklch(${get("--card")}) 50%, transparent)` : "rgba(9, 9, 11, 0.5)",
+    text: get("--muted-foreground") ? `oklch(${get("--muted-foreground")})` : "#71717a",
+    grid: get("--border") ? `oklch(${get("--border")})` : "#18181b",
+    border: get("--border") ? `oklch(${get("--border")})` : "#27272a",
+    crosshairLabel: get("--primary") ? `oklch(${get("--primary")})` : "#6366f1",
+    bullish: get("--profit") ? `oklch(${get("--profit")})` : "#22c55e",
+    bearish: get("--loss") ? `oklch(${get("--loss")})` : "#ef4444",
+    volumeBullish: get("--profit") ? `color-mix(in oklch, oklch(${get("--profit")}) 15%, transparent)` : "rgba(34, 197, 94, 0.15)",
+    volumeBearish: get("--loss") ? `color-mix(in oklch, oklch(${get("--loss")}) 15%, transparent)` : "rgba(239, 68, 68, 0.15)",
+    maLine: get("--warning") ? `oklch(${get("--warning")})` : "#f59e0b",
+  }
+}
 
 interface TradingChartProps {
   instrument?: string
@@ -95,6 +99,8 @@ function TradingChart({
   const [ohlcData, setOhlcData] = useState<any[]>([])
   const [dataSource, setDataSource] = useState<string>("")
 
+  const colorsRef = useRef(typeof document !== "undefined" ? getChartColors() : null)
+
   const instrument = searchParams.get("symbol") || propInstrument || "ES"
   const config = INSTRUMENT_CONFIGS[instrument] || {
     name: instrument,
@@ -147,6 +153,10 @@ function TradingChart({
   // --- Chart Initialization (npm import, no CDN) ---
   useEffect(() => {
     if (!containerRef.current) return
+
+    // Resolve CSS variable colors at chart init time
+    const COLORS = getChartColors()
+    colorsRef.current = COLORS
 
     const chart = createChart(containerRef.current, {
       width: containerRef.current.clientWidth,
@@ -224,6 +234,7 @@ function TradingChart({
   // --- Update Chart Data ---
   useEffect(() => {
     if (!chartRef.current || !candleSeriesRef.current || ohlcData.length === 0) return
+    const COLORS = colorsRef.current || getChartColors()
 
     candleSeriesRef.current.setData(ohlcData)
 
@@ -275,37 +286,33 @@ function TradingChart({
   return (
     <div
       className={cn(
-        "flex flex-col h-full rounded-xl border border-zinc-800 overflow-hidden",
+        "flex flex-col h-full rounded-xl border border-border overflow-hidden bg-background",
         className
       )}
-      style={{ backgroundColor: COLORS.background }}
     >
       {/* Header / Toolbar */}
-      <div
-        className="flex items-center justify-between px-4 py-2 border-b border-zinc-800"
-        style={{ backgroundColor: COLORS.toolbar }}
-      >
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50">
         <div className="flex items-center gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-white tracking-wide">
+            <span className="text-sm font-bold text-foreground tracking-wide">
               {instrument}
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">
+            <span className="text-xs text-muted-foreground font-mono">
               {config.name}
             </span>
           </div>
 
           {/* Timeframe selectors */}
-          <div className="hidden sm:flex items-center gap-0.5 ml-4 p-0.5 rounded-md border border-zinc-800" style={{ backgroundColor: COLORS.background }}>
+          <div className="hidden sm:flex items-center gap-0.5 ml-4 p-0.5 rounded-md border border-border bg-background">
             {TIMEFRAMES.map((tf) => (
               <button
                 key={tf.label}
                 onClick={() => setActiveTimeframe(tf)}
                 className={cn(
-                  "px-2 py-0.5 text-[10px] font-medium rounded transition-colors min-w-[28px]",
+                  "px-2 py-0.5 text-xs font-medium rounded transition-colors min-w-[28px]",
                   activeTimeframe.label === tf.label
-                    ? "bg-zinc-800 text-indigo-400"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"
+                    ? "bg-muted text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
               >
                 {tf.label}
@@ -316,18 +323,19 @@ function TradingChart({
 
         <div className="flex items-center gap-2">
           <span
-            className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+            className={cn(
+              "text-xs font-mono px-2 py-0.5 rounded-full border",
               dataSource === "Real Market Data"
-                ? "border-emerald-900/50 bg-emerald-950/20 text-emerald-500"
-                : "border-amber-900/50 bg-amber-950/20 text-amber-500"
-            }`}
+                ? "border-profit/50 bg-profit/10 text-profit"
+                : "border-warning/50 bg-warning/10 text-warning"
+            )}
           >
             {dataSource || "Connecting..."}
           </span>
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-zinc-400 hover:text-white"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground"
             onClick={loadData}
           >
             {isLoading ? (
@@ -342,13 +350,13 @@ function TradingChart({
       {/* Chart Canvas */}
       <div className="flex-1 w-full relative">
         {error ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-10" style={{ backgroundColor: "rgba(9, 9, 11, 0.8)" }}>
-            <AlertTriangle className="h-8 w-8 text-rose-500 mb-2" />
-            <p className="text-zinc-400 text-xs">{error}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-background/80 backdrop-blur-sm">
+            <AlertTriangle className="h-8 w-8 text-loss mb-2" />
+            <p className="text-muted-foreground text-xs">{error}</p>
             <Button
               variant="link"
               onClick={loadData}
-              className="text-indigo-400 mt-2 h-auto p-0"
+              className="text-primary mt-2 h-auto p-0"
             >
               Retry
             </Button>
@@ -358,9 +366,9 @@ function TradingChart({
         <div ref={containerRef} className="w-full h-full" />
 
         {/* Floating Legend */}
-        <div className="absolute top-2 left-3 z-10 pointer-events-none flex gap-3 text-[10px] font-mono">
-          <span style={{ color: COLORS.bullish }}>Vol</span>
-          <span style={{ color: COLORS.maLine }}>MA 20</span>
+        <div className="absolute top-2 left-3 z-10 pointer-events-none flex gap-3 text-xs font-mono">
+          <span className="text-profit">Vol</span>
+          <span className="text-warning">MA 20</span>
         </div>
       </div>
     </div>

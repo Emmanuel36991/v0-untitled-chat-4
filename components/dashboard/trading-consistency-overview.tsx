@@ -35,43 +35,43 @@ function getPnLColor(pnl: number, tradeCount: number): string {
   if (tradeCount === 0) {
     return 'bg-muted/40 dark:bg-muted/20'
   }
-  
+
   if (pnl > 0) {
-    if (pnl >= 500) return 'bg-emerald-600 dark:bg-emerald-500'
-    if (pnl >= 200) return 'bg-emerald-500 dark:bg-emerald-400'
-    if (pnl >= 100) return 'bg-emerald-400 dark:bg-emerald-500/70'
-    if (pnl >= 50) return 'bg-emerald-300 dark:bg-emerald-500/50'
-    return 'bg-emerald-200 dark:bg-emerald-500/30'
+    if (pnl >= 500) return 'bg-profit dark:bg-profit'
+    if (pnl >= 200) return 'bg-profit/80 dark:bg-profit/80'
+    if (pnl >= 100) return 'bg-profit/60 dark:bg-profit/60'
+    if (pnl >= 50) return 'bg-profit/40 dark:bg-profit/40'
+    return 'bg-profit/25 dark:bg-profit/25'
   } else if (pnl < 0) {
     const absLoss = Math.abs(pnl)
-    if (absLoss >= 500) return 'bg-rose-600 dark:bg-rose-500'
-    if (absLoss >= 200) return 'bg-rose-500 dark:bg-rose-400'
-    if (absLoss >= 100) return 'bg-rose-400 dark:bg-rose-500/70'
-    if (absLoss >= 50) return 'bg-rose-300 dark:bg-rose-500/50'
-    return 'bg-rose-200 dark:bg-rose-500/30'
+    if (absLoss >= 500) return 'bg-loss dark:bg-loss'
+    if (absLoss >= 200) return 'bg-loss/80 dark:bg-loss/80'
+    if (absLoss >= 100) return 'bg-loss/60 dark:bg-loss/60'
+    if (absLoss >= 50) return 'bg-loss/40 dark:bg-loss/40'
+    return 'bg-loss/25 dark:bg-loss/25'
   }
-  
-  return 'bg-amber-300 dark:bg-amber-500/50'
+
+  return 'bg-warning/50 dark:bg-warning/50'
 }
 
 export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOverviewProps) {
   const [hoveredDay, setHoveredDay] = useState<DayData | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
-  
+
   const safeTrades = Array.isArray(trades) ? trades : []
 
   // Generate yearly heatmap data
   const { weeks, monthLabels, stats } = useMemo(() => {
     const today = new Date()
     const days: DayData[] = []
-    
+
     for (let i = 364; i >= 0; i--) {
       const date = subDays(today, i)
       const dayTrades = safeTrades.filter((trade) => {
         if (!trade?.date) return false
         return isSameDay(new Date(trade.date), date)
       })
-      
+
       const pnl = dayTrades.reduce((sum, trade) => sum + (trade?.pnl || 0), 0)
       days.push({
         date,
@@ -80,14 +80,14 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
         tradeCount: dayTrades.length,
       })
     }
-    
+
     // Organize into weeks
     const weeksArray: (DayData | null)[][] = []
     let currentWeek: (DayData | null)[] = Array(7).fill(null)
-    
+
     days.forEach((day, index) => {
       const dayOfWeek = getDay(day.date)
-      
+
       if (index === 0) {
         currentWeek = Array(7).fill(null)
         currentWeek[dayOfWeek] = day
@@ -99,11 +99,11 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
         currentWeek[dayOfWeek] = day
       }
     })
-    
+
     if (currentWeek.some(d => d !== null)) {
       weeksArray.push(currentWeek)
     }
-    
+
     // Generate month labels
     const labels: { month: string; weekIndex: number }[] = []
     let lastMonth = -1
@@ -126,13 +126,13 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
         }
       }
     })
-    
+
     // Calculate stats
     const tradingDays = days.filter(d => d.tradeCount > 0).length
     const profitableDays = days.filter(d => d.pnl > 0).length
     const totalPnL = days.reduce((sum, d) => sum + d.pnl, 0)
     const avgDayPnL = tradingDays > 0 ? totalPnL / tradingDays : 0
-    
+
     return {
       weeks: weeksArray,
       monthLabels: labels,
@@ -149,7 +149,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
   // Calculate monthly data
   const monthlyData = useMemo(() => {
     if (safeTrades.length === 0) return []
-    
+
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
     const months = eachMonthOfInterval({ start: sixMonthsAgo, end: now })
@@ -218,7 +218,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
           <div className="space-y-1">
             <div className="flex items-center justify-between gap-3 text-xs">
               <span className="text-muted-foreground">P&L:</span>
-              <span className={cn("font-mono font-bold", data.isPositive ? "text-emerald-600" : "text-rose-600")}>
+              <span className={cn("font-mono font-bold", data.isPositive ? "text-profit" : "text-loss")}>
                 {data.isPositive ? '+' : ''}${data.totalPnL.toFixed(0)}
               </span>
             </div>
@@ -243,14 +243,14 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
     <div className="space-y-6">
       {/* Header with Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 rounded-lg p-3 border border-emerald-200/50 dark:border-emerald-800/30">
+        <div className="bg-gradient-to-br from-profit/10 to-profit/5 rounded-lg p-3 border border-profit/20">
           <div className="flex items-center gap-1.5 mb-1">
-            <DollarSign className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
+            <DollarSign className="w-3.5 h-3.5 text-profit" />
+            <span className="text-[9px] font-semibold text-profit uppercase tracking-wide">
               Total P&L
             </span>
           </div>
-          <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+          <div className="text-lg font-bold text-profit">
             {stats.totalPnL >= 0 ? '+' : ''}${stats.totalPnL.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
         </div>
@@ -363,11 +363,11 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                   <span className="text-[9px] text-muted-foreground">Less</span>
                   <div className="flex gap-[2px]">
                     <div className="w-[10px] h-[10px] rounded-sm bg-muted/40 dark:bg-muted/20" />
-                    <div className="w-[10px] h-[10px] rounded-sm bg-emerald-200 dark:bg-emerald-500/30" />
-                    <div className="w-[10px] h-[10px] rounded-sm bg-emerald-300 dark:bg-emerald-500/50" />
-                    <div className="w-[10px] h-[10px] rounded-sm bg-emerald-400 dark:bg-emerald-500/70" />
-                    <div className="w-[10px] h-[10px] rounded-sm bg-emerald-500 dark:bg-emerald-400" />
-                    <div className="w-[10px] h-[10px] rounded-sm bg-emerald-600 dark:bg-emerald-500" />
+                    <div className="w-[10px] h-[10px] rounded-sm bg-profit/25" />
+                    <div className="w-[10px] h-[10px] rounded-sm bg-profit/40" />
+                    <div className="w-[10px] h-[10px] rounded-sm bg-profit/60" />
+                    <div className="w-[10px] h-[10px] rounded-sm bg-profit/80" />
+                    <div className="w-[10px] h-[10px] rounded-sm bg-profit" />
                   </div>
                   <span className="text-[9px] text-muted-foreground">More</span>
                 </div>
@@ -391,7 +391,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                   <div className="text-[10px] text-muted-foreground">
                     {hoveredDay.tradeCount > 0 ? (
                       <>
-                        <div className={cn("font-bold", hoveredDay.pnl >= 0 ? "text-emerald-600" : "text-rose-600")}>
+                        <div className={cn("font-bold", hoveredDay.pnl >= 0 ? "text-profit" : "text-loss")}>
                           {hoveredDay.pnl >= 0 ? '+' : ''}${hoveredDay.pnl.toFixed(0)}
                         </div>
                         <div>{hoveredDay.tradeCount} trade{hoveredDay.tradeCount > 1 ? 's' : ''}</div>
@@ -414,11 +414,11 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Last 6 Months</h4>
                 <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
                   <div className="flex items-center gap-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-profit" />
                     <span>Profit</span>
                   </div>
                   <div className="flex items-center gap-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-loss" />
                     <span>Loss</span>
                   </div>
                 </div>
@@ -440,7 +440,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                     {monthlyData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
-                        fill={entry.isPositive ? '#10b981' : '#f43f5e'}
+                        fill={entry.isPositive ? 'var(--profit)' : 'var(--loss)'}
                         opacity={0.85}
                         className="transition-opacity hover:opacity-100"
                       />
@@ -462,8 +462,8 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                   <div className={cn(
                     'w-10 h-10 rounded-lg flex items-center justify-center',
                     month.isPositive
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                      ? 'bg-profit/10 text-profit'
+                      : 'bg-loss/10 text-loss'
                   )}>
                     <Calendar className="w-5 h-5" />
                   </div>
@@ -475,7 +475,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                 <div className="text-right">
                   <div className={cn(
                     'text-sm font-bold flex items-center gap-1',
-                    month.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                    month.isPositive ? 'text-profit' : 'text-loss'
                   )}>
                     {month.isPositive ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
                     {month.isPositive ? '+' : ''}${Math.abs(month.totalPnL).toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -483,7 +483,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                   {month.changeFromPrev !== null && (
                     <div className={cn(
                       'text-[10px] font-medium',
-                      month.changeFromPrev >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                      month.changeFromPrev >= 0 ? 'text-profit' : 'text-loss'
                     )}>
                       {month.changeFromPrev >= 0 ? '↑' : '↓'} {Math.abs(month.changeFromPrev).toFixed(1)}%
                     </div>

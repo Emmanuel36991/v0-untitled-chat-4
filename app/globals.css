@@ -7,6 +7,11 @@
   /* Border radius */
   --radius: 0.625rem;
 
+  /* Transition presets */
+  --transition-fast: 150ms ease-out;
+  --transition-default: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
+
   /* Updated to vibrant blue-purple color scheme for trading app */
   /* Light mode colors using OKLCH */
   --background: oklch(0.99 0.005 264);
@@ -67,6 +72,16 @@
   --warning-foreground: oklch(0.15 0.02 60);
   --info: oklch(0.55 0.22 230);
   --info-foreground: oklch(0.99 0.002 230);
+
+  /* Trading-specific semantic colors */
+  --profit: oklch(0.55 0.20 150);
+  --profit-foreground: oklch(0.99 0.002 150);
+  --loss: oklch(0.577 0.245 27.325);
+  --loss-foreground: oklch(0.99 0.002 27);
+  --long: oklch(0.55 0.22 264);
+  --long-foreground: oklch(0.99 0.005 264);
+  --short: oklch(0.65 0.20 45);
+  --short-foreground: oklch(0.99 0.002 45);
 }
 
 .dark {
@@ -122,6 +137,16 @@
   --info: oklch(0.68 0.26 230);
   --info-foreground: oklch(0.99 0.002 230);
 
+  /* Trading-specific semantic colors */
+  --profit: oklch(0.70 0.24 150);
+  --profit-foreground: oklch(0.99 0.002 150);
+  --loss: oklch(0.60 0.27 27.325);
+  --loss-foreground: oklch(0.99 0.002 27);
+  --long: oklch(0.65 0.28 264);
+  --long-foreground: oklch(0.99 0.005 264);
+  --short: oklch(0.75 0.20 45);
+  --short-foreground: oklch(0.99 0.002 45);
+
   /* Sidebar colors */
   --sidebar: oklch(0.08 0.018 264);
   --sidebar-foreground: oklch(0.98 0.003 264);
@@ -140,6 +165,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -220,12 +246,10 @@ select {
 }
 
 .loading-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--muted) 25%,
-    color-mix(in oklch, var(--muted-foreground) 10%, transparent) 50%,
-    var(--muted) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--muted) 25%,
+      color-mix(in oklch, var(--muted-foreground) 10%, transparent) 50%,
+      var(--muted) 75%);
   background-size: 200% 100%;
   animation: var(--animate-shimmer);
 }
@@ -334,6 +358,14 @@ select {
   --color-warning-foreground: var(--warning-foreground);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
+  --color-profit: var(--profit);
+  --color-profit-foreground: var(--profit-foreground);
+  --color-loss: var(--loss);
+  --color-loss-foreground: var(--loss-foreground);
+  --color-long: var(--long);
+  --color-long-foreground: var(--long-foreground);
+  --color-short: var(--short);
+  --color-short-foreground: var(--short-foreground);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -356,6 +388,7 @@ select {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -367,6 +400,7 @@ select {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -378,6 +412,7 @@ select {
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -389,6 +424,7 @@ select {
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -400,6 +436,7 @@ select {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -408,31 +445,37 @@ select {
 
 /* Pulse and Glow Animations */
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
 }
 
 @keyframes glow {
+
   0%,
   100% {
     box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary);
   }
+
   50% {
     box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary), 0 0 30px var(--primary);
   }
 }
 
 @keyframes borderGlow {
+
   0%,
   100% {
     border-color: var(--primary);
     box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 40%, transparent);
   }
+
   50% {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px color-mix(in oklch, var(--primary) 20%, transparent);
@@ -445,6 +488,7 @@ select {
     transform: scale(0);
     opacity: 1;
   }
+
   100% {
     transform: scale(4);
     opacity: 0;
@@ -456,6 +500,7 @@ select {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -463,10 +508,12 @@ select {
 
 /* Float Animation */
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -478,13 +525,16 @@ select {
     opacity: 0;
     transform: scale(0.3);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
   }
+
   70% {
     transform: scale(0.9);
   }
+
   100% {
     transform: scale(1);
   }
@@ -496,6 +546,7 @@ select {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -547,18 +598,23 @@ select {
 .stagger-1 {
   animation-delay: 0.1s;
 }
+
 .stagger-2 {
   animation-delay: 0.2s;
 }
+
 .stagger-3 {
   animation-delay: 0.3s;
 }
+
 .stagger-4 {
   animation-delay: 0.4s;
 }
+
 .stagger-5 {
   animation-delay: 0.5s;
 }
+
 .stagger-6 {
   animation-delay: 0.6s;
 }
@@ -665,6 +721,7 @@ select {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -692,10 +749,12 @@ select {
 }
 
 @keyframes gradientShift {
+
   0%,
   100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -706,6 +765,7 @@ select {
   0% {
     stroke-dashoffset: 100;
   }
+
   100% {
     stroke-dashoffset: 0;
   }
@@ -722,46 +782,54 @@ select {
   animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.form-container > * {
+.form-container>* {
   opacity: 0;
   animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.form-container > *:nth-child(1) {
+.form-container>*:nth-child(1) {
   animation-delay: 0.1s;
 }
-.form-container > *:nth-child(2) {
+
+.form-container>*:nth-child(2) {
   animation-delay: 0.2s;
 }
-.form-container > *:nth-child(3) {
+
+.form-container>*:nth-child(3) {
   animation-delay: 0.3s;
 }
-.form-container > *:nth-child(4) {
+
+.form-container>*:nth-child(4) {
   animation-delay: 0.4s;
 }
-.form-container > *:nth-child(5) {
+
+.form-container>*:nth-child(5) {
   animation-delay: 0.5s;
 }
-.form-container > *:nth-child(6) {
+
+.form-container>*:nth-child(6) {
   animation-delay: 0.6s;
 }
 
 /* Branding Section Animations */
-.branding-section > * {
+.branding-section>* {
   opacity: 0;
   animation: fadeInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.branding-section > *:nth-child(1) {
+.branding-section>*:nth-child(1) {
   animation-delay: 0.2s;
 }
-.branding-section > *:nth-child(2) {
+
+.branding-section>*:nth-child(2) {
   animation-delay: 0.4s;
 }
-.branding-section > *:nth-child(3) {
+
+.branding-section>*:nth-child(3) {
   animation-delay: 0.6s;
 }
-.branding-section > *:nth-child(4) {
+
+.branding-section>*:nth-child(4) {
   animation-delay: 0.8s;
 }
 
@@ -797,7 +865,7 @@ select {
   opacity: 0;
   transform: translateY(-20px);
   transition: opacity 0.4s, transform 0.4s;
-} 
+}
 
 .page-transition-exit-active {
   opacity: 0;
@@ -813,6 +881,7 @@ canvas {
 
 /* Respect user motion preference */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

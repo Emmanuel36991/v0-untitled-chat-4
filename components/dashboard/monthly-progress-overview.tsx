@@ -25,13 +25,13 @@ interface MonthlyData {
 export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverviewProps) {
   // Ensure trades is always an array
   const safeTrades = Array.isArray(trades) ? trades : []
-  
+
   // Calculate monthly metrics for the last 6 months using safe Array.map approach
   const monthlyData = useMemo(() => {
     if (safeTrades.length === 0) {
       return []
     }
-    
+
     const now = new Date()
     const sixMonthsAgo = subMonths(now, 5)
     const months = eachMonthOfInterval({ start: sixMonthsAgo, end: now })
@@ -67,16 +67,16 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
     // Second pass: calculate change from previous month (avoids referencing uninitialized data)
     const dataWithChanges: MonthlyData[] = baseData.map((item, index) => {
       if (index === 0) return item
-      
+
       const prevMonthPnL = baseData[index - 1].totalPnL
       let changeFromPrev: number | null = null
-      
+
       if (prevMonthPnL !== 0) {
         changeFromPrev = ((item.totalPnL - prevMonthPnL) / Math.abs(prevMonthPnL)) * 100
       } else if (item.totalPnL !== 0) {
         changeFromPrev = 100
       }
-      
+
       return { ...item, changeFromPrev }
     })
 
@@ -103,7 +103,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
           <div className="space-y-1">
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">P&L:</span>
-              <span className={cn('font-bold', data.isPositive ? 'text-emerald-500' : 'text-rose-500')}>
+              <span className={cn('font-bold', data.isPositive ? 'text-profit' : 'text-loss')}>
                 {data.isPositive ? '+' : ''}${data.totalPnL.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </span>
             </div>
@@ -118,7 +118,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
             {data.changeFromPrev !== null && (
               <div className="flex justify-between gap-4 pt-1 border-t border-border/30">
                 <span className="text-muted-foreground">Change:</span>
-                <span className={cn('font-semibold', data.changeFromPrev >= 0 ? 'text-emerald-500' : 'text-rose-500')}>
+                <span className={cn('font-semibold', data.changeFromPrev >= 0 ? 'text-profit' : 'text-loss')}>
                   {data.changeFromPrev >= 0 ? '+' : ''}
                   {data.changeFromPrev.toFixed(1)}%
                 </span>
@@ -146,14 +146,14 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
     <div className="space-y-3">
       {/* Summary Cards - Compact */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/30 dark:to-emerald-900/20 rounded-md p-2.5 border border-emerald-200/50 dark:border-emerald-800/30">
+        <div className="bg-gradient-to-br from-profit/10 to-profit/5 rounded-md p-2.5 border border-profit/20">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <DollarSign className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wide">
+            <DollarSign className="w-3 h-3 text-profit" />
+            <span className="text-[9px] font-semibold text-profit uppercase tracking-wide">
               6-Month P&L
             </span>
           </div>
-          <div className="text-base font-bold text-emerald-700 dark:text-emerald-300">
+          <div className="text-base font-bold text-profit">
             {summary.total >= 0 ? '+' : ''}${summary.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
           </div>
         </div>
@@ -176,11 +176,11 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
             <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Monthly Performance</h4>
             <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
               <div className="flex items-center gap-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <div className="w-1.5 h-1.5 rounded-full bg-profit" />
                 <span>Profit</span>
               </div>
               <div className="flex items-center gap-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <div className="w-1.5 h-1.5 rounded-full bg-loss" />
                 <span>Loss</span>
               </div>
             </div>
@@ -202,7 +202,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
                 {monthlyData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={entry.isPositive ? '#10b981' : '#f43f5e'}
+                    fill={entry.isPositive ? 'var(--profit)' : 'var(--loss)'}
                     opacity={0.85}
                     className="transition-opacity hover:opacity-100"
                   />
@@ -224,8 +224,8 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
               <div className={cn(
                 'w-8 h-8 rounded-md flex items-center justify-center',
                 month.isPositive
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                  ? 'bg-profit/10 text-profit'
+                  : 'bg-loss/10 text-loss'
               )}>
                 <Calendar className="w-3.5 h-3.5" />
               </div>
@@ -237,7 +237,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
             <div className="text-right">
               <div className={cn(
                 'text-xs font-bold flex items-center gap-0.5',
-                month.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                month.isPositive ? 'text-profit' : 'text-loss'
               )}>
                 {month.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 {month.isPositive ? '+' : ''}${Math.abs(month.totalPnL).toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -245,7 +245,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
               {month.changeFromPrev !== null && (
                 <div className={cn(
                   'text-[9px] font-medium',
-                  month.changeFromPrev >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                  month.changeFromPrev >= 0 ? 'text-profit' : 'text-loss'
                 )}>
                   {month.changeFromPrev >= 0 ? '↑' : '↓'} {Math.abs(month.changeFromPrev).toFixed(1)}%
                 </div>

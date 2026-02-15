@@ -35,7 +35,7 @@ export const TradeSummaryBar = ({
             <div className={cn(
                 "absolute top-0 left-0 right-0 h-[2px] transition-colors duration-500",
                 hasPnl
-                    ? pnl! > 0 ? "bg-emerald-500" : pnl! < 0 ? "bg-red-500" : "bg-muted-foreground/30"
+                    ? pnl! > 0 ? "bg-profit" : pnl! < 0 ? "bg-loss" : "bg-muted-foreground/30"
                     : "bg-border/50"
             )} />
 
@@ -48,7 +48,7 @@ export const TradeSummaryBar = ({
                     <span className={cn(
                         "font-mono text-lg font-black tracking-tight transition-colors duration-300",
                         hasPnl
-                            ? pnl! > 0 ? "text-emerald-500" : pnl! < 0 ? "text-red-500" : "text-muted-foreground"
+                            ? pnl! > 0 ? "text-profit" : pnl! < 0 ? "text-loss" : "text-muted-foreground"
                             : "text-muted-foreground/40"
                     )}>
                         {hasPnl ? (
@@ -71,8 +71,8 @@ export const TradeSummaryBar = ({
                         {outcome ? (
                             <span className={cn(
                                 "font-mono text-xs font-black px-2 py-0.5 rounded-md tracking-wider transition-colors duration-300",
-                                outcome === "WIN" && "bg-emerald-500/15 text-emerald-500 dark:bg-emerald-500/10",
-                                outcome === "LOSS" && "bg-red-500/15 text-red-500 dark:bg-red-500/10",
+                                outcome === "WIN" && "bg-profit/15 text-profit",
+                                outcome === "LOSS" && "bg-loss/15 text-loss",
                                 outcome === "BE" && "bg-muted text-muted-foreground"
                             )}>
                                 {outcome}
@@ -91,7 +91,7 @@ export const TradeSummaryBar = ({
                     <span className={cn(
                         "font-mono text-lg font-black tracking-tight transition-colors duration-300",
                         riskReward !== null
-                            ? riskReward >= 2 ? "text-emerald-500" : riskReward >= 1 ? "text-amber-500" : "text-red-500"
+                            ? riskReward >= 2 ? "text-profit" : riskReward >= 1 ? "text-warning" : "text-loss"
                             : "text-muted-foreground/40"
                     )}>
                         {riskReward !== null ? (

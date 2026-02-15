@@ -56,29 +56,29 @@ import { TradeSummaryBar } from "./trade-form/trade-summary-bar"
 const FORM_STORAGE_KEY = "trade_form_draft"
 
 const FACTOR_STYLES = {
-  price: { label: "Price Action", icon: CandlestickChart, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-  time: { label: "Time/Session", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-  indicator: { label: "Indicator", icon: Activity, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  structure: { label: "Structure", icon: Layers, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-  execution: { label: "Invalidation", icon: Ban, color: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20" },
-  default: { label: "Rule", icon: ListChecks, color: "text-slate-500", bg: "bg-slate-500/10", border: "border-slate-500/20" }
+  price: { label: "Price Action", icon: CandlestickChart, color: "text-profit", bg: "bg-profit/10", border: "border-profit/20" },
+  time: { label: "Time/Session", icon: Clock, color: "text-warning", bg: "bg-warning/10", border: "border-warning/20" },
+  indicator: { label: "Indicator", icon: Activity, color: "text-info", bg: "bg-info/10", border: "border-info/20" },
+  structure: { label: "Structure", icon: Layers, color: "text-chart-5", bg: "bg-chart-5/10", border: "border-chart-5/20" },
+  execution: { label: "Invalidation", icon: Ban, color: "text-loss", bg: "bg-loss/10", border: "border-loss/20" },
+  default: { label: "Rule", icon: ListChecks, color: "text-muted-foreground", bg: "bg-muted", border: "border-border" }
 }
 
 const MOODS = [
-  { id: "euphoric", label: "Euphoric", emoji: "🤩", color: "text-green-600 bg-green-100 border-green-200 dark:bg-green-900/20 dark:border-green-800" },
-  { id: "confident", label: "Confident", emoji: "😎", color: "text-blue-600 bg-blue-100 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800" },
-  { id: "focused", label: "Focused", emoji: "🎯", color: "text-purple-600 bg-purple-100 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800" },
-  { id: "neutral", label: "Neutral", emoji: "😐", color: "text-gray-600 bg-gray-100 border-gray-200 dark:bg-gray-800 dark:border-gray-700" },
-  { id: "cautious", label: "Cautious", emoji: "🤔", color: "text-yellow-600 bg-yellow-100 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800" },
-  { id: "frustrated", label: "Frustrated", emoji: "😤", color: "text-orange-600 bg-orange-100 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800" },
-  { id: "anxious", label: "Anxious", emoji: "😰", color: "text-red-600 bg-red-100 border-red-200 dark:bg-red-900/20 dark:border-red-800" },
+  { id: "euphoric", label: "Euphoric", emoji: "🤩", color: "text-profit bg-profit/10 border-profit/20" },
+  { id: "confident", label: "Confident", emoji: "😎", color: "text-info bg-info/10 border-info/20" },
+  { id: "focused", label: "Focused", emoji: "🎯", color: "text-chart-5 bg-chart-5/10 border-chart-5/20" },
+  { id: "neutral", label: "Neutral", emoji: "😐", color: "text-muted-foreground bg-muted border-border" },
+  { id: "cautious", label: "Cautious", emoji: "🤔", color: "text-warning bg-warning/10 border-warning/20" },
+  { id: "frustrated", label: "Frustrated", emoji: "😤", color: "text-short bg-short/10 border-short/20" },
+  { id: "anxious", label: "Anxious", emoji: "😰", color: "text-loss bg-loss/10 border-loss/20" },
 ]
 
 const TRADING_SESSIONS = [
-  { value: "asian", label: "Asian Session", icon: Globe, time: "21:00 - 06:00 GMT", description: "Lower volatility, range-bound markets.", borderColor: "border-orange-200 dark:border-orange-800", textColor: "text-orange-600 dark:text-orange-400", bgColor: "bg-orange-50 dark:bg-orange-950/10", iconBg: "bg-orange-500/15" },
-  { value: "london", label: "London Session", icon: Layers, time: "07:00 - 16:00 GMT", description: "High volume, trend establishment.", borderColor: "border-blue-200 dark:border-blue-800", textColor: "text-blue-600 dark:text-blue-400", bgColor: "bg-blue-50 dark:bg-blue-950/10", iconBg: "bg-blue-500/15" },
-  { value: "new-york", label: "New York Session", icon: TrendingUp, time: "12:00 - 21:00 GMT", description: "Highest volatility, major news releases.", borderColor: "border-green-200 dark:border-green-800", textColor: "text-green-600 dark:text-green-400", bgColor: "bg-green-50 dark:bg-green-950/10", iconBg: "bg-green-500/15" },
-  { value: "overlap", label: "London/NY Overlap", icon: Zap, time: "12:00 - 16:00 GMT", description: "Peak liquidity and momentum.", borderColor: "border-purple-200 dark:border-purple-800", textColor: "text-purple-600 dark:text-purple-400", bgColor: "bg-purple-50 dark:bg-purple-950/10", iconBg: "bg-purple-500/15" },
+  { value: "asian", label: "Asian Session", icon: Globe, time: "21:00 - 06:00 GMT", description: "Lower volatility, range-bound markets.", borderColor: "border-short/30", textColor: "text-short", bgColor: "bg-short/5", iconBg: "bg-short/15" },
+  { value: "london", label: "London Session", icon: Layers, time: "07:00 - 16:00 GMT", description: "High volume, trend establishment.", borderColor: "border-info/30", textColor: "text-info", bgColor: "bg-info/5", iconBg: "bg-info/15" },
+  { value: "new-york", label: "New York Session", icon: TrendingUp, time: "12:00 - 21:00 GMT", description: "Highest volatility, major news releases.", borderColor: "border-profit/30", textColor: "text-profit", bgColor: "bg-profit/5", iconBg: "bg-profit/15" },
+  { value: "overlap", label: "London/NY Overlap", icon: Zap, time: "12:00 - 16:00 GMT", description: "Peak liquidity and momentum.", borderColor: "border-chart-5/30", textColor: "text-chart-5", bgColor: "bg-chart-5/5", iconBg: "bg-chart-5/15" },
 ]
 
 const EMOTIONAL_TRIGGERS = [
@@ -221,14 +221,14 @@ const RuleItem = ({ rule, isChecked, onToggle }: { rule: StrategyRule, isChecked
       className={cn(
         "flex items-center gap-3 w-full text-left p-2.5 rounded-lg border transition-all duration-200 group",
         isChecked
-          ? "bg-emerald-500/5 border-emerald-500/30"
+          ? "bg-primary/5 border-primary/30"
           : "bg-card border-border/50 hover:bg-accent/30 hover:border-primary/30"
       )}
     >
       <div className={cn(
         "w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0",
         isChecked
-          ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+          ? "bg-primary border-primary text-primary-foreground shadow-sm"
           : "border-muted-foreground/30 group-hover:border-primary/50 bg-muted/10"
       )}>
         {isChecked && <CheckCircle className="w-3 h-3" />}
@@ -238,7 +238,7 @@ const RuleItem = ({ rule, isChecked, onToggle }: { rule: StrategyRule, isChecked
         <span className={cn("text-sm font-medium leading-snug truncate", isChecked ? "text-foreground" : "text-muted-foreground group-hover:text-foreground")}>
           {rule.text}
         </span>
-        <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ml-2 flex items-center gap-1", style.bg, style.color)}>
+        <span className={cn("text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ml-2 flex items-center gap-1", style.bg, style.color)}>
           <Icon className="w-3 h-3" /> {style.label}
         </span>
       </div>
@@ -322,8 +322,8 @@ const TradeReviewDialog = ({
         {/* Top accent bar — color-coded by outcome */}
         <div className={cn(
           "h-1.5 w-full",
-          outcome === "WIN" ? "bg-gradient-to-r from-emerald-400 to-emerald-600" :
-            outcome === "LOSS" ? "bg-gradient-to-r from-red-400 to-red-600" :
+          outcome === "WIN" ? "bg-profit" :
+            outcome === "LOSS" ? "bg-loss" :
               "bg-gradient-to-r from-muted-foreground/20 via-muted-foreground/40 to-muted-foreground/20"
         )} />
 
@@ -340,15 +340,15 @@ const TradeReviewDialog = ({
               <div className="flex items-center gap-2.5">
                 <span className="font-mono text-3xl font-black tracking-tighter leading-none">{data.instrument || "—"}</span>
                 <span className={cn(
-                  "text-[10px] font-black uppercase tracking-[0.15em] px-2 py-1 rounded-md border",
+                  "text-xs font-black uppercase tracking-[0.15em] px-2 py-1 rounded-md border",
                   data.direction === "long"
-                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400"
-                    : "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400"
+                    ? "bg-profit/10 text-profit border-profit/20"
+                    : "bg-loss/10 text-loss border-loss/20"
                 )}>
                   {data.direction}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground font-medium">
+              <p className="text-xs text-muted-foreground font-medium">
                 {data.size} {data.size === 1 ? "unit" : "units"} &middot; {new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </p>
             </div>
@@ -357,9 +357,9 @@ const TradeReviewDialog = ({
             <div className="text-right">
               {outcome && (
                 <span className={cn(
-                  "text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full inline-block mb-1",
-                  outcome === "WIN" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-                  outcome === "LOSS" && "bg-red-500/10 text-red-600 dark:text-red-400",
+                  "text-xs font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full inline-block mb-1",
+                  outcome === "WIN" && "bg-profit/10 text-profit",
+                  outcome === "LOSS" && "bg-loss/10 text-loss",
                   outcome === "BE" && "bg-muted text-muted-foreground"
                 )}>
                   {outcome}
@@ -368,15 +368,15 @@ const TradeReviewDialog = ({
               <div className={cn(
                 "font-mono text-2xl font-black tracking-tight leading-none",
                 data.pnl !== null
-                  ? data.pnl > 0 ? "text-emerald-500" : data.pnl < 0 ? "text-red-500" : "text-muted-foreground"
+                  ? data.pnl > 0 ? "text-profit" : data.pnl < 0 ? "text-loss" : "text-muted-foreground"
                   : "text-muted-foreground/30"
               )}>
                 {data.pnl !== null ? `${data.pnl > 0 ? "+" : ""}$${fmt(Math.abs(data.pnl))}` : "—"}
               </div>
               {data.riskReward !== null && (
                 <p className={cn(
-                  "text-[10px] font-mono font-bold mt-0.5",
-                  data.riskReward >= 2 ? "text-emerald-500" : data.riskReward >= 1 ? "text-amber-500" : "text-red-400"
+                  "text-xs font-mono font-bold mt-0.5",
+                  data.riskReward >= 2 ? "text-profit" : data.riskReward >= 1 ? "text-warning" : "text-loss"
                 )}>
                   1:{data.riskReward.toFixed(1)} R:R
                 </p>
@@ -389,23 +389,23 @@ const TradeReviewDialog = ({
         <div className="mx-6 rounded-xl border border-border/50 bg-muted/20 overflow-hidden">
           <div className="grid grid-cols-2 divide-x divide-border/40">
             <div className="px-4 py-3">
-              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Entry</span>
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Entry</span>
               <span className="font-mono text-sm font-bold">${fmt(data.entry_price)}</span>
             </div>
             <div className="px-4 py-3">
-              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Exit</span>
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Exit</span>
               <span className="font-mono text-sm font-bold">${fmt(data.exit_price)}</span>
             </div>
           </div>
           {(data.stop_loss > 0 || (data.take_profit && data.take_profit > 0)) && (
             <div className="grid grid-cols-2 divide-x divide-border/40 border-t border-border/40">
               <div className="px-4 py-3">
-                <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Stop Loss</span>
-                <span className="font-mono text-sm font-bold text-red-500/80">{data.stop_loss ? `$${fmt(data.stop_loss)}` : "—"}</span>
+                <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Stop Loss</span>
+                <span className="font-mono text-sm font-bold text-loss/80">{data.stop_loss ? `$${fmt(data.stop_loss)}` : "—"}</span>
               </div>
               <div className="px-4 py-3">
-                <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Take Profit</span>
-                <span className="font-mono text-sm font-bold text-emerald-500/80">{data.take_profit ? `$${fmt(data.take_profit)}` : "—"}</span>
+                <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground block mb-0.5">Take Profit</span>
+                <span className="font-mono text-sm font-bold text-profit/80">{data.take_profit ? `$${fmt(data.take_profit)}` : "—"}</span>
               </div>
             </div>
           )}
@@ -415,31 +415,31 @@ const TradeReviewDialog = ({
         {(entryTimeFormatted || exitTimeFormatted || data.session || data.strategy || data.mood) && (
           <div className="mx-6 mt-3 flex flex-wrap gap-2">
             {entryTimeFormatted && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
                 <Clock className="w-3 h-3" /> {entryTimeFormatted}
                 {exitTimeFormatted && <> &rarr; {exitTimeFormatted}</>}
               </span>
             )}
             {data.session && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
                 <Globe className="w-3 h-3" /> {TRADING_SESSIONS.find(s => s.value === data.session)?.label || data.session}
               </span>
             )}
             {data.strategy && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
                 <BookOpen className="w-3 h-3" /> {data.strategy}
               </span>
             )}
             {data.mood && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
                 <Brain className="w-3 h-3" /> {data.mood}
               </span>
             )}
             {(data.goodHabitsCount > 0 || data.badHabitsCount > 0) && (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
-                {data.goodHabitsCount > 0 && <span className="text-emerald-500 font-bold">{data.goodHabitsCount} good</span>}
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/50 rounded-md px-2 py-1 border border-border/30">
+                {data.goodHabitsCount > 0 && <span className="text-profit font-bold">{data.goodHabitsCount} good</span>}
                 {data.goodHabitsCount > 0 && data.badHabitsCount > 0 && <span className="text-muted-foreground/40">/</span>}
-                {data.badHabitsCount > 0 && <span className="text-red-500 font-bold">{data.badHabitsCount} bad</span>}
+                {data.badHabitsCount > 0 && <span className="text-loss font-bold">{data.badHabitsCount} bad</span>}
               </span>
             )}
           </div>
@@ -448,12 +448,12 @@ const TradeReviewDialog = ({
         {/* Smart nudges for missing optional fields */}
         {missingOptional.length > 0 && (
           <div className="mx-6 mt-4 rounded-lg border border-border/30 bg-muted/10 p-3">
-            <p className="text-[11px] text-muted-foreground mb-1.5">
+            <p className="text-xs text-muted-foreground mb-1.5">
               <span className="font-semibold text-foreground/70">Optional &mdash;</span> you can add these anytime, but they unlock deeper insights:
             </p>
             <div className="flex flex-wrap gap-x-3 gap-y-1">
               {missingOptional.slice(0, 4).map(item => (
-                <span key={item.label} className="text-[10px] text-muted-foreground/70">
+                <span key={item.label} className="text-xs text-muted-foreground/70">
                   <span className="font-medium text-muted-foreground">{item.label}</span> &middot; {item.hint}
                 </span>
               ))}
@@ -477,9 +477,9 @@ const TradeReviewDialog = ({
             className={cn(
               "flex-1 h-11 rounded-xl font-bold shadow-lg transition-all hover:shadow-xl hover:scale-[1.01]",
               outcome === "WIN"
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"
+                ? "bg-profit hover:bg-profit/90 text-profit-foreground shadow-profit/20"
                 : outcome === "LOSS"
-                  ? "bg-red-600 hover:bg-red-700 text-white shadow-red-500/20"
+                  ? "bg-loss hover:bg-loss/90 text-loss-foreground shadow-loss/20"
                   : ""
             )}
           >
@@ -914,9 +914,9 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
   // Determine header button color from PnL
   const submitBtnClass = pnlResult !== null && pnlResult !== 0
     ? pnlResult > 0
-      ? "rounded-full px-6 bg-emerald-600 hover:bg-emerald-700 text-white"
-      : "rounded-full px-6 bg-red-600 hover:bg-red-700 text-white"
-    : "rounded-full px-6 bg-gradient-to-r from-primary to-purple-600"
+      ? "rounded-full px-6 bg-profit hover:bg-profit/90 text-profit-foreground"
+      : "rounded-full px-6 bg-loss hover:bg-loss/90 text-loss-foreground"
+    : "rounded-full px-6 bg-primary hover:bg-primary/90 text-primary-foreground"
 
   return (
     <div className="min-h-screen bg-background/95 pb-24">
@@ -955,14 +955,14 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
               <h1 className="text-lg font-bold tracking-tight">{mode === "edit" ? "Edit Trade" : "New Trade Entry"}</h1>
               {/* Draft saved indicator */}
               {mode === "add" && draftSavedAt && (
-                <p className="text-[10px] text-muted-foreground flex items-center gap-1 -mt-0.5">
+                <p className="text-xs text-muted-foreground flex items-center gap-1 -mt-0.5">
                   <Cloud className="w-3 h-3" /> Draft saved
                 </p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground hidden sm:inline">
+            <span className="text-xs text-muted-foreground hidden sm:inline">
               {"\u2318"}+Enter to submit
             </span>
             <Button onClick={handleReviewOpen} disabled={isSubmitting} className={submitBtnClass}>
@@ -979,7 +979,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
             <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
               Resuming draft from {draftSavedAt ? new Date(draftSavedAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "earlier"}
             </p>
-            <Button variant="ghost" size="sm" className="h-6 text-xs text-amber-700 dark:text-amber-300 hover:text-red-600" onClick={discardDraft}>
+            <Button variant="ghost" size="sm" className="h-6 text-xs text-warning hover:text-loss" onClick={discardDraft}>
               <X className="w-3 h-3 mr-1" /> Discard
             </Button>
           </div>
@@ -993,15 +993,15 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
             <div className="flex items-center justify-center mb-8">
               <TabsList className="h-14 p-1 bg-muted/50 backdrop-blur-sm rounded-2xl border border-border/50 w-full max-w-2xl grid grid-cols-3 shadow-sm">
                 <TabsTrigger value="setup" className="rounded-xl text-sm font-semibold gap-1.5">
-                  {isSetupComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                  {isSetupComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
                   1. Setup & Entry
                 </TabsTrigger>
                 <TabsTrigger value="strategy" className="rounded-xl text-sm font-semibold gap-1.5">
-                  {isStrategyComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                  {isStrategyComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
                   2. Strategy
                 </TabsTrigger>
                 <TabsTrigger value="psychology" className="rounded-xl text-sm font-semibold gap-1.5">
-                  {isPsychologyComplete && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                  {isPsychologyComplete && <CheckCircle className="w-3.5 h-3.5 text-profit" />}
                   3. Psychology
                 </TabsTrigger>
               </TabsList>
@@ -1048,7 +1048,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                       {getAllAvailableInstruments(customInstruments).filter(i => !searchQuery || i.symbol.toLowerCase().includes(searchQuery.toLowerCase())).map(inst => (
                         <button key={inst.symbol} type="button" onClick={() => setFormData(prev => ({ ...prev, instrument: inst.symbol }))} className={cn("flex flex-col items-start p-3 rounded-xl border transition-all text-left", formData.instrument === inst.symbol ? "border-primary bg-primary/5 ring-1 ring-primary/30" : "border-border/40 bg-background")}>
                           <span className="font-bold text-sm">{inst.symbol}</span>
-                          <span className="text-[10px] text-muted-foreground">{inst.name}</span>
+                          <span className="text-xs text-muted-foreground">{inst.name}</span>
                         </button>
                       ))}
                     </div>
@@ -1061,8 +1061,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                 <CardHeader><CardTitle className="text-lg font-bold flex items-center gap-2"><Crosshair className="w-5 h-5 text-primary" /> Execution</CardTitle></CardHeader>
                 <CardContent className="space-y-8">
                   <div className={cn("grid grid-cols-2 gap-4 p-1 bg-muted/50 rounded-2xl", errors.direction && "ring-2 ring-red-500/20 border border-red-500")}>
-                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'long' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-emerald-500 text-white shadow-lg" : "text-muted-foreground hover:bg-emerald-500/10")}>Long</button>
-                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'short' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-rose-500 text-white shadow-lg" : "text-muted-foreground hover:bg-rose-500/10")}>Short</button>
+                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'long' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'long' ? "bg-profit text-profit-foreground shadow-lg" : "text-muted-foreground hover:bg-profit/10")}>Long</button>
+                    <button type="button" onClick={() => setFormData(prev => ({ ...prev, direction: 'short' }))} className={cn("flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition-all", formData.direction === 'short' ? "bg-loss text-loss-foreground shadow-lg" : "text-muted-foreground hover:bg-loss/10")}>Short</button>
                   </div>
                   {errors.direction && <p className="text-xs text-red-500 mt-1 animate-in slide-in-from-top-1">{errors.direction}</p>}
 
@@ -1080,8 +1080,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <PriceInput id="entry_price" label="Entry Price" value={formData.entry_price} onChange={handleChange} icon={MousePointer} color="text-primary" />
                     <PriceInput id="exit_price" label="Exit Price" value={formData.exit_price} onChange={handleChange} icon={Target} color="text-blue-500" />
-                    <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-rose-500" />
-                    <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={TrendingUp} color="text-emerald-500" />
+                    <PriceInput id="stop_loss" label="Stop Loss" value={formData.stop_loss} onChange={handleChange} icon={Shield} color="text-loss" />
+                    <PriceInput id="take_profit" label="Take Profit" value={formData.take_profit} onChange={handleChange} icon={TrendingUp} color="text-profit" />
                   </div>
                   {errors.exit_price && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.exit_price}</p>}
 
@@ -1089,7 +1089,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-1.5">
                         <BarChart3 className="w-3.5 h-3.5" /> Position Size
-                        {formData.instrument && <span className="normal-case text-[10px] font-normal text-muted-foreground/70">({sizeUnit})</span>}
+                        {formData.instrument && <span className="normal-case text-xs font-normal text-muted-foreground/70">({sizeUnit})</span>}
                       </Label>
                       <Input type="number" name="size" value={formData.size || ""} onChange={handleChange} placeholder="0" className={cn("h-12 bg-background border-2 font-mono text-lg", errors.size && "border-red-500 ring-2 ring-red-500/20")} />
                       {errors.size && <p className="text-xs text-red-500 animate-in slide-in-from-top-1">{errors.size}</p>}
@@ -1180,7 +1180,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                           <div className="ml-4 pl-4 border-l-2 border-primary/20 space-y-4 animate-in slide-in-from-top-2">
                             {strat.setups && strat.setups.length > 0 && (
                               <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-primary tracking-wider">
+                                <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary tracking-wider">
                                   <GitBranch className="w-3 h-3" /> Active Setups
                                 </div>
                                 <div className="flex flex-wrap gap-2">
@@ -1201,7 +1201,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
 
                             {strat.rules && strat.rules.length > 0 && (
                               <div className="space-y-2 pt-2">
-                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-muted-foreground tracking-wider">
+                                <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted-foreground tracking-wider">
                                   <Database className="w-3 h-3" /> Confluence Checklist
                                 </div>
                                 <div className="space-y-2">
@@ -1272,7 +1272,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                 <AccordionItem value="habits" className="border rounded-xl overflow-hidden bg-card shadow-sm">
                   <AccordionTrigger className="px-5 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180">
                     <div className="flex items-center gap-2 text-base font-bold">
-                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      <CheckCircle className="w-4 h-4 text-profit" />
                       Habits
                       {(goodHabits.length > 0 || badHabits.length > 0) && (
                         <span className="text-xs font-normal text-muted-foreground ml-1">
@@ -1285,10 +1285,10 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                     {/* Good */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="p-1 bg-emerald-500/10 rounded">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <div className="p-1 bg-profit/10 rounded">
+                          <CheckCircle className="w-3.5 h-3.5 text-profit" />
                         </div>
-                        <span className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">Good Habits</span>
+                        <span className="text-sm font-semibold text-foreground">Good Habits</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {GOOD_HABITS.map(h => (
@@ -1298,8 +1298,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                             className={cn(
                               "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
                               goodHabits.includes(h.id)
-                                ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent shadow-sm"
-                                : "hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/50"
+                                ? "bg-profit hover:bg-profit/90 text-profit-foreground border-transparent shadow-sm"
+                                : "hover:bg-profit/10 hover:text-profit hover:border-profit/50"
                             )}
                             onClick={() => toggleGoodHabit(h.id)}
                           >
@@ -1312,10 +1312,10 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                     {/* Bad */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="p-1 bg-red-500/10 rounded">
-                          <Ban className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                        <div className="p-1 bg-loss/10 rounded">
+                          <Ban className="w-3.5 h-3.5 text-loss" />
                         </div>
-                        <span className="text-sm font-semibold text-red-900 dark:text-red-100">Bad Habits</span>
+                        <span className="text-sm font-semibold text-foreground">Bad Habits</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {BAD_HABITS.map(h => (
@@ -1325,8 +1325,8 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                             className={cn(
                               "cursor-pointer px-3 py-1.5 transition-all hover:scale-105",
                               badHabits.includes(h.id)
-                                ? "bg-red-500 hover:bg-red-600 text-white border-transparent shadow-sm"
-                                : "hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/50"
+                                ? "bg-loss hover:bg-loss/90 text-loss-foreground border-transparent shadow-sm"
+                                : "hover:bg-loss/10 hover:text-loss hover:border-loss/50"
                             )}
                             onClick={() => toggleBadHabit(h.id)}
                           >

@@ -197,10 +197,10 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
 
           <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+              <TrendingUp className="h-3.5 w-3.5 text-profit" />
               Most Active
             </div>
-            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+            <div className="text-lg font-bold text-profit font-mono">
               {timingInsights.mostActivePeriod}
             </div>
             <p className="text-[10px] text-muted-foreground">Peak trading time</p>

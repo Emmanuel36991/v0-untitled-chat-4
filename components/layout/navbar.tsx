@@ -71,8 +71,8 @@ export function Navbar() {
     <Link
       href={href}
       className={cn(
-        "relative flex items-center gap-3 rounded-xl px-5 py-3 text-base font-bold text-muted-foreground transition-all duration-300 hover:text-foreground hover:bg-muted",
-        pathname === href && "text-foreground font-bold after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-8 after:rounded-full after:bg-primary",
+        "relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        pathname === href ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
         className,
       )}
     >
@@ -81,27 +81,26 @@ export function Navbar() {
   )
 
   const NavContent = () => (
-    <div className="relative flex h-20 items-center border-b border-border px-4 lg:px-6 sticky top-0 z-50 bg-background/80 backdrop-blur-xl shadow-sm transition-all duration-300">
+    <div className="relative flex h-14 items-center border-b border-border px-4 lg:px-6 sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm transition-colors">
 
       {/* Mount the Dialog Component */}
       <WhatsNewDialog open={showUpdates} onOpenChange={setShowUpdates} />
 
       {/* Logo with modern styling */}
-      <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-8 z-10">
-        <ConcentradeLogo size={46} variant="full" className="group-hover:scale-105 transition-transform duration-300" />
+      <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-6 z-10">
+        <ConcentradeLogo size={36} variant="full" className="transition-colors" />
       </Link>
 
       {/* Desktop Navigation with modern styling */}
-      <nav className="hidden lg:flex items-center space-x-2 flex-grow">
+      <nav className="hidden lg:flex items-center gap-1 flex-grow">
         {visibleMainNavItems.map((item) => (
-          <div key={item.name} className="relative group">
+          <div key={item.name} className="relative">
             <NavLink
               href={item.href}
-              className="relative text-base px-5 py-3 rounded-xl transition-all duration-300 hover:scale-105"
             >
-              <div className="flex items-center gap-3">
-                <item.icon className="h-6 w-6 transition-all duration-300 stroke-[2.5]" />
-                <span className="font-bold">{item.name}</span>
+              <div className="flex items-center gap-2">
+                <item.icon className="h-4 w-4" />
+                <span>{item.name}</span>
               </div>
             </NavLink>
           </div>
@@ -137,7 +136,7 @@ export function Navbar() {
               <Button
                 variant="outline"
                 size="icon"
-                className="h-12 w-12 relative border-border bg-card/50 hover:bg-muted transition-all duration-300 shadow-sm hover:shadow-md"
+                className="h-10 w-10 relative border-border bg-card/50 hover:bg-muted transition-colors shadow-sm"
               >
                 <Menu className="h-6 w-6 text-muted-foreground" />
                 <span className="sr-only">Open Navigation Menu</span>
@@ -145,10 +144,10 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="flex flex-col w-full sm:w-[320px] p-0 bg-card border-border"
+              className="flex flex-col w-[85vw] max-w-[320px] p-0 bg-card border-border"
             >
               {/* Mobile menu header */}
-              <div className="flex h-20 items-center border-b border-border px-6 bg-muted/50">
+              <div className="flex h-14 items-center border-b border-border px-6 bg-muted/50">
                 <Link href="/dashboard" className="flex items-center gap-3 font-bold group">
                   <ConcentradeLogo size={40} variant="full" />
                 </Link>
@@ -161,10 +160,10 @@ export function Navbar() {
                     <NavLink
                       key={item.name}
                       href={item.href}
-                      className="text-lg py-4 px-5 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                      className="text-base py-3 px-4 rounded-lg transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <item.icon className="h-6 w-6 stroke-[2.5]" />
+                        <item.icon className="h-5 w-5" />
                         <span className="font-bold">{item.name}</span>
                       </div>
                     </NavLink>
@@ -181,10 +180,10 @@ export function Navbar() {
                       <NavLink
                         key={item.name}
                         href={item.href}
-                        className="text-lg py-4 px-5 rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                        className="text-base py-3 px-4 rounded-lg transition-colors"
                       >
                         <div className="flex items-center gap-4">
-                          <item.icon className="h-6 w-6 stroke-[2.5]" />
+                          <item.icon className="h-5 w-5" />
                           <span className="font-bold">{item.name}</span>
                         </div>
                       </NavLink>

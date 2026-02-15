@@ -531,8 +531,6 @@ export default function DashboardPage() {
     setError(null)
 
     try {
-      // Simulate network delay for smoother UI
-      await new Promise((resolve) => setTimeout(resolve, 600))
       const [fetchedTrades, accounts, strategies] = await Promise.all([
         getTrades(),
         getTradingAccounts(),
@@ -720,7 +718,7 @@ export default function DashboardPage() {
 
   if (isLoading && !isRefreshing) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0B0D12] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <RefreshCw className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground font-medium">Loading trading data...</p>
@@ -730,7 +728,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-[#0B0D12] text-foreground transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
 
         {/* Header Section */}

@@ -76,16 +76,16 @@ export function Navbar() {
         {/* Subtle gradient border at the bottom */}
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 lg:px-6">
-          {/* Logo */}
-          <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-8 z-10">
+        <div className="relative mx-auto flex h-20 max-w-7xl items-center px-4 lg:px-6">
+          {/* Logo — Left Section */}
+          <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group z-20">
             <motion.div whileHover={{ scale: 1.03 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-              <ConcentradeLogo size={38} variant="full" className="transition-colors" />
+              <ConcentradeLogo size={42} variant="full" className="transition-colors" />
             </motion.div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-0.5 flex-grow">
+          {/* Desktop Navigation — Center Section (Absolutely Centered) */}
+          <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
             {mainNavItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -93,19 +93,19 @@ export function Navbar() {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "relative flex items-center gap-2 px-3.5 py-2 text-sm font-medium transition-colors duration-200 rounded-lg group",
+                    "relative flex items-center gap-2.5 px-4 py-2.5 text-base font-semibold transition-colors duration-200 rounded-lg group",
                     isActive
                       ? "text-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <motion.div
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2.5"
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   >
                     <item.icon className={cn(
-                      "h-4 w-4 transition-all duration-200",
+                      "h-6 w-6 transition-all duration-200",
                       isActive ? "text-primary" : "group-hover:scale-110 group-hover:text-primary/70"
                     )} />
                     <span>{item.name}</span>
@@ -120,7 +120,7 @@ export function Navbar() {
                   {isActive && (
                     <motion.span
                       layoutId="navbar-underline"
-                      className="absolute bottom-[-1.125rem] left-1 right-1 h-[3px] rounded-full bg-gradient-to-r from-primary via-accent to-primary"
+                      className="absolute bottom-[-1.25rem] left-1 right-1 h-[3px] rounded-full bg-gradient-to-r from-primary via-accent to-primary"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -129,21 +129,21 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Right side controls */}
-          <div className="ml-auto flex items-center gap-3 z-10">
+          {/* Right Section — Actions & Profile */}
+          <div className="ml-auto flex items-center gap-3 z-20">
             {/* Updates Pill */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleOpenUpdates}
               className={cn(
-                "hidden md:flex gap-2 items-center rounded-full h-10 px-4 text-sm font-semibold transition-all duration-300 border",
+                "hidden md:flex gap-2.5 items-center rounded-full h-12 px-5 text-sm font-semibold transition-all duration-300 border",
                 hasUnreadUpdates
                   ? "border-primary/50 bg-primary/5 text-foreground shadow-[0_0_12px_-3px] shadow-primary/30 hover:shadow-primary/50 hover:bg-primary/10"
                   : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
-              <UpdatesIcon className="h-4 w-4 fill-current" />
+              <UpdatesIcon className="h-5 w-5 fill-current" />
               <span className="uppercase tracking-wider text-2xs font-bold">Updates</span>
 
               {hasUnreadUpdates && (
@@ -164,9 +164,9 @@ export function Navbar() {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 relative rounded-xl border-border bg-muted/30 hover:bg-muted/60 transition-colors"
+                    className="h-12 w-12 relative rounded-xl border-border bg-muted/30 hover:bg-muted/60 transition-colors"
                   >
-                    <Menu className="h-5 w-5 text-muted-foreground" />
+                    <Menu className="h-6 w-6 text-muted-foreground" />
                     <span className="sr-only">Open Navigation Menu</span>
                   </Button>
                 </SheetTrigger>

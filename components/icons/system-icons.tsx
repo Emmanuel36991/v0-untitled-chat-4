@@ -157,12 +157,12 @@ export function UpdatesIcon({ className, ...props }: IconProps) {
 export function AvgReturnIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Dollar sign */}
-            <path d="M12 4v16" opacity="0.3" />
-            <path d="M8 7c0-1.5 1.5-2 3-2h2c1.5 0 3 0.5 3 2s-1.5 2-3 2h-2c-1.5 0-3 0.5-3 2s1.5 2 3 2h2c1.5 0 3-0.5 3-2" />
-            {/* Averaging tilde symbol */}
-            <path d="M4 16c0.5-0.5 1-0.5 1.5 0s1 0.5 1.5 0" opacity="0.6" strokeWidth="1.5" />
-            <path d="M17 16c0.5-0.5 1-0.5 1.5 0s1 0.5 1.5 0" opacity="0.6" strokeWidth="1.5" />
+            {/* Upward trending line — represents average return direction */}
+            <path d="M4 16l6-6 4 4 6-6" strokeWidth="1.8" />
+            {/* Arrow head */}
+            <path d="M17 8l3-3" strokeWidth="1.8" />
+            <path d="M20 5h-4" strokeWidth="1.8" />
+            <path d="M20 5v4" strokeWidth="1.8" />
         </SvgTemplate>
     )
 }
@@ -175,14 +175,17 @@ export function AvgReturnIcon(props: IconProps) {
 export function ProfitFactorIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Ratio/multiplication symbol — stylized "×" */}
-            <path d="M7 7l10 10" opacity="0.4" />
-            <path d="M17 7l-10 10" opacity="0.4" />
-            {/* Upward trending arrow (profit multiplier) */}
-            <path d="M4 16l6-6 4 4 6-6" strokeWidth="1.8" />
-            {/* Arrow head */}
-            <path d="M17 8l3-3 3 3" strokeWidth="1.8" />
-            <path d="M20 5v5" opacity="0" />
+            {/* Balance beam — center fulcrum */}
+            <path d="M12 6v12" opacity="0.3" />
+            <polygon points="12,18 10,20 14,20" fill="currentColor" opacity="0.3" />
+            {/* Beam — tilted up-left to show profit outweighs loss */}
+            <line x1="4" y1="9" x2="20" y2="11" strokeWidth="1.8" />
+            {/* Left pan — heavier (profit), sits higher */}
+            <path d="M4 9l2 5h-4z" fill="currentColor" opacity="0.25" />
+            <line x1="2" y1="14" x2="6" y2="14" strokeWidth="1.5" />
+            {/* Right pan — lighter (loss), sits lower */}
+            <path d="M20 11l1.5 4h-3z" fill="currentColor" opacity="0.15" />
+            <line x1="18.5" y1="15" x2="21.5" y2="15" strokeWidth="1.5" />
         </SvgTemplate>
     )
 }

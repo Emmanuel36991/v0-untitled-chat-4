@@ -1,52 +1,51 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+"use client"
+
+import { ConcentradeLogo } from "@/components/concentrade-logo"
 
 export default function DashboardLoading() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <Skeleton className="h-9 w-64 loading-shimmer rounded-lg" />
-        <Skeleton className="h-5 w-96 loading-shimmer rounded-lg" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="bg-card border-border card-enhanced">
-            <CardHeader className="pb-2">
-              <Skeleton className="h-4 w-20 loading-shimmer rounded" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-28 loading-shimmer rounded" />
-              <Skeleton className="h-3 w-16 mt-2 loading-shimmer rounded" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Card className="bg-card border-border">
-        <CardContent className="pt-6">
-          <Skeleton className="h-[280px] w-full loading-shimmer rounded-xl" />
-        </CardContent>
-      </Card>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <Skeleton className="h-6 w-40 loading-shimmer rounded" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-48 w-full loading-shimmer rounded" />
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <Skeleton className="h-6 w-36 loading-shimmer rounded" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full loading-shimmer rounded" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex flex-col items-center gap-8">
+        {/* Logo with pulse ring */}
+        <div className="relative">
+          {/* Outer pulse ring */}
+          <div className="absolute inset-0 -m-4 rounded-full border border-primary/20 animate-ping" style={{ animationDuration: "2s" }} />
+          <div className="absolute inset-0 -m-2 rounded-full border border-primary/10" />
+
+          <div className="relative p-4 rounded-2xl bg-card/50 border border-border/50 backdrop-blur-sm">
+            <ConcentradeLogo size={40} variant="icon" />
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="flex flex-col items-center gap-3">
+          <h2 className="text-lg font-semibold text-foreground tracking-tight">
+            Loading Dashboard
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Syncing your trading data...
+          </p>
+        </div>
+
+        {/* Animated progress bar */}
+        <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-primary/60 via-primary to-primary/60 rounded-full animate-loading-bar"
+            style={{
+              width: "40%",
+              animation: "loading-slide 1.5s ease-in-out infinite",
+            }}
+          />
+        </div>
+
+        {/* Inline keyframes */}
+        <style>{`
+          @keyframes loading-slide {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(200%); }
+            100% { transform: translateX(-100%); }
+          }
+        `}</style>
       </div>
     </div>
   )

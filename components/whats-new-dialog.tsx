@@ -10,12 +10,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { APP_UPDATES, LATEST_UPDATE_ID } from "@/lib/updates"
 import { cn } from "@/lib/utils"
 
-export function WhatsNewDialog({ 
-  open, 
-  onOpenChange 
-}: { 
+export function WhatsNewDialog({
+  open,
+  onOpenChange
+}: {
   open: boolean
-  onOpenChange: (open: boolean) => void 
+  onOpenChange: (open: boolean) => void
 }) {
   // Logic to mark read
   const handleClose = () => {
@@ -26,7 +26,7 @@ export function WhatsNewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl p-0 gap-0 overflow-hidden bg-background border-border shadow-2xl">
-        
+
         {/* Header with cool background */}
         <div className="relative h-32 bg-gradient-to-r from-indigo-900 via-slate-900 to-black p-6 flex flex-col justify-end border-b border-white/10">
           <div className="absolute top-0 right-0 p-4 opacity-20">
@@ -54,13 +54,13 @@ export function WhatsNewDialog({
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                       {update.title}
-                      {index === 0 && <span className="text-[10px] bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-500/20">LATEST</span>}
+                      {index === 0 && <span className="text-2xs bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full border border-red-500/20">LATEST</span>}
                     </h3>
                     <span className="text-xs text-muted-foreground font-mono">{update.date}</span>
                   </div>
-                  
-                  <Badge variant="outline" className="w-fit text-[10px] h-5">{update.tag}</Badge>
-                  
+
+                  <Badge variant="outline" className="w-fit text-2xs h-5">{update.tag}</Badge>
+
                   <p className="text-sm text-muted-foreground leading-relaxed mt-1">
                     {update.description}
                   </p>

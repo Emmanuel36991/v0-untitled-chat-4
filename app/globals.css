@@ -11,6 +11,17 @@
   /* 16px */
 }
 
+/* Accessible focus ring — use on any interactive element */
+@utility focus-ring {
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+}
+
 :root {
   /* Border radius */
   --radius: 0.625rem;

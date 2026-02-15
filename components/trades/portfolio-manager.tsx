@@ -406,12 +406,12 @@ export function PortfolioManagerDialog({
                               {account.name}
                             </button>
                             {isActive && (
-                              <Badge className="text-[10px] h-[18px] px-1.5 bg-primary/15 text-primary border border-primary/25 shrink-0">
+                              <Badge className="text-2xs h-[18px] px-1.5 bg-primary/15 text-primary border border-primary/25 shrink-0">
                                 Active
                               </Badge>
                             )}
                           </div>
-                          <Badge className={cn("text-[10px] h-[18px] px-1.5 mt-1 capitalize", config.badgeClass)}>
+                          <Badge className={cn("text-2xs h-[18px] px-1.5 mt-1 capitalize", config.badgeClass)}>
                             {config.label}
                           </Badge>
                         </div>
@@ -469,7 +469,7 @@ export function PortfolioManagerDialog({
                     {/* Win/Loss Mini Bar */}
                     {stats.tradeCount > 0 && (
                       <div className="mt-3 space-y-1.5">
-                        <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <div className="flex justify-between text-2xs text-muted-foreground">
                           <span>{stats.winCount}W / {stats.lossCount}L</span>
                           <span>{(stats.tradeCount - stats.winCount - stats.lossCount) > 0 ? `${stats.tradeCount - stats.winCount - stats.lossCount} BE` : ""}</span>
                         </div>
@@ -602,7 +602,7 @@ function StatCell({
 }) {
   return (
     <div className="space-y-1 p-2 rounded-lg bg-muted/30 border border-border/30">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className={cn("text-sm font-mono font-bold flex items-center gap-1 text-foreground", colorClass)}>
         {Icon && <Icon className="h-3 w-3" />}
         {value}

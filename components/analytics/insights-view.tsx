@@ -93,7 +93,7 @@ function MetricBox({ label, value, sub, accent, delay }: {
       {/* Left accent line */}
       <div className={cn("absolute left-0 top-2 bottom-2 w-[2px] rounded-full bg-gradient-to-b", accentLine[accent || "default"])} />
       <div className="p-4 pl-5">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.08em]">{label}</p>
+        <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-[0.08em]">{label}</p>
         <p className="text-2xl font-bold text-foreground tabular-nums mt-1.5 tracking-tight">{value}</p>
         {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
       </div>
@@ -285,7 +285,7 @@ function AIHistorySection() {
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-2">
                       <NeuralSparkIcon className="w-3.5 h-3.5 text-primary/60 shrink-0" />
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
+                      <span className="text-2xs font-semibold text-muted-foreground uppercase tracking-[0.06em]">
                         {formatDistanceToNow(new Date(insight.created_at), { addSuffix: true })}
                       </span>
                     </div>
@@ -642,14 +642,14 @@ function WeeklyHeatmap({ data }: { data: { day: string; hour: number; winRate: n
         <div className="flex gap-1">
           <div className="w-16 shrink-0" />
           {hours.map(h => (
-            <div key={h} className="flex-1 text-center text-[10px] text-muted-foreground">
+            <div key={h} className="flex-1 text-center text-2xs text-muted-foreground">
               {h === 0 ? "12A" : h < 12 ? `${h}A` : h === 12 ? "12P" : `${h - 12}P`}
             </div>
           ))}
         </div>
         {days.map(day => (
           <div key={day} className="flex gap-1 mt-1">
-            <div className="w-16 shrink-0 text-[11px] text-muted-foreground flex items-center">{day.slice(0, 3)}</div>
+            <div className="w-16 shrink-0 text-2xs text-muted-foreground flex items-center">{day.slice(0, 3)}</div>
             {hours.map(h => {
               const cell = lookup.get(`${day}-${h}`)
               const wr = cell?.winRate || 0
@@ -672,7 +672,7 @@ function WeeklyHeatmap({ data }: { data: { day: string; hour: number; winRate: n
             })}
           </div>
         ))}
-        <div className="flex items-center justify-center gap-4 mt-3 text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-center gap-4 mt-3 text-2xs text-muted-foreground">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-md bg-emerald-500/70 inline-block" /> {">"} 60% WR</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-md bg-amber-500/50 inline-block" /> 40-60%</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-md bg-red-500/60 inline-block" /> {"<"} 40%</span>
@@ -788,7 +788,7 @@ function ComplianceSection({ result, loaded }: { result: ComplianceAnalysis; loa
                 const missRate = rule.totalTrades > 0 ? (rule.missCount / rule.totalTrades) * 100 : 0
                 return (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center text-[10px] font-bold text-red-600 dark:text-red-400 shrink-0 ring-1 ring-red-500/20">
+                    <div className="w-6 h-6 rounded-lg bg-red-500/10 flex items-center justify-center text-2xs font-bold text-red-600 dark:text-red-400 shrink-0 ring-1 ring-red-500/20">
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">

@@ -161,7 +161,7 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
           </div>
           <div>
             <h3 className="font-semibold text-slate-100 text-sm">Trading Assistant</h3>
-            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+            <p className="text-2xs text-slate-500 font-medium flex items-center gap-1.5">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>

@@ -309,7 +309,7 @@ export default function SimplePsychologyJournal() {
                             )}
                           >
                             <span className="text-2xl">{m.emoji}</span>
-                            <span className="text-[10px] font-medium uppercase tracking-wide">{m.label}</span>
+                            <span className="text-2xs font-medium uppercase tracking-wide">{m.label}</span>
                           </button>
                         ))}
                       </div>
@@ -374,7 +374,7 @@ export default function SimplePsychologyJournal() {
                               key={t.id}
                               onClick={() => toggleTrigger(t.id)}
                               className={cn(
-                                "text-[10px] uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all",
+                                "text-2xs uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all",
                                 selectedTriggers.includes(t.id)
                                   ? "bg-warning/15 text-warning border-warning/30"
                                   : "bg-muted/30 border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
@@ -396,7 +396,7 @@ export default function SimplePsychologyJournal() {
                               key={p.id}
                               onClick={() => togglePattern(p.id)}
                               className={cn(
-                                "text-[10px] uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all",
+                                "text-2xs uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all",
                                 selectedPatterns.includes(p.id)
                                   ? "bg-destructive/15 text-destructive border-destructive/30"
                                   : "bg-muted/30 border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
@@ -504,7 +504,7 @@ export default function SimplePsychologyJournal() {
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-mono flex items-center gap-2 mt-0.5">
+                            <div className="text-2xs text-muted-foreground font-mono flex items-center gap-2 mt-0.5">
                               <Calendar className="w-3 h-3" />
                               {new Date(entry.created_at).toLocaleDateString()}
                               {(entry as any).trades && (
@@ -529,12 +529,12 @@ export default function SimplePsychologyJournal() {
                       {entry.emotions && entry.emotions.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-3">
                           {entry.emotions.slice(0, 3).map((e, i) => (
-                            <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground border border-border/40">
+                            <span key={i} className="text-2xs px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground border border-border/40">
                               {getEmotionLabel(e)}
                             </span>
                           ))}
                           {entry.emotions.length > 3 && (
-                            <span className="text-[10px] px-1.5 py-0.5 text-muted-foreground">+{entry.emotions.length - 3}</span>
+                            <span className="text-2xs px-1.5 py-0.5 text-muted-foreground">+{entry.emotions.length - 3}</span>
                           )}
                         </div>
                       )}

@@ -302,7 +302,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
               <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">
                 365 Day Activity
               </h4>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 Each square represents a trading day • {stats.profitableDays} profitable days out of {stats.tradingDays} trading days
               </p>
             </div>
@@ -385,10 +385,10 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                 }}
               >
                 <div className="bg-popover border border-border rounded-lg shadow-xl p-2">
-                  <div className="text-[10px] font-semibold text-foreground mb-0.5">
+                  <div className="text-2xs font-semibold text-foreground mb-0.5">
                     {format(hoveredDay.date, 'MMM d, yyyy')}
                   </div>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-2xs text-muted-foreground">
                     {hoveredDay.tradeCount > 0 ? (
                       <>
                         <div className={cn("font-bold", hoveredDay.pnl >= 0 ? "text-profit" : "text-loss")}>
@@ -469,7 +469,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                   </div>
                   <div>
                     <div className="text-sm font-bold text-foreground">{month.monthShort}</div>
-                    <div className="text-[10px] text-muted-foreground">{month.tradeCount} trades • {month.winRate.toFixed(0)}% WR</div>
+                    <div className="text-2xs text-muted-foreground">{month.tradeCount} trades • {month.winRate.toFixed(0)}% WR</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -482,7 +482,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                   </div>
                   {month.changeFromPrev !== null && (
                     <div className={cn(
-                      'text-[10px] font-medium',
+                      'text-2xs font-medium',
                       month.changeFromPrev >= 0 ? 'text-profit' : 'text-loss'
                     )}>
                       {month.changeFromPrev >= 0 ? '↑' : '↓'} {Math.abs(month.changeFromPrev).toFixed(1)}%

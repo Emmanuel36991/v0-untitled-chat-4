@@ -37,7 +37,7 @@ export default async function AppLayout({
     <div className={cn("flex flex-col min-h-screen bg-background text-foreground antialiased")}>
       <ThemeSyncFromUserConfig />
       <Navbar />
-      <main className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 overflow-x-hidden relative">
+      <main id="main-content" tabIndex={-1} className="flex-grow w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 overflow-x-hidden relative outline-none">
         {children}
       </main>
       <AppFooter />

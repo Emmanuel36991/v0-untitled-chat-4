@@ -75,7 +75,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       <p className={`text-sm font-bold font-mono ${data.pnl >= 0 ? "text-profit" : "text-loss"}`}>
         {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
       </p>
-      <p className="text-[10px] text-muted-foreground capitalize">{data.outcome}</p>
+      <p className="text-2xs text-muted-foreground capitalize">{data.outcome}</p>
     </div>
   )
 }
@@ -190,11 +190,11 @@ export function TopDurationChart({ trades }: TopDurationChartProps) {
         )}
         {hasData && (
           <div className="flex items-center justify-center gap-5 pt-1 pb-1">
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
               <span className="inline-block h-2 w-2 rounded-full bg-profit" />
               Profit
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
               <span className="inline-block h-2 w-2 rounded-full bg-loss" />
               Loss
             </div>

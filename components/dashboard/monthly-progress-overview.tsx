@@ -173,7 +173,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
       <div className="bg-card/50 rounded-lg border border-border/50 p-3">
         <div className="mb-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Monthly Performance</h4>
+            <h4 className="text-2xs font-bold text-muted-foreground uppercase tracking-wide">Monthly Performance</h4>
             <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
               <div className="flex items-center gap-0.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-profit" />
@@ -266,7 +266,7 @@ export function MonthlyProgressOverview({ trades = [] }: MonthlyProgressOverview
               {summary.consistencyRate.toFixed(0)}%
             </div>
           </div>
-          <div className="text-[10px] text-muted-foreground">
+          <div className="text-2xs text-muted-foreground">
             {summary.profitableMonths}/{monthlyData.length} profitable
           </div>
         </div>

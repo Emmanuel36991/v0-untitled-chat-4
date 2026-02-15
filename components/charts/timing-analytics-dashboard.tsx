@@ -192,7 +192,7 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
             <div className="text-lg font-bold text-blue-600 dark:text-blue-400 font-mono">
               {timingInsights.avgDurationFormatted}
             </div>
-            <p className="text-[10px] text-muted-foreground">Average hold time</p>
+            <p className="text-2xs text-muted-foreground">Average hold time</p>
           </div>
 
           <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
@@ -203,7 +203,7 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
             <div className="text-lg font-bold text-profit font-mono">
               {timingInsights.mostActivePeriod}
             </div>
-            <p className="text-[10px] text-muted-foreground">Peak trading time</p>
+            <p className="text-2xs text-muted-foreground">Peak trading time</p>
           </div>
 
           <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
@@ -214,7 +214,7 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
             <div className="text-lg font-bold text-primary font-mono">
               {timingInsights.bestPerformingDuration}
             </div>
-            <p className="text-[10px] text-muted-foreground">Highest win rate hold time</p>
+            <p className="text-2xs text-muted-foreground">Highest win rate hold time</p>
           </div>
 
           <div className="flex flex-col gap-1.5 p-3.5 rounded-lg bg-muted/50 border border-border">
@@ -225,7 +225,7 @@ export function TimingAnalyticsDashboard({ trades, className }: TimingAnalyticsD
             <div className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono">
               {timingInsights.bestPerformingTime}
             </div>
-            <p className="text-[10px] text-muted-foreground">Highest win rate entry</p>
+            <p className="text-2xs text-muted-foreground">Highest win rate entry</p>
           </div>
         </div>
 

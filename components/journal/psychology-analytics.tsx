@@ -504,7 +504,7 @@ export default function PsychologyAnalytics({
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent Trend</p>
+                <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">Recent Trend</p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-2xl font-bold text-foreground capitalize font-mono">{analytics.moodTrendDirection}</p>
                   {analytics.moodTrendDirection === 'improving' ? (
@@ -519,12 +519,12 @@ export default function PsychologyAnalytics({
               <div className={cn(
                 "p-2 rounded-lg",
                 analytics.moodTrendDirection === 'improving' ? 'bg-success/10' :
-                analytics.moodTrendDirection === 'declining' ? 'bg-destructive/10' : 'bg-muted'
+                  analytics.moodTrendDirection === 'declining' ? 'bg-destructive/10' : 'bg-muted'
               )}>
                 <TrendingUp className={cn(
                   "w-5 h-5",
                   analytics.moodTrendDirection === 'improving' ? 'text-success' :
-                  analytics.moodTrendDirection === 'declining' ? 'text-destructive' : 'text-muted-foreground'
+                    analytics.moodTrendDirection === 'declining' ? 'text-destructive' : 'text-muted-foreground'
                 )} />
               </div>
             </div>
@@ -556,7 +556,7 @@ function GaugeCell({ label, value, color }: { label: string; value: number; colo
           <span className="text-lg font-bold font-mono text-foreground">{value}%</span>
         </div>
       </div>
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
     </div>
   )
 }
@@ -569,7 +569,7 @@ function MetricCard({ label, value, suffix, icon: Icon, iconBg, iconColor }: {
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+            <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
             <p className="text-2xl font-bold text-foreground mt-1 font-mono">
               {value}
               {suffix && <span className="text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}

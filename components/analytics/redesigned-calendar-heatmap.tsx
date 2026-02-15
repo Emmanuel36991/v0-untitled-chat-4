@@ -136,7 +136,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div
             key={d}
-            className="text-center text-[10px] uppercase font-bold text-muted-foreground tracking-wider"
+            className="text-center text-2xs uppercase font-bold text-muted-foreground tracking-wider"
           >
             {d}
           </div>
@@ -173,7 +173,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span
                     className={cn(
-                      "text-[10px] font-medium transition-colors",
+                      "text-2xs font-medium transition-colors",
                       tradeCount > 0
                         ? "text-white/90"
                         : "text-muted-foreground/60"
@@ -233,7 +233,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-3 mt-5 text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-center gap-3 mt-5 text-2xs text-muted-foreground">
         <span>Loss</span>
         <div className="flex gap-1">
           <div className="w-3.5 h-3.5 rounded-[3px] bg-rose-500/25" />

@@ -196,7 +196,7 @@ export function EnhancedHexagram({
                   textAnchor="middle"
                   dominantBaseline="middle"
                   className={cn(
-                    "text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase tracking-widest pointer-events-none",
+                    "text-2xs font-bold fill-slate-500 dark:fill-slate-400 uppercase tracking-widest pointer-events-none",
                     hoveredMetric === metric && "fill-indigo-600 dark:fill-indigo-400 font-extrabold scale-110 transition-all"
                   )}
                   style={{ textShadow: "0px 2px 4px rgba(0,0,0,0.1)" }}

@@ -13,19 +13,39 @@ import {
 import type { Trade } from "@/types"
 import { cn } from "@/lib/utils"
 
-// --- Theme ---
-const CHART_COLORS = {
-  background: "#09090b",
-  textColor: "#71717a",
-  gridColor: "#18181b",
-  borderColor: "#27272a",
-  crosshairLabelBg: "#6366f1",
-  bullish: "#22c55e",
-  bearish: "#ef4444",
-  volumeBullish: "rgba(34, 197, 94, 0.15)",
-  volumeBearish: "rgba(239, 68, 68, 0.15)",
-  maLine: "#f59e0b",
-} as const
+// --- Theme (reads CSS variables at runtime for light/dark mode awareness) ---
+function hslToHex(hslStr: string): string {
+  // Parse "H S% L%" or "H S L" format from CSS custom properties
+  const parts = hslStr.replace(/%/g, '').trim().split(/\s+/).map(Number)
+  if (parts.length < 3 || parts.some(isNaN)) return ''
+  const [h, s, l] = [parts[0], parts[1] / 100, parts[2] / 100]
+  const a = s * Math.min(l, 1 - l)
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
+    return Math.round(255 * color).toString(16).padStart(2, '0')
+  }
+  return `#${f(0)}${f(8)}${f(4)}`
+}
+
+function getChartColors(el: HTMLElement) {
+  const s = getComputedStyle(el)
+  const cssVar = (v: string) => s.getPropertyValue(v).trim()
+  const toHex = (v: string) => hslToHex(cssVar(v))
+
+  return {
+    background: toHex('--background') || '#09090b',
+    textColor: toHex('--muted-foreground') || '#71717a',
+    gridColor: toHex('--border') || '#18181b',
+    borderColor: toHex('--border') || '#27272a',
+    crosshairLabelBg: toHex('--primary') || '#6366f1',
+    bullish: toHex('--profit') || '#22c55e',
+    bearish: toHex('--loss') || '#ef4444',
+    volumeBullish: `${toHex('--profit') || '#22c55e'}26`,
+    volumeBearish: `${toHex('--loss') || '#ef4444'}26`,
+    maLine: toHex('--warning') || '#f59e0b',
+  }
+}
 
 // --- Types ---
 export interface OHLCDataPoint {
@@ -60,7 +80,7 @@ function calculateSMA(data: OHLCDataPoint[], period: number) {
   return result
 }
 
-function buildTradeMarkers(trades: Trade[], instrument: string) {
+function buildTradeMarkers(trades: Trade[], instrument: string, colors: { bullish: string; bearish: string }) {
   return trades
     .filter((t) => t.instrument === instrument)
     .map((t) => {
@@ -69,7 +89,7 @@ function buildTradeMarkers(trades: Trade[], instrument: string) {
       return {
         time: utcSeconds as UTCTimestamp,
         position: t.direction === "long" ? ("belowBar" as const) : ("aboveBar" as const),
-        color: t.direction === "long" ? CHART_COLORS.bullish : CHART_COLORS.bearish,
+        color: t.direction === "long" ? colors.bullish : colors.bearish,
         shape: t.direction === "long" ? ("arrowUp" as const) : ("arrowDown" as const),
         text: t.direction === "long" ? "BUY" : "SELL",
         size: 2,
@@ -93,33 +113,37 @@ function TradingViewChart({
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
   const maSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
+  const colorsRef = useRef<ReturnType<typeof getChartColors> | null>(null)
 
   // Initialize chart
   useEffect(() => {
     if (!containerRef.current) return
 
+    const colors = getChartColors(containerRef.current)
+    colorsRef.current = colors
+
     const chart = createChart(containerRef.current, {
       width: containerRef.current.clientWidth,
       height: containerRef.current.clientHeight,
       layout: {
-        background: { color: CHART_COLORS.background },
-        textColor: CHART_COLORS.textColor,
+        background: { color: colors.background },
+        textColor: colors.textColor,
         fontFamily: "'Inter', sans-serif",
       },
       grid: {
-        vertLines: { color: CHART_COLORS.gridColor, style: 2 },
-        horzLines: { color: CHART_COLORS.gridColor, style: 2 },
+        vertLines: { color: colors.gridColor, style: 2 },
+        horzLines: { color: colors.gridColor, style: 2 },
       },
       crosshair: {
         mode: CrosshairMode.Normal,
-        vertLine: { labelBackgroundColor: CHART_COLORS.crosshairLabelBg },
-        horzLine: { labelBackgroundColor: CHART_COLORS.crosshairLabelBg },
+        vertLine: { labelBackgroundColor: colors.crosshairLabelBg },
+        horzLine: { labelBackgroundColor: colors.crosshairLabelBg },
       },
       rightPriceScale: {
-        borderColor: CHART_COLORS.borderColor,
+        borderColor: colors.borderColor,
       },
       timeScale: {
-        borderColor: CHART_COLORS.borderColor,
+        borderColor: colors.borderColor,
         timeVisible: true,
         secondsVisible: false,
       },
@@ -127,11 +151,11 @@ function TradingViewChart({
 
     // Candlestick series
     const candles = chart.addCandlestickSeries({
-      upColor: CHART_COLORS.bullish,
-      downColor: CHART_COLORS.bearish,
+      upColor: colors.bullish,
+      downColor: colors.bearish,
       borderVisible: false,
-      wickUpColor: CHART_COLORS.bullish,
-      wickDownColor: CHART_COLORS.bearish,
+      wickUpColor: colors.bullish,
+      wickDownColor: colors.bearish,
     })
 
     // Volume histogram (overlay)
@@ -145,7 +169,7 @@ function TradingViewChart({
 
     // Moving average line
     const maLine = chart.addLineSeries({
-      color: CHART_COLORS.maLine,
+      color: colors.maLine,
       lineWidth: 1,
       crosshairMarkerVisible: false,
     })
@@ -193,7 +217,7 @@ function TradingViewChart({
       const volumeData: HistogramData[] = data.map((d) => ({
         time: d.time as UTCTimestamp,
         value: d.volume || 0,
-        color: d.close >= d.open ? CHART_COLORS.volumeBullish : CHART_COLORS.volumeBearish,
+        color: d.close >= d.open ? (colorsRef.current?.volumeBullish ?? '#22c55e26') : (colorsRef.current?.volumeBearish ?? '#ef444426'),
       }))
       volumeSeriesRef.current.setData(volumeData)
     }
@@ -206,7 +230,8 @@ function TradingViewChart({
 
     // Set trade markers
     if (trades && trades.length > 0) {
-      const markers = buildTradeMarkers(trades, instrument)
+      const c = colorsRef.current ?? { bullish: '#22c55e', bearish: '#ef4444' }
+      const markers = buildTradeMarkers(trades, instrument, c)
       candleSeriesRef.current.setMarkers(markers)
     }
 
@@ -221,7 +246,7 @@ function TradingViewChart({
           "flex justify-center items-center w-full min-h-[300px] text-muted-foreground rounded-lg",
           className,
         )}
-        style={{ backgroundColor: CHART_COLORS.background }}
+        style={{ backgroundColor: 'var(--background)' }}
         role="img"
         aria-label="Trading chart - no data available"
       >
@@ -234,7 +259,7 @@ function TradingViewChart({
     <div
       ref={containerRef}
       className={cn("w-full h-full min-h-[300px]", className)}
-      style={{ backgroundColor: CHART_COLORS.background }}
+      style={{ backgroundColor: 'var(--background)' }}
       role="img"
       aria-label={`${instrument} candlestick trading chart`}
     />

@@ -32,7 +32,7 @@ export function ProfileInfoStep({ userProfile, onUpdate, showValidation = false 
           <span className="text-sm font-medium text-foreground flex items-center gap-2">
             <User className="w-4 h-4" />
             Full Name
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal text-destructive border-destructive/30">Required</Badge>
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 font-normal text-destructive border-destructive/30">Required</Badge>
           </span>
           <div className="relative mt-2">
             <Input
@@ -82,7 +82,7 @@ export function ProfileInfoStep({ userProfile, onUpdate, showValidation = false 
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
             <Target className="w-4 h-4" />
             Trading Experience
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">Optional</Badge>
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 font-normal">Optional</Badge>
           </label>
           <p className="text-xs text-muted-foreground mt-1">Helps tailor analytics and AI suggestions to your level.</p>
         </div>
@@ -117,7 +117,7 @@ export function ProfileInfoStep({ userProfile, onUpdate, showValidation = false 
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
             <Briefcase className="w-4 h-4" />
             Trading Style
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">Optional</Badge>
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 font-normal">Optional</Badge>
           </label>
           <p className="text-xs text-muted-foreground mt-1">Used to customize default chart timeframes and holding period metrics.</p>
         </div>
@@ -151,7 +151,7 @@ export function ProfileInfoStep({ userProfile, onUpdate, showValidation = false 
         <label className="block">
           <span className="text-sm font-medium text-foreground flex items-center gap-2">
             Trading Goals
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">Optional</Badge>
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 font-normal">Optional</Badge>
           </span>
           <textarea
             placeholder="e.g., Achieve 5% monthly returns, build a mechanical trading system, master risk management..."

@@ -59,7 +59,7 @@ function ConsentCard({
                   rel="noopener noreferrer"
                   className="text-xs text-indigo-500 hover:text-indigo-600 hover:underline flex items-center gap-0.5"
                 >
-                  (Read full document <span className="text-[10px] ml-0.5">↗</span>)
+                  (Read full document <span className="text-2xs ml-0.5">↗</span>)
                 </a>
               )}
             </div>

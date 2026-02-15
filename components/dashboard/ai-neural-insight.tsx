@@ -179,7 +179,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
 
       // Persist insight to database
       if (fullText.trim()) {
-        saveInsight(fullText.trim(), recentTrades).catch(() => {})
+        saveInsight(fullText.trim(), recentTrades).catch(() => { })
       }
     } catch (err: any) {
       if (err?.name === "AbortError") return
@@ -318,7 +318,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
                     />
                   ))}
                 </div>
-                <p className="text-[10px] text-muted-foreground/60 mt-1.5 font-medium">
+                <p className="text-2xs text-muted-foreground/60 mt-1.5 font-medium">
                   {trades.length}/3 trades logged
                 </p>
               </motion.div>

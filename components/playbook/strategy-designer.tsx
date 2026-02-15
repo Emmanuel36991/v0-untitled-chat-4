@@ -196,7 +196,7 @@ export function StrategyDesigner({
                             <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <Library className="w-4 h-4 text-primary" /> Rule Library
                             </h3>
-                            <Badge variant="secondary" className="ml-auto font-mono text-[10px]">{confluences.length} Rules</Badge>
+                            <Badge variant="secondary" className="ml-auto font-mono text-2xs">{confluences.length} Rules</Badge>
                         </div>
 
                         <div className="p-4 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -314,7 +314,7 @@ export function StrategyDesigner({
                                 <h3 className="text-sm font-bold uppercase tracking-widest text-foreground flex items-center gap-2">
                                     <Workflow className="w-4 h-4 text-primary" /> Entry Models
                                 </h3>
-                                <p className="text-[10px] text-muted-foreground hidden sm:block">
+                                <p className="text-2xs text-muted-foreground hidden sm:block">
                                     Recipes for entering the market ("Setups"). Click to edit rules.
                                 </p>
                             </div>
@@ -360,7 +360,7 @@ export function StrategyDesigner({
                                                         </div>
                                                         <div>
                                                             <h4 className="font-bold text-sm tracking-tight">{setup.name}</h4>
-                                                            <span className="text-[10px] text-muted-foreground font-mono">
+                                                            <span className="text-2xs text-muted-foreground font-mono">
                                                                 {setup.activeConfluences.length} Rules Active
                                                             </span>
                                                         </div>
@@ -388,7 +388,7 @@ export function StrategyDesigner({
                                                                 if (!rule) return null
                                                                 const cat = CONFLUENCE_CATEGORIES.find(c => c.id === ((rule as any).category || 'price')) || CONFLUENCE_CATEGORIES[0]
                                                                 return (
-                                                                    <div key={ruleId} className={cn("flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-medium border bg-background/50", cat.border, cat.color)}>
+                                                                    <div key={ruleId} className={cn("flex items-center gap-1.5 px-2 py-1 rounded text-2xs font-medium border bg-background/50", cat.border, cat.color)}>
                                                                         <span className={cn("w-1 h-1 rounded-full", cat.dot)} />
                                                                         {rule.text}
                                                                     </div>

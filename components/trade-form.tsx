@@ -1058,7 +1058,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                   {/* Recently Traded Chips */}
                   {recentInstruments.length > 0 && (
                     <div className="space-y-1.5">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <span className="text-2xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                         <Clock className="w-3 h-3" /> Recently Traded
                       </span>
                       <div className="flex flex-wrap gap-2">

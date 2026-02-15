@@ -176,7 +176,7 @@ export function CompactPerformanceCalendar({
           {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
             <div
               key={`${d}-${idx}`}
-              className="text-center text-[10px] font-semibold text-muted-foreground tracking-wide"
+              className="text-center text-2xs font-semibold text-muted-foreground tracking-wide"
             >
               {d}
             </div>
@@ -234,7 +234,7 @@ export function CompactPerformanceCalendar({
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span
                     className={cn(
-                      "text-[11px] font-medium pointer-events-none",
+                      "text-2xs font-medium pointer-events-none",
                       textClass,
                       isToday && "font-bold",
                     )}

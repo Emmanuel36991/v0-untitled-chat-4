@@ -140,7 +140,7 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
           {monthLabels.map((label, idx) => (
             <span
               key={idx}
-              className="absolute text-[10px] font-medium text-muted-foreground"
+              className="absolute text-2xs font-medium text-muted-foreground"
               style={{ left: `${label.weekIndex * 14}px` }}
             >
               {label.month}
@@ -186,7 +186,7 @@ export function YearlyConsistencyHeatmap({ trades = [] }: YearlyConsistencyHeatm
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-between mt-3 text-[10px] text-muted-foreground">
+      <div className="flex items-center justify-between mt-3 text-2xs text-muted-foreground">
         <span>Less</span>
         <div className="flex items-center gap-1">
           <div className="w-[11px] h-[11px] rounded-[2px] bg-loss" title="Loss" />

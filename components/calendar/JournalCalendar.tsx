@@ -3,8 +3,8 @@
 import React, { useState, useMemo } from "react"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addMonths, subMonths, isSameDay } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  ChevronLeft, ChevronRight, TrendingUp, TrendingDown, 
+import {
+  ChevronLeft, ChevronRight, TrendingUp, TrendingDown,
   ArrowLeft, Clock, Target, BarChart2, Calendar as CalendarIcon, Filter
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -55,10 +55,10 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
   return (
     <div className="flex flex-col h-full bg-slate-50/50 dark:bg-[#0B0D12] overflow-hidden relative">
       <AnimatePresence mode="wait">
-        
+
         {/* VIEW 1: MONTHLY HEATMAP */}
         {view === "month" && (
-          <motion.div 
+          <motion.div
             key="month-view"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -79,16 +79,16 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
                 </div>
                 <div className="text-sm font-mono text-slate-400">{format(currentMonth, "yyyy")}</div>
               </div>
-              
+
               <div className="flex gap-4 text-right">
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400">Net PnL</p>
+                  <p className="text-2xs uppercase font-bold text-slate-400">Net PnL</p>
                   <p className={cn("text-sm font-mono font-bold", monthStats.totalPnL >= 0 ? "text-emerald-500" : "text-rose-500")}>
                     {monthStats.totalPnL >= 0 ? "+" : ""}${monthStats.totalPnL.toLocaleString()}
                   </p>
                 </div>
                 <div className="hidden sm:block">
-                  <p className="text-[10px] uppercase font-bold text-slate-400">Win Rate</p>
+                  <p className="text-2xs uppercase font-bold text-slate-400">Win Rate</p>
                   <p className="text-sm font-mono font-bold text-slate-700 dark:text-slate-300">{monthStats.winRate.toFixed(0)}%</p>
                 </div>
               </div>
@@ -98,16 +98,16 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
             <ScrollArea className="flex-1 p-6">
               <div className="grid grid-cols-7 gap-4 max-w-5xl mx-auto">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-                  <div key={day} className="text-center text-[10px] uppercase font-bold text-slate-400 pb-2">{day}</div>
+                  <div key={day} className="text-center text-2xs uppercase font-bold text-slate-400 pb-2">{day}</div>
                 ))}
-                
+
                 {calendarGrid.padding.map((_, i) => <div key={`pad-${i}`} className="aspect-square" />)}
-                
+
                 {calendarGrid.days.map((day) => {
                   const dateStr = format(day, "yyyy-MM-dd")
                   const data = dailyData.find(d => d.date === dateStr)
                   const isToday = isSameDay(day, new Date())
-                  
+
                   return (
                     <motion.button
                       key={day.toISOString()}
@@ -118,8 +118,8 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
                         "relative aspect-square rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all shadow-sm",
                         isToday ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-950" : "hover:border-indigo-300 dark:hover:border-indigo-700",
                         !data ? "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800" :
-                        data.pnl > 0 ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30" :
-                        "bg-rose-50/50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30"
+                          data.pnl > 0 ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/30" :
+                            "bg-rose-50/50 dark:bg-rose-900/10 border-rose-100 dark:border-rose-900/30"
                       )}
                     >
                       <span className={cn(
@@ -133,9 +133,9 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
                             "text-sm font-mono font-bold tracking-tight",
                             data.pnl > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
                           )}>
-                            {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl/1000).toFixed(1)}k` : data.pnl}
+                            {data.pnl > 0 ? "+" : ""}{Math.abs(data.pnl) >= 1000 ? `${(data.pnl / 1000).toFixed(1)}k` : data.pnl}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-medium px-1.5 py-0.5 bg-white/50 dark:bg-black/20 rounded-full">
+                          <span className="text-2xs text-slate-400 font-medium px-1.5 py-0.5 bg-white/50 dark:bg-black/20 rounded-full">
                             {data.trades} trades
                           </span>
                         </>
@@ -152,7 +152,7 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
 
         {/* VIEW 2: DAILY DOSSIER */}
         {view === "day" && selectedDay && (
-          <motion.div 
+          <motion.div
             key="day-view"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -171,9 +171,9 @@ export function JournalCalendar({ trades, dailyData }: JournalCalendarProps) {
             </div>
 
             <ScrollArea className="flex-1">
-              <DailyDossier 
-                date={selectedDay} 
-                trades={trades.filter(t => isSameDay(new Date(t.date), selectedDay))} 
+              <DailyDossier
+                date={selectedDay}
+                trades={trades.filter(t => isSameDay(new Date(t.date), selectedDay))}
               />
             </ScrollArea>
           </motion.div>
@@ -208,28 +208,28 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
 
   return (
     <div className="p-8 max-w-4xl mx-auto space-y-8">
-      
+
       {/* Hero Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className={cn("p-6 rounded-2xl border flex flex-col justify-between h-32", stats.pnl >= 0 ? "bg-emerald-50/50 border-emerald-100" : "bg-rose-50/50 border-rose-100")}>
-           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Net PnL</span>
-           <span className={cn("text-4xl font-mono font-bold tracking-tighter", stats.pnl >= 0 ? "text-emerald-600" : "text-rose-600")}>
-             {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
-           </span>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Net PnL</span>
+          <span className={cn("text-4xl font-mono font-bold tracking-tighter", stats.pnl >= 0 ? "text-emerald-600" : "text-rose-600")}>
+            {stats.pnl >= 0 ? "+" : ""}${stats.pnl.toFixed(2)}
+          </span>
         </div>
         <div className="p-6 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between h-32">
-           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
-           <div className="flex items-end gap-2">
-             <span className="text-4xl font-mono font-bold text-slate-900 dark:text-white">{stats.winRate.toFixed(0)}%</span>
-             <span className="text-sm text-slate-400 mb-1.5">{stats.count} Trades</span>
-           </div>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Win Rate</span>
+          <div className="flex items-end gap-2">
+            <span className="text-4xl font-mono font-bold text-slate-900 dark:text-white">{stats.winRate.toFixed(0)}%</span>
+            <span className="text-sm text-slate-400 mb-1.5">{stats.count} Trades</span>
+          </div>
         </div>
         <div className="p-6 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col justify-between h-32">
-           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
-           <div className="flex items-center gap-2 mt-auto">
-             <Target className="w-5 h-5 text-indigo-500" />
-             <span className="text-lg font-bold text-slate-700 dark:text-slate-200">Silver Bullet</span>
-           </div>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Best Setup</span>
+          <div className="flex items-center gap-2 mt-auto">
+            <Target className="w-5 h-5 text-indigo-500" />
+            <span className="text-lg font-bold text-slate-700 dark:text-slate-200">Silver Bullet</span>
+          </div>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ function DailyDossier({ date, trades }: { date: Date, trades: Trade[] }) {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 dark:text-white">{trade.instrument}</span>
-                      <Badge variant="secondary" className="text-[10px] h-5">{trade.setup_name || "Discretionary"}</Badge>
+                      <Badge variant="secondary" className="text-2xs h-5">{trade.setup_name || "Discretionary"}</Badge>
                     </div>
                     <span className="text-xs text-slate-500 font-mono">{format(new Date(trade.date), "HH:mm:ss")}</span>
                   </div>

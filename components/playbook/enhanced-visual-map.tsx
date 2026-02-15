@@ -185,10 +185,10 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                 <CardContent className="space-y-4">
                   {/* Merged Strategies */}
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">MERGED STRATEGIES</Label>
+                    <Label className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">MERGED STRATEGIES</Label>
                     <div className="flex flex-wrap gap-2">
                       {merged.strategies.map(strategy => (
-                        <Badge key={strategy.id} variant="secondary" className="gap-1 text-[10px] font-mono">
+                        <Badge key={strategy.id} variant="secondary" className="gap-1 text-2xs font-mono">
                           <Target className="w-3 h-3" />
                           {strategy.name}
                         </Badge>
@@ -199,23 +199,23 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                   {/* Combined Metrics */}
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-muted/30 p-3 rounded-lg border border-border/30">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Win Rate</div>
+                      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Win Rate</div>
                       <div className="text-lg font-bold font-mono text-success">
                         {(merged.combined_win_rate * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div className="bg-muted/30 p-3 rounded-lg border border-border/30">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Profit Factor</div>
+                      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Profit Factor</div>
                       <div className="text-lg font-bold font-mono text-info">
                         {merged.combined_profit_factor.toFixed(2)}
                       </div>
                     </div>
                     <div className="bg-muted/30 p-3 rounded-lg border border-border/30">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Trades</div>
+                      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Total Trades</div>
                       <div className="text-lg font-bold font-mono text-foreground">{merged.combined_trades_count}</div>
                     </div>
                     <div className="bg-muted/30 p-3 rounded-lg border border-border/30">
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Combined P&L</div>
+                      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Combined P&L</div>
                       <div className={cn(
                         "text-lg font-bold font-mono",
                         merged.combined_pnl >= 0 ? "text-success" : "text-destructive"
@@ -228,13 +228,13 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                   {/* Common Good Habits */}
                   {merged.common_good_habits && merged.common_good_habits.length > 0 && (
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-success flex items-center gap-1">
+                      <Label className="text-2xs font-bold uppercase tracking-widest text-success flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" />
                         COMMON GOOD HABITS
                       </Label>
                       <div className="flex flex-wrap gap-1.5">
                         {merged.common_good_habits.map((habit, idx) => (
-                          <Badge key={idx} className="badge-animated bg-success/15 text-success border border-success/20 text-[10px]">
+                          <Badge key={idx} className="badge-animated bg-success/15 text-success border border-success/20 text-2xs">
                             {habit}
                           </Badge>
                         ))}
@@ -284,7 +284,7 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                 {/* Connection Indicator */}
                 {connectedStrategyIds.length > 0 && (
                   <div className="absolute top-2 right-2">
-                    <Badge className="badge-animated bg-success/15 text-success border border-success/20 gap-1 text-[10px]">
+                    <Badge className="badge-animated bg-success/15 text-success border border-success/20 gap-1 text-2xs">
                       <Link2 className="w-3 h-3" />
                       {connectedStrategyIds.length}
                     </Badge>
@@ -297,7 +297,7 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-sm font-bold truncate">{strategy.name}</CardTitle>
                       {strategy.description && (
-                        <CardDescription className="text-[11px] mt-1 line-clamp-2">
+                        <CardDescription className="text-2xs mt-1 line-clamp-2">
                           {strategy.description}
                         </CardDescription>
                       )}
@@ -309,13 +309,13 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                   {/* Metrics */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Win Rate</div>
+                      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Win Rate</div>
                       <div className="font-bold font-mono text-success">
                         {(strategy.win_rate * 100).toFixed(1)}%
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Trades</div>
+                      <div className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Trades</div>
                       <div className="font-bold font-mono text-foreground">{strategy.trades_count}</div>
                     </div>
                   </div>
@@ -323,19 +323,19 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
                   {/* Connected Strategies */}
                   {connectedStrategyIds.length > 0 && (
                     <div className="pt-2 border-t border-border">
-                      <Label className="text-[10px] text-muted-foreground mb-1 block">Connected to:</Label>
+                      <Label className="text-2xs text-muted-foreground mb-1 block">Connected to:</Label>
                       <div className="flex flex-wrap gap-1">
                         {connectedStrategyIds.slice(0, 2).map(connectedId => {
                           const connectedStrategy = strategies.find(s => s.id === connectedId)
                           if (!connectedStrategy) return null
                           return (
-                            <Badge key={connectedId} variant="outline" className="text-[10px] font-mono">
+                            <Badge key={connectedId} variant="outline" className="text-2xs font-mono">
                               {connectedStrategy.name}
                             </Badge>
                           )
                         })}
                         {connectedStrategyIds.length > 2 && (
-                          <Badge variant="outline" className="text-[10px] font-mono">
+                          <Badge variant="outline" className="text-2xs font-mono">
                             +{connectedStrategyIds.length - 2} more
                           </Badge>
                         )}
@@ -366,7 +366,7 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="merge-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Merged Strategy Name *</Label>
+              <Label htmlFor="merge-name" className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Merged Strategy Name *</Label>
               <Input
                 id="merge-name"
                 placeholder="e.g., Day Trading Master Setup"
@@ -377,7 +377,7 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="merge-description" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Description (Optional)</Label>
+              <Label htmlFor="merge-description" className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Description (Optional)</Label>
               <Textarea
                 id="merge-description"
                 placeholder="Describe how these strategies work together..."
@@ -389,7 +389,7 @@ export function EnhancedVisualMap({ strategies }: EnhancedVisualMapProps) {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Selected Strategies</Label>
+              <Label className="text-2xs font-bold uppercase tracking-widest text-muted-foreground">Selected Strategies</Label>
               <div className="flex flex-wrap gap-2">
                 {selectedStrategies.map(id => {
                   const strategy = strategies.find(s => s.id === id)

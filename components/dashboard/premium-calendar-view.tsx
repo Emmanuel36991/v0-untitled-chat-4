@@ -239,7 +239,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                 )}
 
                 {/* Bottom Section - Stats */}
-                <div className="p-2 flex items-center justify-between text-[10px]">
+                <div className="p-2 flex items-center justify-between text-2xs">
                   {hasTrades ? (
                     <>
                       <div className="bg-background/70 backdrop-blur-sm rounded px-1.5 py-0.5 font-semibold border border-border/30">
@@ -265,7 +265,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                         <CalendarIcon className="w-3.5 h-3.5 text-primary" />
                         {format(day.date, 'MMM d, yyyy')}
                       </div>
-                      <div className="space-y-1.5 text-[11px] border-t border-border/30 pt-2">
+                      <div className="space-y-1.5 text-2xs border-t border-border/30 pt-2">
                         <div className="flex justify-between gap-4">
                           <span className="text-muted-foreground">Trades:</span>
                           <span className="font-semibold">{day.trades.length}</span>
@@ -299,7 +299,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground">
+      <div className="flex items-center justify-center gap-4 text-2xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-profit/20 border border-profit/30" />
           <span>Profitable</span>

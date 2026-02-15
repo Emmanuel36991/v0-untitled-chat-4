@@ -77,34 +77,12 @@ export function Navbar() {
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
         <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 lg:px-6">
-          {/* Left side: Updates & Profile */}
-          <div className="flex items-center gap-3 mr-6 z-10">
-            {/* Updates Pill */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenUpdates}
-              className={cn(
-                "hidden md:flex gap-2 items-center rounded-full h-10 px-4 text-sm font-semibold transition-all duration-300 border",
-                hasUnreadUpdates
-                  ? "border-primary/50 bg-primary/5 text-foreground shadow-[0_0_12px_-3px] shadow-primary/30 hover:shadow-primary/50 hover:bg-primary/10"
-                  : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
-            >
-              <UpdatesIcon className="h-4 w-4 fill-current" />
-              <span className="uppercase tracking-wider text-2xs font-bold">Updates</span>
-
-              {hasUnreadUpdates && (
-                <span className="relative flex h-2.5 w-2.5 ml-0.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
-                </span>
-              )}
-            </Button>
-
-            {/* User Profile */}
-            <UserNav />
-          </div>
+          {/* Logo */}
+          <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-8 z-10">
+            <motion.div whileHover={{ scale: 1.03 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+              <ConcentradeLogo size={38} variant="full" className="transition-colors" />
+            </motion.div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-0.5 flex-grow">
@@ -151,8 +129,34 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Right side: Logo + Mobile trigger */}
-          <div className="ml-auto flex items-center gap-4 z-10">
+          {/* Right side controls */}
+          <div className="ml-auto flex items-center gap-3 z-10">
+            {/* Updates Pill */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenUpdates}
+              className={cn(
+                "hidden md:flex gap-2 items-center rounded-full h-10 px-4 text-sm font-semibold transition-all duration-300 border",
+                hasUnreadUpdates
+                  ? "border-primary/50 bg-primary/5 text-foreground shadow-[0_0_12px_-3px] shadow-primary/30 hover:shadow-primary/50 hover:bg-primary/10"
+                  : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <UpdatesIcon className="h-4 w-4 fill-current" />
+              <span className="uppercase tracking-wider text-2xs font-bold">Updates</span>
+
+              {hasUnreadUpdates && (
+                <span className="relative flex h-2.5 w-2.5 ml-0.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
+                </span>
+              )}
+            </Button>
+
+            {/* User Profile */}
+            <UserNav />
+
             {/* Mobile Navigation Trigger */}
             <div className="lg:hidden relative">
               <Sheet>
@@ -264,13 +268,6 @@ export function Navbar() {
                 </SheetContent>
               </Sheet>
             </div>
-
-            {/* Logo — far right */}
-            <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group z-10">
-              <motion.div whileHover={{ scale: 1.03 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
-                <ConcentradeLogo size={38} variant="full" className="transition-colors" />
-              </motion.div>
-            </Link>
           </div>
         </div>
       </motion.header>

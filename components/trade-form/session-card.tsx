@@ -36,7 +36,7 @@ export const SessionCard = ({ session, isSelected, onSelect }: SessionCardProps)
             <h4 className={cn("font-bold text-sm", isSelected ? session.textColor : "text-foreground")}>
               {session.label}
             </h4>
-            <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
+            <span className="text-2xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded-md">
               {session.time}
             </span>
           </div>

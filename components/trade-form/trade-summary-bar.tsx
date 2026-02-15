@@ -42,7 +42,7 @@ export const TradeSummaryBar = ({
             <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-border/40">
                 {/* PnL Cell */}
                 <div className="px-4 py-3 flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+                    <span className="text-2xs font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
                         <DollarSign className="w-3 h-3" /> Est. P&L
                     </span>
                     <span className={cn(
@@ -63,7 +63,7 @@ export const TradeSummaryBar = ({
 
                 {/* Outcome Cell */}
                 <div className="px-4 py-3 flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+                    <span className="text-2xs font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
                         {outcome === "WIN" ? <ArrowUpRight className="w-3 h-3" /> : outcome === "LOSS" ? <ArrowDownRight className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
                         Outcome
                     </span>
@@ -85,7 +85,7 @@ export const TradeSummaryBar = ({
 
                 {/* R:R Cell */}
                 <div className="px-4 py-3 flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+                    <span className="text-2xs font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
                         <Scale className="w-3 h-3" /> Risk : Reward
                     </span>
                     <span className={cn(
@@ -104,7 +104,7 @@ export const TradeSummaryBar = ({
 
                 {/* Risk $ Cell */}
                 <div className="px-4 py-3 flex flex-col gap-0.5">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
+                    <span className="text-2xs font-bold uppercase tracking-[0.1em] text-muted-foreground flex items-center gap-1">
                         <Shield className="w-3 h-3" /> Risk
                     </span>
                     <span className={cn(

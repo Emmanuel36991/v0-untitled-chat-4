@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Standardized micro-text utility — replaces arbitrary text-[10px] */
+@utility text-2xs {
+  font-size: 0.625rem;
+  /* 10px */
+  line-height: 1rem;
+  /* 16px */
+}
+
 :root {
   /* Border radius */
   --radius: 0.625rem;

@@ -43,7 +43,7 @@ import type { TradingAccount } from "@/types/accounts"
 
 // Actions
 import { getStrategies, type PlaybookStrategy, type StrategySetup } from "@/app/actions/playbook-actions"
-import { logTradePsychology } from "@/app/actions/trade-actions"
+import { logTradePsychology, getTrades } from "@/app/actions/trade-actions"
 import { getTradingAccounts } from "@/app/actions/account-actions"
 
 // Sub-components
@@ -523,6 +523,9 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
   // *** TRADING ACCOUNTS STATE ***
   const [tradingAccounts, setTradingAccounts] = useState<TradingAccount[]>([])
 
+  // Recently traded instruments for quick-select chips
+  const [recentInstruments, setRecentInstruments] = useState<string[]>([])
+
   // *** STRATEGIES STATE ***
   const [strategies, setStrategies] = useState<PlaybookStrategy[]>([])
   const [selectedSetupId, setSelectedSetupId] = useState<string | null>(null)
@@ -551,14 +554,27 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
     let mounted = true
     async function loadData() {
       try {
-        const [loadedStrategies, loadedAccounts] = await Promise.all([
+        const [loadedStrategies, loadedAccounts, loadedTrades] = await Promise.all([
           getStrategies(),
-          getTradingAccounts()
+          getTradingAccounts(),
+          getTrades()
         ])
 
         if (mounted) {
           setStrategies(loadedStrategies)
           setTradingAccounts(loadedAccounts)
+
+          // Extract top 5 unique recently traded instruments
+          const seen = new Set<string>()
+          const recent: string[] = []
+          for (const t of loadedTrades) {
+            if (t.instrument && !seen.has(t.instrument)) {
+              seen.add(t.instrument)
+              recent.push(t.instrument)
+              if (recent.length >= 5) break
+            }
+          }
+          setRecentInstruments(recent)
 
           // Set default account if one exists and none is selected
           if (loadedAccounts.length > 0 && !formData.account_id) {
@@ -1036,6 +1052,32 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
                         </SelectContent>
                       </Select>
                       {errors.account_id && <p className="text-xs text-red-500">{errors.account_id}</p>}
+                    </div>
+                  )}
+
+                  {/* Recently Traded Chips */}
+                  {recentInstruments.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" /> Recently Traded
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {recentInstruments.map(symbol => (
+                          <button
+                            key={symbol}
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, instrument: symbol }))}
+                            className={cn(
+                              "px-3 py-1.5 rounded-full text-xs font-bold border transition-all",
+                              formData.instrument === symbol
+                                ? "bg-primary/10 border-primary text-primary shadow-sm"
+                                : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                            )}
+                          >
+                            {symbol}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 

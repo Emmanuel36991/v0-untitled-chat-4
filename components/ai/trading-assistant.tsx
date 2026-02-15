@@ -16,11 +16,48 @@ interface Message {
   content: string
 }
 
+// Helper to format message content with basic markdown (bold, lists)
+const formatMessageContent = (content: string) => {
+  return content.split("\n").map((line, i) => {
+    const isList = line.trim().match(/^[-*]\s/)
+    const cleanLine = isList ? line.trim().replace(/^[-*]\s/, "") : line
+
+    // Parse Bold: **text**
+    const parts = cleanLine.split(/(\*\*.*?\*\*)/g)
+    const formattedLine = parts.map((part, j) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={j} className="font-bold text-indigo-300">
+            {part.slice(2, -2)}
+          </strong>
+        )
+      }
+      return part
+    })
+
+    if (isList) {
+      return (
+        <div key={i} className="flex gap-2 ml-1 my-0.5">
+          <span className="text-indigo-400 select-none mt-0.5">•</span>
+          <span className="flex-1 text-slate-200">{formattedLine}</span>
+        </div>
+      )
+    }
+
+    return (
+      <div key={i} className={cn("min-h-[1.2em]", line.trim() === "" ? "h-2" : "")}>
+        {formattedLine}
+      </div>
+    )
+  })
+}
+
 interface TradingAssistantProps {
   initialContext?: string
 }
 
 export function TradingAssistant({ initialContext }: TradingAssistantProps) {
+
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [input, setInput] = useState("")
@@ -218,7 +255,11 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
                       : "bg-slate-800 text-slate-200 border border-slate-700/50 rounded-bl-none",
                   )}
                 >
-                  <p className="whitespace-pre-wrap">{m.content}</p>
+                  {m.role === "assistant" ? (
+                    <div className="space-y-0.5 text-left">{formatMessageContent(m.content)}</div>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{m.content}</p>
+                  )}
                 </div>
               </div>
             ))}

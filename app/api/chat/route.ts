@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       content: sanitizeInput(msg.content, { maxLength: 5000 }),
     }))
 
-    let systemPrompt = TRADING_SYSTEM_PROMPTS.base
+    let systemPrompt = TRADING_SYSTEM_PROMPTS.TRADING_MENTOR
     if (context) {
       systemPrompt += `\n\nCURRENT USER CONTEXT:\n${sanitizeInput(context, { maxLength: 1000 })}`
     }

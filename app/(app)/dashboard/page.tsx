@@ -34,6 +34,7 @@ import {
   AvgReturnIcon,
   ProfitFactorIcon,
 } from "@/components/icons/system-icons"
+import { WisdomSparkIcon } from "@/components/icons/hand-crafted-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
 import { formatCurrencyValue } from "@/lib/currency-config"
@@ -392,7 +393,7 @@ export default function DashboardPage() {
             </AnimatedTitle>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-              <NeuralSparkIcon className="w-4 h-4 text-primary" />
+              <WisdomSparkIcon className="w-5 h-5 text-primary" />
               <span className="italic text-muted-foreground">
                 "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>

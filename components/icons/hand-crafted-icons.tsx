@@ -19,7 +19,6 @@ export function PulseGridIcon({ className }: IconProps) {
       <rect x="14" y="3" width="7" height="7" rx="1.5" />
       <rect x="3" y="14" width="7" height="7" rx="1.5" />
       <rect x="14" y="14" width="7" height="7" rx="1.5" strokeDasharray="4 2" />
-      <polyline points="14.5,18 16,18 17,15.5 18.5,19.5 19.5,17 20.5,18" strokeWidth="1.8" />
       <circle cx="13" cy="13" r="1" fill="currentColor" stroke="none" />
     </svg>
   )
@@ -217,6 +216,23 @@ export function MeanLineIcon({ className }: IconProps) {
       <line x1="9.5" y1="14.9" x2="9.5" y2="12" strokeWidth="1.2" opacity="0.4" />
       {/* µ symbol hint — small bar on the left */}
       <line x1="2" y1="10" x2="2" y2="14" strokeWidth="2" opacity="0.8" />
+    </svg>
+  )
+}
+
+// ── Quote: Wisdom Spark ───────────────────────────────────────────────────────
+export function WisdomSparkIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={cn("w-5 h-5", className)} strokeWidth="1.8" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      {/* Main 4-point star */}
+      <path d="M12 3L14 9L20 12L14 15L12 21L10 15L4 12L10 9L12 3Z" />
+      {/* Center detail */}
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+      {/* Outer orbital rings segments */}
+      <path d="M12 2v2" opacity="0.5" />
+      <path d="M12 20v2" opacity="0.5" />
+      <path d="M2 12h2" opacity="0.5" />
+      <path d="M20 12h2" opacity="0.5" />
     </svg>
   )
 }

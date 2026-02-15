@@ -30,7 +30,7 @@ const mainNavItems = [
     icon: DashboardIcon,
   },
   {
-    title: "Journal",
+    title: "Trades",
     href: "/trades",
     icon: JournalIcon,
   },

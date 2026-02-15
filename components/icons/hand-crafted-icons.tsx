@@ -225,3 +225,7 @@ export function MeanLineIcon({ className }: IconProps) {
 export { PulseGridIcon as DashboardIcon }
 export { TimeRewindIcon as BacktestIcon }
 export { MindMirrorIcon as PsychologyIcon }
+export { StrategyBlueprintIcon as PlaybookIcon }
+export { SignalWaveIcon as AnalyticsIcon }
+export { TradeLedgerIcon as JournalIcon }
+export { TuningForksIcon as SettingsIcon }

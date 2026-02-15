@@ -4,11 +4,11 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Badge } from "@/components/ui/badge" // <--- ADDED THIS IMPORT
+import { Badge } from "@/components/ui/badge"
 import { Menu } from 'lucide-react'
-import { PulseIcon } from "@/components/icons/system-icons"
 import {
   DashboardIcon,
   TradeLedgerIcon,
@@ -49,11 +49,9 @@ export function Navbar() {
   const [showUpdates, setShowUpdates] = useState(false)
   const [hasUnreadUpdates, setHasUnreadUpdates] = useState(false)
 
-  // Check for updates on mount
   useEffect(() => {
     const lastSeen = localStorage.getItem("lastSeenUpdate")
     if (lastSeen !== LATEST_UPDATE_ID) {
-      // If they haven't seen this specific update ID, show popup and dot
       setShowUpdates(true)
       setHasUnreadUpdates(true)
     }
@@ -61,168 +59,218 @@ export function Navbar() {
 
   const handleOpenUpdates = () => {
     setShowUpdates(true)
-    setHasUnreadUpdates(false) // Clear the dot
+    setHasUnreadUpdates(false)
     localStorage.setItem("lastSeenUpdate", LATEST_UPDATE_ID)
   }
 
-  const visibleMainNavItems = mainNavItems
-
-  const NavLink = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-    <Link
-      href={href}
-      className={cn(
-        "relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-        pathname === href ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-        className,
-      )}
-    >
-      {children}
-    </Link>
-  )
-
-  const NavContent = () => (
-    <div className="relative flex h-14 items-center border-b border-border px-4 lg:px-6 sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm transition-colors">
-
-      {/* Mount the Dialog Component */}
+  return (
+    <>
       <WhatsNewDialog open={showUpdates} onOpenChange={setShowUpdates} />
 
-      {/* Logo with modern styling */}
-      <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-6 z-10">
-        <ConcentradeLogo size={36} variant="full" className="transition-colors" />
-      </Link>
+      <motion.header
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/40"
+      >
+        {/* Subtle gradient border at the bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
 
-      {/* Desktop Navigation with modern styling */}
-      <nav className="hidden lg:flex items-center gap-1 flex-grow">
-        {visibleMainNavItems.map((item) => (
-          <div key={item.name} className="relative">
-            <NavLink
-              href={item.href}
-            >
-              <div className="flex items-center gap-2">
-                <item.icon className="h-4 w-4" />
-                <span>{item.name}</span>
-              </div>
-            </NavLink>
-          </div>
-        ))}
-      </nav>
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center px-4 lg:px-6">
+          {/* Logo */}
+          <Link href="/dashboard" className="relative flex items-center gap-3 font-bold group mr-8 z-10">
+            <motion.div whileHover={{ scale: 1.03 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+              <ConcentradeLogo size={38} variant="full" className="transition-colors" />
+            </motion.div>
+          </Link>
 
-      {/* Right side controls with modern styling */}
-      <div className="ml-auto flex items-center gap-3 z-10">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-0.5 flex-grow">
+            {mainNavItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "relative flex items-center gap-2 px-3.5 py-2 text-sm font-medium transition-colors duration-200 rounded-lg group",
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <motion.div
+                    className="flex items-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    <item.icon className={cn(
+                      "h-4 w-4 transition-all duration-200",
+                      isActive ? "text-primary" : "group-hover:scale-110 group-hover:text-primary/70"
+                    )} />
+                    <span>{item.name}</span>
+                  </motion.div>
 
-        {/* NEW: Updates Button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleOpenUpdates}
-          className="hidden md:flex gap-2 items-center border-border bg-muted/50 hover:bg-muted text-foreground relative shadow-sm h-10 px-4"
-        >
-          <UpdatesIcon className="h-5 w-5 fill-current" />
-          <span className="font-bold text-sm uppercase tracking-wide">Updates</span>
+                  {/* Subtle hover glow background */}
+                  {!isActive && (
+                    <span className="absolute inset-0 rounded-lg bg-muted/0 group-hover:bg-muted/30 transition-colors duration-300 pointer-events-none" />
+                  )}
 
-          {/* Notification Dot */}
-          {hasUnreadUpdates && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-pulse border-2 border-background shadow-sm" />
-          )}
-        </Button>
-
-        {/* User Profile Dropdown */}
-        <UserNav />
-
-        {/* Mobile Navigation Trigger with modern styling */}
-        <div className="lg:hidden relative">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-10 w-10 relative border-border bg-card/50 hover:bg-muted transition-colors shadow-sm"
-              >
-                <Menu className="h-6 w-6 text-muted-foreground" />
-                <span className="sr-only">Open Navigation Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="flex flex-col w-[85vw] max-w-[320px] p-0 bg-card border-border"
-            >
-              {/* Mobile menu header */}
-              <div className="flex h-14 items-center border-b border-border px-6 bg-muted/50">
-                <Link href="/dashboard" className="flex items-center gap-3 font-bold group">
-                  <ConcentradeLogo size={40} variant="full" />
+                  {/* Gradient underline — animated between active items */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="navbar-underline"
+                      className="absolute bottom-[-1.125rem] left-1 right-1 h-[3px] rounded-full bg-gradient-to-r from-primary via-accent to-primary"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </Link>
-              </div>
+              )
+            })}
+          </nav>
 
-              {/* Mobile navigation content */}
-              <div className="flex-1 overflow-y-auto py-6">
-                <nav className="grid gap-2 px-4">
-                  {visibleMainNavItems.map((item) => (
-                    <NavLink
-                      key={item.name}
-                      href={item.href}
-                      className="text-base py-3 px-4 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <item.icon className="h-5 w-5" />
-                        <span className="font-bold">{item.name}</span>
-                      </div>
-                    </NavLink>
-                  ))}
-                </nav>
+          {/* Right side controls */}
+          <div className="ml-auto flex items-center gap-3 z-10">
+            {/* Updates Pill */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenUpdates}
+              className={cn(
+                "hidden md:flex gap-2 items-center rounded-full h-10 px-4 text-sm font-semibold transition-all duration-300 border",
+                hasUnreadUpdates
+                  ? "border-primary/50 bg-primary/5 text-foreground shadow-[0_0_12px_-3px] shadow-primary/30 hover:shadow-primary/50 hover:bg-primary/10"
+                  : "border-border bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              <UpdatesIcon className="h-4 w-4 fill-current" />
+              <span className="uppercase tracking-wider text-2xs font-bold">Updates</span>
 
-                {/* Mobile secondary navigation */}
-                <div className="mt-8">
-                  <h4 className="mb-4 px-4 text-sm font-bold uppercase text-muted-foreground tracking-wider">
-                    More
-                  </h4>
-                  <nav className="grid gap-2 px-4">
-                    {moreNavItems.map((item) => (
-                      <NavLink
-                        key={item.name}
-                        href={item.href}
-                        className="text-base py-3 px-4 rounded-lg transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <item.icon className="h-5 w-5" />
-                          <span className="font-bold">{item.name}</span>
-                        </div>
-                      </NavLink>
-                    ))}
-                  </nav>
-                </div>
+              {hasUnreadUpdates && (
+                <span className="relative flex h-2.5 w-2.5 ml-0.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary" />
+                </span>
+              )}
+            </Button>
 
-                {/* Mobile Updates Button */}
-                <div className="mt-6 px-4">
+            {/* User Profile */}
+            <UserNav />
+
+            {/* Mobile Navigation Trigger */}
+            <div className="lg:hidden relative">
+              <Sheet>
+                <SheetTrigger asChild>
                   <Button
                     variant="outline"
-                    onClick={handleOpenUpdates}
-                    className="w-full justify-start gap-4 text-lg py-8 rounded-xl border-border bg-muted/50 text-foreground font-bold"
+                    size="icon"
+                    className="h-10 w-10 relative rounded-xl border-border bg-muted/30 hover:bg-muted/60 transition-colors"
                   >
-                    <UpdatesIcon className="h-6 w-6 fill-current" />
-                    <span className="font-bold">What's New</span>
-                    {hasUnreadUpdates && (
-                      <Badge className="ml-auto bg-destructive text-destructive-foreground border-0 text-sm py-1 px-2">New</Badge>
-                    )}
+                    <Menu className="h-5 w-5 text-muted-foreground" />
+                    <span className="sr-only">Open Navigation Menu</span>
                   </Button>
-                </div>
-              </div>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="flex flex-col w-[85vw] max-w-[340px] p-0 bg-background/95 backdrop-blur-xl border-white/[0.06]"
+                >
+                  {/* Mobile menu header */}
+                  <div className="flex h-[72px] items-center border-b border-white/[0.06] px-6">
+                    <Link href="/dashboard" className="flex items-center gap-3 font-bold group">
+                      <ConcentradeLogo size={40} variant="full" />
+                    </Link>
+                  </div>
 
-              {/* Mobile menu footer */}
-              <div className="border-t border-border p-4 bg-muted/50">
-                <div className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2 font-medium">
-                  <div className="w-2.5 h-2.5 bg-primary rounded-full"></div>
-                  <span>System Online</span>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+                  {/* Mobile navigation content */}
+                  <div className="flex-1 overflow-y-auto py-6">
+                    <nav className="grid gap-1 px-4">
+                      {mainNavItems.map((item) => {
+                        const isActive = pathname === item.href
+                        return (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            className={cn(
+                              "flex items-center gap-4 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200",
+                              isActive
+                                ? "bg-primary/10 text-foreground border border-primary/20"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                            )}
+                          >
+                            <item.icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                            <span className="font-semibold">{item.name}</span>
+                            {isActive && (
+                              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+                            )}
+                          </Link>
+                        )
+                      })}
+                    </nav>
+
+                    {/* Mobile secondary navigation */}
+                    <div className="mt-8">
+                      <h4 className="mb-3 px-6 text-2xs font-bold uppercase text-muted-foreground tracking-widest">
+                        More
+                      </h4>
+                      <nav className="grid gap-1 px-4">
+                        {moreNavItems.map((item) => {
+                          const isActive = pathname === item.href
+                          return (
+                            <Link
+                              key={item.name}
+                              href={item.href}
+                              className={cn(
+                                "flex items-center gap-4 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200",
+                                isActive
+                                  ? "bg-primary/10 text-foreground border border-primary/20"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+                              )}
+                            >
+                              <item.icon className={cn("h-5 w-5", isActive && "text-primary")} />
+                              <span className="font-semibold">{item.name}</span>
+                            </Link>
+                          )
+                        })}
+                      </nav>
+                    </div>
+
+                    {/* Mobile Updates Button */}
+                    <div className="mt-6 px-4">
+                      <Button
+                        variant="outline"
+                        onClick={handleOpenUpdates}
+                        className={cn(
+                          "w-full justify-start gap-4 py-7 rounded-xl font-semibold text-base transition-all duration-300",
+                          hasUnreadUpdates
+                            ? "border-primary/30 bg-primary/5 text-foreground"
+                            : "border-border bg-muted/30 text-muted-foreground"
+                        )}
+                      >
+                        <UpdatesIcon className="h-5 w-5 fill-current" />
+                        <span className="font-bold">What&apos;s New</span>
+                        {hasUnreadUpdates && (
+                          <Badge className="ml-auto bg-primary text-primary-foreground border-0 text-xs py-0.5 px-2 rounded-full">New</Badge>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Mobile menu footer */}
+                  <div className="border-t border-white/[0.06] p-4 bg-muted/20">
+                    <div className="text-2xs text-center text-muted-foreground flex items-center justify-center gap-2 font-medium">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                      <span>System Online</span>
+                    </div>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom border */}
-      <div className="absolute bottom-0 left-0 w-full h-px bg-border pointer-events-none"></div>
-    </div>
+      </motion.header>
+    </>
   )
-
-  return <NavContent />
 }

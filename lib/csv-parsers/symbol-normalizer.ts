@@ -167,9 +167,14 @@ export function normalizeSymbol(rawSymbol: string): string {
     if (!trimmed) return trimmed
 
     // Step 1: Strip exchange prefix
-    const withoutExchange = stripExchange(trimmed)
+    let withoutExchange = stripExchange(trimmed)
 
     // Step 2: Strip futures contract code
+    // Also strip TradingView continuous contract suffixes like "!" or "1!"
+    if (withoutExchange.endsWith("!") || withoutExchange.endsWith("1!") || withoutExchange.endsWith("2!")) {
+        withoutExchange = withoutExchange.replace(/[0-9]?!$/, "")
+    }
+
     const normalized = stripFuturesContract(withoutExchange)
 
     return normalized

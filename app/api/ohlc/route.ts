@@ -38,7 +38,13 @@ function getStartTime(interval: string): number {
 
 // --- Helper: Map Symbols to Provider Formats ---
 function getSymbolForProvider(symbol: string, provider: "yahoo" | "finnhub"): string {
-  const s = symbol.toUpperCase()
+  let s = symbol.toUpperCase()
+
+  // Handle Continuous Contract Suffixes (e.g. ES!, ES1!, GC1!)
+  // Strip "!" or "1!" or "2!" suffix
+  if (s.endsWith("!") || s.endsWith("1!") || s.endsWith("2!")) {
+    s = s.replace(/[0-9]?!$/, "")
+  }
 
   // Futures Mapping
   if (["NQ", "MNQ", "ES", "MES", "YM", "MYM", "RTY", "M2K", "GC", "MGC", "SI", "SILVER", "CL", "MCL", "NG", "ZB", "ZN"].includes(s)) {
@@ -156,54 +162,6 @@ async function fetchFromYahooFinance(symbol: string, interval: string): Promise<
   }
 }
 
-// --- Helper: Generate Realistic Mock Data (Last Resort) ---
-function generateMockData(symbol: string, interval: string): any[] {
-  const now = Date.now()
-  const data = []
-
-  let price = 100
-  if (symbol.includes("NQ") || symbol.includes("MNQ")) price = 18200
-  else if (symbol.includes("ES") || symbol.includes("MES")) price = 5250
-  else if (symbol.includes("BTC")) price = 64000
-  else if (symbol.includes("ETH")) price = 3400
-  else if (symbol.includes("EUR")) price = 1.08
-
-  let count = 200
-  let intervalMs = 24 * 60 * 60 * 1000
-
-  if (interval === '1m') { intervalMs = 60 * 1000; count = 1000; }
-  else if (interval === '5m') { intervalMs = 5 * 60 * 1000; count = 500; }
-  else if (interval === '15m') { intervalMs = 15 * 60 * 1000; count = 200; }
-  else if (interval === '1h') { intervalMs = 60 * 60 * 1000; count = 200; }
-
-  for (let i = count; i >= 0; i--) {
-    const time = now - (i * intervalMs)
-    const volMult = interval.includes('m') ? 0.0002 : 0.002
-    const volatility = price * volMult
-    const change = (Math.random() - 0.5) * volatility * 3
-    let open = price
-    let close = price + change
-    let high = Math.max(open, close) + Math.random() * volatility
-    let low = Math.min(open, close) - Math.random() * volatility
-
-    // Fix precision
-    const decimals = price > 1000 ? 2 : price > 1 ? 2 : 5
-
-    data.push({
-      time,
-      date: new Date(time).toISOString(),
-      open: Number(open.toFixed(decimals)),
-      high: Number(high.toFixed(decimals)),
-      low: Number(low.toFixed(decimals)),
-      close: Number(close.toFixed(decimals)),
-      volume: Math.floor(Math.random() * 1000 + 100)
-    })
-
-    price = close
-  }
-  return data
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const symbol = searchParams.get("symbol") || "SPY"
@@ -219,10 +177,10 @@ export async function GET(request: Request) {
     data = await fetchFromYahooFinance(symbol, interval)
   }
 
-  // 3. Fallback to Mock Data
+  // 3. Return what we found (or empty)
+  // Replaced mock data with clean empty return
   if (!data || data.length === 0) {
-    console.warn(`[OHLC] No data found for ${symbol}, using mock data.`)
-    data = generateMockData(symbol, interval)
+    return NextResponse.json([])
   }
 
   return NextResponse.json(data)

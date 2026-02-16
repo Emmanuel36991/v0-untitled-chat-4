@@ -105,7 +105,7 @@ export class ThinkorswimParser extends BaseCSVParser {
 
                             trades.push({
                                 date: date.toISOString(),
-                                instrument,
+                                instrument: this.normalizeInstrument(instrument),
                                 direction,
                                 entry_price: price,
                                 exit_price: price,

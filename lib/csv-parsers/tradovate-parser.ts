@@ -98,7 +98,7 @@ export class TradovateParser extends BaseCSVParser {
 
                             trades.push({
                                 date: date.toISOString(),
-                                instrument,
+                                instrument: this.normalizeInstrument(instrument),
                                 direction,
                                 entry_price: price,
                                 exit_price: price, // Tradovate fills don't have exit, we pair them

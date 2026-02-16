@@ -108,7 +108,7 @@ export class GenericParser extends BaseCSVParser {
 
                             trades.push({
                                 date: date.toISOString(),
-                                instrument,
+                                instrument: this.normalizeInstrument(instrument),
                                 direction,
                                 entry_price: entryPrice || 0,
                                 exit_price: exitPrice || entryPrice || 0,

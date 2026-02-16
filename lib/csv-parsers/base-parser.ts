@@ -2,6 +2,7 @@
 
 import type { CSVParser, ParsedTrade, ValidationError, ColumnMapping, BrokerType } from "./types"
 import { parseISO, parse, isValid } from "date-fns"
+import { normalizeSymbol } from "./symbol-normalizer"
 
 /**
  * Abstract base class providing common parsing utilities
@@ -89,6 +90,15 @@ export abstract class BaseCSVParser implements CSVParser {
 
         // Long indicators (default)
         return "long"
+    }
+
+    /**
+     * Normalize instrument/symbol name by stripping exchange prefix
+     * and futures contract month/year codes.
+     * E.g. "CME_MINI:MNQH2026" → "MNQ"
+     */
+    protected normalizeInstrument(symbol: string): string {
+        return normalizeSymbol(symbol)
     }
 
     /**

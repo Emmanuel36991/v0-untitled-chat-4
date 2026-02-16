@@ -203,7 +203,7 @@ export class TradingViewParser extends BaseCSVParser {
 
                             trades.push({
                                 date: date.toISOString(),
-                                instrument: instrument || "Unknown",
+                                instrument: instrument ? this.normalizeInstrument(instrument) : "Unknown",
                                 direction,
                                 entry_price: price,
                                 exit_price: price,

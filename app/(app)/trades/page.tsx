@@ -302,6 +302,7 @@ export default function TradesPage() {
 
             console.log('[CSV Import] Parser used:', result.broker)
             console.log('[CSV Import] Trades parsed:', result.trades.length)
+            console.log('[CSV Import] Normalized instruments:', [...new Set(result.trades.map(t => t.instrument))])
             console.log('[CSV Import] Errors:', result.errors)
 
             const errorCount = result.errors.filter(e => e.severity === "error").length

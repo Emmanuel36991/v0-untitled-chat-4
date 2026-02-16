@@ -663,8 +663,8 @@ export default function DashboardPage() {
 
           {/* Quick Actions & AI Insight */}
           <div className="space-y-6">
-            <QuickActionsGrid />
             <AINeuralInsight trades={trades} />
+            <QuickActionsGrid />
           </div>
         </div>
       </div>

@@ -35,6 +35,8 @@ export function detectBrokerFormat(csvContent: string): DetectionResult {
 
     const headers = headerLine.split(",").map(h => h.trim().replace(/"/g, ""))
 
+    console.log('[Broker Detection] Detected headers:', headers)
+
     // Run detection for all parsers
     const results = parsers.map(parser => ({
         broker: parser.brokerType,
@@ -44,6 +46,8 @@ export function detectBrokerFormat(csvContent: string): DetectionResult {
 
     // Sort by confidence
     results.sort((a, b) => b.confidence - a.confidence)
+
+    console.log('[Broker Detection] Confidence scores:', results.map(r => `${r.name}: ${(r.confidence * 100).toFixed(0)}%`).join(', '))
 
     const best = results[0]
 

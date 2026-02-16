@@ -35,32 +35,40 @@ export class GenericParser extends BaseCSVParser {
                         try {
                             // Use flexible column matching
                             const instrument = this.findColumnValue(row, [
-                                "Symbol", "Instrument", "Ticker", "Contract", "Asset", "Pair"
+                                "Symbol", "Instrument", "Ticker", "Contract", "Asset", "Pair",
+                                "Market", "Name", "Product", "Security", "Stock", "Currency Pair"
                             ])
 
                             const dateStr = this.findColumnValue(row, [
                                 "Date", "Time", "DateTime", "Timestamp", "Date/Time",
-                                "Placing Time", "Exec Time", "Fill Time", "Entry Time"
+                                "Placing Time", "Exec Time", "Fill Time", "Entry Time",
+                                "Trade Date", "Open Date", "Close Date", "Entry Date",
+                                "Execution Date", "Created", "Opened", "Closed"
                             ])
 
                             const side = this.findColumnValue(row, [
-                                "Side", "Direction", "Action", "Type", "Buy/Sell", "Long/Short"
+                                "Side", "Direction", "Action", "Type", "Buy/Sell", "Long/Short",
+                                "Position", "Order Type", "Trade Type", "B/S"
                             ])
 
                             const qty = this.parseNumber(this.findColumnValue(row, [
-                                "Qty", "Quantity", "Size", "Amount", "Contracts", "Shares", "Lots"
+                                "Qty", "Quantity", "Size", "Amount", "Contracts", "Shares", "Lots",
+                                "Volume", "Units", "Trade Size", "Order Size", "Filled Qty"
                             ]))
 
                             const entryPrice = this.parseNumber(this.findColumnValue(row, [
-                                "Entry Price", "Price", "Fill Price", "Avg Price", "Execution Price", "Open Price"
+                                "Entry Price", "Price", "Fill Price", "Avg Price", "Execution Price", "Open Price",
+                                "Open", "Entry", "Buy Price", "Avg Fill Price", "Average Price", "Cost"
                             ]))
 
                             const exitPrice = this.parseNumber(this.findColumnValue(row, [
-                                "Exit Price", "Close Price", "Closing Price"
+                                "Exit Price", "Close Price", "Closing Price",
+                                "Close", "Exit", "Sell Price", "Realized Price"
                             ]))
 
                             const pnl = this.parseNumber(this.findColumnValue(row, [
-                                "PnL", "P&L", "Profit", "Loss", "Profit/Loss", "Net PnL", "Realized PnL"
+                                "PnL", "P&L", "Profit", "Loss", "Profit/Loss", "Net PnL", "Realized PnL",
+                                "Gain", "Return", "Net Profit", "Gross PnL", "Result", "P/L"
                             ]))
 
                             const stopLoss = this.parseNumber(this.findColumnValue(row, [

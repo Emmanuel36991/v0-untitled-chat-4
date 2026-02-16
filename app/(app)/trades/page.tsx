@@ -224,6 +224,45 @@ export default function TradesPage() {
       if (e.target.files?.[0]) setFile(e.target.files[0])
    }
 
+   /**
+    * Preprocesses CSV content to fix common malformed formats
+    * Handles double-escaped quotes from Excel/Windows exports
+    */
+   const preprocessCSV = (rawText: string): string => {
+      const lines = rawText.split(/\r\n|\n|\r/)
+
+      // Check if this is a malformed format with outer quotes and double-escaped inner quotes
+      const isMalformed = lines.some(line => {
+         // Pattern: "field1,""field2"",""field3""..."
+         return line.startsWith('"') && line.endsWith('"') && line.includes('""')
+      })
+
+      if (!isMalformed) {
+         return rawText // Already clean
+      }
+
+      console.log('[CSV Preprocessor] Detected malformed double-escaped format, cleaning...')
+
+      // Fix each line
+      const cleaned = lines.map(line => {
+         if (!line.trim()) return line
+
+         // Remove outer quotes
+         let cleaned = line
+         if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+            cleaned = cleaned.slice(1, -1)
+         }
+
+         // Replace double-escaped quotes with single quotes
+         cleaned = cleaned.replace(/""/g, '"')
+
+         return cleaned
+      }).join('\n')
+
+      console.log('[CSV Preprocessor] Cleaned CSV preview:', cleaned.split('\n').slice(0, 3).join('\n'))
+      return cleaned
+   }
+
    const handleImport = async () => {
       if (!file) {
          toast({ title: "No file selected", variant: "destructive" });
@@ -242,22 +281,51 @@ export default function TradesPage() {
          }
 
          try {
+            // Preprocess CSV to fix malformed formats
+            const cleanedText = preprocessCSV(text)
+
+            // Debug: Log first few lines and detected structure
+            const lines = cleanedText.split(/\r\n|\n|\r/)
+            const headerLine = lines[0]
+            const detectedHeaders = headerLine.split(',').map(h => h.trim().replace(/"/g, ''))
+
+            console.log('[CSV Import] File:', file.name)
+            console.log('[CSV Import] Detected headers:', detectedHeaders)
+            console.log('[CSV Import] Header count:', detectedHeaders.length)
+            console.log('[CSV Import] Preview:', lines.slice(0, 3).join('\n'))
+
             // Use new parser system with auto-detection or selected broker
-            const result = await parseCSV(text, {
+            const result = await parseCSV(cleanedText, {
                broker: selectedBroker,
                accountId: selectedAccountId !== 'all' ? selectedAccountId : undefined
             })
 
+            console.log('[CSV Import] Parser used:', result.broker)
+            console.log('[CSV Import] Trades parsed:', result.trades.length)
+            console.log('[CSV Import] Errors:', result.errors)
+
             const errorCount = result.errors.filter(e => e.severity === "error").length
 
             if (errorCount > 0) {
-               // Show detailed errors
+               // Show detailed errors with debugging info
+               const errorDetails = result.errors
+                  .filter(e => e.severity === "error")
+                  .slice(0, 3)
+                  .map(e => `Row ${e.row}: ${e.message}`)
+                  .join('; ')
+
                toast({
                   title: "Import Validation Failed",
-                  description: `Found ${errorCount} errors in CSV. Please check your file format.`,
+                  description: `Found ${errorCount} error(s). ${errorDetails}`,
                   variant: "destructive"
                })
-               console.error("CSV Import Errors:", result.errors)
+               console.error("CSV Import Errors (full):", result.errors)
+
+               // Additional debug info in console
+               if (detectedHeaders.length < 5) {
+                  console.error('[CSV Import] Suspicious header count! Expected 8+, got', detectedHeaders.length)
+                  console.error('[CSV Import] Headers found:', detectedHeaders)
+               }
             } else {
                // Convert and import trades
                const tradeInputs = convertTradesToInput(
@@ -286,9 +354,10 @@ export default function TradesPage() {
                } else {
                   toast({
                      title: "No Valid Trades",
-                     description: "Could not extract any valid trades from the CSV.",
+                     description: `Parsed 0 trades from ${result.stats.totalRows} rows. Check console for details.`,
                      variant: "destructive"
                   })
+                  console.error('[CSV Import] No trades extracted despite no errors. Result:', result)
                }
             }
          } catch (e: any) {

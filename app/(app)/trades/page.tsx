@@ -34,6 +34,7 @@ import {
    SlidersHorizontal,
 } from "lucide-react"
 import NextLink from "next/link"
+import { useSearchParams } from "next/navigation"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
 import { cn } from "@/lib/utils"
 import { EmptyState } from "@/components/empty-state"
@@ -70,6 +71,7 @@ const ClientOnly: FC<ClientOnlyProps> = ({ children }) => {
 // --- Main Page Component ---
 
 export default function TradesPage() {
+   const searchParams = useSearchParams()
    const [trades, setTrades] = useState<Trade[]>([])
    const [accounts, setAccounts] = useState<TradingAccount[]>([])
    const [selectedAccountId, setSelectedAccountId] = useState<string | "all">("all")
@@ -126,6 +128,13 @@ export default function TradesPage() {
    useEffect(() => {
       fetchData(false)
    }, [fetchData])
+
+   // Auto-open import dialog if query param handles it
+   useEffect(() => {
+      if (searchParams?.get("action") === "import") {
+         setIsImportDialogOpen(true)
+      }
+   }, [searchParams])
 
    // 2. Account Creation Logic
    const handleCreateAccount = async () => {

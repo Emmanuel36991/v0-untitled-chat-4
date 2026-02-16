@@ -16,7 +16,12 @@ export class TradingViewParser extends BaseCSVParser {
             "type",
             "date/time",
             "p&l",
-            "cumulative p&l"
+            "cumulative p&l",
+            "realized p&l",
+            "balance before",
+            "balance after",
+            "action",
+            "time"
         ]
 
         const headerStr = headers.join(" ").toLowerCase()
@@ -70,7 +75,7 @@ export class TradingViewParser extends BaseCSVParser {
                             ]))
 
                             const pnl = this.parseNumber(this.findColumnValue(row, [
-                                "P&L", "PnL", "Profit/Loss", "Profit"
+                                "P&L", "PnL", "Profit/Loss", "Profit", "Realized P&L"
                             ]))
 
                             const commission = this.parseNumber(this.findColumnValue(row, [
@@ -78,14 +83,20 @@ export class TradingViewParser extends BaseCSVParser {
                             ]))
 
                             if (!instrument) {
-                                errors.push({
-                                    row: i + 1,
-                                    field: "instrument",
-                                    value: instrument,
-                                    message: "Missing symbol",
-                                    severity: "error"
-                                })
-                                continue
+                                // Fallback for Account History export which lacks Symbol
+                                if (pnl !== 0 || type) {
+                                    warnings.push({
+                                        row: i + 1,
+                                        field: "instrument",
+                                        value: "Unknown",
+                                        message: "Missing symbol in CSV",
+                                        severity: "warning",
+                                        suggestion: "Defaulting to 'Unknown'. Use 'List of Trades' export for full details."
+                                    })
+                                } else {
+                                    // Skip empty rows or non-trade rows
+                                    continue;
+                                }
                             }
 
                             const date = this.parseDate(dateStr)
@@ -101,18 +112,23 @@ export class TradingViewParser extends BaseCSVParser {
                                 continue
                             }
 
-                            const direction = this.parseDirection(type)
+                            // Normalize direction from Action/Type
+                            let direction: "long" | "short" = "long"
+                            if (type) {
+                                const typeLower = type.toLowerCase()
+                                if (typeLower.includes("short") || typeLower.includes("sell")) direction = "short"
+                            }
 
                             trades.push({
                                 date: date.toISOString(),
-                                instrument,
+                                instrument: instrument || "Unknown", // Default to Unknown if missing
                                 direction,
                                 entry_price: price,
                                 exit_price: price,
                                 size: qty > 0 ? qty : 1,
                                 pnl: pnl || 0,
                                 commission,
-                                notes: `Imported from TradingView${commission ? ` | Commission: $${commission.toFixed(2)}` : ""}`,
+                                notes: `Imported from TradingView${!instrument ? " (Account History)" : ""}${commission ? ` | Commission: $${commission.toFixed(2)}` : ""}`,
                                 rawRow: row,
                                 rowIndex: i
                             })

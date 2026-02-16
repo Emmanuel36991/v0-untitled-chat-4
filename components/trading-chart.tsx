@@ -14,22 +14,38 @@ import { Loader2, AlertTriangle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-// --- Theme Colors (resolved from CSS variables at runtime) ---
+// --- Theme Colors (Hardcoded to avoid oklch parsing issues with lightweight-charts) ---
 function getChartColors() {
-  const style = getComputedStyle(document.documentElement)
-  const get = (name: string) => style.getPropertyValue(name).trim()
-  return {
-    background: get("--background") || "#09090b",
-    toolbar: get("--card") ? `color-mix(in oklch, ${get("--card")} 50%, transparent)` : "rgba(9, 9, 11, 0.5)",
-    text: get("--muted-foreground") || "#71717a",
-    grid: get("--border") || "#18181b",
-    border: get("--border") || "#27272a",
-    crosshairLabel: get("--primary") || "#6366f1",
-    bullish: get("--profit") || "#22c55e",
-    bearish: get("--loss") || "#ef4444",
-    volumeBullish: get("--profit") ? `color-mix(in oklch, ${get("--profit")} 15%, transparent)` : "rgba(34, 197, 94, 0.15)",
-    volumeBearish: get("--loss") ? `color-mix(in oklch, ${get("--loss")} 15%, transparent)` : "rgba(239, 68, 68, 0.15)",
-    maLine: get("--warning") || "#f59e0b",
+  const isDark = document.documentElement.classList.contains("dark")
+
+  if (isDark) {
+    return {
+      background: "#09090b", // zinc-950
+      toolbar: "rgba(39, 39, 42, 0.5)", // zinc-800 with opacity
+      text: "#a1a1aa", // zinc-400
+      grid: "#27272a", // zinc-800
+      border: "#27272a", // zinc-800
+      crosshairLabel: "#6366f1", // indigo-500
+      bullish: "#22c55e", // green-500
+      bearish: "#ef4444", // red-500
+      volumeBullish: "rgba(34, 197, 94, 0.15)",
+      volumeBearish: "rgba(239, 68, 68, 0.15)",
+      maLine: "#f59e0b", // amber-500
+    }
+  } else {
+    return {
+      background: "#ffffff", // white
+      toolbar: "rgba(228, 228, 231, 0.5)", // zinc-200 with opacity
+      text: "#52525b", // zinc-600
+      grid: "#e4e4e7", // zinc-200
+      border: "#e4e4e7", // zinc-200
+      crosshairLabel: "#4f46e5", // indigo-600
+      bullish: "#16a34a", // green-600
+      bearish: "#dc2626", // red-600
+      volumeBullish: "rgba(22, 163, 74, 0.15)",
+      volumeBearish: "rgba(220, 38, 38, 0.15)",
+      maLine: "#d97706", // amber-600
+    }
   }
 }
 

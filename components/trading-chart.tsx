@@ -19,17 +19,17 @@ function getChartColors() {
   const style = getComputedStyle(document.documentElement)
   const get = (name: string) => style.getPropertyValue(name).trim()
   return {
-    background: get("--background") ? `oklch(${get("--background")})` : "#09090b",
-    toolbar: get("--card") ? `color-mix(in oklch, oklch(${get("--card")}) 50%, transparent)` : "rgba(9, 9, 11, 0.5)",
-    text: get("--muted-foreground") ? `oklch(${get("--muted-foreground")})` : "#71717a",
-    grid: get("--border") ? `oklch(${get("--border")})` : "#18181b",
-    border: get("--border") ? `oklch(${get("--border")})` : "#27272a",
-    crosshairLabel: get("--primary") ? `oklch(${get("--primary")})` : "#6366f1",
-    bullish: get("--profit") ? `oklch(${get("--profit")})` : "#22c55e",
-    bearish: get("--loss") ? `oklch(${get("--loss")})` : "#ef4444",
-    volumeBullish: get("--profit") ? `color-mix(in oklch, oklch(${get("--profit")}) 15%, transparent)` : "rgba(34, 197, 94, 0.15)",
-    volumeBearish: get("--loss") ? `color-mix(in oklch, oklch(${get("--loss")}) 15%, transparent)` : "rgba(239, 68, 68, 0.15)",
-    maLine: get("--warning") ? `oklch(${get("--warning")})` : "#f59e0b",
+    background: get("--background") || "#09090b",
+    toolbar: get("--card") ? `color-mix(in oklch, ${get("--card")} 50%, transparent)` : "rgba(9, 9, 11, 0.5)",
+    text: get("--muted-foreground") || "#71717a",
+    grid: get("--border") || "#18181b",
+    border: get("--border") || "#27272a",
+    crosshairLabel: get("--primary") || "#6366f1",
+    bullish: get("--profit") || "#22c55e",
+    bearish: get("--loss") || "#ef4444",
+    volumeBullish: get("--profit") ? `color-mix(in oklch, ${get("--profit")} 15%, transparent)` : "rgba(34, 197, 94, 0.15)",
+    volumeBearish: get("--loss") ? `color-mix(in oklch, ${get("--loss")} 15%, transparent)` : "rgba(239, 68, 68, 0.15)",
+    maLine: get("--warning") || "#f59e0b",
   }
 }
 

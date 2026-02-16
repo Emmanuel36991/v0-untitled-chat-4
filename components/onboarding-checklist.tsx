@@ -84,7 +84,7 @@ export function OnboardingChecklist({
       id: "trade",
       label: "Log your first Trade",
       description: "Record an execution to start tracking performance",
-      icon: TrendingUp,
+      icon: CandlestickPattern,
       href: "/add-trade",
       completed: hasTrades,
       color: "text-emerald-500",
@@ -103,9 +103,6 @@ export function OnboardingChecklist({
         {/* Header row */}
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20">
-              <ListChecks className="w-5 h-5" />
-            </div>
             <div>
               <h3 className="text-base font-bold text-foreground">
                 Getting Started
@@ -134,7 +131,7 @@ export function OnboardingChecklist({
         </div>
 
         {/* Steps */}
-        <div className="space-y-6">
+        <div className="space-y-9">
           {steps.map((step) => {
             const Icon = step.icon
             return (
@@ -166,7 +163,7 @@ export function OnboardingChecklist({
                     <Icon
                       className={cn(
                         "w-4 h-4",
-                        step.completed ? "text-emerald-500" : step.color
+                        step.completed ? "text-emerald-500" : (step.icon === CandlestickPattern ? "" : step.color)
                       )}
                     />
                   </div>
@@ -199,5 +196,30 @@ export function OnboardingChecklist({
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function CandlestickPattern({ className }: { className?: string }) {
+  // Extract width/height if needed, but we pass className to svg
+  // We want to ignore text-emerald-500 color if it's passed, so we use explicit stroke/fill colors
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* Bearish candle (Red) */}
+      <path d="M16 3v18" className="text-rose-500 stroke-current" strokeWidth="1.5" />
+      <rect x="14" y="6" width="4" height="6" rx="1" className="text-rose-500 fill-current stroke-current" strokeWidth="1.5" />
+
+      {/* Bullish candle (Green) */}
+      <path d="M8 3v18" className="text-emerald-500 stroke-current" strokeWidth="1.5" />
+      <rect x="6" y="12" width="4" height="6" rx="1" className="text-emerald-500 fill-current stroke-current" strokeWidth="1.5" />
+    </svg>
   )
 }

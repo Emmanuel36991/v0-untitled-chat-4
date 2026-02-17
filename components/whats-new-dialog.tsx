@@ -110,7 +110,7 @@ export function WhatsNewDialog() {
           </ScrollArea>
 
           <div className="p-4 border-t bg-background flex justify-between items-center">
-            <p className="text-xs text-muted-foreground">Version 2.1.0</p>
+            <p className="text-xs text-muted-foreground">Version 2.3.0</p>
             <Button onClick={() => setOpen(false)} className="bg-foreground text-background hover:bg-foreground/90">
               Got it
             </Button>

@@ -9,6 +9,21 @@ export interface AppUpdate {
 
 export const APP_UPDATES: AppUpdate[] = [
   {
+    id: "v2.3-import-guide-quick-trade-psychology",
+    title: "Import Guide, Quick Trade & Psychology Fixes",
+    date: "Feb 2026",
+    tag: "Feature",
+    description: "New guide for importing trades and connecting brokers, Quick Trade form fix, Psychology analytics visibility fixes, and Alpaca integration improvements.",
+    highlights: [
+      "Import & Connect guide: Step-by-step CSV import for Tradovate, Thinkorswim, TradingView, Interactive Brokers, Rithmic, NinjaTrader, and generic CSV; plus full Alpaca API connection instructions",
+      "Quick Trade form: Optional stop loss so you can log trades from the quick entry without entering a stop; form now submits successfully",
+      "Psychology page: Fixed journal date display (no more wrong-year bug); Psychometric Profile radar, Mood Trend line, State Distribution pie, and Top Triggers bars now clearly visible on dark theme",
+      "Alpaca: Connect via API Key + Secret (Paper or Live), verify account, and sync trade history into Concentrade from the Connect Broker modal",
+      "CSV import: Auto-detect broker format or pick Tradovate, Thinkorswim, TradingView, IBKR, Rithmic, NinjaTrader, or Generic; links to the new guide from Import and Connect Broker dialogs",
+      "Guides: New 'Import & Connect' entry on the Guides page and linked from Trades (Import dialog and Connect Broker modal)"
+    ]
+  },
+  {
     id: "v2.2-currency-conversion",
     title: "Multi-Currency Dashboard",
     date: "Feb 08, 2026",

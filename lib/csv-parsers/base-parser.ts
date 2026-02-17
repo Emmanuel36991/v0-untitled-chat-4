@@ -76,6 +76,32 @@ export abstract class BaseCSVParser implements CSVParser {
     }
 
     /**
+     * Format any input into YYYY-MM-DD for DB DATE columns.
+     * Accepts:
+     * - Date objects
+     * - ISO strings (date-only or datetime)
+     * - Common broker datetime strings (via parseDate fallback)
+     */
+    protected formatDateOnly(value: string | Date): string {
+        if (value instanceof Date) {
+            return value.toISOString().slice(0, 10)
+        }
+
+        const str = String(value || "").trim()
+        if (!str) return str
+
+        // If it already starts with YYYY-MM-DD, take that portion.
+        const isoPrefix = str.match(/^(\d{4}-\d{2}-\d{2})/)
+        if (isoPrefix) return isoPrefix[1]
+
+        // Try parsing and formatting.
+        const d = this.parseDate(str)
+        if (d) return d.toISOString().slice(0, 10)
+
+        return str
+    }
+
+    /**
      * Normalize direction from various broker formats
      */
     protected parseDirection(value: any): "long" | "short" {

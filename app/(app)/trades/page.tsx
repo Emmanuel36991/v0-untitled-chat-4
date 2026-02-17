@@ -335,7 +335,17 @@ export default function TradesPage() {
                )
 
                if (tradeInputs.length > 0) {
-                  await addMultipleTrades(tradeInputs)
+                  const insertResult = await addMultipleTrades(tradeInputs)
+                  if ((insertResult as any)?.error) {
+                     toast({
+                        title: "Import Failed",
+                        description: (insertResult as any).error,
+                        variant: "destructive",
+                        duration: 7000
+                     })
+                     console.error("[CSV Import] addMultipleTrades failed:", insertResult)
+                     return
+                  }
 
                   const brokerName = result.broker === "auto" ? "Generic" :
                      result.broker === "tradovate" ? "Tradovate" :
@@ -344,7 +354,7 @@ export default function TradesPage() {
 
                   toast({
                      title: "Import Successful",
-                     description: `Added ${tradeInputs.length} trades using ${brokerName} parser.`,
+                     description: `Added ${(insertResult as any)?.successCount ?? tradeInputs.length} trades using ${brokerName} parser.`,
                      duration: 5000
                   })
 

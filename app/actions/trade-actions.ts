@@ -125,6 +125,23 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
       payload['playbook_strategy_id'] = value
     } else if (key === 'account_id') {
       payload['account_id'] = value
+    } else if (key === 'date') {
+      // DB column is DATE. Accept both YYYY-MM-DD and ISO datetimes; always store YYYY-MM-DD.
+      if (typeof value === "string") {
+        const trimmed = value.trim()
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+          payload['date'] = trimmed
+        } else if (/^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
+          payload['date'] = trimmed.slice(0, 10)
+        } else {
+          const d = new Date(trimmed)
+          payload['date'] = isNaN(d.getTime()) ? trimmed : d.toISOString().slice(0, 10)
+        }
+      } else if (value instanceof Date) {
+        payload['date'] = value.toISOString().slice(0, 10)
+      } else {
+        payload['date'] = value
+      }
     } else if (key === 'executed_rules') {
       payload['executed_rules'] = value
     } else if (key === 'setupName') {

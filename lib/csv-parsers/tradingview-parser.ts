@@ -324,12 +324,14 @@ export class TradingViewParser extends BaseCSVParser {
 
     convertToTradeInput(parsedTrade: ParsedTrade, accountId?: string): NewTradeInput {
         return {
-            date: typeof parsedTrade.date === "string" ? parsedTrade.date : parsedTrade.date.toISOString(),
+            // DB column is DATE, so always store YYYY-MM-DD
+            date: this.formatDateOnly(parsedTrade.date as any),
             instrument: parsedTrade.instrument,
             direction: parsedTrade.direction,
             entry_price: parsedTrade.entry_price,
             exit_price: parsedTrade.exit_price,
-            stop_loss: parsedTrade.stop_loss || 0,
+            // Stop loss is required by your DB schema; if unknown, default to entry_price (risk = 0)
+            stop_loss: parsedTrade.stop_loss ?? parsedTrade.entry_price,
             take_profit: parsedTrade.take_profit,
             size: parsedTrade.size,
             pnl: parsedTrade.pnl,

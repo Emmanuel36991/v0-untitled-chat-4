@@ -26,7 +26,23 @@ export class ThinkorswimParser extends BaseCSVParser {
         const matches = tosIndicators.filter(ind => headerStr.includes(ind))
         if (matches.length >= 3) return 0.95
         if (matches.length >= 2) return 0.7
+
+        // For composite Account Statement files, the first-line headers won't match.
+        // Scan the full CSV content (first ~20 lines) for TOS-specific markers.
+        const contentLower = csvContent.slice(0, 3000).toLowerCase()
+        const bodyIndicators = [
+            "account statement for",
+            "account trade history",
+            "exec time",
+            "pos effect",
+            "net price",
+        ]
+        const bodyMatches = bodyIndicators.filter(ind => contentLower.includes(ind))
+        if (bodyMatches.length >= 3) return 0.95
+        if (bodyMatches.length >= 2 && contentLower.includes("account statement")) return 0.92
+
         if (matches.length === 1) return 0.4
+        if (bodyMatches.length >= 1) return 0.3
         return 0.1
     }
 

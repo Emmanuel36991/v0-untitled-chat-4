@@ -23,7 +23,8 @@ export class RithmicParser extends BaseCSVParser {
     detect(csvContent: string, headers: string[]): number {
         const headerStr = headers.join(" ").toLowerCase()
 
-        const indicators = [
+        // High-confidence: Rithmic R|Trader Pro order history headers
+        const primaryIndicators = [
             "order number",
             "qty filled",
             "avg fill price",
@@ -32,10 +33,30 @@ export class RithmicParser extends BaseCSVParser {
             "r-trader",
         ]
 
-        const matches = indicators.filter(ind => headerStr.includes(ind))
-        if (matches.length >= 3) return 0.95
-        if (matches.length >= 2) return 0.7
-        if (matches.length === 1) return 0.4
+        // Rithmic execution report headers (alternative export format)
+        const executionIndicators = [
+            "executionid",
+            "orderid",
+            "exectype",
+            "executiontime",
+            "liquidity",
+        ]
+
+        const primaryMatches = primaryIndicators.filter(ind => headerStr.includes(ind))
+        const execMatches = executionIndicators.filter(ind => headerStr.includes(ind))
+
+        // If we find Rithmic execution-specific headers, high confidence
+        if (execMatches.length >= 3) return 0.95
+        if (execMatches.length >= 2 && headerStr.includes("symbol") && headerStr.includes("exchange")) return 0.95
+
+        if (primaryMatches.length >= 3) return 0.95
+        if (primaryMatches.length >= 2) return 0.7
+
+        // Combined check: any mix of primary + execution indicators
+        const totalMatches = primaryMatches.length + execMatches.length
+        if (totalMatches >= 3) return 0.9
+        if (totalMatches >= 2) return 0.6
+        if (totalMatches === 1) return 0.4
         return 0.1
     }
 
@@ -118,19 +139,30 @@ export class RithmicParser extends BaseCSVParser {
                                 continue
                             }
 
-                            const tsRaw = this.findColumnValue(row, ["Fill Time", "Time", "Timestamp"])
+                            const tsRaw = this.findColumnValue(row, [
+                                "Fill Time",
+                                "ExecutionTime",
+                                "Execution Time",
+                                "Time",
+                                "Timestamp"
+                            ])
                             const date = this.parseDate(tsRaw)
                             if (!date) {
                                 skippedRows++
                                 warnings.push({
                                     row: i + 1,
-                                    field: "Fill Time",
+                                    field: "Fill Time / ExecutionTime",
                                     value: tsRaw,
-                                    message: "Skipped row: invalid or missing Fill Time",
+                                    message: "Skipped row: invalid or missing Fill Time / ExecutionTime",
                                     severity: "warning"
                                 })
                                 continue
                             }
+
+                            // Read commission and fee if available
+                            const commission = this.parseNumber(this.findColumnValue(row, ["Commission", "Comm"]))
+                            const fee = this.parseNumber(this.findColumnValue(row, ["Fee", "Fees", "Misc Fees"]))
+                            const totalCommission = commission + fee
 
                             const direction = this.parseDirection(side)
 
@@ -142,6 +174,7 @@ export class RithmicParser extends BaseCSVParser {
                                 exit_price: price,
                                 size: qty,
                                 pnl: 0,
+                                commission: totalCommission > 0 ? totalCommission : undefined,
                                 notes: "Imported from Rithmic (execution-level). P&L will be derived from grouped entries/exits.",
                                 rawRow: row,
                                 rowIndex: i

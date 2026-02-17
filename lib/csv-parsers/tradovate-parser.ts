@@ -52,6 +52,12 @@ export class TradovateParser extends BaseCSVParser {
         const hasRawOrderLogFingerprint = rawOrderLogIndicators.every(ind => headerStr.includes(ind))
         if (hasRawOrderLogFingerprint) return 1.0
 
+        // Tradovate *Performance Report* exports (pre-matched round-trips)
+        const perfReportIndicators = ["buyprice", "sellprice", "pnl", "boughttimestamp", "soldtimestamp"]
+        const perfMatches = perfReportIndicators.filter(ind => headerStr.includes(ind))
+        if (perfMatches.length >= 4) return 0.98
+        if (perfMatches.length >= 3 && headerStr.includes("symbol")) return 0.95
+
         // Tradovate "Trades / Executions" style exports/templates
         const tradesTemplateIndicators = ["strategy", "trade date", "trade time", "gross pnl", "net pnl", "order id"]
         const tradesTemplateMatches = tradesTemplateIndicators.filter(ind => headerStr.includes(ind))
@@ -83,6 +89,21 @@ export class TradovateParser extends BaseCSVParser {
                 complete: (results) => {
                     const rows = results.data as any[]
                     totalRows = rows.length
+
+                    // Detect Performance Report format (pre-matched round-trips)
+                    const parsedHeaders = results.meta.fields || []
+                    const headersLower = parsedHeaders.map(h => h.toLowerCase())
+                    const isPerformanceReport =
+                        headersLower.includes("buyprice") &&
+                        headersLower.includes("sellprice") &&
+                        headersLower.includes("boughttimestamp") &&
+                        headersLower.includes("soldtimestamp")
+
+                    if (isPerformanceReport) {
+                        const perfResult = this.parsePerformanceReport(rows, totalRows)
+                        resolve(perfResult)
+                        return
+                    }
 
                     // 1) Pre-process: extract *executions only* from raw Orders log
                     const executions: TradovateExecution[] = []
@@ -393,6 +414,194 @@ export class TradovateParser extends BaseCSVParser {
         }
 
         return multipliers[key] ?? 1
+    }
+
+    /**
+     * Parse Tradovate Performance Report CSV (pre-matched round-trip trades).
+     * Each row already has buyPrice, sellPrice, pnl, boughtTimestamp, soldTimestamp, qty.
+     */
+    private parsePerformanceReport(rows: any[], totalRows: number): ParseResult {
+        const errors: ValidationError[] = []
+        const warnings: ValidationError[] = []
+        const trades: ParsedTrade[] = []
+        let skippedRows = 0
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i] as Record<string, any>
+
+            try {
+                const symbol = this.findColumnValue(row, ["symbol", "Symbol", "Contract", "Instrument"])
+                if (!symbol) {
+                    skippedRows++
+                    warnings.push({
+                        row: i + 1,
+                        field: "symbol",
+                        value: symbol,
+                        message: "Skipped row: missing symbol",
+                        severity: "warning"
+                    })
+                    continue
+                }
+
+                const qty = this.parseNumber(this.findColumnValue(row, ["qty", "Qty", "Quantity", "Size"]))
+                if (qty <= 0) {
+                    skippedRows++
+                    continue
+                }
+
+                const buyPrice = this.parseNumber(this.findColumnValue(row, ["buyPrice", "BuyPrice", "Buy Price"]))
+                const sellPrice = this.parseNumber(this.findColumnValue(row, ["sellPrice", "SellPrice", "Sell Price"]))
+
+                if (buyPrice <= 0 || sellPrice <= 0) {
+                    skippedRows++
+                    warnings.push({
+                        row: i + 1,
+                        field: "buyPrice/sellPrice",
+                        value: { buyPrice, sellPrice },
+                        message: "Skipped row: missing or invalid buy/sell prices",
+                        severity: "warning"
+                    })
+                    continue
+                }
+
+                const boughtTsRaw = this.findColumnValue(row, ["boughtTimestamp", "BoughtTimestamp", "Bought Timestamp", "Buy Time"])
+                const soldTsRaw = this.findColumnValue(row, ["soldTimestamp", "SoldTimestamp", "Sold Timestamp", "Sell Time"])
+
+                const boughtTs = this.parseTradovateTimestamp(boughtTsRaw)
+                const soldTs = this.parseTradovateTimestamp(soldTsRaw)
+
+                if (!boughtTs || !soldTs) {
+                    skippedRows++
+                    warnings.push({
+                        row: i + 1,
+                        field: "timestamp",
+                        value: { boughtTsRaw, soldTsRaw },
+                        message: "Skipped row: invalid or missing bought/sold timestamp",
+                        severity: "warning"
+                    })
+                    continue
+                }
+
+                // Direction: if bought before sold -> long, else short
+                const isLong = boughtTs.getTime() <= soldTs.getTime()
+                const direction: "long" | "short" = isLong ? "long" : "short"
+                const entryTime = isLong ? boughtTs : soldTs
+                const exitTime = isLong ? soldTs : boughtTs
+                const entryPrice = isLong ? buyPrice : sellPrice
+                const exitPrice = isLong ? sellPrice : buyPrice
+
+                // Parse P&L: handles formats like "$(1,740.00)", "$375.00", "-1740.00"
+                const pnlRaw = this.findColumnValue(row, ["pnl", "Pnl", "PnL", "P&L", "Profit/Loss"])
+                const pnl = this.parsePnlValue(pnlRaw)
+
+                // Parse duration string like "4min 52sec"
+                const durationRaw = this.findColumnValue(row, ["duration", "Duration"])
+                const durationMinutes = this.parseDurationString(durationRaw)
+
+                const instrument = this.normalizeInstrument(String(symbol))
+
+                trades.push({
+                    date: entryTime.toISOString(),
+                    instrument,
+                    direction,
+                    entry_price: entryPrice,
+                    exit_price: exitPrice,
+                    size: qty,
+                    pnl,
+                    notes: [
+                        "Imported from Tradovate Performance Report",
+                        `Contract: ${symbol}`,
+                        `Entry: ${entryTime.toISOString()}`,
+                        `Exit: ${exitTime.toISOString()}`,
+                        durationRaw ? `Duration: ${durationRaw}` : null,
+                    ].filter(Boolean).join(" | "),
+                    rawRow: {
+                        ...row,
+                        __entryTimeISO: entryTime.toISOString(),
+                        __exitTimeISO: exitTime.toISOString(),
+                        __durationMinutes: durationMinutes,
+                    },
+                    rowIndex: i
+                })
+            } catch (error: any) {
+                skippedRows++
+                warnings.push({
+                    row: i + 1,
+                    field: "parse",
+                    value: row,
+                    message: error.message || "Failed to parse performance row",
+                    severity: "warning"
+                })
+            }
+        }
+
+        const validationErrors = this.validate(trades)
+        errors.push(...validationErrors)
+
+        return {
+            success: errors.filter(e => e.severity === "error").length === 0,
+            broker: this.brokerType,
+            trades,
+            errors,
+            warnings,
+            stats: {
+                totalRows,
+                validTrades: trades.length,
+                skippedRows,
+                duplicates: this.findDuplicates(trades).length
+            }
+        }
+    }
+
+    /**
+     * Parse Tradovate P&L values. Handles:
+     * - "$(1,740.00)" -> -1740
+     * - "$375.00" -> 375
+     * - "-1740.00" -> -1740
+     * - Plain numbers
+     */
+    private parsePnlValue(value: any): number {
+        if (typeof value === "number") return value
+        if (!value) return 0
+
+        let str = String(value).trim()
+        if (!str) return 0
+
+        // Check for parenthetical negatives: $(1,740.00) or (1,740.00)
+        const isParenNeg = str.includes("(") && str.includes(")")
+
+        // Strip $, commas, parens
+        str = str.replace(/[$,()]/g, "").trim()
+
+        const num = parseFloat(str)
+        if (isNaN(num)) return 0
+
+        return isParenNeg ? -Math.abs(num) : num
+    }
+
+    /**
+     * Parse Tradovate duration strings like "4min 52sec", "1hr 20min 5sec", "30sec"
+     * Returns fractional minutes.
+     */
+    private parseDurationString(value: any): number {
+        if (!value) return 0
+        if (typeof value === "number") return value
+
+        const str = String(value).trim().toLowerCase()
+        if (!str) return 0
+
+        let totalMinutes = 0
+
+        const hrMatch = str.match(/(\d+)\s*hr/)
+        if (hrMatch) totalMinutes += Number(hrMatch[1]) * 60
+
+        const minMatch = str.match(/(\d+)\s*min/)
+        if (minMatch) totalMinutes += Number(minMatch[1])
+
+        const secMatch = str.match(/(\d+)\s*sec/)
+        if (secMatch) totalMinutes += Number(secMatch[1]) / 60
+
+        return totalMinutes
     }
 
     /**

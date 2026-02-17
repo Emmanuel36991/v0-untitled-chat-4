@@ -26,16 +26,26 @@ const parsers: CSVParser[] = [
  * Auto-detect broker format from CSV content
  */
 export function detectBrokerFormat(csvContent: string): DetectionResult {
-    // Extract headers
+    // Extract headers - scan first 20 lines for the best header candidate
     const lines = csvContent.split(/\r\n|\n|\r/)
     let headerLine = lines[0]
 
-    // Try to find header row (might not be first line)
-    for (let i = 0; i < Math.min(lines.length, 10); i++) {
-        const line = lines[i].toLowerCase()
-        if (line.includes("symbol") || line.includes("date") || line.includes("instrument")) {
+    // Keywords that indicate a header row across all supported brokers
+    const headerKeywords = [
+        "symbol", "date", "instrument", "contract",
+        "exec time", "pos effect", "account trade history",
+        "executionid", "executiontime", "orderid",
+        "buyprice", "sellprice", "boughttimestamp",
+        "action", "side", "qty", "quantity", "price",
+    ]
+
+    let bestScore = 0
+    for (let i = 0; i < Math.min(lines.length, 20); i++) {
+        const lower = lines[i].toLowerCase()
+        const score = headerKeywords.filter(kw => lower.includes(kw)).length
+        if (score > bestScore) {
+            bestScore = score
             headerLine = lines[i]
-            break
         }
     }
 

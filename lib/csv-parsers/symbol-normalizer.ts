@@ -169,6 +169,11 @@ export function normalizeSymbol(rawSymbol: string): string {
     // Step 1: Strip exchange prefix
     let withoutExchange = stripExchange(trimmed)
 
+    // Strip TOS-style leading "/" for futures (e.g., "/ESM6" -> "ESM6")
+    if (withoutExchange.startsWith("/")) {
+        withoutExchange = withoutExchange.slice(1)
+    }
+
     // Step 2: Strip futures contract code
     // Also strip TradingView continuous contract suffixes like "!" or "1!"
     if (withoutExchange.endsWith("!") || withoutExchange.endsWith("1!") || withoutExchange.endsWith("2!")) {

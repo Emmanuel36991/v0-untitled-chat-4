@@ -137,7 +137,9 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to fetch insight")
+        const body = await response.json().catch(() => ({}))
+        const message = body?.error || (response.status === 429 ? "Limit reached. Try again later." : "Failed to fetch insight")
+        throw new Error(message)
       }
 
       setState("streaming")
@@ -185,7 +187,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
       if (err?.name === "AbortError") return
       console.error("Neural insight error:", err)
       setState("error")
-      setInsightText("Connection interrupted. Tap to reconnect.")
+      setInsightText(err?.message || "Connection interrupted. Tap to try again.")
     }
   }, [trades, hasEnoughData])
 

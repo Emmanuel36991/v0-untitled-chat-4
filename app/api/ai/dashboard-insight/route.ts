@@ -1,7 +1,7 @@
 import { callGroqAPI, GROQ_MODEL, GROQ_FALLBACK_MODEL } from "@/lib/ai/groq"
 import type { NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
+import { rateLimiter, getRateLimitKeyForUser } from "@/lib/security/rate-limiter"
 
 const SYSTEM_PROMPT = `You are a brutally perceptive trading psychologist embedded inside a trader's journal. You speak like a sharp, concise mentor — not a corporate AI. You notice what the trader doesn't.
 
@@ -25,22 +25,12 @@ Examples of good output:
 
 const REQUEST_TIMEOUT = 30000
 
+// Per-user limits: moderate usage (e.g. 3 insights per 15 min)
+const INSIGHT_LIMIT = 3
+const INSIGHT_WINDOW_SEC = 15 * 60 // 15 minutes
+
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitKey = getRateLimitKey("dashboard-insight")
-    const limit = rateLimiter({
-      key: rateLimitKey,
-      limit: 5,
-      window: 60,
-    })
-
-    if (!limit.allowed) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Try again shortly." }),
-        { status: 429, headers: { "Content-Type": "application/json" } }
-      )
-    }
-
     const supabase = await createClient()
     const {
       data: { user },
@@ -51,6 +41,22 @@ export async function POST(request: NextRequest) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { "Content-Type": "application/json" } }
+      )
+    }
+
+    const rateLimitKey = getRateLimitKeyForUser("dashboard-insight", user.id)
+    const limit = rateLimiter({
+      key: rateLimitKey,
+      limit: INSIGHT_LIMIT,
+      window: INSIGHT_WINDOW_SEC,
+    })
+
+    if (!limit.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: `AI insight limit reached (${INSIGHT_LIMIT} per 15 min). Try again later.`,
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
       )
     }
 

@@ -5,8 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, PlusCircle } from 'lucide-react'
-import { AddTradeIcon } from "@/components/icons/system-icons"
+import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, PlusCircle, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import {
@@ -263,12 +262,11 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                           <Button
                             size="sm"
                             variant="ghost"
-                            // FIX: Use openAdvisor properly
                             onClick={() => openAdvisor("Trade Analysis", "trade", trade)}
                             className="hover:bg-muted hover:text-foreground"
-                            title="Get AI insights for this trade"
+                            title="AI analysis for this trade"
                           >
-                            <AddTradeIcon className="h-4 w-4" />
+                            <Sparkles className="h-4 w-4 text-amber-400" />
                           </Button>
                           <Button
                             asChild

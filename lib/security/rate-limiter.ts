@@ -44,13 +44,17 @@ export function rateLimiter(config: RateLimitConfig): RateLimitResult {
 }
 
 /**
- * Generate a rate limit key from request headers
- * Combines IP address, user agent, and endpoint for granular limiting
+ * Generate a rate limit key from request headers (fallback when no user)
  */
 export function getRateLimitKey(endpoint: string): string {
-  // In edge runtime, we can use headers to extract IP
-  // Fallback to endpoint-only key for simplicity
   return `${endpoint}:global`
+}
+
+/**
+ * Per-user rate limit key for authenticated AI endpoints (prevents abuse, fair usage)
+ */
+export function getRateLimitKeyForUser(endpoint: string, userId: string): string {
+  return `${endpoint}:user:${userId}`
 }
 
 /**

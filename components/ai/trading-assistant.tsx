@@ -109,7 +109,10 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to send message")
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}))
+        throw new Error(body?.error || "Failed to send message")
+      }
       if (!response.body) throw new Error("No response body")
 
       // 4. Read Stream - Fix stream parsing to handle SSE format
@@ -154,12 +157,13 @@ export function TradingAssistant({ initialContext }: TradingAssistantProps) {
       }
     } catch (error) {
       console.error("Chat Error:", error)
+      const message = error instanceof Error ? error.message : "Sorry, I encountered an error. Please try again."
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
           role: "assistant",
-          content: "Sorry, I encountered an error. Please try again.",
+          content: message,
         },
       ])
     } finally {

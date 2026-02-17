@@ -2,26 +2,16 @@ import { callGroqAPI, GROQ_MODEL, GROQ_FALLBACK_MODEL } from "@/lib/ai/groq"
 import { TRADING_SYSTEM_PROMPTS } from "@/lib/ai/trading-prompts"
 import { createClient } from "@/lib/supabase/server"
 import { sanitizeInput } from "@/lib/security/input-validation"
-import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
+import { rateLimiter, getRateLimitKeyForUser } from "@/lib/security/rate-limiter"
 
 const REQUEST_TIMEOUT = 30000 // 30 seconds
 
+// Per-user: moderate usage so chatbot isn't abused (e.g. 15 messages per 15 min)
+const CHAT_LIMIT = 15
+const CHAT_WINDOW_SEC = 15 * 60
+
 export async function POST(req: Request) {
   try {
-    const rateLimitKey = getRateLimitKey("chat")
-    const limit = rateLimiter({
-      key: rateLimitKey,
-      limit: 20,
-      window: 60, // 20 requests per minute per IP
-    })
-
-    if (!limit.allowed) {
-      return new Response(JSON.stringify({ error: "Chat rate limit exceeded. Please try again later." }), {
-        status: 429,
-        headers: { "Content-Type": "application/json" },
-      })
-    }
-
     const supabase = await createClient()
     const {
       data: { user },
@@ -33,6 +23,22 @@ export async function POST(req: Request) {
         status: 401,
         headers: { "Content-Type": "application/json" },
       })
+    }
+
+    const rateLimitKey = getRateLimitKeyForUser("chat", user.id)
+    const limit = rateLimiter({
+      key: rateLimitKey,
+      limit: CHAT_LIMIT,
+      window: CHAT_WINDOW_SEC,
+    })
+
+    if (!limit.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: `AI chat limit reached (${CHAT_LIMIT} per 15 min). Try again later.`,
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      )
     }
 
     const { messages, context } = await req.json()

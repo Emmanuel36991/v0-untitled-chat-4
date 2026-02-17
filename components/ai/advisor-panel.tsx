@@ -40,7 +40,9 @@ export function AdvisorPanel({ isOpen, onClose, title, type, data, context }: Ad
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        const body = await response.json().catch(() => ({}))
+        const message = body?.error || `Request failed (${response.status})`
+        throw new Error(message)
       }
 
       const reader = response.body?.getReader()

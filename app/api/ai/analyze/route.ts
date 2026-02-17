@@ -2,7 +2,7 @@ import { callGroqAPI, GROQ_MODEL, GROQ_FALLBACK_MODEL, ANALYZE_SYSTEM_PROMPT } f
 import type { NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { sanitizeInput } from "@/lib/security/input-validation"
-import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
+import { rateLimiter, getRateLimitKeyForUser } from "@/lib/security/rate-limiter"
 
 // Helper to format stats for the prompt
 function formatPeriodStats(period: string, stats: any) {
@@ -24,22 +24,12 @@ function formatPeriodStats(period: string, stats: any) {
 
 const REQUEST_TIMEOUT = 45000 // 45 seconds for analysis
 
+// Per-user limits: moderate usage, prevent abuse (e.g. 5 analyses per 15 min)
+const ANALYZE_LIMIT = 5
+const ANALYZE_WINDOW_SEC = 15 * 60 // 15 minutes
+
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitKey = getRateLimitKey("analyze")
-    const limit = rateLimiter({
-      key: rateLimitKey,
-      limit: 10,
-      window: 60, // 10 requests per minute per IP
-    })
-
-    if (!limit.allowed) {
-      return new Response(JSON.stringify({ error: "Analysis rate limit exceeded. Please try again later." }), {
-        status: 429,
-        headers: { "Content-Type": "application/json" },
-      })
-    }
-
     const supabase = await createClient()
     const {
       data: { user },
@@ -51,6 +41,22 @@ export async function POST(request: NextRequest) {
         status: 401,
         headers: { "Content-Type": "application/json" },
       })
+    }
+
+    const rateLimitKey = getRateLimitKeyForUser("analyze", user.id)
+    const limit = rateLimiter({
+      key: rateLimitKey,
+      limit: ANALYZE_LIMIT,
+      window: ANALYZE_WINDOW_SEC,
+    })
+
+    if (!limit.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: `AI analysis limit reached (${ANALYZE_LIMIT} per 15 min). Please try again later.`,
+        }),
+        { status: 429, headers: { "Content-Type": "application/json" } }
+      )
     }
 
     const { type, data, context } = await request.json()
@@ -85,32 +91,24 @@ Please provide:
 
 Be data-driven and concise.`
     } else if (type === "trade") {
-      systemPrompt =
-        "You are an expert trading advisor powered by Groq's Llama 3.3. Analyze trades thoroughly with deep knowledge of technical analysis, risk management, and trading psychology. Provide actionable insights. Be specific and reference the trade metrics provided."
+      systemPrompt = `You are a sharp trading mentor. Your job is to give ONE focused insight about this single trade — not a generic checklist.
 
-      userPrompt = `Analyze this trade and provide insights:
+Rules:
+- Write 2–4 sentences MAX. Punchy and direct.
+- Focus on the one thing that actually explains why this trade worked or failed (entry/exit timing, size vs risk, psychology, or setup execution). Reference the numbers.
+- No bullet lists. No "Key Strengths / Areas for Improvement" templates. No obvious fluff like "consider risk management."
+- End with a single actionable nudge for the next similar trade.
+- If the data shows a clear mistake or win (e.g. no stop, oversized size, great R), call it out directly. If notes or setup name hint at psychology (revenge, FOMO), mention it.
+- Be the insight they'd remember — not the essay they skip.`
 
-Trade Details:
-- Direction: ${data.direction}
-- Entry Price: $${data.entry_price}
-- Exit Price: $${data.exit_price}
-- Stop Loss: $${data.stop_loss}
-- Take Profit: ${data.take_profit || "Not Set"}
-- Size: ${data.size}
-- Outcome: ${data.outcome}
-- P&L: $${data.pnl}
-- Duration: ${data.duration_minutes || "N/A"} minutes
-- Setup: ${data.setup_name || "Not specified"}
-- Notes: ${sanitizeInput(data.notes || "", { maxLength: 1000 })}
+      userPrompt = `Single trade to analyze:
 
-Please provide:
-1. **Trade Analysis** - Why this trade worked or failed
-2. **Key Strengths** - What was done right
-3. **Areas for Improvement** - What could be better
-4. **Educational Insights** - Lessons from this trade
-5. **Recommendations** - Actionable steps for similar trades
+Direction: ${data.direction} | Entry: $${data.entry_price} | Exit: $${data.exit_price} | Stop: $${data.stop_loss || "—"} | TP: ${data.take_profit || "—"} | Size: ${data.size}
+Outcome: ${data.outcome} | P&L: $${data.pnl} | Duration: ${data.duration_minutes ?? "—"} min
+Setup: ${data.setup_name || "—"}
+Notes: ${sanitizeInput(data.notes || "", { maxLength: 500 })}
 
-Be specific, educational, and practical.`
+Give one focused insight and one actionable nudge. No preamble, no sections.`
     } else if (type === "statistic") {
       systemPrompt =
         "You are a trading performance advisor powered by Groq's Llama 3.3. Explain trading metrics clearly and provide actionable recommendations to improve trading performance."

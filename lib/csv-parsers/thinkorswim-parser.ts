@@ -1,4 +1,7 @@
 // Thinkorswim (TD Ameritrade) CSV Parser
+//
+// Supports full Account Statement exports by isolating the "Account Trade History" /
+// "Trade History" section, as well as simple trade-history-only CSVs.
 
 import Papa from "papaparse"
 import { BaseCSVParser } from "./base-parser"
@@ -10,19 +13,17 @@ export class ThinkorswimParser extends BaseCSVParser {
     readonly brokerName = "Thinkorswim (TD Ameritrade)"
 
     detect(csvContent: string, headers: string[]): number {
-        // Thinkorswim specific headers
+        const headerStr = headers.join(" ").toLowerCase()
         const tosIndicators = [
             "exec time",
-            "spread",
             "pos effect",
+            "spread",
             "net price",
-            "order #"
+            "order #",
+            "account trade history",
         ]
 
-        const headerStr = headers.join(" ").toLowerCase()
         const matches = tosIndicators.filter(ind => headerStr.includes(ind))
-
-        // High confidence if we see multiple TOS-specific terms
         if (matches.length >= 3) return 0.95
         if (matches.length >= 2) return 0.7
         if (matches.length === 1) return 0.4
@@ -36,7 +37,11 @@ export class ThinkorswimParser extends BaseCSVParser {
             const trades: ParsedTrade[] = []
             let totalRows = 0
 
-            Papa.parse(csvContent, {
+            // Many TOS exports are composite Account Statements. Extract only the
+            // "Account Trade History" / "Trade History" section before parsing.
+            const sectionCsv = this.extractTradeHistorySection(csvContent)
+
+            Papa.parse(sectionCsv, {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
@@ -171,4 +176,56 @@ export class ThinkorswimParser extends BaseCSVParser {
             account_id: accountId
         } as NewTradeInput
     }
+
+    /**
+     * Extract only the Thinkorswim "Trade History" / "Account Trade History" section
+     * from a composite Account Statement CSV.
+     */
+    private extractTradeHistorySection(csvContent: string): string {
+        const lines = csvContent.split(/\r\n|\n|\r/)
+
+        let startIdx = -1
+        for (let i = 0; i < lines.length; i++) {
+            const lower = lines[i].toLowerCase()
+            if (
+                lower.includes("exec time") &&
+                lower.includes("pos effect") &&
+                lower.includes("symbol")
+            ) {
+                startIdx = i
+                break
+            }
+        }
+
+        // If we didn't find the trade history header, fall back to the original content.
+        if (startIdx === -1) {
+            return csvContent
+        }
+
+        // Collect rows until a blank line or a new section header (e.g., "Profits and Losses").
+        let endIdx = lines.length
+        for (let i = startIdx + 1; i < lines.length; i++) {
+            const trimmed = lines[i].trim()
+            const lower = trimmed.toLowerCase()
+
+            if (!trimmed) {
+                endIdx = i
+                break
+            }
+
+            if (
+                lower.startsWith("profits and losses") ||
+                lower.startsWith("profit and loss") ||
+                lower.startsWith("cash balances") ||
+                lower.startsWith("balances") ||
+                lower.startsWith("account summary")
+            ) {
+                endIdx = i
+                break
+            }
+        }
+
+        return lines.slice(startIdx, endIdx).join("\n")
+    }
 }
+

@@ -5,6 +5,9 @@ import type { CSVParser, BrokerType, DetectionResult, ParseResult, ImportOptions
 import { TradovateParser } from "./tradovate-parser"
 import { ThinkorswimParser } from "./thinkorswim-parser"
 import { TradingViewParser } from "./tradingview-parser"
+import { RithmicParser } from "./rithmic-parser"
+import { NinjaTraderParser } from "./ninjatrader-parser"
+import { InteractiveBrokersParser } from "./interactive-brokers-parser"
 import { GenericParser } from "./generic-parser"
 import type { NewTradeInput } from "@/types"
 
@@ -13,6 +16,9 @@ const parsers: CSVParser[] = [
     new TradovateParser(),
     new ThinkorswimParser(),
     new TradingViewParser(),
+    new InteractiveBrokersParser(),
+    new RithmicParser(),
+    new NinjaTraderParser(),
     new GenericParser()
 ]
 
@@ -125,4 +131,12 @@ export function getSupportedBrokers(): Array<{ value: BrokerType; label: string 
 
 // Export all parsers and types
 export * from "./types"
-export { TradovateParser, ThinkorswimParser, TradingViewParser, GenericParser }
+export {
+    TradovateParser,
+    ThinkorswimParser,
+    TradingViewParser,
+    InteractiveBrokersParser,
+    RithmicParser,
+    NinjaTraderParser,
+    GenericParser
+}

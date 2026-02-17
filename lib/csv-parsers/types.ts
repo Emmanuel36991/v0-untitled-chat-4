@@ -10,6 +10,8 @@ export type BrokerType =
     | "thinkorswim"
     | "tradingview"
     | "interactive-brokers"
+    | "rithmic"
+    | "ninjatrader"
     | "generic"
     | "auto"
 

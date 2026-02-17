@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { BookOpen, BookMarked, TrendingUp, BarChart2, Lightbulb } from "lucide-react"
+import { BookOpen, BookMarked, TrendingUp, BarChart2, Lightbulb, FileSpreadsheet } from "lucide-react"
 import Link from "next/link"
 import GuideCard from "@/components/guides/guide-card"
 import FeaturedGuide from "@/components/guides/featured-guide"
@@ -134,12 +134,20 @@ export default function GuidesPage() {
             Comprehensive resources to help you improve your trading skills and knowledge
           </p>
         </div>
-        <Link href="/guides/important">
-          <Button variant="outline" className="flex items-center gap-2">
-            <BookMarked className="h-4 w-4" />
-            Important Guides
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/guides/important">
+            <Button variant="outline" className="flex items-center gap-2">
+              <BookMarked className="h-4 w-4" />
+              Important Guides
+            </Button>
+          </Link>
+          <Link href="/guides/import-and-connect">
+            <Button variant="outline" className="flex items-center gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              Import & Connect
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Separator />

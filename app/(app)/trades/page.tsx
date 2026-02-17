@@ -686,7 +686,10 @@ export default function TradesPage() {
                         </SelectContent>
                      </Select>
                      <p className="text-xs text-muted-foreground">
-                        Auto-detect works for most files. If your broker changes columns, selecting the broker explicitly can help.
+                        Auto-detect works for most files. If your broker changes columns, selecting the broker explicitly can help.{" "}
+                        <NextLink href="/guides/import-and-connect" className="text-primary hover:underline font-medium">
+                           See guide: Import & Connect
+                        </NextLink>
                      </p>
                   </div>
 

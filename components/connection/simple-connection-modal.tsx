@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Shield, TrendingUp, BarChart3 } from "lucide-react"
+import Link from "next/link"
+import { CheckCircle, Shield, TrendingUp, BarChart3, BookOpen } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { AlpacaConnectionForm } from "./alpaca-connection-form"
 
@@ -144,6 +145,13 @@ export function SimpleConnectionModal({ onConnectionCreated, onClose }: SimpleCo
           trading account information. Your credentials are encrypted and never stored permanently.
         </AlertDescription>
       </Alert>
+
+      <p className="text-center text-sm text-muted-foreground">
+        <Link href="/guides/import-and-connect" className="inline-flex items-center gap-1.5 text-primary hover:underline">
+          <BookOpen className="h-3.5 w-3.5" />
+          Step-by-step guide: Import & Connect
+        </Link>
+      </p>
     </div>
   )
 }

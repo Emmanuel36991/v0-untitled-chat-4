@@ -51,16 +51,17 @@ interface JournalEntry {
   lessons_learned: string
 }
 
+// Hex colors for reliable chart visibility on dark backgrounds (oklch can be faint or unsupported)
 const MOODS = [
-  { id: "euphoric", label: "Euphoric", emoji: "😄", color: "oklch(0.55 0.20 150)", value: 9 },
-  { id: "confident", label: "Confident", emoji: "😊", color: "oklch(0.65 0.28 270)", value: 8 },
-  { id: "focused", label: "Focused", emoji: "🎯", color: "oklch(0.55 0.22 230)", value: 7 },
-  { id: "neutral", label: "Neutral", emoji: "😐", color: "oklch(0.55 0.02 264)", value: 5 },
-  { id: "cautious", label: "Cautious", emoji: "⚠️", color: "oklch(0.72 0.22 60)", value: 4 },
-  { id: "frustrated", label: "Frustrated", emoji: "😤", color: "oklch(0.65 0.22 40)", value: 3 },
-  { id: "overwhelmed", label: "Overwhelmed", emoji: "😰", color: "oklch(0.577 0.245 27)", value: 2 },
-  { id: "exhausted", label: "Exhausted", emoji: "😫", color: "oklch(0.55 0.22 300)", value: 2 },
-  { id: "anxious", label: "Anxious", emoji: "😟", color: "oklch(0.60 0.22 340)", value: 3 },
+  { id: "euphoric", label: "Euphoric", emoji: "😄", color: "#22c55e", value: 9 },
+  { id: "confident", label: "Confident", emoji: "😊", color: "#8b5cf6", value: 8 },
+  { id: "focused", label: "Focused", emoji: "🎯", color: "#3b82f6", value: 7 },
+  { id: "neutral", label: "Neutral", emoji: "😐", color: "#94a3b8", value: 5 },
+  { id: "cautious", label: "Cautious", emoji: "⚠️", color: "#eab308", value: 4 },
+  { id: "frustrated", label: "Frustrated", emoji: "😤", color: "#f97316", value: 3 },
+  { id: "overwhelmed", label: "Overwhelmed", emoji: "😰", color: "#ef4444", value: 2 },
+  { id: "exhausted", label: "Exhausted", emoji: "😫", color: "#a855f7", value: 2 },
+  { id: "anxious", label: "Anxious", emoji: "😟", color: "#ec4899", value: 3 },
 ]
 
 interface PsychologyAnalyticsProps {
@@ -137,7 +138,7 @@ export default function PsychologyAnalytics({
         name: moodData?.label || mood,
         value: count,
         emoji: moodData?.emoji || "😐",
-        color: moodData?.color || "oklch(0.55 0.02 264)",
+        color: moodData?.color || "#94a3b8",
       }
     })
 
@@ -269,13 +270,15 @@ export default function PsychologyAnalytics({
     )
   }
 
-  // Use CSS variables for chart theming
-  const chartGridColor = "hsl(var(--border))"
-  const chartTextColor = "hsl(var(--muted-foreground))"
+  // Use explicit colors for chart visibility on dark theme (CSS vars can be too faint)
+  const chartGridColor = "rgba(148, 163, 184, 0.35)"
+  const chartTextColor = "rgb(203, 213, 225)"
   const chartTooltipBg = "hsl(var(--card))"
   const chartTooltipBorder = "hsl(var(--border))"
-  const primaryColor = "hsl(var(--primary))"
-  const successColor = "hsl(var(--success))"
+  const primaryColor = "#8b5cf6"
+  const successColor = "#22c55e"
+  const radarFillColor = "rgba(139, 92, 246, 0.45)"
+  const lineStrokeColor = "#22c55e"
 
   return (
     <div className="space-y-6">
@@ -343,11 +346,11 @@ export default function PsychologyAnalytics({
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={analytics.radarData}>
-                <PolarGrid stroke={chartGridColor} />
-                <PolarAngleAxis dataKey="subject" tick={{ fill: chartTextColor, fontSize: 11, fontFamily: 'monospace' }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                <Radar name="My Stats" dataKey="A" stroke={primaryColor} strokeWidth={2} fill={primaryColor} fillOpacity={0.2} />
-                <Tooltip contentStyle={{ backgroundColor: chartTooltipBg, borderColor: chartTooltipBorder, borderRadius: '8px', color: 'hsl(var(--foreground))' }} />
+                <PolarGrid stroke={chartGridColor} strokeWidth={1} />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: chartTextColor, fontSize: 11, fontFamily: "monospace" }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: chartTextColor, fontSize: 10 }} />
+                <Radar name="My Stats" dataKey="A" stroke={primaryColor} strokeWidth={2.5} fill={radarFillColor} />
+                <Tooltip contentStyle={{ backgroundColor: chartTooltipBg, borderColor: chartTooltipBorder, borderRadius: "8px", color: "hsl(var(--foreground))" }} />
               </RadarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -366,10 +369,10 @@ export default function PsychologyAnalytics({
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analytics.moodTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: chartTextColor, fontSize: 11 }} axisLine={false} tickLine={false} dy={10} />
-                <YAxis domain={[0, 10]} hide />
-                <Tooltip contentStyle={{ backgroundColor: chartTooltipBg, border: `1px solid ${chartTooltipBorder}`, borderRadius: "8px", color: 'hsl(var(--foreground))' }} />
-                <Line type="monotone" dataKey="value" stroke={successColor} strokeWidth={3} dot={{ fill: chartTooltipBg, stroke: successColor, strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: successColor }} />
+                <XAxis dataKey="date" tick={{ fill: chartTextColor, fontSize: 11 }} axisLine={{ stroke: chartGridColor }} tickLine={{ stroke: chartGridColor }} dy={10} />
+                <YAxis domain={[0, 10]} tick={{ fill: chartTextColor, fontSize: 10 }} axisLine={{ stroke: chartGridColor }} tickLine={{ stroke: chartGridColor }} />
+                <Tooltip contentStyle={{ backgroundColor: chartTooltipBg, border: `1px solid ${chartTooltipBorder}`, borderRadius: "8px", color: "hsl(var(--foreground))" }} />
+                <Line type="monotone" dataKey="value" stroke={lineStrokeColor} strokeWidth={3} dot={{ fill: lineStrokeColor, stroke: "hsl(var(--card))", strokeWidth: 2, r: 5 }} activeDot={{ r: 7, fill: lineStrokeColor, stroke: "hsl(var(--card))", strokeWidth: 2 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -387,12 +390,12 @@ export default function PsychologyAnalytics({
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPie>
-                <Pie data={analytics.moodDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" stroke="none">
+                <Pie data={analytics.moodDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" stroke="hsl(var(--card))" strokeWidth={2} label={false}>
                   {analytics.moodDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell-${index}`} fill={entry.color ?? "#94a3b8"} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: chartTooltipBg, border: `1px solid ${chartTooltipBorder}`, borderRadius: "8px", color: 'hsl(var(--foreground))' }} />
+                <Tooltip contentStyle={{ backgroundColor: chartTooltipBg, border: `1px solid ${chartTooltipBorder}`, borderRadius: "8px", color: "hsl(var(--foreground))" }} />
               </RechartsPie>
             </ResponsiveContainer>
             <div className="flex flex-wrap justify-center gap-3 mt-[-20px] relative z-10">
@@ -418,23 +421,30 @@ export default function PsychologyAnalytics({
           <CardContent>
             <div className="space-y-4">
               {analytics.topTriggers.length > 0 ? (
-                analytics.topTriggers.map((trigger, i) => (
-                  <div key={i} className="flex items-center justify-between group">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-muted-foreground w-4">0{i + 1}</span>
-                      <span className="text-sm font-medium text-foreground group-hover:text-warning transition-colors">{trigger.name}</span>
-                    </div>
-                    <div className="flex items-center gap-3 w-1/2">
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-warning/60 rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(100, (trigger.count / analytics.totalEntries) * 100 * 2)}%` }}
-                        />
+                (() => {
+                  const maxCount = Math.max(...analytics.topTriggers.map((t) => t.count), 1)
+                  return analytics.topTriggers.map((trigger, i) => {
+                    const pct = maxCount > 0 ? (trigger.count / maxCount) * 100 : 0
+                    const barWidth = Math.max(15, Math.min(100, pct))
+                    return (
+                      <div key={i} className="flex items-center justify-between group">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-mono text-muted-foreground w-4">0{i + 1}</span>
+                          <span className="text-sm font-medium text-foreground group-hover:text-amber-400 transition-colors">{trigger.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3 w-1/2">
+                          <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500 bg-amber-500"
+                              style={{ width: `${barWidth}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-mono text-muted-foreground w-6 text-right">{trigger.count}</span>
+                        </div>
                       </div>
-                      <span className="text-xs font-mono text-muted-foreground">{trigger.count}</span>
-                    </div>
-                  </div>
-                ))
+                    )
+                  })
+                })()
               ) : (
                 <div className="text-center py-10 text-muted-foreground italic">No triggers recorded yet.</div>
               )}

@@ -221,6 +221,15 @@ export default function SimplePsychologyJournal() {
     return id
   }
 
+  /** Format journal date consistently; avoid wrong years (e.g. 2826) from locale or bad data. */
+  function formatEntryDate(createdAt: string, entryDate?: string): string {
+    const d = new Date(createdAt)
+    if (isNaN(d.getTime())) return entryDate || "Invalid date"
+    const y = d.getFullYear()
+    if (y > 2030 || y < 1990) return entryDate || `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${y}`
+    return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${y}`
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px] border border-border rounded-xl bg-card">
@@ -506,7 +515,7 @@ export default function SimplePsychologyJournal() {
                             </div>
                             <div className="text-2xs text-muted-foreground font-mono flex items-center gap-2 mt-0.5">
                               <Calendar className="w-3 h-3" />
-                              {new Date(entry.created_at).toLocaleDateString()}
+                              {formatEntryDate(entry.created_at, entry.entry_date)}
                               {(entry as any).trades && (
                                 <span className={(entry as any).trades.pnl > 0 ? "text-success" : "text-destructive"}>
                                   {(entry as any).trades.pnl > 0 ? "+" : ""}{(entry as any).trades.pnl?.toFixed(2)}
@@ -556,7 +565,7 @@ export default function SimplePsychologyJournal() {
               {MOODS.find(m => m.id === viewingEntry?.mood)?.label} Check-in
             </DialogTitle>
             <DialogDescription className="font-mono">
-              {viewingEntry && new Date(viewingEntry.created_at).toLocaleString()}
+              {viewingEntry && formatEntryDate(viewingEntry.created_at, viewingEntry.entry_date) + " " + new Date(viewingEntry.created_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
             </DialogDescription>
           </DialogHeader>
 

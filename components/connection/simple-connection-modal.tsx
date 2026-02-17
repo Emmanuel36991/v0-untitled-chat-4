@@ -1,12 +1,14 @@
 "use client"
 
 import type React from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Shield, TrendingUp } from "lucide-react"
+import { CheckCircle, Shield, TrendingUp, BarChart3 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { AlpacaConnectionForm } from "./alpaca-connection-form"
 
 interface SimpleConnectionModalProps {
   onConnectionCreated?: () => void
@@ -25,8 +27,18 @@ interface ConnectionOption {
 
 export function SimpleConnectionModal({ onConnectionCreated, onClose }: SimpleConnectionModalProps) {
   const router = useRouter()
+  const [activeForm, setActiveForm] = useState<string | null>(null)
 
   const CONNECTION_OPTIONS: ConnectionOption[] = [
+    {
+      id: "alpaca",
+      name: "Alpaca",
+      description: "Commission-free trading API for stocks and crypto",
+      icon: <BarChart3 className="h-8 w-8 text-green-400" />,
+      features: ["API Key Auth", "Paper & Live Trading", "Stocks & Crypto", "Auto-sync trades"],
+      available: true,
+      action: () => setActiveForm("alpaca"),
+    },
     {
       id: "tradovate",
       name: "Tradovate",
@@ -55,6 +67,17 @@ export function SimpleConnectionModal({ onConnectionCreated, onClose }: SimpleCo
       },
     },
   ]
+
+  // If a broker form is active, render it instead of the broker list
+  if (activeForm === "alpaca") {
+    return (
+      <AlpacaConnectionForm
+        onBack={() => setActiveForm(null)}
+        onConnectionCreated={onConnectionCreated}
+        onClose={onClose}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6">

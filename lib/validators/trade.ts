@@ -7,7 +7,7 @@ export const tradeSchema = z.object({
     direction: z.enum(["long", "short"]),
     entry_price: z.number().positive("Entry price must be positive"),
     exit_price: z.number().positive("Exit price must be positive"),
-    stop_loss: z.number().positive("Stop loss must be positive"),
+    stop_loss: z.number().min(0, "Stop loss cannot be negative").optional().nullable(),
     take_profit: z.number().positive().optional().nullable(),
     size: z.number().positive("Size must be positive"),
     pnl: z.number().nullable().optional(),

@@ -100,6 +100,7 @@ export default function TradesPage() {
 
    // CSV Import States
    const [selectedBroker, setSelectedBroker] = useState<BrokerType>("auto")
+   const supportedBrokers = useMemo(() => getSupportedBrokers(), [])
 
    // 1. Data Fetching
    const fetchData = useCallback(async (showToast = false) => {
@@ -482,6 +483,26 @@ export default function TradesPage() {
                         </NextLink>
                      </Button>
 
+                     <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => setIsImportDialogOpen(true)}
+                     >
+                        <Upload className="w-4 h-4" />
+                        <span className="hidden sm:inline">Import CSV</span>
+                     </Button>
+
+                     <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => setIsConnectionDialogOpen(true)}
+                     >
+                        <Building2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Connect Broker</span>
+                     </Button>
+
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
@@ -490,13 +511,6 @@ export default function TradesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
                            <DropdownMenuLabel>Journal Actions</DropdownMenuLabel>
-                           <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)} className="cursor-pointer">
-                              <Upload className="mr-2 h-4 w-4" /> Import CSV
-                           </DropdownMenuItem>
-                           <DropdownMenuItem onClick={() => setIsConnectionDialogOpen(true)} className="cursor-pointer">
-                              <Building2 className="mr-2 h-4 w-4" /> Connect Broker
-                           </DropdownMenuItem>
-                           <DropdownMenuSeparator />
                            <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive cursor-pointer">
                               <Trash2 className="mr-2 h-4 w-4" /> Clear All Data
                            </DropdownMenuItem>
@@ -642,6 +656,40 @@ export default function TradesPage() {
                      <DialogTitle>Import Trades</DialogTitle>
                      <DialogDescription>Upload a CSV from your broker.</DialogDescription>
                   </DialogHeader>
+
+                  <div className="rounded-xl border bg-muted/30 p-4 space-y-2">
+                     <div className="flex items-start gap-3">
+                        <div className="mt-0.5 p-2 rounded-lg bg-background border shadow-sm">
+                           <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        </div>
+                        <div className="space-y-1">
+                           <p className="text-sm font-medium">Heads up: imports are execution-based</p>
+                           <p className="text-xs text-muted-foreground leading-relaxed">
+                              CSV imports can reconstruct entries/exits, size, duration, and P&amp;L — but they usually do <span className="font-medium">not</span> include
+                              your strategy intent, psychology, screenshots, or discretionary context. Plan to review your imported trades and manually enrich them after import.
+                           </p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                     <Label>Broker format</Label>
+                     <Select value={selectedBroker} onValueChange={(v: BrokerType) => setSelectedBroker(v)}>
+                        <SelectTrigger className="h-9">
+                           <SelectValue placeholder="Auto-detect" />
+                        </SelectTrigger>
+                        <SelectContent>
+                           <SelectItem value="auto">Auto-detect (recommended)</SelectItem>
+                           {supportedBrokers.map(b => (
+                              <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                     <p className="text-xs text-muted-foreground">
+                        Auto-detect works for most files. If your broker changes columns, selecting the broker explicitly can help.
+                     </p>
+                  </div>
+
                   <div className="flex items-center justify-center w-full my-4">
                      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20 hover:border-primary/50 transition-all group">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -649,11 +697,16 @@ export default function TradesPage() {
                               <Upload className="w-5 h-5 text-primary" />
                            </div>
                            <p className="text-sm font-medium text-muted-foreground">Click to browse file</p>
+                           <p className="text-xs text-muted-foreground mt-1">CSV only. We never modify your original file.</p>
                         </div>
                         <input type="file" className="hidden" accept=".csv" onChange={handleFileChange} />
                      </label>
                   </div>
-                  {file && <div className="p-3 bg-muted rounded text-sm text-center font-mono">{file.name}</div>}
+                  {file && (
+                     <div className="p-3 bg-muted rounded text-sm text-center font-mono">
+                        {file.name}
+                     </div>
+                  )}
                   <DialogFooter>
                      <Button onClick={handleImport} disabled={!file || isProcessingImport} className="w-full">
                         {isProcessingImport && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}

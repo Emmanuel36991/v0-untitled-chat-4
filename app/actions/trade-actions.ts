@@ -150,6 +150,26 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
       payload['screenshot_before_url'] = value
     } else if (key === 'screenshotAfterUrl') {
       payload['screenshot_after_url'] = value
+    } else if (key === 'durationMinutes') {
+      // DB column duration_minutes is INTEGER
+      if (typeof value === "number" && isFinite(value)) {
+        payload['duration_minutes'] = Math.round(value)
+      } else if (typeof value === "string") {
+        const n = Number(value)
+        payload['duration_minutes'] = isFinite(n) ? Math.round(n) : value
+      } else {
+        payload['duration_minutes'] = value
+      }
+    } else if (key === 'preciseDurationMinutes') {
+      // DB column precise_duration_minutes is INTEGER
+      if (typeof value === "number" && isFinite(value)) {
+        payload['precise_duration_minutes'] = Math.round(value)
+      } else if (typeof value === "string") {
+        const n = Number(value)
+        payload['precise_duration_minutes'] = isFinite(n) ? Math.round(n) : value
+      } else {
+        payload['precise_duration_minutes'] = value
+      }
     } else if (key === 'entry_time') {
       // Convert local datetime-local to proper UTC before storing in timestamptz column
       payload['trade_start_time'] = localDatetimeToUTC(value as string)
@@ -163,7 +183,19 @@ function toDbPayload(trade: Partial<NewTradeInput>): Record<string, any> {
         .toLowerCase()
         .replace(/fvg_classic/, "fvg_classic")
 
-      payload[snakeKey] = value
+      // Coerce duration fields to integers if they come through snake-cased too.
+      if ((snakeKey === "duration_minutes" || snakeKey === "precise_duration_minutes") && value !== null) {
+        if (typeof value === "number" && isFinite(value)) {
+          payload[snakeKey] = Math.round(value)
+        } else if (typeof value === "string") {
+          const n = Number(value)
+          payload[snakeKey] = isFinite(n) ? Math.round(n) : value
+        } else {
+          payload[snakeKey] = value
+        }
+      } else {
+        payload[snakeKey] = value
+      }
     }
   })
   return payload

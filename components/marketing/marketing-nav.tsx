@@ -29,25 +29,25 @@ export function MarketingNav() {
           <div className="hidden md:flex items-center space-x-8">
             <button
               onClick={() => scrollToSection("features")}
-              className="text-slate-300 hover:text-white transition-colors duration-200 font-bold text-lg"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-sm uppercase tracking-widest"
             >
               Features
             </button>
             <button
               onClick={() => scrollToSection("pricing")}
-              className="text-slate-300 hover:text-white transition-colors duration-200 font-bold text-lg"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-sm uppercase tracking-widest"
             >
               Pricing
             </button>
             <button
               onClick={() => scrollToSection("testimonials")}
-              className="text-slate-300 hover:text-white transition-colors duration-200 font-bold text-lg"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-sm uppercase tracking-widest"
             >
               Reviews
             </button>
             <button
               onClick={() => scrollToSection("demo")}
-              className="text-slate-300 hover:text-white transition-colors duration-200 font-bold text-lg"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-sm uppercase tracking-widest"
             >
               Demo
             </button>
@@ -56,7 +56,7 @@ export function MarketingNav() {
             </Button>
             <Button
               asChild
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-200 font-bold text-lg px-6 py-5"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-all duration-200 font-bold text-sm uppercase tracking-widest px-6 py-6 rounded-xl"
             >
               <Link href="/signup">Start Free Trial</Link>
             </Button>

@@ -491,7 +491,9 @@ const TradeReviewDialog = ({
       </DialogContent>
     </Dialog>
   )
-}interface TradeFormProps {
+}
+
+interface TradeFormProps {
   onSubmitTrade: (trade: NewTradeInput) => Promise<{ success: boolean; trade?: Trade; tradeId?: string; error?: string }>
   initialTrade?: Trade
   onSuccess?: (tradeId?: string) => void

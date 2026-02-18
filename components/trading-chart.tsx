@@ -30,7 +30,6 @@ function getChartColors() {
       bearish: "#ef4444", // red-500
       volumeBullish: "rgba(34, 197, 94, 0.15)",
       volumeBearish: "rgba(239, 68, 68, 0.15)",
-      maLine: "#f59e0b", // amber-500
     }
   } else {
     return {
@@ -44,7 +43,6 @@ function getChartColors() {
       bearish: "#dc2626", // red-600
       volumeBullish: "rgba(22, 163, 74, 0.15)",
       volumeBearish: "rgba(220, 38, 38, 0.15)",
-      maLine: "#d97706", // amber-600
     }
   }
 }
@@ -81,18 +79,6 @@ const TIMEFRAMES = [
   { label: "W", interval: "1w" },
 ]
 
-function calculateSMA(data: any[], period: number) {
-  const result = []
-  for (let i = period - 1; i < data.length; i++) {
-    let sum = 0
-    for (let j = 0; j < period; j++) {
-      sum += data[i - j].close
-    }
-    result.push({ time: data[i].time, value: sum / period })
-  }
-  return result
-}
-
 function TradingChart({
   instrument: propInstrument,
   trades: propTrades,
@@ -105,7 +91,6 @@ function TradingChart({
   const chartRef = useRef<IChartApi | null>(null)
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
-  const lineSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
 
   const [activeTimeframe, setActiveTimeframe] = useState(
     TIMEFRAMES.find((t) => t.label === timeframe) || TIMEFRAMES[2]
@@ -113,7 +98,6 @@ function TradingChart({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [ohlcData, setOhlcData] = useState<any[]>([])
-  const [dataSource, setDataSource] = useState<string>("")
 
   const colorsRef = useRef(typeof document !== "undefined" ? getChartColors() : null)
 
@@ -153,7 +137,6 @@ function TradingChart({
       if (uniqueData.length === 0) throw new Error("No data returned")
 
       setOhlcData(uniqueData)
-      setDataSource(uniqueData.length > 200 ? "Real Market Data" : "Fallback Data")
     } catch (err: any) {
       console.error(err)
       setError(err.message)
@@ -217,16 +200,9 @@ function TradingChart({
       scaleMargins: { top: 0.85, bottom: 0 },
     })
 
-    const maLine = chart.addLineSeries({
-      color: COLORS.maLine,
-      lineWidth: 1,
-      crosshairMarkerVisible: false,
-    })
-
     chartRef.current = chart
     candleSeriesRef.current = candles
     volumeSeriesRef.current = volume
-    lineSeriesRef.current = maLine
 
     // Use ResizeObserver for responsive behavior
     const resizeObserver = new ResizeObserver((entries) => {
@@ -243,7 +219,6 @@ function TradingChart({
       chartRef.current = null
       candleSeriesRef.current = null
       volumeSeriesRef.current = null
-      lineSeriesRef.current = null
     }
   }, [])
 
@@ -262,11 +237,6 @@ function TradingChart({
           color: d.close >= d.open ? COLORS.volumeBullish : COLORS.volumeBearish,
         }))
       )
-    }
-
-    if (lineSeriesRef.current) {
-      const smaData = calculateSMA(ohlcData, 20)
-      lineSeriesRef.current.setData(smaData)
     }
 
     // Trade markers
@@ -338,16 +308,6 @@ function TradingChart({
         </div>
 
         <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              "text-xs font-mono px-2 py-0.5 rounded-full border",
-              dataSource === "Real Market Data"
-                ? "border-profit/50 bg-profit/10 text-profit"
-                : "border-warning/50 bg-warning/10 text-warning"
-            )}
-          >
-            {dataSource || "Connecting..."}
-          </span>
           <Button
             variant="ghost"
             size="icon"
@@ -384,7 +344,6 @@ function TradingChart({
         {/* Floating Legend */}
         <div className="absolute top-2 left-3 z-10 pointer-events-none flex gap-3 text-xs font-mono">
           <span className="text-profit">Vol</span>
-          <span className="text-warning">MA 20</span>
         </div>
       </div>
     </div>

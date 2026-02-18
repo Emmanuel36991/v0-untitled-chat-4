@@ -43,7 +43,6 @@ function getChartColors(el: HTMLElement) {
     bearish: toHex('--loss') || '#ef4444',
     volumeBullish: `${toHex('--profit') || '#22c55e'}26`,
     volumeBearish: `${toHex('--loss') || '#ef4444'}26`,
-    maLine: toHex('--warning') || '#f59e0b',
   }
 }
 
@@ -62,24 +61,10 @@ interface TradingViewChartProps {
   trades?: Trade[]
   instrument?: string
   showVolume?: boolean
-  showMA?: boolean
-  maPeriod?: number
   className?: string
 }
 
 // --- Helpers ---
-function calculateSMA(data: OHLCDataPoint[], period: number) {
-  const result: { time: UTCTimestamp; value: number }[] = []
-  for (let i = period - 1; i < data.length; i++) {
-    let sum = 0
-    for (let j = 0; j < period; j++) {
-      sum += data[i - j].close
-    }
-    result.push({ time: data[i].time as UTCTimestamp, value: sum / period })
-  }
-  return result
-}
-
 function buildTradeMarkers(trades: Trade[], instrument: string, colors: { bullish: string; bearish: string }) {
   return trades
     .filter((t) => t.instrument === instrument)
@@ -104,15 +89,12 @@ function TradingViewChart({
   trades,
   instrument = "ES",
   showVolume = true,
-  showMA = true,
-  maPeriod = 20,
   className,
 }: TradingViewChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
-  const maSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
   const colorsRef = useRef<ReturnType<typeof getChartColors> | null>(null)
 
   // Initialize chart
@@ -167,17 +149,9 @@ function TradingViewChart({
       scaleMargins: { top: 0.85, bottom: 0 },
     })
 
-    // Moving average line
-    const maLine = chart.addLineSeries({
-      color: colors.maLine,
-      lineWidth: 1,
-      crosshairMarkerVisible: false,
-    })
-
     chartRef.current = chart
     candleSeriesRef.current = candles
     volumeSeriesRef.current = volume
-    maSeriesRef.current = maLine
 
     // Resize observer for responsiveness
     const resizeObserver = new ResizeObserver((entries) => {
@@ -194,7 +168,6 @@ function TradingViewChart({
       chartRef.current = null
       candleSeriesRef.current = null
       volumeSeriesRef.current = null
-      maSeriesRef.current = null
     }
   }, [])
 
@@ -222,12 +195,6 @@ function TradingViewChart({
       volumeSeriesRef.current.setData(volumeData)
     }
 
-    // Set MA data
-    if (showMA && maSeriesRef.current) {
-      const smaData = calculateSMA(data, maPeriod)
-      maSeriesRef.current.setData(smaData)
-    }
-
     // Set trade markers
     if (trades && trades.length > 0) {
       const c = colorsRef.current ?? { bullish: '#22c55e', bearish: '#ef4444' }
@@ -237,7 +204,7 @@ function TradingViewChart({
 
     // Fit content to view
     chartRef.current.timeScale().fitContent()
-  }, [data, trades, instrument, showVolume, showMA, maPeriod])
+  }, [data, trades, instrument, showVolume])
 
   if (!data || data.length === 0) {
     return (

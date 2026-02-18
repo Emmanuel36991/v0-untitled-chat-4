@@ -671,8 +671,7 @@ export default function MarketingPageClient() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <ConcentradeLogo size={24} variant="icon" />
-                <span className="text-lg font-bold">Concentrade</span>
+                <ConcentradeLogo size={32} variant="full" />
               </div>
               <p className="text-slate-400 text-sm">
                 Transform your trading chaos into consistent profits with professional analytics and emotional

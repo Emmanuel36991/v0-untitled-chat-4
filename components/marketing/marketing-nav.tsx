@@ -32,52 +32,52 @@ export function MarketingNav() {
       className={cn(
         "fixed top-0 w-full z-50 transition-all duration-300",
         scrolled 
-          ? "bg-slate-950/80 backdrop-blur-xl border-b border-slate-900 py-4" 
+          ? "bg-slate-950/90 backdrop-blur-xl border-b border-slate-900 py-4" 
           : "bg-transparent py-6"
       )}
     >
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/marketing" className="flex items-center gap-2 shrink-0">
             <ConcentradeLogo size={32} variant="full" />
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-10">
+          <div className="hidden md:flex items-center space-x-8 lg:space-x-10">
             <button
               onClick={() => scrollToSection("features")}
-              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em]"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em] whitespace-nowrap"
             >
               Features
             </button>
             <button
               onClick={() => scrollToSection("pricing")}
-              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em]"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em] whitespace-nowrap"
             >
               Pricing
             </button>
             <button
               onClick={() => scrollToSection("testimonials")}
-              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em]"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em] whitespace-nowrap"
             >
               Reviews
             </button>
             <button
               onClick={() => scrollToSection("demo")}
-              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em]"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em] whitespace-nowrap"
             >
               Demo
             </button>
-            <div className="h-4 w-px bg-slate-800 mx-2" />
+            <div className="h-4 w-px bg-slate-800 mx-2 shrink-0" />
             <Link 
               href="/login" 
-              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em]"
+              className="text-slate-400 hover:text-white transition-colors duration-200 font-bold text-[10px] uppercase tracking-[0.2em] whitespace-nowrap"
             >
               Login
             </Link>
             <Button
               asChild
-              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/10 transition-all duration-200 font-bold text-[10px] uppercase tracking-[0.2em] px-6 py-5 rounded-xl"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-500/10 transition-all duration-200 font-bold text-[10px] uppercase tracking-[0.2em] px-6 py-5 rounded-xl shrink-0"
             >
               <Link href="/signup">Start Free Trial</Link>
             </Button>

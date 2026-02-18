@@ -34,16 +34,17 @@ export default function MarketingPageClient() {
 
       {/* Hero Section */}
       <section className="relative pt-48 pb-32 px-4 overflow-hidden min-h-screen flex items-center">
-        {/* Candlestick Background */}
+        {/* Candlestick Background - Increased visibility */}
         <div 
-          className="absolute inset-0 z-0 opacity-25"
+          className="absolute inset-0 z-0 opacity-40"
           style={{
             backgroundImage: "url('/hero-chart.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
-        <div className="absolute inset-0 z-10 bg-gradient-to-b from-slate-950/90 via-slate-950/70 to-slate-950" />
+        {/* Refined Gradient Overlay for better image visibility while keeping text readable */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-b from-slate-950/70 via-slate-950/40 to-slate-950" />
 
         <div className="container mx-auto max-w-6xl relative z-20 text-center">
           <motion.div
@@ -72,7 +73,7 @@ export default function MarketingPageClient() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-14 leading-relaxed font-medium"
+            className="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto mb-14 leading-relaxed font-medium drop-shadow-sm"
           >
             The only trading journal that combines institutional-grade analytics with emotional intelligence to eliminate costly mistakes and build winning strategies.
           </motion.p>
@@ -96,7 +97,7 @@ export default function MarketingPageClient() {
               asChild
               size="lg"
               variant="outline"
-              className="border-slate-800 bg-transparent hover:bg-slate-900 text-slate-300 px-10 py-8 text-lg font-bold rounded-xl transition-all"
+              className="border-slate-800 bg-slate-950/50 backdrop-blur-sm hover:bg-slate-900 text-slate-300 px-10 py-8 text-lg font-bold rounded-xl transition-all"
             >
               <Link href="/demo" className="flex items-center gap-2">
                 <Play className="h-5 w-5 fill-current" /> Watch Live Demo

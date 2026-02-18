@@ -36,16 +36,16 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
             {/* Middle building block */}
             <rect x="30" y="15" width="25" height="60" fill="url(#purpleGradient)" opacity="0.85" rx="2" />
 
-            {/* Front building block */}
-            <rect x="45" y="35" width="25" height="40" fill="url(#purpleGradient)" rx="2" />
+            {/* Front building block - aligned top with back block, same baseline */}
+            <rect x="45" y="25" width="25" height="50" fill="url(#purpleGradient)" rx="2" />
 
-            {/* Top accent block */}
-            <rect x="60" y="20" width="20" height="35" fill="url(#purpleGradient)" opacity="0.9" rx="2" />
+            {/* Top accent block - aligned baseline with others */}
+            <rect x="60" y="20" width="20" height="55" fill="url(#purpleGradient)" opacity="0.9" rx="2" />
 
             {/* Subtle highlight effects */}
             <rect x="32" y="17" width="2" height="56" fill="white" opacity="0.3" rx="1" />
-            <rect x="47" y="37" width="2" height="36" fill="white" opacity="0.3" rx="1" />
-            <rect x="62" y="22" width="2" height="31" fill="white" opacity="0.3" rx="1" />
+            <rect x="47" y="27" width="2" height="46" fill="white" opacity="0.3" rx="1" />
+            <rect x="62" y="22" width="2" height="51" fill="white" opacity="0.3" rx="1" />
           </svg>
         </div>
       )}

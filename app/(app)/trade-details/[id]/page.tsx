@@ -36,6 +36,19 @@ import {
   DollarSign,
   BarChart3,
   Gauge,
+  Brain,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  Maximize2,
+  Share2,
+  Download,
+  MoreHorizontal,
+  History,
+  LayoutDashboard,
+  ShieldCheck,
+  Flame,
+  Scale,
 } from "lucide-react"
 import TradingChart from "@/components/trading-chart"
 import { getTradeById, deleteTrade } from "@/app/actions/trade-actions"
@@ -58,7 +71,6 @@ const formatPercentage = (value: number): string => {
   return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`
 }
 
-// For date-only strings like "2026-02-10" from the trade.date field
 const formatTradeDate = (dateOnlyString?: string): string => {
   if (!dateOnlyString) return "N/A"
   try {
@@ -75,7 +87,6 @@ const formatTradeDate = (dateOnlyString?: string): string => {
   }
 }
 
-// For full ISO timestamps from DB
 const formatTimestamp = (dateString?: string | null): string => {
   if (!dateString) return "N/A"
   try {
@@ -127,190 +138,58 @@ const calculateDuration = (entryTime?: string | null, exitTime?: string | null):
   }
 }
 
-// --- Markdown Renderer ---
-const SimpleMarkdown = ({ content }: { content: string }) => {
-  if (!content) return null
-  const lines = content.split("\n")
-  const elements: React.ReactNode[] = []
-  let currentList: React.ReactNode[] = []
-  let inList = false
+// --- Components ---
 
-  const flushList = () => {
-    if (inList && currentList.length > 0) {
-      elements.push(
-        <ul key={`list-${elements.length}`} className="list-disc pl-5 space-y-1 mb-3 text-foreground/80">
-          {currentList}
-        </ul>
-      )
-      currentList = []
-      inList = false
-    }
-  }
-
-  const parseInline = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g)
-    return parts.map((part, i) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>
-      }
-      return part
-    })
-  }
-
-  lines.forEach((line, i) => {
-    const trimmed = line.trim()
-    if (!trimmed) { flushList(); return }
-    if (trimmed.startsWith("## ")) {
-      flushList()
-      elements.push(<h3 key={i} className="text-base font-bold text-foreground mt-5 mb-2">{trimmed.replace(/^##\s+/, "")}</h3>)
-    } else if (trimmed.startsWith("### ") || (trimmed.startsWith("**") && trimmed.endsWith("**") && trimmed.length < 50)) {
-      flushList()
-      const text = trimmed.replace(/^###\s+/, "").replace(/^\*\*/, "").replace(/\*\*$/, "")
-      elements.push(<h4 key={i} className="text-sm font-bold text-foreground mt-4 mb-1.5">{text}</h4>)
-    } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-      inList = true
-      currentList.push(<li key={i} className="leading-relaxed text-sm">{parseInline(trimmed.replace(/^[-*]\s+/, ""))}</li>)
-    } else {
-      flushList()
-      elements.push(<p key={i} className="mb-2 text-sm text-foreground/80 leading-relaxed">{parseInline(trimmed)}</p>)
-    }
-  })
-  flushList()
-  return <div>{elements}</div>
-}
-
-// --- Stat Card ---
-function StatCard({
-  label,
-  value,
-  subValue,
-  icon: Icon,
-  variant = "default",
-  className,
-}: {
+function MetricCard({ 
+  label, 
+  value, 
+  subValue, 
+  icon: Icon, 
+  trend, 
+  className 
+}: { 
   label: string
-  value: React.ReactNode
-  subValue?: React.ReactNode
-  icon: React.ElementType
-  variant?: "profit" | "loss" | "default"
+  value: string
+  subValue?: string
+  icon: any
+  trend?: "up" | "down" | "neutral"
   className?: string
 }) {
   return (
-    <div className={cn(
-      "relative rounded-xl border p-5 transition-colors",
-      variant === "profit" && "border-emerald-200 bg-emerald-50/40 dark:border-emerald-900/50 dark:bg-emerald-950/20",
-      variant === "loss" && "border-red-200 bg-red-50/40 dark:border-red-900/50 dark:bg-red-950/20",
-      variant === "default" && "border-border bg-card",
-      className,
-    )}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-        <div className={cn(
-          "flex items-center justify-center w-8 h-8 rounded-lg",
-          variant === "profit" && "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400",
-          variant === "loss" && "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
-          variant === "default" && "bg-muted text-muted-foreground",
-        )}>
-          <Icon className="w-4 h-4" />
-        </div>
-      </div>
-      <div className="space-y-1">
-        <div className={cn(
-          "text-2xl font-bold tracking-tight tabular-nums",
-          variant === "profit" && "text-emerald-700 dark:text-emerald-400",
-          variant === "loss" && "text-red-700 dark:text-red-400",
-          variant === "default" && "text-foreground",
-        )}>
-          {value}
-        </div>
-        {subValue && (
-          <div className="text-xs text-muted-foreground">{subValue}</div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// --- Price Row ---
-function PriceRow({
-  label,
-  value,
-  icon: Icon,
-  color = "default",
-}: {
-  label: string
-  value: string
-  icon: React.ElementType
-  color?: "default" | "red" | "green"
-}) {
-  return (
-    <div className="flex items-center justify-between py-3 group">
-      <div className="flex items-center gap-2.5">
-        <div className={cn(
-          "w-7 h-7 rounded-lg flex items-center justify-center",
-          color === "red" && "bg-red-50 text-red-500 dark:bg-red-950/30 dark:text-red-400",
-          color === "green" && "bg-emerald-50 text-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-400",
-          color === "default" && "bg-muted text-muted-foreground",
-        )}>
+    <div className={cn("bg-card/50 border border-border/50 rounded-xl p-4 hover:bg-card/80 transition-all group", className)}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+        <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
           <Icon className="w-3.5 h-3.5" />
         </div>
-        <span className="text-sm text-muted-foreground font-medium">{label}</span>
       </div>
-      <span className={cn(
-        "font-mono text-sm font-semibold tabular-nums",
-        color === "red" && "text-red-600 dark:text-red-400",
-        color === "green" && "text-emerald-600 dark:text-emerald-400",
-        color === "default" && "text-foreground",
-      )}>
-        {value}
-      </span>
+      <div className="flex flex-col">
+        <span className="text-xl font-bold tracking-tight tabular-nums">{value}</span>
+        {subValue && (
+          <span className={cn(
+            "text-[10px] font-medium mt-0.5",
+            trend === "up" && "text-emerald-500",
+            trend === "down" && "text-rose-500",
+            trend === "neutral" && "text-muted-foreground"
+          )}>
+            {subValue}
+          </span>
+        )}
+      </div>
     </div>
   )
 }
 
-// --- Timeline Node ---
-function TimelineNode({
-  label,
-  date,
-  time,
-  isActive = false,
-  isLast = false,
-  color = "default",
-}: {
-  label: string
-  date: string
-  time: string
-  isActive?: boolean
-  isLast?: boolean
-  color?: "entry" | "exit" | "default"
-}) {
+function PsychologyTag({ label, type }: { label: string, type: "good" | "bad" }) {
   return (
-    <div className="flex gap-4">
-      <div className="flex flex-col items-center">
-        <div className={cn(
-          "w-3 h-3 rounded-full border-2 z-10",
-          color === "entry" && "border-indigo-500 bg-indigo-500 dark:border-indigo-400 dark:bg-indigo-400",
-          color === "exit" && "border-slate-400 bg-slate-400 dark:border-slate-500 dark:bg-slate-500",
-          color === "default" && "border-muted-foreground bg-muted-foreground",
-          isActive && "border-emerald-500 bg-emerald-500 animate-pulse",
-        )} />
-        {!isLast && (
-          <div className="w-px flex-1 bg-border min-h-[40px]" />
-        )}
-      </div>
-      <div className="pb-6">
-        <p className={cn(
-          "text-[10px] font-bold uppercase tracking-widest mb-1",
-          color === "entry" ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground",
-        )}>
-          {label}
-        </p>
-        <p className="text-sm font-medium text-foreground">{date}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <Clock className="w-3 h-3 text-muted-foreground" />
-          <span className="text-xs font-mono text-muted-foreground">{time}</span>
-        </div>
-      </div>
+    <div className={cn(
+      "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium",
+      type === "good" 
+        ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-500" 
+        : "bg-rose-500/5 border-rose-500/20 text-rose-500"
+    )}>
+      {type === "good" ? <CheckCircle2 className="w-3 h-3" /> : <Flame className="w-3 h-3" />}
+      {label}
     </div>
   )
 }
@@ -424,496 +303,447 @@ export default function TradeDetailsPage() {
     }
   }, [trade])
 
-  // --- Loading State ---
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-[3px] border-muted border-t-primary rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground font-medium">Loading trade...</p>
+          <div className="w-10 h-10 border-[3px] border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+          <p className="text-sm text-indigo-300/60 font-medium tracking-widest uppercase">Initializing Terminal...</p>
         </div>
       </div>
     )
   }
 
-  // --- Error State ---
   if (error || !trade || !stats) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <div className="max-w-sm w-full text-center">
-          <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertTriangle className="w-7 h-7 text-destructive" />
+          <div className="w-14 h-14 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-7 h-7 text-rose-500" />
           </div>
-          <h2 className="text-lg font-bold text-foreground mb-2">Unable to Load Trade</h2>
-          <p className="text-sm text-muted-foreground mb-6">{error || "Trade data is unavailable."}</p>
-          <Button onClick={() => router.push("/trades")} variant="outline" className="gap-2">
-            <ArrowLeft className="w-4 h-4" /> Return to Trades
+          <h2 className="text-lg font-bold text-white mb-2">Terminal Error</h2>
+          <p className="text-sm text-slate-400 mb-6">{error || "Trade data is unavailable."}</p>
+          <Button onClick={() => router.push("/trades")} variant="outline" className="gap-2 border-slate-800 hover:bg-slate-900">
+            <ArrowLeft className="w-4 h-4" /> Return to Database
           </Button>
         </div>
       </div>
     )
   }
 
-  const entryTime = formatTime(trade.trade_start_time)
-  const exitTime = formatTime(trade.trade_end_time)
-  const entryDateDisplay = formatTradeDate(trade.date)
-  const exitDateDisplay = trade.trade_end_time ? formatTimestamp(trade.trade_end_time) : null
-
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background pb-16">
-
-        {/* ---- STICKY HEADER ---- */}
-        <header className="bg-card/80 backdrop-blur-xl border-b border-border sticky top-0 z-30">
-          <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-3">
-            <div className="flex items-center justify-between">
-
-              {/* Left: Back + Trade Identity */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => router.push("/trades")}
-                  className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  aria-label="Back to trades"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </button>
-
-                <Separator orientation="vertical" className="h-6" />
-
-                <div className="flex items-center gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-lg font-bold text-foreground tracking-tight">{trade.instrument}</h1>
-                      <Badge
-                        variant={trade.direction === "long" ? "default" : "destructive"}
-                        className="rounded-md text-[10px] font-bold uppercase px-2 py-0"
-                      >
-                        {trade.direction === "long" ? (
-                          <><ArrowUpRight className="w-3 h-3 mr-0.5" />Long</>
-                        ) : (
-                          <><ArrowDownRight className="w-3 h-3 mr-0.5" />Short</>
-                        )}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "rounded-md text-[10px] font-mono px-2 py-0",
-                          stats.status === "OPEN" && "border-emerald-500/30 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/20",
-                        )}
-                      >
-                        {stats.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Calendar className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{entryDateDisplay}</span>
-                      <span className="text-muted-foreground/40 mx-0.5">|</span>
-                      <Clock className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs font-mono text-muted-foreground">{entryTime}</span>
-                    </div>
-                  </div>
+      <div className="min-h-screen bg-slate-950 text-slate-200 pb-20 selection:bg-indigo-500/30">
+        
+        {/* --- INSTITUTIONAL HEADER --- */}
+        <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => router.push("/trades")}
+                className="text-slate-400 hover:text-white hover:bg-slate-900"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div className="h-8 w-px bg-slate-800" />
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold tracking-tight text-white">{trade.instrument}</h1>
+                  <Badge className={cn(
+                    "rounded-md text-[10px] font-black uppercase px-2 py-0.5",
+                    trade.direction === "long" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                  )}>
+                    {trade.direction}
+                  </Badge>
+                  <Badge variant="outline" className="rounded-md text-[10px] font-mono border-slate-700 text-slate-400">
+                    ID: {trade.id.slice(0, 8)}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-3 text-[10px] font-medium text-slate-500 uppercase tracking-widest">
+                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatTradeDate(trade.date)}</span>
+                  <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTime(trade.trade_start_time)}</span>
                 </div>
               </div>
+            </div>
 
-              {/* Right: Actions */}
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={generateAnalysis}
-                  disabled={aiLoading}
-                  size="sm"
-                  className="hidden sm:flex bg-primary text-primary-foreground gap-1.5 h-8 text-xs font-semibold"
-                >
-                  {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Lightbulb className="w-3.5 h-3.5" />}
-                  Analyze
-                </Button>
-                <Button
-                  onClick={() => router.push(`/edit-trade/${trade.id}`)}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5 text-xs"
-                >
-                  <Edit className="w-3.5 h-3.5" /> Edit
-                </Button>
-                <Button
-                  onClick={handleDelete}
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1.5 text-xs text-destructive hover:bg-destructive/10"
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                  <span className="hidden sm:inline">Delete</span>
-                </Button>
-              </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={generateAnalysis} 
+                disabled={aiLoading}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 text-xs font-bold gap-2 shadow-lg shadow-indigo-500/20"
+              >
+                {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+                Neural Analysis
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => router.push(`/edit-trade/${trade.id}`)}
+                className="border-slate-800 hover:bg-slate-900 h-9 w-9"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={handleDelete}
+                className="border-slate-800 hover:bg-rose-500/10 hover:text-rose-500 h-9 w-9"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </header>
 
-        {/* ---- MAIN CONTENT ---- */}
-        <main className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-6">
-
-          {/* --- P&L HERO STRIP --- */}
-          <div className="flex flex-wrap items-center gap-4 mb-6 px-1">
-            <div className="flex items-baseline gap-2">
-              <span className={cn(
-                "text-3xl sm:text-4xl font-bold tracking-tight tabular-nums",
-                stats.isProfit ? "text-emerald-600 dark:text-emerald-400" : stats.isLoss ? "text-red-600 dark:text-red-400" : "text-foreground",
-              )}>
-                {stats.isProfit ? "+" : ""}{formatCurrency(stats.pnl)}
-              </span>
-              <Badge variant="secondary" className={cn(
-                "text-xs font-mono tabular-nums",
-                stats.isProfit ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" :
-                stats.isLoss ? "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400" : "",
-              )}>
-                {formatPercentage(stats.pnlPercentage)}
-              </Badge>
+        <main className="max-w-[1600px] mx-auto px-4 sm:px-6 pt-8">
+          
+          {/* --- TOP GRID: P&L + CORE METRICS --- */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            
+            {/* P&L HERO CARD */}
+            <div className="lg:col-span-4 bg-slate-900/50 border border-slate-800 rounded-2xl p-8 flex flex-col justify-center relative overflow-hidden group">
+              <div className={cn(
+                "absolute top-0 right-0 w-32 h-32 blur-[80px] opacity-20 transition-all group-hover:opacity-40",
+                stats.isProfit ? "bg-emerald-500" : "bg-rose-500"
+              )} />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Net Realized P&L</span>
+              <div className="flex items-baseline gap-3">
+                <h2 className={cn(
+                  "text-6xl font-black tracking-tighter tabular-nums",
+                  stats.isProfit ? "text-emerald-400" : "text-rose-400"
+                )}>
+                  {formatCurrency(stats.pnl)}
+                </h2>
+                <span className={cn(
+                  "text-xl font-bold tabular-nums",
+                  stats.isProfit ? "text-emerald-500/60" : "text-rose-500/60"
+                )}>
+                  {formatPercentage(stats.pnlPercentage)}
+                </span>
+              </div>
+              <div className="mt-6 flex items-center gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Efficiency</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Progress value={stats.efficiencyScore} className="h-1.5 w-24 bg-slate-800" />
+                    <span className="text-xs font-mono font-bold text-slate-300">{stats.efficiencyScore.toFixed(0)}%</span>
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-slate-800" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Risk:Reward</span>
+                  <span className="text-sm font-mono font-bold text-indigo-400 mt-0.5">1:{stats.rrRatio.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
-            <Separator orientation="vertical" className="h-8 hidden sm:block" />
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" />
-                <span>R:R <strong className="text-foreground font-semibold">1:{stats.rrRatio.toFixed(1)}</strong></span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Activity className="w-3.5 h-3.5" />
-                <span>Size <strong className="text-foreground font-semibold">{trade.size?.toLocaleString() || "1"}</strong></span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Timer className="w-3.5 h-3.5" />
-                <span>Duration <strong className="text-foreground font-semibold">{stats.durationLabel}</strong></span>
-              </div>
+
+            {/* METRIC GRID */}
+            <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <MetricCard 
+                label="Entry Price" 
+                value={trade.entry_price.toFixed(2)} 
+                icon={ArrowUpRight} 
+                subValue="Execution Level"
+              />
+              <MetricCard 
+                label="Exit Price" 
+                value={trade.exit_price ? trade.exit_price.toFixed(2) : "---"} 
+                icon={ArrowDownRight} 
+                subValue={trade.exit_price ? "Realized Level" : "Active Trade"}
+              />
+              <MetricCard 
+                label="Position Size" 
+                value={trade.size.toString()} 
+                icon={Scale} 
+                subValue="Units/Lots"
+              />
+              <MetricCard 
+                label="Duration" 
+                value={stats.durationLabel} 
+                icon={Timer} 
+                subValue="Time in Market"
+              />
+              <MetricCard 
+                label="Stop Loss" 
+                value={trade.stop_loss ? trade.stop_loss.toFixed(2) : "---"} 
+                icon={ShieldCheck} 
+                subValue={trade.stop_loss ? `${((Math.abs(trade.entry_price - trade.stop_loss) / trade.entry_price) * 100).toFixed(2)}% Risk` : "No Protection"}
+                className={trade.stop_loss ? "border-rose-500/20" : ""}
+              />
+              <MetricCard 
+                label="Take Profit" 
+                value={trade.take_profit ? trade.take_profit.toFixed(2) : "---"} 
+                icon={Target} 
+                subValue={trade.take_profit ? "Target Level" : "Discretionary"}
+                className={trade.take_profit ? "border-emerald-500/20" : ""}
+              />
+              <MetricCard 
+                label="Strategy" 
+                value={trade.setup_name || "Uncategorized"} 
+                icon={BookOpen} 
+                subValue="Playbook Entry"
+              />
+              <MetricCard 
+                label="Session" 
+                value={trade.trade_session || "NY Open"} 
+                icon={Activity} 
+                subValue="Market Context"
+              />
             </div>
           </div>
 
-          {/* --- AI ANALYSIS (conditionally rendered) --- */}
-          <AnimatePresence>
-            {(aiAnalysis || aiLoading) && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6"
-              >
-                <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-5 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-xl" />
-                  <div className="flex items-center gap-2 mb-3">
-                    <Lightbulb className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-bold text-foreground">AI Trade Analysis</span>
-                  </div>
-                  {aiLoading && !aiAnalysis ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
-                      <Loader2 className="w-4 h-4 animate-spin" /> Analyzing execution quality...
-                    </div>
-                  ) : (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <SimpleMarkdown content={aiAnalysis} />
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* --- MAIN GRID --- */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-
-            {/* === LEFT: Chart + Analysis === */}
+          {/* --- MIDDLE SECTION: CHART & ANALYSIS --- */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">
+            
+            {/* CHART VIEW */}
             <div className="xl:col-span-8 space-y-6">
-
-              {/* Chart */}
-              <div className="rounded-xl border border-border overflow-hidden bg-card">
-                <div className="h-[460px] sm:h-[500px]">
-                  <TradingChart
-                    instrument={trade.instrument}
-                    trades={[trade]}
-                    tradeDate={trade.trade_start_time || trade.date}
-                    timeframe="15m"
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden h-[600px] flex flex-col">
+                <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-500/10 rounded-lg">
+                      <BarChart3 className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Market Execution Chart</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase text-slate-400 hover:text-white">
+                      <Maximize2 className="w-3.5 h-3.5 mr-1.5" /> Fullscreen
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex-1 p-4">
+                  <TradingChart 
+                    instrument={trade.instrument} 
+                    trades={[trade]} 
+                    className="h-full border-0 rounded-xl"
                   />
                 </div>
               </div>
 
-              {/* Execution Metrics Strip */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <StatCard
-                  label="Net P&L"
-                  value={`${stats.isProfit ? "+" : ""}${formatCurrency(stats.pnl)}`}
-                  subValue={<Badge variant="secondary" className={cn(
-                    "text-[10px] font-mono",
-                    stats.isProfit ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
-                    stats.isLoss ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "",
-                  )}>{formatPercentage(stats.pnlPercentage)} return</Badge>}
-                  icon={stats.isProfit ? TrendingUp : stats.isLoss ? TrendingDown : MinusCircle}
-                  variant={stats.isProfit ? "profit" : stats.isLoss ? "loss" : "default"}
-                />
-                <StatCard
-                  label="Risk : Reward"
-                  value={`1:${stats.rrRatio.toFixed(2)}`}
-                  subValue={
-                    <div className="flex items-center gap-2 mt-1">
-                      <Progress value={Math.min(stats.rrRatio * 33, 100)} className="h-1 flex-1 bg-muted" />
-                      <span className="text-[10px] font-mono text-muted-foreground">{Math.min(stats.rrRatio * 33, 100).toFixed(0)}%</span>
-                    </div>
-                  }
-                  icon={Gauge}
-                />
-                <StatCard
-                  label="Position"
-                  value={`${trade.size?.toLocaleString() || "1"}`}
-                  subValue={`Notional: ${formatCurrency(trade.entry_price * (trade.size || 1))}`}
-                  icon={Activity}
-                />
-                <StatCard
-                  label="Duration"
-                  value={stats.durationLabel}
-                  subValue={stats.status === "OPEN" ? "Trade is active" : `Closed ${exitTime}`}
-                  icon={Timer}
-                />
-              </div>
-
-              {/* Trade Health */}
-              <div className="rounded-xl border border-border bg-card p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Shield className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Trade Health</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-foreground">Risk vs Capital</span>
-                      <span className="text-xs font-mono text-muted-foreground">{formatCurrency(stats.risk)}</span>
-                    </div>
-                    <Progress value={Math.min((stats.risk / 50000) * 100, 100)} className="h-2" />
-                    <p className="text-[11px] text-muted-foreground mt-1.5">Based on $50k account</p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-foreground">Execution Quality</span>
-                      <span className={cn(
-                        "text-xs font-mono font-semibold",
-                        stats.efficiencyScore >= 60 ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground",
-                      )}>{stats.efficiencyScore.toFixed(0)}/100</span>
-                    </div>
-                    <Progress value={stats.efficiencyScore} className="h-2" />
-                    <p className="text-[11px] text-muted-foreground mt-1.5">Based on R:R efficiency</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes + Screenshots */}
+              {/* SCREENSHOTS */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Notes */}
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
-                    <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Journal Notes</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    <ImageIcon className="w-3 h-3" /> Entry Setup
                   </div>
-                  <div className="p-5">
-                    {trade.notes ? (
-                      <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{trade.notes}</p>
+                  <div className="aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden relative group cursor-zoom-in">
+                    {trade.screenshot_before_url ? (
+                      <Image 
+                        src={trade.screenshot_before_url} 
+                        alt="Entry Setup" 
+                        fill 
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     ) : (
-                      <p className="text-sm text-muted-foreground italic">No notes added for this trade.</p>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600">
+                        <ImageIcon className="w-8 h-8 mb-2 opacity-20" />
+                        <span className="text-xs font-medium">No Entry Screenshot</span>
+                      </div>
                     )}
                   </div>
                 </div>
-
-                {/* Screenshots */}
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
-                    <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Screenshots</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    <ImageIcon className="w-3 h-3" /> Exit Result
                   </div>
-                  <div className="p-5">
-                    {trade.screenshot_before_url || trade.screenshot_after_url ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        {trade.screenshot_before_url && (
-                          <a href={trade.screenshot_before_url} target="_blank" rel="noreferrer" className="block relative aspect-video rounded-lg overflow-hidden border border-border hover:opacity-90 transition-opacity">
-                            <Image src={trade.screenshot_before_url} alt="Before trade" fill className="object-cover" />
-                            <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] py-1 text-center backdrop-blur-sm font-medium">Before</div>
-                          </a>
-                        )}
-                        {trade.screenshot_after_url && (
-                          <a href={trade.screenshot_after_url} target="_blank" rel="noreferrer" className="block relative aspect-video rounded-lg overflow-hidden border border-border hover:opacity-90 transition-opacity">
-                            <Image src={trade.screenshot_after_url} alt="After trade" fill className="object-cover" />
-                            <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] py-1 text-center backdrop-blur-sm font-medium">After</div>
-                          </a>
-                        )}
-                      </div>
+                  <div className="aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden relative group cursor-zoom-in">
+                    {trade.screenshot_after_url ? (
+                      <Image 
+                        src={trade.screenshot_after_url} 
+                        alt="Exit Result" 
+                        fill 
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     ) : (
-                      <p className="text-sm text-muted-foreground italic">No screenshots attached.</p>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600">
+                        <ImageIcon className="w-8 h-8 mb-2 opacity-20" />
+                        <span className="text-xs font-medium">No Exit Screenshot</span>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* === RIGHT SIDEBAR === */}
-            <div className="xl:col-span-4 space-y-6">
-
-              {/* Execution Ledger */}
-              <div className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
-                  <Crosshair className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Execution Ledger</h3>
+            {/* SIDEBAR: PSYCHOLOGY & AI */}
+            <div className="xl:col-span-4 space-y-8">
+              
+              {/* AI NEURAL INSIGHT */}
+              <div className="bg-indigo-600/5 border border-indigo-500/20 rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4">
+                  <Zap className="w-5 h-5 text-indigo-500/30" />
                 </div>
-                <div className="px-5 divide-y divide-border">
-                  <PriceRow label="Entry Price" value={formatCurrency(trade.entry_price)} icon={CircleDot} />
-                  <PriceRow label="Exit Price" value={trade.exit_price ? formatCurrency(trade.exit_price) : "--" } icon={Target} />
-                  <PriceRow label="Stop Loss" value={trade.stop_loss ? formatCurrency(trade.stop_loss) : "None"} icon={Shield} color="red" />
-                  <PriceRow label="Take Profit" value={trade.take_profit ? formatCurrency(trade.take_profit) : "None"} icon={DollarSign} color="green" />
-                </div>
-
-                {/* Price spread visualization */}
-                {trade.stop_loss && trade.take_profit && (
-                  <div className="px-5 pb-4 pt-2">
-                    <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                      {(() => {
-                        const low = Math.min(trade.stop_loss, trade.entry_price, trade.exit_price || trade.entry_price, trade.take_profit)
-                        const high = Math.max(trade.stop_loss, trade.entry_price, trade.exit_price || trade.entry_price, trade.take_profit)
-                        const range = high - low || 1
-                        const entryPct = ((trade.entry_price - low) / range) * 100
-                        const exitPct = trade.exit_price ? ((trade.exit_price - low) / range) * 100 : entryPct
-                        return (
-                          <>
-                            <div className="absolute top-0 h-full bg-red-400/30 rounded-l-full" style={{ left: 0, width: `${((trade.stop_loss - low) / range) * 100}%` }} />
-                            <div className="absolute top-0 h-full bg-emerald-400/30 rounded-r-full" style={{ left: `${((trade.take_profit - low) / range) * 100}%`, right: 0 }} />
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-card shadow-sm cursor-pointer" style={{ left: `${entryPct}%` }} />
-                              </TooltipTrigger>
-                              <TooltipContent>Entry: {formatCurrency(trade.entry_price)}</TooltipContent>
-                            </Tooltip>
-                            {trade.exit_price && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className={cn(
-                                    "absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border-2 border-card shadow-sm cursor-pointer",
-                                    stats.isProfit ? "bg-emerald-500" : "bg-red-500",
-                                  )} style={{ left: `${exitPct}%` }} />
-                                </TooltipTrigger>
-                                <TooltipContent>Exit: {formatCurrency(trade.exit_price)}</TooltipContent>
-                              </Tooltip>
-                            )}
-                          </>
-                        )
-                      })()}
+                <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Brain className="w-4 h-4" /> Neural Insight
+                </h3>
+                <div className="space-y-4">
+                  {aiLoading ? (
+                    <div className="py-8 flex flex-col items-center justify-center gap-3">
+                      <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+                      <p className="text-xs font-medium text-indigo-400/60 animate-pulse">Processing Market Data...</p>
                     </div>
-                    <div className="flex justify-between mt-1.5">
-                      <span className="text-[10px] font-mono text-red-500">SL</span>
-                      <span className="text-[10px] font-mono text-emerald-500">TP</span>
+                  ) : aiAnalysis ? (
+                    <div className="text-sm text-slate-300 leading-relaxed prose prose-invert prose-sm max-w-none">
+                      {aiAnalysis}
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Trade Timeline */}
-              <div className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Timeline</h3>
-                </div>
-                <div className="p-5">
-                  <TimelineNode
-                    label="Entry"
-                    date={entryDateDisplay}
-                    time={entryTime}
-                    color="entry"
-                  />
-                  {trade.trade_end_time ? (
-                    <TimelineNode
-                      label="Exit"
-                      date={exitDateDisplay || "N/A"}
-                      time={exitTime}
-                      color="exit"
-                      isLast
-                    />
                   ) : (
-                    <div className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className="w-3 h-3 rounded-full border-2 border-emerald-500 bg-emerald-500 animate-pulse z-10" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Active</p>
-                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 italic">Trade is open</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Duration summary */}
-                  {trade.trade_end_time && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground font-medium">Total Duration</span>
-                        <span className="text-sm font-bold font-mono text-foreground">{stats.durationLabel}</span>
-                      </div>
+                    <div className="text-center py-6">
+                      <p className="text-xs text-slate-500 mb-4">Run neural analysis to identify behavioral patterns and execution errors.</p>
+                      <Button 
+                        onClick={generateAnalysis}
+                        variant="outline" 
+                        className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 h-8 text-[10px] font-bold uppercase"
+                      >
+                        Initialize Analysis
+                      </Button>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Strategy / Setup Info */}
-              {(trade.setup_name || trade.playbook_strategy_id) && (
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
-                    <Target className="w-4 h-4 text-muted-foreground" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Strategy</h3>
+              {/* BEHAVIORAL TAGS */}
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-slate-400" /> Behavioral Intelligence
+                </h3>
+                
+                <div className="space-y-6">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-3">Positive Habits</span>
+                    <div className="flex flex-wrap gap-2">
+                      {trade.good_habits && trade.good_habits.length > 0 ? (
+                        trade.good_habits.map((h, i) => <PsychologyTag key={i} label={h} type="good" />)
+                      ) : (
+                        <span className="text-xs text-slate-600 italic">No positive habits logged</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="p-5">
-                    {trade.setup_name && (
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs">{trade.setup_name}</Badge>
-                      </div>
-                    )}
-                    {trade.playbook_strategy_id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-between mt-2 text-xs h-8 text-muted-foreground hover:text-foreground"
-                        onClick={() => router.push(`/playbook`)}
-                      >
-                        View in Playbook
-                        <ChevronRight className="w-3 h-3" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
 
-              {/* Psychology Factors */}
-              {(trade.psychology_factors?.length || trade.good_habits?.length) ? (
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
-                    <Info className="w-4 h-4 text-muted-foreground" />
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Psychology</h3>
-                  </div>
-                  <div className="p-5 space-y-3">
-                    {trade.good_habits && trade.good_habits.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400 mb-2">Good Habits</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {trade.good_habits.map((h) => (
-                            <Badge key={h} variant="secondary" className="text-[10px] bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-800/30">{h}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {trade.psychology_factors && trade.psychology_factors.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-bold uppercase text-red-600 dark:text-red-400 mb-2">Factors</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {trade.psychology_factors.map((f) => (
-                            <Badge key={f} variant="secondary" className="text-[10px] bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border-red-200/50 dark:border-red-800/30">{f}</Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-3">Psychological Triggers</span>
+                    <div className="flex flex-wrap gap-2">
+                      {trade.psychology_factors && trade.psychology_factors.length > 0 ? (
+                        trade.psychology_factors.map((f, i) => <PsychologyTag key={i} label={f} type="bad" />)
+                      ) : (
+                        <span className="text-xs text-slate-600 italic">No triggers identified</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              ) : null}
+              </div>
+
+              {/* TRADE NOTES */}
+              <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <PenLine className="w-4 h-4 text-slate-400" /> Execution Notes
+                </h3>
+                <div className="bg-slate-950/50 border border-slate-800/50 rounded-xl p-4 min-h-[150px]">
+                  {trade.notes ? (
+                    <p className="text-sm text-slate-400 leading-relaxed whitespace-pre-wrap">{trade.notes}</p>
+                  ) : (
+                    <p className="text-sm text-slate-600 italic">No notes recorded for this execution.</p>
+                  )}
+                </div>
+              </div>
+
             </div>
           </div>
+
+          {/* --- BOTTOM SECTION: TIMELINE & CONTEXT --- */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* EXECUTION TIMELINE */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <History className="w-4 h-4 text-slate-400" /> Execution Timeline
+              </h3>
+              <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-slate-800">
+                <div className="flex gap-4 relative">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center z-10">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Entry Executed</span>
+                    <p className="text-sm font-bold text-white mt-0.5">{trade.entry_price.toFixed(2)}</p>
+                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">{formatTime(trade.trade_start_time)} • {formatTradeDate(trade.date)}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 relative">
+                  <div className="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center z-10">
+                    <div className="w-2 h-2 rounded-full bg-slate-500" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Exit Executed</span>
+                    <p className="text-sm font-bold text-white mt-0.5">{trade.exit_price ? trade.exit_price.toFixed(2) : "---"}</p>
+                    <p className="text-[10px] text-slate-500 font-mono mt-0.5">{trade.trade_end_time ? formatTime(trade.trade_end_time) : "--:--"} • {trade.trade_end_time ? formatTimestamp(trade.trade_end_time) : "---"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CONTEXTUAL DATA */}
+            <div className="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <LayoutDashboard className="w-4 h-4 text-slate-400" /> Market Context
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Account</span>
+                  <p className="text-sm font-bold text-slate-300">Main Portfolio</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Risk Amount</span>
+                  <p className="text-sm font-bold text-rose-400">{formatCurrency(stats.risk)}</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Commission</span>
+                  <p className="text-sm font-bold text-slate-300">$4.50</p>
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Tags</span>
+                  <div className="flex gap-1 mt-1">
+                    <Badge variant="outline" className="text-[9px] border-slate-800 text-slate-500">#HighConviction</Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </main>
+
+        {/* --- FLOATING ACTION BAR (MOBILE) --- */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-full px-6 py-3 flex items-center gap-6 shadow-2xl lg:hidden">
+          <button className="text-slate-400 hover:text-white"><Share2 className="w-5 h-5" /></button>
+          <button className="text-slate-400 hover:text-white"><Download className="w-5 h-5" /></button>
+          <button className="text-slate-400 hover:text-white"><MoreHorizontal className="w-5 h-5" /></button>
+        </div>
+
       </div>
     </TooltipProvider>
+  )
+}
+
+// --- Missing Icons ---
+function PenLine(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    </svg>
   )
 }

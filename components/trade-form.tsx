@@ -497,7 +497,7 @@ interface TradeFormProps {
   onSubmitTrade: (tradeData: NewTradeInput) => Promise<{ success: boolean; error?: string; tradeId?: string }>
   initialTradeData?: Trade
   mode?: "add" | "edit"
-  onSuccess?: () => void
+  onSuccess?: (tradeId?: string) => void
 }
 
 /* -------------------------------------------------------------------------- */
@@ -914,7 +914,7 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
         // This ensures the local storage clearing takes effect
         setTimeout(() => {
           if (onSuccess) {
-            onSuccess()
+            onSuccess(result.tradeId)
           } else {
             // Fallback default behavior
             React.startTransition(() => {

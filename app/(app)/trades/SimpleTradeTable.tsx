@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Eye, Edit3, Trash2, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Database, PlusCircle, Sparkles } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
+import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +29,36 @@ import { EmptyState } from "@/components/empty-state"
 interface SimpleTradeTableProps {
   trades: Trade[]
   onRefresh: () => void
+  highlightTradeId?: string
 }
 
-export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
+const tableRowBaseClass =
+  "hover:bg-muted/50 transition-colors border-l-4 border-l-transparent data-[state=selected]:bg-muted"
+
+export function SimpleTradeTable({ trades, onRefresh, highlightTradeId }: SimpleTradeTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [tradeToDelete, setTradeToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [highlightDone, setHighlightDone] = useState(false)
+  const highlightedRowRef = useRef<HTMLTableRowElement>(null)
+  const router = useRouter()
   const { toast } = useToast()
+
+  const isHighlightActive = Boolean(highlightTradeId && !highlightDone)
+
+  // Scroll new trade into view and clear highlight + URL after animation
+  useEffect(() => {
+    if (!highlightTradeId) return
+    const el = highlightedRowRef.current
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    }
+    const t = setTimeout(() => {
+      setHighlightDone(true)
+      router.replace("/trades", { scroll: false })
+    }, 2200)
+    return () => clearTimeout(t)
+  }, [highlightTradeId, router])
   
   // FIX: Destructure the correct values from the hook
   const { openAdvisor, advisorProps } = useAIAdvisor()
@@ -208,12 +233,10 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                 {trades.map((trade, index) => {
                   const isWin = trade.outcome === "win"
                   const isLoss = trade.outcome === "loss"
+                  const isNewTrade = highlightTradeId === trade.id
 
-                  return (
-                    <TableRow
-                      key={trade.id}
-                      className="hover:bg-muted/50 transition-colors border-l-4 border-l-transparent data-[state=selected]:bg-muted"
-                    >
+                  const rowContent = (
+                    <>
                       <TableCell className="font-medium text-foreground font-mono">
                         {new Date(trade.date).toLocaleDateString("en-US", {
                           month: "2-digit",
@@ -298,6 +321,37 @@ export function SimpleTradeTable({ trades, onRefresh }: SimpleTradeTableProps) {
                           </Button>
                         </div>
                       </TableCell>
+                    </>
+                  )
+
+                  if (isNewTrade) {
+                    return (
+                      <motion.tr
+                        key={trade.id}
+                        ref={highlightedRowRef}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                          backgroundColor: isHighlightActive ? "rgba(16, 185, 129, 0.14)" : "transparent",
+                          borderLeftColor: isHighlightActive ? "rgb(16, 185, 129)" : "transparent",
+                        }}
+                        transition={{
+                          opacity: { duration: 0.35 },
+                          x: { type: "spring", stiffness: 400, damping: 30 },
+                          backgroundColor: { delay: 0.35, duration: 1.2 },
+                          borderLeftColor: { delay: 0.35, duration: 1.2 },
+                        }}
+                        className={tableRowBaseClass + " border-l-4"}
+                      >
+                        {rowContent}
+                      </motion.tr>
+                    )
+                  }
+
+                  return (
+                    <TableRow key={trade.id} className={tableRowBaseClass}>
+                      {rowContent}
                     </TableRow>
                   )
                 })}

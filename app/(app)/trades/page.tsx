@@ -608,7 +608,11 @@ export default function TradesPage() {
                         />
                      )
                   ) : (
-                     <SimpleTradeTable trades={filteredTrades} onRefresh={() => fetchData(true)} />
+                     <SimpleTradeTable
+                        trades={filteredTrades}
+                        onRefresh={() => fetchData(true)}
+                        highlightTradeId={searchParams?.get("highlight") ?? undefined}
+                     />
                   )}
                </Card>
             </div>

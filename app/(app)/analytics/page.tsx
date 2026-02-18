@@ -55,6 +55,7 @@ import {
   BookOpen,
   Activity,
 } from "lucide-react"
+import { TradeLedgerIcon } from "@/components/icons/system-icons"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"

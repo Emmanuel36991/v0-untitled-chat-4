@@ -28,6 +28,7 @@ import {
   Wallet,
   Activity,
   PieChart,
+  Brain,
 } from "lucide-react"
 
 import { CurrencySelector } from "@/components/currency-selector"

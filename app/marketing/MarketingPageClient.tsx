@@ -16,11 +16,8 @@ import {
   Award,
   Minus,
   X,
-  Users,
   Zap,
   Star,
-  Lock,
-  Globe,
   ArrowDownRight,
   ArrowUpRight,
 } from "lucide-react"
@@ -35,69 +32,61 @@ export default function MarketingPageClient() {
     <div className="min-h-screen bg-slate-950 text-white selection:bg-indigo-500/30">
       <MarketingNav />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-24 px-4 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.15)_0%,transparent_70%)]" />
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
-          <div 
-            className="absolute inset-0 opacity-[0.03]" 
-            style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
-          />
-        </div>
-
-        <div className="container mx-auto max-w-6xl relative z-10 text-center">
+      {/* Hero Section with Candlestick Background */}
+      <section className="hero-section py-20 px-4 text-center pt-32">
+        <div className="hero-content container mx-auto max-w-6xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8 inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-sm font-medium text-indigo-300 backdrop-blur-md"
+            className="mb-6"
           >
-            <Users className="w-4 h-4" />
-            <span>Trusted by 1,240+ professional traders this month</span>
+            <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-sm font-medium text-indigo-300 backdrop-blur-md">
+              <ConcentradeLogo size={16} variant="icon" />
+              Join thousands of traders worldwide
+            </span>
           </motion.div>
 
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-6xl md:text-8xl font-bold leading-[1.1] mb-8 tracking-tight"
+            className="hero-title"
           >
-            Stop Trading <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">Blindly</span>.
+            Turn Your Trading <span className="gradient-text">Chaos</span>
             <br />
-            Start Trading <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Masterfully</span>.
+            Into Consistent <span className="gradient-text">Profits</span>
           </motion.h1>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed"
+            className="hero-subtitle max-w-3xl mx-auto"
           >
-            The institutional-grade trading journal that uses AI to decode your psychology, eliminate revenge trades, and scale your edge.
+            The only trading journal that combines professional analytics with emotional intelligence to eliminate
+            costly mistakes and build winning strategies.
           </motion.p>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-20"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8"
           >
-            <Button
-              asChild
-              size="lg"
-              className="h-16 px-10 text-lg font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all hover:scale-105 active:scale-95"
+            <Link
+              href="/signup"
+              className="btn-primary inline-flex items-center gap-2 text-base px-8 py-4 rounded-xl"
             >
-              <Link href="/signup">
-                Start Your Free Edge <ArrowRight className="ml-2 w-5 h-5" />
-              </Link>
-            </Button>
+              <TrendingUp className="h-5 w-5" />
+              Start Free 14-Day Trial
+              <ArrowRight className="h-4 w-4" />
+            </Link>
             <Button
               asChild
               size="lg"
               variant="outline"
-              className="h-16 px-10 text-lg font-bold border-slate-800 bg-slate-900/50 backdrop-blur-md hover:bg-slate-800 text-slate-300 rounded-2xl transition-all"
+              className="border-slate-600 bg-slate-900/50 backdrop-blur-md hover:bg-slate-800 text-slate-300 rounded-xl"
             >
               <Link href="/demo">
                 <Play className="mr-2 w-5 h-5 fill-current" /> Watch Live Demo
@@ -105,32 +94,33 @@ export default function MarketingPageClient() {
             </Button>
           </motion.div>
 
-          {/* Trust Bar */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-10 border-y border-slate-900/50"
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="stats-container mt-16"
           >
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-2xl font-bold text-white">98%</div>
-              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Retention Rate</div>
+            <div className="stat-item">
+              <span className="stat-number">1,000+</span>
+              <span className="stat-label">Active Traders</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="text-2xl font-bold text-white">14 Days</div>
-              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Free Access</div>
+            <div className="stat-item">
+              <span className="stat-number">14 Days</span>
+              <span className="stat-label">Free Trial</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1 text-2xl font-bold text-white">
-                <Lock className="w-4 h-4 text-indigo-500" /> AES-256
+            <div className="stat-item flex items-center justify-center gap-2">
+              <Shield className="h-6 w-6 text-indigo-400" />
+              <div>
+                <span className="stat-number text-lg">SSL</span>
+                <span className="stat-label">Secured</span>
               </div>
-              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Bank-Level Security</div>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1 text-2xl font-bold text-white">
-                <Globe className="w-4 h-4 text-indigo-500" /> Global
+            <div className="stat-item flex items-center justify-center gap-2">
+              <Award className="h-6 w-6 text-indigo-400" />
+              <div>
+                <span className="stat-number text-lg">Bank-Level</span>
+                <span className="stat-label">Security</span>
               </div>
-              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Multi-Broker Sync</div>
             </div>
           </motion.div>
         </div>
@@ -469,7 +459,7 @@ export default function MarketingPageClient() {
             <div>
               <h4 className="font-bold mb-6 text-white">Company</h4>
               <ul className="space-y-4 text-slate-500 text-sm">
-                <li><Link href="/about" className="hover:text-indigo-400 transition-colors">About Us</Link></li>
+                <li><Link href="/marketing#features" className="hover:text-indigo-400 transition-colors">About Us</Link></li>
                 <li><Link href="/privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:text-indigo-400 transition-colors">Terms of Service</Link></li>
               </ul>

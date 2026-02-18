@@ -29,7 +29,7 @@ import {
   Star,
   Zap,
 } from "lucide-react"
-// Removed custom icon imports
+import { PulseIcon } from "@/components/icons/system-icons"
 import {
   Area,
   AreaChart,

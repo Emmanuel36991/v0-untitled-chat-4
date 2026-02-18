@@ -16,746 +16,500 @@ import {
   Award,
   Minus,
   X,
+  Users,
+  Zap,
+  Star,
+  Lock,
+  Globe,
+  ArrowDownRight,
+  ArrowUpRight,
 } from "lucide-react"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { Button } from "@/components/ui/button"
 import { MarketingNav } from "@/components/marketing/marketing-nav"
+import { motion } from "framer-motion"
 
 export default function MarketingPageClient() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-white selection:bg-indigo-500/30">
       <MarketingNav />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 text-center relative overflow-hidden">
-        {/* Background image with candles and market */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3")'
-          }}
-        ></div>
+      <section className="relative pt-32 pb-24 px-4 overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.15)_0%,transparent_70%)]" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+          <div 
+            className="absolute inset-0 opacity-[0.03]" 
+            style={{ backgroundImage: 'radial-gradient(#94a3b8 1px, transparent 1px)', backgroundSize: '40px 40px' }} 
+          />
+        </div>
 
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 blur-3xl"></div>
+        <div className="container mx-auto max-w-6xl relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8 inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-sm font-medium text-indigo-300 backdrop-blur-md"
+          >
+            <Users className="w-4 h-4" />
+            <span>Trusted by 1,240+ professional traders this month</span>
+          </motion.div>
 
-        <div className="container mx-auto max-w-6xl relative z-10">
-          <div className="mb-6">
-            <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-sm font-medium text-indigo-300">
-              <ConcentradeLogo size={16} variant="icon" />
-              Join thousands of traders worldwide
-            </span>
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 animate-fade-in-up">
-            Turn Your Trading{" "}
-            <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-              Chaos
-            </span>
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-6xl md:text-8xl font-bold leading-[1.1] mb-8 tracking-tight"
+          >
+            Stop Trading <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">Blindly</span>.
             <br />
-            Into Consistent{" "}
-            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              Profits
-            </span>
-          </h1>
+            Start Trading <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Masterfully</span>.
+          </motion.h1>
 
-          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-            The only trading journal that combines professional analytics with emotional intelligence to eliminate
-            costly mistakes and build winning strategies.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed"
+          >
+            The institutional-grade trading journal that uses AI to decode your psychology, eliminate revenge trades, and scale your edge.
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-5 justify-center items-center mb-20"
+          >
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-6 shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-200 hover:scale-105"
+              className="h-16 px-10 text-lg font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all hover:scale-105 active:scale-95"
             >
               <Link href="/signup">
-                <TrendingUp className="h-5 w-5 mr-2" />
-                Start Free 14-Day Trial
-                <ArrowRight className="h-4 w-4 ml-2" />
+                Start Your Free Edge <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
             <Button
               asChild
               size="lg"
               variant="outline"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white text-lg px-8 py-6"
+              className="h-16 px-10 text-lg font-bold border-slate-800 bg-slate-900/50 backdrop-blur-md hover:bg-slate-800 text-slate-300 rounded-2xl transition-all"
             >
               <Link href="/demo">
-                <Play className="h-5 w-5 mr-2" />
-                Watch Live Demo
+                <Play className="mr-2 w-5 h-5 fill-current" /> Watch Live Demo
               </Link>
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto animate-fade-in-up stagger-2">
-            <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
-              <div className="text-3xl font-bold text-indigo-400 mb-2">1,000+</div>
-              <div className="text-sm text-slate-400">Active Traders</div>
+          {/* Trust Bar */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto py-10 border-y border-slate-900/50"
+          >
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-2xl font-bold text-white">98%</div>
+              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Retention Rate</div>
             </div>
-            <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
-              <div className="text-3xl font-bold text-indigo-400 mb-2">14 Days</div>
-              <div className="text-sm text-slate-400">Free Trial</div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-2xl font-bold text-white">14 Days</div>
+              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Free Access</div>
             </div>
-            <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50 flex flex-col items-center justify-center">
-              <Shield className="h-6 w-6 text-indigo-400 mb-2" />
-              <div className="text-xs text-slate-400">SSL Secured</div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1 text-2xl font-bold text-white">
+                <Lock className="w-4 h-4 text-indigo-500" /> AES-256
+              </div>
+              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Bank-Level Security</div>
             </div>
-            <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50 flex flex-col items-center justify-center">
-              <Award className="h-6 w-6 text-indigo-400 mb-2" />
-              <div className="text-xs text-slate-400">Bank-Level Security</div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1 text-2xl font-bold text-white">
+                <Globe className="w-4 h-4 text-indigo-500" /> Global
+              </div>
+              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">Multi-Broker Sync</div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Problem Section */}
-      <section className="py-20 px-4 bg-slate-900/50">
+      {/* The "Aha!" Moment: Comparison Section */}
+      <section className="py-32 px-4 bg-slate-950 relative">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Are You Tired of{" "}
-              <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
-                Losing Money
-              </span>{" "}
-              to the Same Mistakes?
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
+              Why 90% of Traders <span className="text-red-500">Fail</span>
             </h2>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              Many retail traders struggle because they can't identify patterns in their losses. Sound familiar?
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              It's not the market. It's the lack of clarity. See how Concentrade transforms your process.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16 animate-fade-in-up">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
-              <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-8 w-8 text-red-500" />
+          <div className="grid md:grid-cols-2 gap-10">
+            {/* The Old Way */}
+            <div className="p-10 rounded-3xl bg-slate-900/30 border border-slate-900 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4">
+                <X className="w-8 h-8 text-red-500/20" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-center">Scattered Records</h3>
-              <p className="text-slate-300 mb-6 text-center">
-                Trading notes across multiple spreadsheets, apps, and sticky notes make it impossible to spot
-                profitable patterns.
-              </p>
-              <div className="text-red-500 font-bold text-lg text-center">Can't track performance</div>
+              <h3 className="text-2xl font-bold mb-6 text-slate-500">The Spreadsheet Chaos</h3>
+              <ul className="space-y-6">
+                <li className="flex items-start gap-4 text-slate-500">
+                  <div className="mt-1 p-1 bg-red-500/10 rounded-full"><Minus className="w-4 h-4 text-red-500" /></div>
+                  <div>
+                    <p className="font-bold">Manual Data Entry</p>
+                    <p className="text-sm">Hours wasted typing numbers instead of analyzing charts.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4 text-slate-500">
+                  <div className="mt-1 p-1 bg-red-500/10 rounded-full"><Minus className="w-4 h-4 text-red-500" /></div>
+                  <div>
+                    <p className="font-bold">Invisible Patterns</p>
+                    <p className="text-sm">You can't see that you lose 80% of your trades on Tuesday mornings.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4 text-slate-500">
+                  <div className="mt-1 p-1 bg-red-500/10 rounded-full"><Minus className="w-4 h-4 text-red-500" /></div>
+                  <div>
+                    <p className="font-bold">Emotional Blindness</p>
+                    <p className="text-sm">No way to track how FOMO or revenge trading is draining your account.</p>
+                  </div>
+                </li>
+              </ul>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
-              <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle className="h-8 w-8 text-red-500" />
+            {/* The Concentrade Way */}
+            <div className="p-10 rounded-3xl bg-indigo-600/5 border border-indigo-500/20 relative overflow-hidden shadow-[0_0_50px_-12px_rgba(79,70,229,0.2)]">
+              <div className="absolute top-0 right-0 p-4">
+                <Zap className="w-8 h-8 text-indigo-500/40 animate-pulse" />
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-center">Emotional Decisions</h3>
-              <p className="text-slate-300 mb-6 text-center">
-                Fear and greed drive your trades instead of data, leading to revenge trading and blown accounts.
-              </p>
-              <div className="text-red-500 font-bold text-lg text-center">Costly emotional mistakes</div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
-              <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <RotateCcw className="h-8 w-8 text-red-500" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4 text-center">Repeated Mistakes</h3>
-              <p className="text-slate-300 mb-6 text-center">
-                Without proper analysis, you keep making the same costly errors that drain your account.
-              </p>
-              <div className="text-red-500 font-bold text-lg text-center">Same mistakes repeated</div>
-            </div>
-          </div>
-
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold mb-8">Which Challenge Hits Closest to Home?</h3>
-            <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-              <Button
-                asChild
-                variant="outline"
-                className="h-auto py-6 px-6 flex flex-col items-center gap-2 border-slate-700 hover:border-indigo-500 hover:bg-slate-800 transition-all"
-              >
-                <Link href="/signup">
-                  <div className="font-semibold text-base">Poor Record-Keeping</div>
-                  <div className="text-sm text-slate-400">Can't track what's working</div>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-auto py-6 px-6 flex flex-col items-center gap-2 border-slate-700 hover:border-indigo-500 hover:bg-slate-800 transition-all"
-              >
-                <Link href="/signup">
-                  <div className="font-semibold text-base">Emotional Trading</div>
-                  <div className="text-sm text-slate-400">FOMO and revenge trades</div>
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="h-auto py-6 px-6 flex flex-col items-center gap-2 border-slate-700 hover:border-indigo-500 hover:bg-slate-800 transition-all"
-              >
-                <Link href="/signup">
-                  <div className="font-semibold text-base">Tax Complications</div>
-                  <div className="text-sm text-slate-400">Nightmare at tax time</div>
-                </Link>
-              </Button>
+              <h3 className="text-2xl font-bold mb-6 text-indigo-400">The Concentrade Edge</h3>
+              <ul className="space-y-6">
+                <li className="flex items-start gap-4">
+                  <div className="mt-1 p-1 bg-indigo-500/20 rounded-full"><Check className="w-4 h-4 text-indigo-400" /></div>
+                  <div>
+                    <p className="font-bold text-white">Instant Broker Sync</p>
+                    <p className="text-sm text-slate-400">Your trades are imported automatically. Zero manual work.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <div className="mt-1 p-1 bg-indigo-500/20 rounded-full"><Check className="w-4 h-4 text-indigo-400" /></div>
+                  <div>
+                    <p className="font-bold text-white">AI Pattern Recognition</p>
+                    <p className="text-sm text-slate-400">Our AI identifies exactly which setups are making you money.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-4">
+                  <div className="mt-1 p-1 bg-indigo-500/20 rounded-full"><Check className="w-4 h-4 text-indigo-400" /></div>
+                  <div>
+                    <p className="font-bold text-white">Psychology Decoding</p>
+                    <p className="text-sm text-slate-400">Track your mindset and eliminate the emotional errors that kill accounts.</p>
+                  </div>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 px-4">
+      {/* Outcome-Focused Features */}
+      <section id="features" className="py-32 px-4 relative overflow-hidden">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Professional-grade tools that transform scattered data into actionable insights.
-            </h2>
+          <div className="grid lg:grid-cols-2 gap-20 items-center mb-32">
+            <div>
+              <div className="w-12 h-12 bg-indigo-600/20 rounded-xl flex items-center justify-center mb-6">
+                <Brain className="w-6 h-6 text-indigo-400" />
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+                Eliminate <span className="text-indigo-400">Revenge Trading</span> Forever.
+              </h2>
+              <p className="text-xl text-slate-400 mb-8 leading-relaxed">
+                Our AI Neural Insight doesn't just track numbers; it tracks your mind. Identify the emotional triggers that lead to overtrading and stop the bleed before it starts.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  <span>Real-time emotional state tracking</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  <span>AI-generated "Cool Down" alerts</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                  <span>Psychology-based performance metrics</span>
+                </div>
+              </div>
+            </div>
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[2rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity" />
+              <div className="relative bg-slate-900 border border-slate-800 rounded-[2rem] p-8 shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">Neural Insight</div>
+                  <div className="px-3 py-1 bg-red-500/10 text-red-400 text-xs font-bold rounded-full animate-pulse">High Risk Detected</div>
+                </div>
+                <div className="space-y-6">
+                  <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full w-[85%] bg-gradient-to-r from-red-500 to-orange-500" />
+                  </div>
+                  <p className="text-lg font-medium text-white italic">
+                    "You've taken 4 trades in the last 20 minutes after a loss. Your win rate in this state is 12%. Step away for 30 minutes."
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <div className="order-2 lg:order-1 relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-[2rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity" />
+              <div className="relative bg-slate-900 border border-slate-800 rounded-[2rem] p-8 shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="text-sm font-bold text-slate-500 uppercase tracking-widest">Strategy Edge</div>
+                  <div className="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-bold rounded-full">+24.5% Edge</div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <span className="text-slate-400">Morning Breakouts</span>
+                    <span className="text-emerald-400 font-bold flex items-center gap-1"><ArrowUpRight className="w-4 h-4" /> 68% WR</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
+                    <span className="text-slate-400">Afternoon Reversals</span>
+                    <span className="text-red-400 font-bold flex items-center gap-1"><ArrowDownRight className="w-4 h-4" /> 22% WR</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2">
+              <div className="w-12 h-12 bg-emerald-600/20 rounded-xl flex items-center justify-center mb-6">
+                <TrendingUp className="w-6 h-6 text-emerald-400" />
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+                Know Exactly <span className="text-emerald-400">What Works</span>.
+              </h2>
+              <p className="text-xl text-slate-400 mb-8 leading-relaxed">
+                Stop guessing. Our Strategy Breakdown automatically categorizes your trades to show you which setups are printing money and which are just noise.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Automatic setup categorization</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Time-of-day profitability analysis</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>Risk-to-reward optimization engine</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof: Wall of Love */}
+      <section className="py-32 px-4 bg-slate-900/20">
+        <div className="container mx-auto max-w-6xl text-center">
+          <h2 className="text-4xl md:text-6xl font-bold mb-20 tracking-tight">
+            Trusted by the <span className="text-indigo-400">Best</span>.
+          </h2>
+          
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                <BarChart3 className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Advanced Analytics</h3>
-              <p className="text-slate-300 mb-6 leading-relaxed">
-                Discover hidden patterns in your trading with AI-powered analysis that identifies your most profitable
-                setups and costly mistakes.
-              </p>
-              <div className="bg-slate-900/50 p-4 rounded-lg mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Win Rate Trend</span>
-                  <span className="text-indigo-400 font-semibold">+12% this month</span>
+            {[
+              {
+                name: "Alex Rivera",
+                role: "Full-time Crypto Scalper",
+                text: "Concentrade's AI insights literally saved my account. It identified a revenge trading pattern I didn't even know I had.",
+                avatar: "AR"
+              },
+              {
+                name: "Sarah Chen",
+                role: "Prop Firm Trader",
+                text: "The broker sync is flawless. I spend zero time on data entry now and 100% of my time refining my edge.",
+                avatar: "SC"
+              },
+              {
+                name: "Marcus Thorne",
+                role: "Options Strategist",
+                text: "The most professional trading journal I've ever used. The UI is stunning and the data is actually actionable.",
+                avatar: "MT"
+              }
+            ].map((t, i) => (
+              <div key={i} className="p-8 rounded-3xl bg-slate-900 border border-slate-800 text-left hover:border-indigo-500/30 transition-all group">
+                <div className="flex gap-1 mb-6">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-indigo-500 text-indigo-500" />)}
                 </div>
-                <div className="flex gap-1">
-                  {[40, 60, 45, 70, 85, 75, 90].map((height, i) => (
-                    <div
-                      key={i}
-                      className="bg-indigo-500/70 rounded-sm flex-1"
-                      style={{ height: `${height / 2}px` }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <Link href="#" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                Explore Analytics →
-              </Link>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                <Brain className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Emotional Intelligence</h3>
-              <p className="text-slate-300 mb-6 leading-relaxed">
-                Track your emotional state during trades and discover how fear, greed, and confidence impact your
-                performance.
-              </p>
-              <div className="bg-slate-900/50 p-4 rounded-lg mb-4">
-                <div className="mb-3">
-                  <span className="text-sm font-medium">Today's Emotional State</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Confident</span>
-                    <div className="w-24 h-2 bg-slate-700 rounded-full">
-                      <div className="w-4/5 h-full bg-indigo-500 rounded-full"></div>
-                    </div>
+                <p className="text-lg text-slate-300 mb-8 leading-relaxed italic">"{t.text}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white">
+                    {t.avatar}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Fearful</span>
-                    <div className="w-24 h-2 bg-slate-700 rounded-full">
-                      <div className="w-1/4 h-full bg-yellow-500 rounded-full"></div>
-                    </div>
+                  <div>
+                    <p className="font-bold text-white">{t.name}</p>
+                    <p className="text-sm text-slate-500">{t.role}</p>
                   </div>
                 </div>
               </div>
-              <Link href="#" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                Learn More →
-              </Link>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                <Calculator className="h-8 w-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Automated Tax Reporting</h3>
-              <p className="text-slate-300 mb-6 leading-relaxed">
-                Generate IRS-compliant reports instantly. No more spreadsheet nightmares at tax time.
-              </p>
-              <div className="bg-slate-900/50 p-4 rounded-lg mb-4">
-                <div className="mb-3">
-                  <span className="text-sm font-medium">2025 Tax Summary</span>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Short-term gains:</span>
-                    <span className="text-indigo-400">$12,450</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Long-term gains:</span>
-                    <span className="text-indigo-400">$8,230</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Wash sales:</span>
-                    <span className="text-red-500">-$1,200</span>
-                  </div>
-                </div>
-              </div>
-              <Link href="#" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                View Tax Features →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 px-4 bg-slate-900/50">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Real Traders, Real Results</h2>
-            <p className="text-xl text-slate-300">See how Concentrade transformed their trading</p>
-            <p className="text-sm text-slate-400 mt-2">Individual results may vary. Past performance is not indicative of future results.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "Concentrade helped me identify my emotional trading patterns. I've significantly reduced my losses and
-                improved my win rate. The insights have been invaluable for my trading discipline."
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
-                  MC
-                </div>
-                <div>
-                  <div className="font-semibold">Mike Chen</div>
-                  <div className="text-sm text-slate-400">Day Trader, 3 years</div>
-                  <div className="text-sm text-indigo-400">Improved trading consistency</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "The analytics are incredible. I discovered I was overtrading on Fridays and losing money
-                consistently. Identifying that pattern helped me improve my strategy significantly."
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
-                  SR
-                </div>
-                <div>
-                  <div className="font-semibold">Sarah Rodriguez</div>
-                  <div className="text-sm text-slate-400">Swing Trader, 5 years</div>
-                  <div className="text-sm text-indigo-400">Better pattern recognition</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "Tax season used to be a nightmare. Now I generate my reports in seconds. The automated wash sale
-                detection helps me stay compliant and organized."
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
-                  DJ
-                </div>
-                <div>
-                  <div className="font-semibold">David Johnson</div>
-                  <div className="text-sm text-slate-400">Options Trader, 7 years</div>
-                  <div className="text-sm text-indigo-400">Streamlined tax reporting</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "I was struggling for months until I started using Concentrade. The emotional tracking showed me I
-                was revenge trading after losses. Understanding my patterns has helped me trade more consistently."
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
-                  AL
-                </div>
-                <div>
-                  <div className="font-semibold">Alex Liu</div>
-                  <div className="text-sm text-slate-400">Forex Trader, 2 years</div>
-                  <div className="text-sm text-indigo-400">More consistent results</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <p className="text-lg text-slate-200 mb-6 leading-relaxed">
-                "The ROI tracking is game-changing. I can see exactly which strategies work and which don't. The data-driven
-                insights have significantly improved my risk-adjusted returns."
-              </p>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold">
-                  JM
-                </div>
-                <div>
-                  <div className="font-semibold">Jessica Martinez</div>
-                  <div className="text-sm text-slate-400">Crypto Trader, 4 years</div>
-                  <div className="text-sm text-indigo-400">Improved risk management</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Demo Section */}
-      <section id="demo" className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">See Concentrade in Action</h2>
-            <p className="text-xl text-slate-300">Experience the full platform before you sign up</p>
-          </div>
-
-          <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl p-12 border border-indigo-500/20 shadow-2xl text-center">
-            <div className="max-w-2xl mx-auto">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Play className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-3xl font-bold mb-4">Try the Full Platform</h3>
-              <p className="text-lg text-slate-300 mb-8">
-                Explore a complete replica of Concentrade with real features and sample data. No signup required.
-              </p>
-              <Button
-                asChild
-                size="lg"
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-6 shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-200 hover:scale-105"
-              >
-                <Link href="/demo">
-                  <Play className="h-6 w-6 mr-2" />
-                  Launch Interactive Demo
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Link>
-              </Button>
-              <p className="text-sm text-slate-400 mt-4">Full access • No credit card • No signup required</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 bg-slate-900/50">
+      <section id="pricing" className="py-32 px-4 relative">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Choose Your Plan</h2>
-            <p className="text-xl text-slate-300">Start free, upgrade when you're ready</p>
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">Simple, Transparent Pricing.</h2>
+            <p className="text-xl text-slate-400">Join the elite 10% of traders who treat their trading like a business.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16 animate-fade-in-up">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <h3 className="text-xl font-semibold mb-2">Starter</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-slate-400">/month</span>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Free Plan */}
+            <div className="p-10 rounded-3xl bg-slate-900/50 border border-slate-800 flex flex-col">
+              <h3 className="text-xl font-bold mb-2 text-white">Starter</h3>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">$0</span>
+                <span className="text-slate-500">/forever</span>
               </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Up to 50 trades/month</span>
+              <ul className="space-y-4 mb-10 flex-grow">
+                <li className="flex items-center gap-3 text-slate-400 text-sm">
+                  <Check className="w-4 h-4 text-indigo-500" /> 50 Trades / Month
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Basic analytics</span>
+                <li className="flex items-center gap-3 text-slate-400 text-sm">
+                  <Check className="w-4 h-4 text-indigo-500" /> Basic Analytics
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Trade journal</span>
+                <li className="flex items-center gap-3 text-slate-400 text-sm">
+                  <Check className="w-4 h-4 text-indigo-500" /> Manual Entry
                 </li>
               </ul>
-              <Button asChild variant="outline" className="w-full border-slate-700 hover:bg-slate-700">
-                <Link href="/signup">Get Started Free</Link>
+              <Button asChild variant="outline" className="w-full h-12 rounded-xl border-slate-800 hover:bg-slate-800">
+                <Link href="/signup">Get Started</Link>
               </Button>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border-2 border-indigo-500 rounded-xl p-8 relative transform scale-105 shadow-2xl shadow-indigo-500/20">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-1 rounded-full text-xs font-semibold">
+            {/* Pro Plan */}
+            <div className="p-10 rounded-3xl bg-indigo-600 border border-indigo-400 relative shadow-[0_0_60px_-15px_rgba(79,70,229,0.6)] flex flex-col transform scale-105 z-10">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-white text-indigo-600 text-xs font-bold rounded-full uppercase tracking-widest">
                 Most Popular
               </div>
-              <h3 className="text-xl font-semibold mb-2">Professional</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$29</span>
-                <span className="text-slate-400">/month</span>
+              <h3 className="text-xl font-bold mb-2 text-white">Professional</h3>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">$29</span>
+                <span className="text-indigo-200">/month</span>
               </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Unlimited trades</span>
+              <ul className="space-y-4 mb-10 flex-grow">
+                <li className="flex items-center gap-3 text-white text-sm">
+                  <Check className="w-4 h-4 text-white" /> Unlimited Trades
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Advanced analytics</span>
+                <li className="flex items-center gap-3 text-white text-sm">
+                  <Check className="w-4 h-4 text-white" /> AI Neural Insights
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Emotional intelligence</span>
+                <li className="flex items-center gap-3 text-white text-sm">
+                  <Check className="w-4 h-4 text-white" /> Automatic Broker Sync
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Tax reporting</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Priority support</span>
+                <li className="flex items-center gap-3 text-white text-sm">
+                  <Check className="w-4 h-4 text-white" /> Strategy Optimizer
                 </li>
               </ul>
-              <Button
-                asChild
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-              >
+              <Button asChild className="w-full h-12 rounded-xl bg-white text-indigo-600 hover:bg-slate-100 font-bold">
                 <Link href="/signup">Start Free Trial</Link>
               </Button>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
-              <h3 className="text-xl font-semibold mb-2">Enterprise</h3>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">$99</span>
-                <span className="text-slate-400">/month</span>
+            {/* Enterprise Plan */}
+            <div className="p-10 rounded-3xl bg-slate-900/50 border border-slate-800 flex flex-col">
+              <h3 className="text-xl font-bold mb-2 text-white">Enterprise</h3>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">$99</span>
+                <span className="text-slate-500">/month</span>
               </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Everything in Professional</span>
+              <ul className="space-y-4 mb-10 flex-grow">
+                <li className="flex items-center gap-3 text-slate-400 text-sm">
+                  <Check className="w-4 h-4 text-indigo-500" /> Everything in Pro
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Team collaboration</span>
+                <li className="flex items-center gap-3 text-slate-400 text-sm">
+                  <Check className="w-4 h-4 text-indigo-500" /> Team Collaboration
                 </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Custom integrations</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-indigo-400 flex-shrink-0" />
-                  <span>Dedicated support</span>
+                <li className="flex items-center gap-3 text-slate-400 text-sm">
+                  <Check className="w-4 h-4 text-indigo-500" /> Custom Integrations
                 </li>
               </ul>
-              <Button asChild variant="outline" className="w-full border-slate-700 hover:bg-slate-700">
+              <Button asChild variant="outline" className="w-full h-12 rounded-xl border-slate-800 hover:bg-slate-800">
                 <Link href="/signup">Contact Sales</Link>
               </Button>
             </div>
           </div>
-
-          {/* Comparison Table */}
-          <div className="mt-16">
-            <h3 className="text-2xl md:text-3xl font-bold text-center mb-8">Concentrade vs. Spreadsheets</h3>
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-slate-700">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left p-4 font-semibold">Feature</th>
-                      <th className="text-center p-4 font-semibold">Spreadsheets</th>
-                      <th className="text-center p-4 font-semibold text-indigo-400">Concentrade</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 font-medium">Setup Time</td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-red-500">
-                          <Minus className="h-5 w-5" />
-                          <span>Hours</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-indigo-400 font-semibold">
-                          <Check className="h-5 w-5" />
-                          <span>2 minutes</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 font-medium">Pattern Recognition</td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-red-500">
-                          <Minus className="h-5 w-5" />
-                          <span>Manual</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-indigo-400 font-semibold">
-                          <Check className="h-5 w-5" />
-                          <span>AI-Powered</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 font-medium">Emotional Tracking</td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-red-500">
-                          <X className="h-5 w-5" />
-                          <span>None</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-indigo-400 font-semibold">
-                          <Check className="h-5 w-5" />
-                          <span>Advanced</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 font-medium">Tax Reports</td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-red-500">
-                          <Minus className="h-5 w-5" />
-                          <span>Manual</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-indigo-400 font-semibold">
-                          <Check className="h-5 w-5" />
-                          <span>Automated</span>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-700/30 transition-colors">
-                      <td className="p-4 font-medium">Mobile Access</td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-red-500">
-                          <Minus className="h-5 w-5" />
-                          <span>Limited</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 text-indigo-400 font-semibold">
-                          <Check className="h-5 w-5" />
-                          <span>Full App</span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Ready to Transform Your Trading?</h2>
-          <p className="text-xl text-slate-300 mb-8">
-            Join thousands of traders who've eliminated costly mistakes and built consistent profits.
+      {/* Final CTA */}
+      <section className="py-32 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-indigo-600/10 blur-3xl rounded-full -translate-y-1/2" />
+        <div className="container mx-auto max-w-4xl text-center relative z-10">
+          <h2 className="text-5xl md:text-7xl font-bold mb-8 tracking-tight">Ready to Scale Your Edge?</h2>
+          <p className="text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+            Join 1,240+ traders who have already transformed their trading chaos into consistent profits.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col items-center gap-6">
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-6 shadow-xl shadow-indigo-500/30 hover:shadow-2xl hover:shadow-indigo-500/40 transition-all duration-200 hover:scale-105"
+              className="h-16 px-12 text-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl shadow-[0_0_50px_-10px_rgba(79,70,229,0.5)] transition-all hover:scale-105"
             >
-              <Link href="/signup">
-                <TrendingUp className="h-6 w-6 mr-2" />
-                Start Your Free Trial
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Link>
+              <Link href="/signup">Start Your Free Edge Now</Link>
             </Button>
+            <p className="text-sm text-slate-500 font-medium">
+              No credit card required • 14-day free trial • Cancel anytime
+            </p>
           </div>
-          <p className="text-sm text-slate-400 mt-4">No credit card required • 14-day free trial • Cancel anytime</p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900/80 py-12 px-4 border-t border-slate-800">
+      <footer className="py-20 px-4 border-t border-slate-900 bg-slate-950">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <ConcentradeLogo size={32} variant="full" />
-              </div>
-              <p className="text-slate-400 text-sm">
-                Transform your trading chaos into consistent profits with professional analytics and emotional
-                intelligence.
+          <div className="grid md:grid-cols-4 gap-12 mb-20">
+            <div className="col-span-2 md:col-span-1">
+              <ConcentradeLogo size={32} variant="full" className="mb-6" />
+              <p className="text-slate-500 text-sm leading-relaxed">
+                The institutional-grade trading journal for disciplined, data-driven performance.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>
-                  <Link href="#features" className="hover:text-indigo-400 transition-colors">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:text-indigo-400 transition-colors">
-                    Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#demo" className="hover:text-indigo-400 transition-colors">
-                    Demo
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/signup" className="hover:text-indigo-400 transition-colors">
-                    Free Trial
-                  </Link>
-                </li>
+              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Product</h4>
+              <ul className="space-y-4 text-sm text-slate-500">
+                <li><Link href="#features" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/demo" className="hover:text-white transition-colors">Live Demo</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>
-                  <Link href="/privacy" className="hover:text-indigo-400 transition-colors">
-                    Privacy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-indigo-400 transition-colors">
-                    Terms
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-indigo-400 transition-colors">
-                    Support
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-indigo-400 transition-colors">
-                    Contact
-                  </Link>
-                </li>
+              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Company</h4>
+              <ul className="space-y-4 text-sm text-slate-500">
+                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Resources</h4>
-              <ul className="space-y-2 text-sm text-slate-400">
-                <li>
-                  <Link href="#" className="hover:text-indigo-400 transition-colors">
-                    Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-indigo-400 transition-colors">
-                    Guides
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-indigo-400 transition-colors">
-                    API Docs
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:text-indigo-400 transition-colors">
-                    Status
-                  </Link>
-                </li>
+              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Support</h4>
+              <ul className="space-y-4 text-sm text-slate-500">
+                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+                <li><Link href="/status" className="hover:text-white transition-colors">System Status</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm text-slate-400">
-            <p>&copy; 2025 Concentrade. All rights reserved.</p>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-slate-900 text-slate-600 text-xs font-bold uppercase tracking-widest">
+            <p>© 2026 Concentrade. All rights reserved.</p>
+            <div className="flex gap-8">
+              <Link href="#" className="hover:text-white transition-colors">Twitter</Link>
+              <Link href="#" className="hover:text-white transition-colors">Discord</Link>
+              <Link href="#" className="hover:text-white transition-colors">LinkedIn</Link>
+            </div>
           </div>
         </div>
       </footer>

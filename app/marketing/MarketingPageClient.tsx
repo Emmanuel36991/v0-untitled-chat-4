@@ -28,6 +28,7 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { Button } from "@/components/ui/button"
 import { MarketingNav } from "@/components/marketing/marketing-nav"
 import { motion } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 export default function MarketingPageClient() {
   return (

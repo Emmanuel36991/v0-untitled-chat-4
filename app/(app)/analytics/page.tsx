@@ -652,7 +652,7 @@ export default function AnalyticsPage() {
               </Card>
 
               {/* Trader DNA Hexagram */}
-              <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm flex flex-col">
+              <Card className="border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm flex flex-col card-enhanced glass-card">
                 <CardHeader className="pb-2 border-b border-border shrink-0">
                   <div className="flex items-center justify-between w-full">
                     <div>
@@ -687,7 +687,7 @@ export default function AnalyticsPage() {
             {/* ====== SECTION C: CHARTS ROW ====== */}
             <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {/* Strategy Performance */}
-              <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
+              <Card className="border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm card-enhanced glass-card">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
                     <PlaybookIcon className="w-4 h-4 text-primary" /> Strategy Performance
@@ -747,7 +747,7 @@ export default function AnalyticsPage() {
               </Card>
 
               {/* Top 5 Instruments by P&L */}
-              <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
+              <Card className="border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm card-enhanced glass-card">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
                     <MomentumFlowIcon className="w-4 h-4 text-emerald-500" /> Top Instruments
@@ -801,7 +801,7 @@ export default function AnalyticsPage() {
               </Card>
 
               {/* Outcomes Donut */}
-              <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
+              <Card className="border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm card-enhanced glass-card">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
                     <MeanReversionIcon className="w-4 h-4 text-blue-500" /> Trade Outcomes
@@ -845,14 +845,14 @@ export default function AnalyticsPage() {
             <section>
               <TimingAnalyticsDashboard
                 trades={trades}
-                className="rounded-xl border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm"
+                className="rounded-xl border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm card-enhanced glass-card"
               />
             </section>
 
 
             {/* ====== SECTION E: DATA EXPORT ====== */}
             <section>
-              <Card className="border-0 shadow-sm ring-1 ring-border dark:bg-card/60 backdrop-blur-sm">
+              <Card className="border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm card-enhanced glass-card">
                 <CardHeader className="pb-3 border-b border-border">
                   <div className="flex items-center justify-between">
                     <div>

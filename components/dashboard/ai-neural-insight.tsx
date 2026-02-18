@@ -231,7 +231,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
         className={cn(
           "relative overflow-hidden rounded-2xl transition-all duration-500",
           // Glassmorphism base
-          "bg-card/60 dark:bg-card/40 backdrop-blur-xl",
+          "bg-card/60 dark:bg-card/40 backdrop-blur-xl card-enhanced glass-card",
           // Border
           "border border-border/50 dark:border-border/30",
           // Shadow — glows when active
@@ -240,7 +240,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
             : "shadow-lg dark:shadow-2xl",
           // Hover lift
           "hover:shadow-xl dark:hover:shadow-[0_0_30px_-6px_rgba(var(--primary-rgb,100,80,220),0.15)]",
-          "hover:-translate-y-0.5 transition-transform duration-300"
+          "hover:-translate-y-1 transition-all duration-300"
         )}
       >
         {/* Scan line */}

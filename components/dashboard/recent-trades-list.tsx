@@ -42,7 +42,7 @@ export function RecentTradesList({
     getStrategyIcon,
 }: RecentTradesListProps) {
     return (
-        <Card className="lg:col-span-2 border-0 shadow-lg overflow-hidden bg-card ring-1 ring-border">
+        <Card className="lg:col-span-2 border-0 shadow-lg overflow-hidden bg-card ring-1 ring-border card-enhanced glass-card">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/30 py-5">
                 <div className="space-y-1">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -74,7 +74,7 @@ export function RecentTradesList({
                     return (
                         <div
                             key={trade.id}
-                            className="flex items-center justify-between p-4 sm:p-5 hover:bg-muted/50 transition-colors border-b last:border-0 border-border group cursor-pointer"
+                            className="flex items-center justify-between p-4 sm:p-5 hover:bg-muted/50 transition-all border-b last:border-0 border-border group cursor-pointer hover:pl-6"
                         >
                             <div className="flex items-center gap-5">
                                 <div

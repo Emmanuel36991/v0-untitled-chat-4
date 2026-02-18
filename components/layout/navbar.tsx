@@ -57,7 +57,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-20 w-full items-center justify-between px-6 lg:px-10">
 
         {/* --- LEFT SECTION: LOGO --- */}
@@ -69,7 +69,7 @@ export function Navbar() {
 
         {/* --- CENTER SECTION: NAVIGATION --- */}
         <div className="hidden md:flex flex-initial items-center justify-center">
-          <nav className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1 px-2 backdrop-blur-sm border border-white/[0.05]">
+          <nav className="flex items-center gap-1 rounded-full bg-muted/30 p-1 px-2 backdrop-blur-sm border border-border">
             {mainNavItems.map((item) => {
               const isActive = pathname === item.href
               const Icon = item.icon
@@ -84,7 +84,7 @@ export function Navbar() {
                   )}
                 >
                   {/* Hover Background */}
-                  <span className="absolute inset-0 -z-10 scale-90 rounded-full bg-white/0 transition-all duration-300 group-hover:scale-100 group-hover:bg-white/[0.05]" />
+                  <span className="absolute inset-0 -z-10 scale-90 rounded-full bg-muted/0 transition-all duration-300 group-hover:scale-100 group-hover:bg-muted/50" />
 
                   <Icon className={cn("h-6 w-6 transition-transform duration-300 group-hover:scale-110", isActive && "stroke-current")} />
                   <span>{item.title}</span>
@@ -147,7 +147,7 @@ export function Navbar() {
                         onClick={() => setIsOpen(false)}
                         className={cn(
                           "flex items-center gap-4 rounded-xl px-4 py-3.5 text-lg font-semibold transition-all duration-200",
-                          isActive ? "bg-primary/10 text-primary border border-primary/20" : "text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+                          isActive ? "bg-primary/10 text-primary border border-primary/20" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                         )}
                       >
                         <Icon className="h-6 w-6" />

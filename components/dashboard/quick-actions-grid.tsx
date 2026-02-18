@@ -18,12 +18,12 @@ const QUICK_ACTIONS = [
 
 export function QuickActionsGrid() {
     return (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 animate-fade-in-up">
             {QUICK_ACTIONS.map((action) => (
                 <Link
                     key={action.label}
                     href={action.href}
-                    className="group relative overflow-hidden rounded-2xl bg-card shadow-sm border border-border hover:shadow-xl hover:border-primary/30 transition-all duration-200"
+                    className="group relative overflow-hidden rounded-2xl bg-card shadow-sm border border-border hover:shadow-xl hover:border-primary/30 transition-all duration-300 card-enhanced glass-card"
                 >
                     <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
                         <div

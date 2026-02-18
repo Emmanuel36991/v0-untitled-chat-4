@@ -521,7 +521,7 @@ export default function TradesPage() {
             </div>
 
             {/* --- CONTENT --- */}
-            <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-[1600px] mx-auto w-full">
+            <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 max-w-[1600px] mx-auto w-full animate-fade-in-up">
 
                {/* Context Indicator */}
                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -535,7 +535,7 @@ export default function TradesPage() {
                </div>
 
                {/* Controls Bar */}
-               <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-4 rounded-xl border shadow-sm">
+               <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-card p-4 rounded-xl border shadow-sm stagger-1">
                   <div className="relative w-full sm:w-72">
                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                      <Input
@@ -571,7 +571,7 @@ export default function TradesPage() {
                </div>
 
                {/* Trade Table */}
-               <Card className="border-none shadow-md overflow-hidden min-h-[500px] flex flex-col">
+               <Card className="border-none shadow-md overflow-hidden min-h-[500px] flex flex-col stagger-2 card-enhanced glass-card">
                   {isLoading ? (
                      <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-4">
                         <RefreshCw className="w-8 h-8 text-primary animate-spin" />

@@ -492,7 +492,7 @@ export default function DashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
             {/* Period Selector */}
-            <div className="bg-card p-1 rounded-xl shadow-sm border border-border flex items-center gap-1 backdrop-blur-sm">
+            <div className="glass-card p-1 rounded-xl shadow-sm border border-border flex items-center gap-1 backdrop-blur-sm">
               {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
                 <Button
                   key={period}
@@ -558,8 +558,9 @@ export default function DashboardPage() {
         />
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up">
+      <MetricCard
+            className="stagger-1"
             title="Net P&L"
             value={
               displayFormat === "dollars"
@@ -580,8 +581,8 @@ export default function DashboardPage() {
           />
 
           <MetricCard
-            title="Win Rate"
-            value={`${stats.winRate.toFixed(1)}%`}
+            className="stagger-2"
+            title="Win Rate"         value={`${stats.winRate.toFixed(1)}%`}
             change={`${stats.winningTrades}W - ${stats.losingTrades}L`}
             changeType={
               stats.winRate > 50
@@ -599,9 +600,9 @@ export default function DashboardPage() {
             isHot={stats.consecutiveWins >= 3}
           />
 
-          <MetricCard
-            title="Profit Factor"
-            value={stats.profitFactor.toFixed(2)}
+        <MetricCard
+            className="stagger-3"
+            title="Profit Factor"           value={stats.profitFactor.toFixed(2)}
             change={`Exp: $${stats.expectancy.toFixed(2)}`}
             changeType={
               stats.profitFactor >= 1.5
@@ -615,9 +616,9 @@ export default function DashboardPage() {
             subtitle="Gross Profit / Gross Loss"
           />
 
-          <MetricCard
-            title="Avg Return"
-            value={`$${stats.avgReturn.toFixed(2)}`}
+        <MetricCard
+            className="stagger-4"
+            title="Avg Return"           value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
             icon={AvgReturnIcon}

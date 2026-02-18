@@ -27,7 +27,7 @@ function ActionButton({ action, isPrimary }: { action: EmptyStateAction; isPrima
   const variant = action.variant ?? (isPrimary ? "default" : "outline")
 
   const button = (
-    <Button variant={variant} size={isPrimary ? "default" : "sm"} onClick={action.onClick} className="gap-2">
+    <Button variant={variant} size={isPrimary ? "default" : "sm"} onClick={action.onClick} className={cn("gap-2", isPrimary && "btn-enhanced")}>
       {action.label}
     </Button>
   )
@@ -51,7 +51,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center",
+        "flex flex-col items-center justify-center text-center animate-fade-in-up",
         compact ? "py-12 px-4" : "py-20 px-6",
         className
       )}
@@ -59,9 +59,9 @@ export function EmptyState({
       {/* Icon container with gradient ring */}
       <div
         className={cn(
-          "rounded-2xl flex items-center justify-center mb-5",
+          "rounded-2xl flex items-center justify-center mb-5 animate-float",
           "bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/15 dark:to-primary/5",
-          "ring-1 ring-primary/10 dark:ring-primary/20",
+          "ring-1 ring-primary/10 dark:ring-primary/20 shadow-lg shadow-primary/5",
           compact ? "p-3" : "p-4"
         )}
       >

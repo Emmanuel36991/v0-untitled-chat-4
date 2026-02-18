@@ -71,7 +71,7 @@ export function EquityChartCard({
     return (
         <Card
             className={cn(
-                "border-0 shadow-lg backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-border",
+                "border-0 shadow-lg backdrop-blur-sm overflow-hidden flex flex-col ring-1 ring-border card-enhanced glass-card",
                 chartViewMode === "calendar" ? "h-auto" : "h-[550px]"
             )}
         >
@@ -91,7 +91,7 @@ export function EquityChartCard({
                     onValueChange={(v: any) => setChartViewMode(v)}
                     className="w-auto"
                 >
-                    <TabsList className="h-9 p-1 bg-muted rounded-lg">
+                    <TabsList className="h-9 p-1 bg-muted/50 backdrop-blur-sm rounded-lg border border-border/40">
                         <TabsTrigger
                             value="cumulative"
                             className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm"

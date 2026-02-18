@@ -35,6 +35,7 @@ import type { Trade } from "@/types"
 import { CalendarHeatmap } from "@/components/dashboard/calendar-heatmap"
 import { CustomChartTooltip } from "@/components/dashboard/custom-chart-tooltip"
 import { EmptyState } from "@/components/empty-state"
+import { NoTradesIllustration } from "@/components/icons/empty-state-illustrations"
 
 interface ChartDataPoint {
     date: string
@@ -160,7 +161,7 @@ export function EquityChartCard({
                     </div>
                 ) : chartData.length === 0 ? (
                     <EmptyState
-                        icon={LineChart}
+                        illustration={NoTradesIllustration}
                         title="No Trading Data"
                         description="Log your first trade to see your equity curve and performance charts come to life."
                         action={{ label: "Log your first trade", href: "/add-trade" }}

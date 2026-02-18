@@ -18,10 +18,7 @@ import { cn } from "@/lib/utils"
 
 // --- Icons ---
 import {
-  Target,
   RefreshCw,
-  Wallet,
-  Plus,
 } from "lucide-react"
 import {
   BreakoutIcon,
@@ -31,9 +28,11 @@ import {
   MeanReversionIcon,
   CompassIcon,
   NeuralSparkIcon,
-  AvgReturnIcon,
+  MeanLineIcon as AvgReturnIcon,
   ProfitFactorIcon,
-} from "@/components/icons/system-icons"
+  EntryMarkerIcon as AddTradeIcon,
+  DashboardIcon,
+} from "@/components/icons/hand-crafted-icons"
 import { WisdomSparkIcon } from "@/components/icons/hand-crafted-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
@@ -478,7 +477,8 @@ export default function DashboardPage() {
               <span>{format(new Date(), "MMMM dd, yyyy")}</span>
             </div>
 
-            <AnimatedTitle className="text-3xl sm:text-4xl">
+            <AnimatedTitle className="text-3xl sm:text-4xl flex items-center gap-3">
+              <DashboardIcon className="w-8 h-8 text-primary/80" />
               Dashboard Overview
             </AnimatedTitle>
 
@@ -500,7 +500,7 @@ export default function DashboardPage() {
                   size="sm"
                   onClick={() => setSelectedPeriod(period)}
                   className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    "rounded-lg px-3 py-1.5 text-xs font-bold transition-all tactile-transition",
                     selectedPeriod === period
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -539,11 +539,11 @@ export default function DashboardPage() {
               </Button>
 
               <Button
-                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 transition-all btn-enhanced magnetic-hover"
                 asChild
               >
                 <Link href="/add-trade">
-                  <Plus className="mr-2 h-4 w-4" /> New Trade
+                  <AddTradeIcon className="mr-2 h-4 w-4" /> New Trade
                 </Link>
               </Button>
             </div>
@@ -573,7 +573,7 @@ export default function DashboardPage() {
             }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
-            icon={Wallet}
+            icon={ProfitChartIcon}
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
@@ -591,7 +591,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={Target}
+            icon={MeanReversionIcon}
             iconColor="text-chart-2"
             trendData={[
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }

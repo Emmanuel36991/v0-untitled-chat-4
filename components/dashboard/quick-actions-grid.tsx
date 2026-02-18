@@ -3,11 +3,11 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import {
-    AddTradeIcon,
+    EntryMarkerIcon as AddTradeIcon,
     TradeLedgerIcon,
-    PlaybookIcon,
+    StrategyBlueprintIcon as PlaybookIcon,
     PatternEyeIcon,
-} from "@/components/icons/system-icons"
+} from "@/components/icons/hand-crafted-icons"
 
 const QUICK_ACTIONS = [
     { label: "Add Trade", icon: AddTradeIcon, href: "/add-trade", color: "bg-primary", desc: "Log Entry" },

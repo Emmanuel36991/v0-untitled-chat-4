@@ -48,7 +48,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import {
-  TradeLedgerIcon,
+  JournalIcon as TradeLedgerIcon,
   ProfitChartIcon,
   MeanReversionIcon,
   BreakoutIcon,
@@ -59,7 +59,7 @@ import {
   MomentumFlowIcon,
   NeuralSparkIcon,
   CompassIcon,
-} from "@/components/icons/system-icons"
+} from "@/components/icons/hand-crafted-icons"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"

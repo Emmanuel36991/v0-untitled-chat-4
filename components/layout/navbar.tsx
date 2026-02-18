@@ -16,11 +16,9 @@ import {
   DashboardIcon,
   PlaybookIcon,
   JournalIcon,
-} from "@/components/icons/hand-crafted-icons"
-import {
   AnalyticsIcon,
   PsychologyIcon,
-} from "@/components/icons/system-icons"
+} from "@/components/icons/hand-crafted-icons"
 
 // Navigation Items Configuration
 const mainNavItems = [

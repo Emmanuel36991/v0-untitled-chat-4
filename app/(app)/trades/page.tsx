@@ -38,6 +38,7 @@ import { useSearchParams } from "next/navigation"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
 import { cn } from "@/lib/utils"
 import { EmptyState } from "@/components/empty-state"
+import { NoTradesIllustration, NoPortfoliosIllustration, NoResultsIllustration } from "@/components/icons/empty-state-illustrations"
 import { SimpleConnectionModal } from "@/components/connection/simple-connection-modal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
@@ -404,7 +405,7 @@ export default function TradesPage() {
                   {/* Logo / Title */}
                   <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
                      <div className="p-1.5 bg-primary/10 rounded-md">
-                        <BookOpen className="h-5 w-5 text-primary" />
+                        <JournalIcon className="h-5 w-5 text-primary" />
                      </div>
                      <span className="text-lg hidden sm:inline tracking-tight">Trade Journal</span>
                   </div>
@@ -431,7 +432,7 @@ export default function TradesPage() {
                                     setIsCreateAccountOpen(true)
                                  }}
                               >
-                                 <Plus className="mr-2 h-3 w-3" /> Add Portfolio
+                                 <AddTradeIcon className="mr-2 h-3 w-3" /> Add Portfolio
                               </Button>
                            </div>
                            <Separator className="my-1" />
@@ -460,7 +461,7 @@ export default function TradesPage() {
                                     setIsPortfolioManagerOpen(true)
                                  }}
                               >
-                                 <Settings2 className="mr-2 h-3 w-3" /> Manage Portfolios
+                                 <SettingsIcon className="mr-2 h-3 w-3" /> Manage Portfolios
                               </Button>
                            </div>
                         </SelectContent>
@@ -477,19 +478,19 @@ export default function TradesPage() {
 
                   {/* Right Toolbar */}
                   <div className="ml-auto flex items-center space-x-2">
-                     <Button size="sm" className="gap-2 shadow-sm" asChild>
+                     <Button size="sm" className="gap-2 shadow-sm btn-enhanced magnetic-hover" asChild>
                         <NextLink href={`/add-trade?accountId=${selectedAccountId !== 'all' ? selectedAccountId : ''}`}>
-                           <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Log Trade</span>
+                           <AddTradeIcon className="w-4 h-4" /> <span className="hidden sm:inline">Log Trade</span>
                         </NextLink>
                      </Button>
 
                      <Button
                         size="sm"
                         variant="outline"
-                        className="gap-2"
+                        className="gap-2 tactile-transition"
                         onClick={() => setIsImportDialogOpen(true)}
                      >
-                        <Upload className="w-4 h-4" />
+                        <ImportIcon className="w-4 h-4" />
                         <span className="hidden sm:inline">Import CSV</span>
                      </Button>
 
@@ -580,7 +581,7 @@ export default function TradesPage() {
                   ) : filteredTrades.length === 0 ? (
                      accounts.length === 0 ? (
                         <EmptyState
-                           icon={FolderOpen}
+                           illustration={NoPortfoliosIllustration}
                            title="No portfolio yet"
                            description="Create a trading portfolio to start logging your journey."
                            action={{ label: "Create Portfolio", onClick: () => setIsCreateAccountOpen(true) }}
@@ -588,7 +589,7 @@ export default function TradesPage() {
                         />
                      ) : trades.length === 0 ? (
                         <EmptyState
-                           icon={PenLine}
+                           illustration={NoTradesIllustration}
                            title="No trades logged"
                            description="Start recording executions to build your trade journal and track performance."
                            action={{ label: "Add Trade", href: "/add-trade" }}
@@ -596,7 +597,7 @@ export default function TradesPage() {
                         />
                      ) : (
                         <EmptyState
-                           icon={SlidersHorizontal}
+                           illustration={NoResultsIllustration}
                            title="No matching trades"
                            description="No entries match your current filters. Try broadening your search criteria."
                            action={{ label: "Clear filters", onClick: () => { setFilters({}); setSearchTerm("") }, variant: "outline" }}

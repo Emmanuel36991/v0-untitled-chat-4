@@ -11,11 +11,15 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, BookOpen, Wallet } from "lucide-react"
+import {
+  Menu,
+  LayoutDashboard,
+  BookOpen,
+  Brain,
+} from "lucide-react"
 import {
   AnalyticsIcon,
   PlaybookIcon,
-  NeuralSparkIcon,
 } from "@/components/icons/system-icons"
 
 // Navigation Items Configuration
@@ -23,7 +27,7 @@ const mainNavItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: Wallet,
+    icon: LayoutDashboard,
   },
   {
     title: "Trades",
@@ -43,7 +47,7 @@ const mainNavItems = [
   {
     title: "Psychology",
     href: "/psychology",
-    icon: NeuralSparkIcon,
+    icon: Brain,
   },
 ]
 

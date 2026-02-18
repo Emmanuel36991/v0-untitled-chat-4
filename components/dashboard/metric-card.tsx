@@ -17,6 +17,7 @@ export interface MetricCardProps {
   tooltipInfo?: string
   onClick?: () => void
   isHot?: boolean
+  className?: string
 }
 
 export const MetricCard = React.memo<MetricCardProps>(
@@ -31,15 +32,17 @@ export const MetricCard = React.memo<MetricCardProps>(
     tooltipInfo,
     onClick,
     isHot = false,
+    className,
   }) => (
     <Card
       className={cn(
-        "relative overflow-hidden border shadow-sm transition-all duration-200 group cursor-pointer",
-        "bg-card backdrop-blur-xl",
-        "hover:shadow-md hover:-translate-y-0.5",
+        "relative overflow-hidden border shadow-sm transition-all duration-300 group cursor-pointer",
+        "bg-card backdrop-blur-xl card-enhanced glass-card",
+        "hover:shadow-md hover:-translate-y-1",
         isHot
           ? "border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:shadow-[0_0_25px_rgba(249,115,22,0.25)] hover:border-orange-500/60"
-          : "border-border/60 hover:border-primary/20"
+          : "border-border/60 hover:border-primary/20",
+        className
       )}
       onClick={onClick}
     >

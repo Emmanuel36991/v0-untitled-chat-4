@@ -42,7 +42,7 @@ export function StrategyBreakdownCard({
     strategyColors,
 }: StrategyBreakdownCardProps) {
     return (
-        <Card className="flex-1 border-0 shadow-lg ring-1 ring-border backdrop-blur-sm">
+        <Card className="flex-1 border-0 shadow-lg ring-1 ring-border backdrop-blur-sm card-enhanced glass-card">
             <CardHeader className="pb-2 border-b border-border">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                     <PieChart className="w-5 h-5 text-chart-5" />
@@ -93,7 +93,7 @@ export function StrategyBreakdownCard({
                         return (
                             <div
                                 key={strategy.name}
-                                className="flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                                className="flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border border-transparent hover:border-border/40"
                             >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                     <div

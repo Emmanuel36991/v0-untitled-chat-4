@@ -183,12 +183,12 @@ function StrategyManager({
     <div className="space-y-6">
 
       {/* Tab Switcher */}
-      <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg w-fit">
+      <div className="flex p-1 bg-muted rounded-lg w-fit">
         <button
           onClick={() => setActiveTab("my_strategies")}
           className={cn(
             "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
-            activeTab === "my_strategies" ? "bg-white dark:bg-slate-950 text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+            activeTab === "my_strategies" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
           My Strategies
@@ -197,7 +197,7 @@ function StrategyManager({
           onClick={() => setActiveTab("library")}
           className={cn(
             "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
-            activeTab === "library" ? "bg-white dark:bg-slate-950 text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+            activeTab === "library" ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
           )}
         >
           Browse Library
@@ -208,10 +208,10 @@ function StrategyManager({
       {activeTab === "my_strategies" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-slate-900 dark:text-slate-200">Active Playbooks ({userStrategies.length})</h3>
+            <h3 className="text-sm font-medium text-foreground">Active Playbooks ({userStrategies.length})</h3>
             <Dialog open={isBuilderOpen} onOpenChange={setIsBuilderOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Plus className="w-4 h-4 mr-2" /> Create Custom
                 </Button>
               </DialogTrigger>
@@ -254,7 +254,7 @@ function StrategyManager({
 
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsBuilderOpen(false)}>Cancel</Button>
-                  <Button onClick={handleCreateStrategy} className="bg-indigo-600 text-white">Create Strategy</Button>
+                  <Button onClick={handleCreateStrategy} className="bg-primary text-primary-foreground">Create Strategy</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -348,7 +348,7 @@ function StrategyManager({
                       onClick={() => handleInstallPreset(preset)}
                       disabled={isInstalled}
                       variant={isInstalled ? "secondary" : "default"}
-                      className={cn("sm:w-32", !isInstalled && "bg-indigo-600 hover:bg-indigo-700 text-white")}
+                      className={cn("sm:w-32", !isInstalled && "bg-primary hover:bg-primary/90 text-primary-foreground")}
                     >
                       {isInstalled ? <><Check className="w-4 h-4 mr-2" /> Installed</> : "Install"}
                     </Button>
@@ -706,8 +706,8 @@ export default function SettingsPage() {
                    />
                 </div>
               </CardContent>
-              <CardFooter className="bg-slate-50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 flex justify-end p-4 rounded-b-xl">
-                 <Button onClick={handleSaveProfile} disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20">
+              <CardFooter className="bg-muted/30 border-t border-border flex justify-end p-4 rounded-b-xl">
+                 <Button onClick={handleSaveProfile} disabled={isSaving} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20">
                     {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Changes
                  </Button>
               </CardFooter>
@@ -1084,11 +1084,11 @@ export default function SettingsPage() {
                     <p className="text-xs text-red-500">Passwords do not match.</p>
                   )}
                 </CardContent>
-                <CardFooter className="bg-slate-50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 flex justify-end p-4 rounded-b-xl">
+                <CardFooter className="bg-muted/30 border-t border-border flex justify-end p-4 rounded-b-xl">
                   <Button
                     onClick={handleChangePassword}
                     disabled={isChangingPassword || passwordForm.newPassword.length < 6 || passwordForm.newPassword !== passwordForm.confirmPassword}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {isChangingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Password
@@ -1182,7 +1182,7 @@ export default function SettingsPage() {
                     {/* Actions */}
                     <div className="flex flex-wrap gap-3 pt-2">
                       {tier === "free" && (
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => window.location.href = "/get-started"}>
+                        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => window.location.href = "/get-started"}>
                           <ArrowUpRight className="w-4 h-4 mr-2" /> Upgrade to Pro
                         </Button>
                       )}

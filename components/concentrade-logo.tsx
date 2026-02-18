@@ -1,18 +1,33 @@
+"use client"
+
+import { cn } from "@/lib/utils"
+
 interface ConcentradeLogoProps {
   size?: number
   className?: string
   variant?: "full" | "icon" | "text"
-  theme?: "light" | "dark" | "auto"
 }
 
-export function ConcentradeLogo({ size = 40, className = "", variant = "full", theme = "auto" }: ConcentradeLogoProps) {
-  const iconSize = variant === "text" ? size * 0.8 : size
+/**
+ * Concentrade Logo Component
+ * 
+ * Design Concept: "Precision Focus"
+ * - A stylized 'C' formed by geometric trading bars.
+ * - A central "focus point" representing the 'Concentrate' aspect.
+ * - Upward momentum vectors representing the 'Trade' aspect.
+ */
+export function ConcentradeLogo({ 
+  size = 40, 
+  className = "", 
+  variant = "full" 
+}: ConcentradeLogoProps) {
+  const iconSize = variant === "text" ? 0 : size
   const textSize = variant === "icon" ? 0 : size * 0.6
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={cn("flex items-center gap-3", className)}>
       {variant !== "text" && (
-        <div className="relative" style={{ width: iconSize, height: iconSize }}>
+        <div className="relative flex items-center justify-center" style={{ width: iconSize, height: iconSize }}>
           <svg
             width={iconSize}
             height={iconSize}
@@ -21,49 +36,77 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
             xmlns="http://www.w3.org/2000/svg"
             className="drop-shadow-sm"
           >
-            {/* Main geometric building blocks - purple gradient */}
             <defs>
-              <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8B5CF6" />
-                <stop offset="50%" stopColor="#7C3AED" />
-                <stop offset="100%" stopColor="#6D28D9" />
+              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--primary)" />
+                <stop offset="100%" stopColor="color-mix(in oklch, var(--primary) 70%, black)" />
               </linearGradient>
+              
+              {/* Glow filter for the focus point */}
+              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
             </defs>
 
-            {/* Back building block */}
-            <rect x="15" y="25" width="25" height="50" fill="url(#purpleGradient)" opacity="0.7" rx="2" />
+            {/* Outer 'C' Structure - Geometric Trading Bars */}
+            {/* Top Bar */}
+            <rect x="20" y="20" width="50" height="12" rx="4" fill="url(#logoGradient)" />
+            {/* Left Vertical Bar */}
+            <rect x="20" y="20" width="12" height="60" rx="4" fill="url(#logoGradient)" />
+            {/* Bottom Bar */}
+            <rect x="20" y="68" width="50" height="12" rx="4" fill="url(#logoGradient)" />
+            
+            {/* Trading Momentum Vector (Upward) */}
+            <path 
+              d="M45 55 L65 35 L85 55" 
+              stroke="url(#logoGradient)" 
+              strokeWidth="10" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+              opacity="0.8"
+            />
+            <path 
+              d="M65 35 L65 65" 
+              stroke="url(#logoGradient)" 
+              strokeWidth="10" 
+              strokeLinecap="round"
+              opacity="0.8"
+            />
 
-            {/* Middle building block */}
-            <rect x="30" y="15" width="25" height="60" fill="url(#purpleGradient)" opacity="0.85" rx="2" />
-
-            {/* Front building block - aligned top with back block, same baseline */}
-            <rect x="45" y="25" width="25" height="50" fill="url(#purpleGradient)" rx="2" />
-
-            {/* Top accent block - aligned baseline with others */}
-            <rect x="60" y="20" width="20" height="55" fill="url(#purpleGradient)" opacity="0.9" rx="2" />
-
-            {/* Subtle highlight effects */}
-            <rect x="32" y="17" width="2" height="56" fill="white" opacity="0.3" rx="1" />
-            <rect x="47" y="27" width="2" height="46" fill="white" opacity="0.3" rx="1" />
-            <rect x="62" y="22" width="2" height="51" fill="white" opacity="0.3" rx="1" />
+            {/* The "Concentrate" Focus Point */}
+            <circle 
+              cx="65" 
+              cy="50" 
+              r="6" 
+              fill="var(--primary)" 
+              filter="url(#glow)"
+              className="animate-pulse"
+            />
+            
+            {/* Crosshair/Aperture Lines (Subtle) */}
+            <line x1="65" y1="38" x2="65" y2="42" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+            <line x1="65" y1="58" x2="65" y2="62" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+            <line x1="53" y1="50" x2="57" y2="50" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+            <line x1="73" y1="50" x2="77" y2="50" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </div>
       )}
 
-      {variant !== "icon" && textSize > 0 && (
-        <div className="flex flex-col">
+      {variant !== "icon" && (
+        <div className="flex flex-col justify-center">
           <span
-            className="font-bold tracking-tight bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent"
-            style={{ fontSize: textSize, lineHeight: 1.1 }}
+            className="font-bold tracking-tighter text-foreground"
+            style={{ fontSize: textSize, lineHeight: 1 }}
           >
-            Concentrade
+            CONCEN<span className="text-primary">TRADE</span>
           </span>
-          {size >= 60 && (
+          {size >= 50 && (
             <span
-              className="font-medium tracking-wide text-white"
-              style={{ fontSize: textSize * 0.35, lineHeight: 1 }}
+              className="font-medium tracking-[0.2em] text-muted-foreground uppercase mt-1"
+              style={{ fontSize: textSize * 0.3, lineHeight: 1 }}
             >
-              TRADING JOURNAL
+              Precision Journal
             </span>
           )}
         </div>
@@ -73,27 +116,9 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
 }
 
 export function ConcentradeLogoMinimal({ size = 32, className = "" }: { size?: number; className?: string }) {
-  return (
-    <div className={`${className}`} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="purpleGradientMini" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8B5CF6" />
-            <stop offset="100%" stopColor="#6D28D9" />
-          </linearGradient>
-        </defs>
-
-        {/* Simplified building blocks */}
-        <rect x="20" y="30" width="15" height="40" fill="url(#purpleGradientMini)" opacity="0.8" rx="1" />
-        <rect x="35" y="20" width="15" height="50" fill="url(#purpleGradientMini)" rx="1" />
-        <rect x="50" y="35" width="15" height="35" fill="url(#purpleGradientMini)" opacity="0.9" rx="1" />
-        <rect x="65" y="25" width="15" height="45" fill="url(#purpleGradientMini)" opacity="0.85" rx="1" />
-      </svg>
-    </div>
-  )
+  return <ConcentradeLogo size={size} className={className} variant="icon" />
 }
 
-// Logo variants for different use cases
 export const ConcentradeLogos = {
   Full: (props: ConcentradeLogoProps) => <ConcentradeLogo {...props} variant="full" />,
   Icon: (props: ConcentradeLogoProps) => <ConcentradeLogo {...props} variant="icon" />,

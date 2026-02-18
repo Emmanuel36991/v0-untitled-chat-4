@@ -47,7 +47,7 @@ export default function MarketingPageClient() {
             </span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 animate-fade-in-up">
             Turn Your Trading{" "}
             <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
               Chaos
@@ -89,7 +89,7 @@ export default function MarketingPageClient() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto animate-fade-in-up stagger-2">
             <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
               <div className="text-3xl font-bold text-indigo-400 mb-2">1,000+</div>
               <div className="text-sm text-slate-400">Active Traders</div>
@@ -126,8 +126,8 @@ export default function MarketingPageClient() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
+          <div className="grid md:grid-cols-3 gap-8 mb-16 animate-fade-in-up">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
               <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <FileText className="h-8 w-8 text-red-500" />
               </div>
@@ -139,7 +139,7 @@ export default function MarketingPageClient() {
               <div className="text-red-500 font-bold text-lg text-center">Can't track performance</div>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
               <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle className="h-8 w-8 text-red-500" />
               </div>
@@ -150,7 +150,7 @@ export default function MarketingPageClient() {
               <div className="text-red-500 font-bold text-lg text-center">Costly emotional mistakes</div>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
               <div className="w-16 h-16 bg-red-500/20 border-2 border-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <RotateCcw className="h-8 w-8 text-red-500" />
               </div>
@@ -210,7 +210,7 @@ export default function MarketingPageClient() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
               <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
                 <BarChart3 className="h-8 w-8 text-white" />
               </div>
@@ -239,7 +239,7 @@ export default function MarketingPageClient() {
               </Link>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
               <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
                 <Brain className="h-8 w-8 text-white" />
               </div>
@@ -272,7 +272,7 @@ export default function MarketingPageClient() {
               </Link>
             </div>
 
-            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105">
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 hover:border-indigo-500/50 transition-all duration-300 hover:transform hover:scale-105 card-enhanced">
               <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
                 <Calculator className="h-8 w-8 text-white" />
               </div>
@@ -449,7 +449,7 @@ export default function MarketingPageClient() {
             <p className="text-xl text-slate-300">Start free, upgrade when you're ready</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="grid md:grid-cols-3 gap-8 mb-16 animate-fade-in-up">
             <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8">
               <h3 className="text-xl font-semibold mb-2">Starter</h3>
               <div className="mb-6">
@@ -671,8 +671,7 @@ export default function MarketingPageClient() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <ConcentradeLogo size={24} variant="icon" />
-                <span className="text-lg font-bold">Concentrade</span>
+                <ConcentradeLogo size={32} variant="full" />
               </div>
               <p className="text-slate-400 text-sm">
                 Transform your trading chaos into consistent profits with professional analytics and emotional

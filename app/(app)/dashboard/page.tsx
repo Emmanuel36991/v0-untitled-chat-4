@@ -18,10 +18,7 @@ import { cn } from "@/lib/utils"
 
 // --- Icons ---
 import {
-  Target,
   RefreshCw,
-  Wallet,
-  Plus,
 } from "lucide-react"
 import {
   BreakoutIcon,
@@ -31,9 +28,11 @@ import {
   MeanReversionIcon,
   CompassIcon,
   NeuralSparkIcon,
-  AvgReturnIcon,
+  MeanLineIcon as AvgReturnIcon,
   ProfitFactorIcon,
-} from "@/components/icons/system-icons"
+  EntryMarkerIcon as AddTradeIcon,
+  DashboardIcon,
+} from "@/components/icons/hand-crafted-icons"
 import { WisdomSparkIcon } from "@/components/icons/hand-crafted-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
@@ -478,7 +477,8 @@ export default function DashboardPage() {
               <span>{format(new Date(), "MMMM dd, yyyy")}</span>
             </div>
 
-            <AnimatedTitle className="text-3xl sm:text-4xl">
+            <AnimatedTitle className="text-3xl sm:text-4xl flex items-center gap-3">
+              <DashboardIcon className="w-8 h-8 text-primary/80" />
               Dashboard Overview
             </AnimatedTitle>
 
@@ -492,7 +492,7 @@ export default function DashboardPage() {
 
           <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
             {/* Period Selector */}
-            <div className="bg-card p-1 rounded-xl shadow-sm border border-border flex items-center gap-1 backdrop-blur-sm">
+            <div className="glass-card p-1 rounded-xl shadow-sm border border-border flex items-center gap-1 backdrop-blur-sm">
               {(["7d", "30d", "90d", "ytd", "all"] as const).map((period) => (
                 <Button
                   key={period}
@@ -500,7 +500,7 @@ export default function DashboardPage() {
                   size="sm"
                   onClick={() => setSelectedPeriod(period)}
                   className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                    "rounded-lg px-3 py-1.5 text-xs font-bold transition-all tactile-transition",
                     selectedPeriod === period
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -539,11 +539,11 @@ export default function DashboardPage() {
               </Button>
 
               <Button
-                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="rounded-xl h-10 px-6 shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 transition-all btn-enhanced magnetic-hover"
                 asChild
               >
                 <Link href="/add-trade">
-                  <Plus className="mr-2 h-4 w-4" /> New Trade
+                  <AddTradeIcon className="mr-2 h-4 w-4" /> New Trade
                 </Link>
               </Button>
             </div>
@@ -558,8 +558,9 @@ export default function DashboardPage() {
         />
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up">
+      <MetricCard
+            className="stagger-1"
             title="Net P&L"
             value={
               displayFormat === "dollars"
@@ -572,7 +573,7 @@ export default function DashboardPage() {
             }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
-            icon={Wallet}
+            icon={ProfitChartIcon}
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
@@ -580,8 +581,8 @@ export default function DashboardPage() {
           />
 
           <MetricCard
-            title="Win Rate"
-            value={`${stats.winRate.toFixed(1)}%`}
+            className="stagger-2"
+            title="Win Rate"         value={`${stats.winRate.toFixed(1)}%`}
             change={`${stats.winningTrades}W - ${stats.losingTrades}L`}
             changeType={
               stats.winRate > 50
@@ -590,7 +591,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={Target}
+            icon={MeanReversionIcon}
             iconColor="text-chart-2"
             trendData={[
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
@@ -599,9 +600,9 @@ export default function DashboardPage() {
             isHot={stats.consecutiveWins >= 3}
           />
 
-          <MetricCard
-            title="Profit Factor"
-            value={stats.profitFactor.toFixed(2)}
+        <MetricCard
+            className="stagger-3"
+            title="Profit Factor"           value={stats.profitFactor.toFixed(2)}
             change={`Exp: $${stats.expectancy.toFixed(2)}`}
             changeType={
               stats.profitFactor >= 1.5
@@ -615,9 +616,9 @@ export default function DashboardPage() {
             subtitle="Gross Profit / Gross Loss"
           />
 
-          <MetricCard
-            title="Avg Return"
-            value={`$${stats.avgReturn.toFixed(2)}`}
+        <MetricCard
+            className="stagger-4"
+            title="Avg Return"           value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
             icon={AvgReturnIcon}

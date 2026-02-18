@@ -14,7 +14,8 @@ export interface EmptyStateAction {
 }
 
 interface EmptyStateProps {
-  icon: LucideIcon
+  icon?: LucideIcon | React.ElementType
+  illustration?: React.ElementType
   title: string
   description: string
   action?: EmptyStateAction
@@ -27,7 +28,7 @@ function ActionButton({ action, isPrimary }: { action: EmptyStateAction; isPrima
   const variant = action.variant ?? (isPrimary ? "default" : "outline")
 
   const button = (
-    <Button variant={variant} size={isPrimary ? "default" : "sm"} onClick={action.onClick} className="gap-2">
+    <Button variant={variant} size={isPrimary ? "default" : "sm"} onClick={action.onClick} className={cn("gap-2", isPrimary && "btn-enhanced")}>
       {action.label}
     </Button>
   )
@@ -41,6 +42,7 @@ function ActionButton({ action, isPrimary }: { action: EmptyStateAction; isPrima
 
 export function EmptyState({
   icon: Icon,
+  illustration: Illustration,
   title,
   description,
   action,
@@ -51,27 +53,33 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center",
+        "flex flex-col items-center justify-center text-center animate-fade-in-up",
         compact ? "py-12 px-4" : "py-20 px-6",
         className
       )}
     >
-      {/* Icon container with gradient ring */}
-      <div
-        className={cn(
-          "rounded-2xl flex items-center justify-center mb-5",
-          "bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/15 dark:to-primary/5",
-          "ring-1 ring-primary/10 dark:ring-primary/20",
-          compact ? "p-3" : "p-4"
-        )}
-      >
-        <Icon
+      {/* Illustration or Icon container */}
+      {Illustration ? (
+        <div className="mb-6 flex items-center justify-center">
+          <Illustration className={cn(compact ? "w-32" : "w-48")} />
+        </div>
+      ) : Icon ? (
+        <div
           className={cn(
-            "text-primary/60 dark:text-primary/70",
-            compact ? "w-6 h-6" : "w-8 h-8"
+            "rounded-2xl flex items-center justify-center mb-5 animate-float",
+            "bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/15 dark:to-primary/5",
+            "ring-1 ring-primary/10 dark:ring-primary/20 shadow-lg shadow-primary/5",
+            compact ? "p-3" : "p-4"
           )}
-        />
-      </div>
+        >
+          <Icon
+            className={cn(
+              "text-primary/60 dark:text-primary/70",
+              compact ? "w-6 h-6" : "w-8 h-8"
+            )}
+          />
+        </div>
+      ) : null}
 
       {/* Title */}
       <h3

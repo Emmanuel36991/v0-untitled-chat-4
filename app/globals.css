@@ -684,6 +684,50 @@ select {
   transform: translateY(0);
 }
 
+/* Success Ripple Effect */
+.success-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.success-ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--success);
+  opacity: 0;
+  animation: success-pulse 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes success-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Magnetic Hover Effect (Visual Only) */
+.magnetic-hover {
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.magnetic-hover:hover {
+  transform: scale(1.05) translateY(-2px);
+}
+
+/* Tactile Transition */
+.tactile-transition {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tactile-transition:active {
+  transform: scale(0.98);
+}
+
 /* Enhanced Card Styles */
 .card-enhanced {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);

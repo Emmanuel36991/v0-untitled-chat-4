@@ -31,7 +31,7 @@ export default function InsightsPage() {
     const loadData = async () => {
       setIsLoading(true)
       try {
-        const fetchedTrades = await getTrades()
+        const fetchedTrades = await getTrades({ limit: 2000, order: "desc" })
         setTrades(fetchedTrades || [])
       } catch (error) {
         console.error("Failed to load trades:", error)

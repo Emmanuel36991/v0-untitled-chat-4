@@ -111,9 +111,9 @@ export default function TradesPage() {
          const fetchedAccounts = await getTradingAccounts()
          setAccounts(fetchedAccounts)
 
-         // Fetch Trades
-         const fetchedTrades = await getTrades()
-         const sorted = fetchedTrades.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+         // Fetch Trades (last 1000 for list; use pagination for more)
+         const fetchedTrades = await getTrades({ limit: 1000, order: "desc" })
+         const sorted = fetchedTrades
          setTrades(sorted)
 
          if (showToast) toast({ title: "Updated", description: "Data synchronized." })

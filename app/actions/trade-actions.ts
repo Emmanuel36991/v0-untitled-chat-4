@@ -209,19 +209,35 @@ type SubmitTradeResult = {
   error?: string
 }
 
-// 3. GET TRADES
-export async function getTrades(): Promise<Trade[]> {
+// Default cap to avoid unbounded queries; analytics can pass a higher limit
+const DEFAULT_TRADE_LIMIT = 2000
+const MAX_TRADE_LIMIT = 20000
+
+export interface GetTradesOptions {
+  limit?: number
+  offset?: number
+  order?: "asc" | "desc"
+}
+
+// 3. GET TRADES (paginated / limited to scale for 5k+ trades)
+export async function getTrades(options: GetTradesOptions = {}): Promise<Trade[]> {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) return []
 
-    const { data, error } = await supabase
+    const { limit = DEFAULT_TRADE_LIMIT, offset = 0, order = "asc" } = options
+    const cappedLimit = Math.min(Math.max(1, limit), MAX_TRADE_LIMIT)
+
+    let query = supabase
       .from("trades")
       .select("*")
       .eq("user_id", user.id)
-      .order("date", { ascending: true })
+      .order("date", { ascending: order === "asc" })
+      .range(offset, offset + cappedLimit - 1)
+
+    const { data, error } = await query
 
     if (error) {
       logger.error("Error fetching trades:", error)
@@ -233,6 +249,43 @@ export async function getTrades(): Promise<Trade[]> {
     logger.error("Exception in getTrades:", error)
     return []
   }
+}
+
+// Total count for pagination (e.g. Trades list)
+export async function getTradesCount(): Promise<number> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return 0
+
+    const { count, error } = await supabase
+      .from("trades")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+
+    if (error) {
+      logger.error("Error fetching trades count:", error)
+      return 0
+    }
+    return count ?? 0
+  } catch (error) {
+    logger.error("Exception in getTradesCount:", error)
+    return 0
+  }
+}
+
+// Recent instruments for trade form suggestions (avoids loading full trade list)
+export async function getRecentInstruments(limit = 300): Promise<string[]> {
+  const trades = await getTrades({ limit, order: "desc" })
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const t of trades) {
+    if (t.instrument && !seen.has(t.instrument)) {
+      seen.add(t.instrument)
+      out.push(t.instrument)
+    }
+  }
+  return out
 }
 
 // 4. ADD TRADE

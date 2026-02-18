@@ -366,7 +366,10 @@ export default function AnalyticsPage() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const [tradesData, analyticsData] = await Promise.all([getTrades(), getAnalyticsData()])
+        const [tradesData, analyticsData] = await Promise.all([
+          getTrades({ limit: 10000, order: "asc" }),
+          getAnalyticsData(),
+        ])
         setTrades(tradesData || [])
         if (analyticsData?.confluenceStats) setConfluenceStats(analyticsData.confluenceStats)
       } catch (error) {

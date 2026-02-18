@@ -44,15 +44,15 @@ export default function DashboardLoading() {
               fill="url(#loadGrad)" opacity="0.85"
               style={{ animation: "block-rise 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
             />
-            {/* Block 3 — front */}
+            {/* Block 3 — front (aligned top with back block, same baseline) */}
             <rect
-              x="45" y="35" width="25" height="40" rx="2"
+              x="45" y="25" width="25" height="50" rx="2"
               fill="url(#loadGrad)"
               style={{ animation: "block-rise 0.8s cubic-bezier(0.16,1,0.3,1) 0.3s both" }}
             />
-            {/* Block 4 — top accent */}
+            {/* Block 4 — top accent (aligned baseline with others) */}
             <rect
-              x="60" y="20" width="20" height="35" rx="2"
+              x="60" y="20" width="20" height="55" rx="2"
               fill="url(#loadGrad)" opacity="0.9"
               style={{ animation: "block-rise 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s both" }}
             />
@@ -61,10 +61,10 @@ export default function DashboardLoading() {
             <rect x="32" y="17" width="2" height="56" fill="white" opacity="0.25" rx="1"
               style={{ animation: "block-rise 0.8s cubic-bezier(0.16,1,0.3,1) 0.25s both" }}
             />
-            <rect x="47" y="37" width="2" height="36" fill="white" opacity="0.25" rx="1"
+            <rect x="47" y="27" width="2" height="46" fill="white" opacity="0.25" rx="1"
               style={{ animation: "block-rise 0.8s cubic-bezier(0.16,1,0.3,1) 0.35s both" }}
             />
-            <rect x="62" y="22" width="2" height="31" fill="white" opacity="0.25" rx="1"
+            <rect x="62" y="22" width="2" height="51" fill="white" opacity="0.25" rx="1"
               style={{ animation: "block-rise 0.8s cubic-bezier(0.16,1,0.3,1) 0.45s both" }}
             />
           </svg>

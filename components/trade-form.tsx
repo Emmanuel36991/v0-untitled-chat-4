@@ -44,7 +44,7 @@ import type { TradingAccount } from "@/types/accounts"
 
 // Actions
 import { getStrategies, type PlaybookStrategy, type StrategySetup } from "@/app/actions/playbook-actions"
-import { logTradePsychology, getTrades } from "@/app/actions/trade-actions"
+import { logTradePsychology, getRecentInstruments } from "@/app/actions/trade-actions"
 import { getTradingAccounts } from "@/app/actions/account-actions"
 
 // Sub-components
@@ -570,27 +570,16 @@ const TradeForm = ({ onSubmitTrade, initialTradeData, mode = "add", onSuccess }:
     let mounted = true
     async function loadData() {
       try {
-        const [loadedStrategies, loadedAccounts, loadedTrades] = await Promise.all([
+        const [loadedStrategies, loadedAccounts, recentInstrumentsList] = await Promise.all([
           getStrategies(),
           getTradingAccounts(),
-          getTrades()
+          getRecentInstruments(200),
         ])
 
         if (mounted) {
           setStrategies(loadedStrategies)
           setTradingAccounts(loadedAccounts)
-
-          // Extract top 5 unique recently traded instruments
-          const seen = new Set<string>()
-          const recent: string[] = []
-          for (const t of loadedTrades) {
-            if (t.instrument && !seen.has(t.instrument)) {
-              seen.add(t.instrument)
-              recent.push(t.instrument)
-              if (recent.length >= 5) break
-            }
-          }
-          setRecentInstruments(recent)
+          setRecentInstruments(recentInstrumentsList)
 
           // Set default account if one exists and none is selected
           if (loadedAccounts.length > 0 && !formData.account_id) {

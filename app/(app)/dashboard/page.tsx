@@ -178,7 +178,7 @@ export default function DashboardPage() {
 
     try {
       const [fetchedTrades, accounts, strategies] = await Promise.all([
-        getTrades(),
+        getTrades({ limit: 500, order: "desc" }),
         getTradingAccounts(),
         getStrategies(),
       ])

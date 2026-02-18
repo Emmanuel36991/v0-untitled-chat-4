@@ -21,12 +21,14 @@ export async function getAnalyticsData() {
 
   if (!user) return { stats: {}, equityCurve: [], hourlyStats: [], instrumentStats: [], confluenceStats: [] }
 
-  // 1. Fetch Trades (Fixed: ordering by 'date', not 'entry_date')
+  // 1. Fetch Trades with cap for scale (e.g. 5k+ trades)
+  const TRADES_CAP = 20000
   const { data: trades } = await supabase
     .from("trades")
     .select("*")
     .eq("user_id", user.id)
     .order("date", { ascending: true })
+    .limit(TRADES_CAP)
 
   if (!trades) return { stats: {}, equityCurve: [], hourlyStats: [], instrumentStats: [], confluenceStats: [] }
 
@@ -37,43 +39,53 @@ export async function getAnalyticsData() {
     .eq("user_id", user.id)
 
   const strategyIds = strategies?.map(s => s.id) || []
-  
+
   const { data: rules } = await supabase
     .from("strategy_rules")
     .select("id, text, category")
     .in("strategy_id", strategyIds)
 
+  // O(1) rule lookup instead of O(trades * rules) with .find()
+  const ruleById = new Map<string, { id: string; text: string; category: string | null }>()
+  if (rules) {
+    for (const r of rules) {
+      ruleById.set(r.id, { id: r.id, text: r.text, category: r.category ?? null })
+    }
+  }
+
   // 3. Process Confluence Statistics
   const confluenceMap = new Map<string, ConfluenceStat>()
 
-  if (rules && trades) {
-    trades.forEach(trade => {
-      // executed_rules is stored as JSONB array of IDs
+  if (trades) {
+    for (const trade of trades) {
       const tradeRules = trade.executed_rules || []
-      
-      if (Array.isArray(tradeRules)) {
-        tradeRules.forEach((ruleId: string) => {
-          const ruleDef = rules.find(r => r.id === ruleId)
-          if (ruleDef) {
-            const current = confluenceMap.get(ruleId) || {
-              id: ruleId,
-              text: ruleDef.text,
-              category: ruleDef.category || 'price',
-              count: 0,
-              wins: 0,
-              pnl: 0,
-              winRate: 0
-            }
+      if (!Array.isArray(tradeRules)) continue
 
-            current.count++
-            current.pnl += (Number(trade.pnl) || 0)
-            if ((Number(trade.pnl) || 0) > 0) current.wins++
-            
-            confluenceMap.set(ruleId, current)
+      const pnl = Number(trade.pnl) || 0
+      const isWin = pnl > 0
+
+      for (const ruleId of tradeRules) {
+        const ruleDef = ruleById.get(ruleId)
+        if (!ruleDef) continue
+
+        let current = confluenceMap.get(ruleId)
+        if (!current) {
+          current = {
+            id: ruleId,
+            text: ruleDef.text,
+            category: ruleDef.category || "price",
+            count: 0,
+            wins: 0,
+            pnl: 0,
+            winRate: 0,
           }
-        })
+          confluenceMap.set(ruleId, current)
+        }
+        current.count++
+        current.pnl += pnl
+        if (isWin) current.wins++
       }
-    })
+    }
   }
 
   const confluenceStats = Array.from(confluenceMap.values())
@@ -117,13 +129,13 @@ export async function getPeriodStatistics() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
   
-    // Fixed: Query 'date' instead of 'entry_date'
     const { data: trades } = await supabase
       .from("trades")
       .select("*")
       .eq("user_id", user.id)
       .order("date", { ascending: false })
-  
+      .limit(10000)
+
     if (!trades) return { daily: null, weekly: null, monthly: null, yearly: null }
   
     const now = new Date()

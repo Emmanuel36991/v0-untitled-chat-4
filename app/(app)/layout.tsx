@@ -19,18 +19,17 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode
 }) {
-  // 1. Fetch data for AI Context (Server-Side for Efficiency)
+  // 1. Fetch data for AI Context (last 500 trades only to avoid blocking layout with 5k+ rows)
   let aiContext = ""
   try {
-    const trades = await getTrades()
-    // Ensure trades is an array before processing
-    if (Array.isArray(trades)) {
-      const contextData = buildTradingContext(trades)
+    const tradesDesc = await getTrades({ limit: 500, order: "desc" })
+    if (Array.isArray(tradesDesc) && tradesDesc.length > 0) {
+      const tradesChrono = [...tradesDesc].reverse()
+      const contextData = buildTradingContext(tradesChrono)
       aiContext = JSON.stringify(contextData)
     }
   } catch (error) {
     console.error("Failed to load AI context:", error)
-    // Bot will still work, just without personalized data initially
   }
 
   return (

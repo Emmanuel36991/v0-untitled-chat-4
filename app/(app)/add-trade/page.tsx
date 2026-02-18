@@ -73,8 +73,8 @@ export default function AddTradePage() {
 
       <TradeForm
         onSubmitTrade={handleSubmitTrade}
-        onSuccess={() => {
-          router.push("/trades")
+        onSuccess={(tradeId) => {
+          router.push(`/trades?highlight=${tradeId}`)
           router.refresh()
         }}
       />

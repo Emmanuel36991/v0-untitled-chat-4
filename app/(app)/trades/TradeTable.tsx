@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useTransition, useMemo, useEffect } from "react"
+import { useState, useTransition, useMemo, useEffect, useRef } from "react"
 import type { Trade } from "@/types"
 import { deleteTrade, updateTrade } from "@/app/actions/trade-actions"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -11,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,6 +72,8 @@ export function TradeTable({
   isLoading: pageIsLoading,
   viewMode = "list",
 }: TradeTableProps) {
+  const searchParams = useSearchParams()
+  const highlightId = searchParams?.get("highlight")
   const [displayedTrades, setDisplayedTrades] = useState<Trade[]>(initialTrades)
   const { toast } = useToast()
   const [isPendingDelete, startDeleteTransition] = useTransition()
@@ -84,10 +88,33 @@ export function TradeTable({
   const [editValues, setEditValues] = useState<Partial<Trade>>({})
   const [searchTerm, setSearchTerm] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(highlightId)
+
+  const rowRefs = useRef<{ [key: string]: HTMLTableRowElement | null }>({})
 
   useEffect(() => {
     setDisplayedTrades(initialTrades)
   }, [initialTrades])
+
+  useEffect(() => {
+    if (highlightId) {
+      setActiveHighlight(highlightId)
+      
+      // Scroll into view if the row exists
+      setTimeout(() => {
+        const row = rowRefs.current[highlightId]
+        if (row) {
+          row.scrollIntoView({ behavior: "smooth", block: "center" })
+        }
+      }, 500)
+
+      // Clear highlight after 3 seconds
+      const timer = setTimeout(() => {
+        setActiveHighlight(null)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [highlightId])
 
   const sortedAndFilteredTrades = useMemo(() => {
     if (!displayedTrades) return []
@@ -313,41 +340,6 @@ export function TradeTable({
     </TableHead>
   )
 
-  if (pageIsLoading && initialTrades.length === 0) {
-    return (
-      <Card className="bg-card border-0 shadow-xl">
-        <CardContent className="p-12 text-center">
-          <div className="flex items-center justify-center space-x-4 mb-6">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">Loading Trade Data</h3>
-          <p className="text-muted-foreground">Retrieving your trading history...</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (sortedAndFilteredTrades.length === 0 && Object.keys(filters).length > 0 && !pageIsLoading) {
-    return (
-      <Card className="bg-card border-0 shadow-xl">
-        <CardContent className="py-16 text-center">
-          <div className="w-16 h-16 bg-warning rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <FilterX className="h-8 w-8 text-warning-foreground" />
-          </div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">No Data Matches Filters</h3>
-          <p className="text-muted-foreground mb-6">
-            Adjust your filters or clear all parameters to view your trading data.
-          </p>
-          <Button onClick={() => onRefreshNeeded()} className="bg-primary hover:bg-primary/90">
-            Reset Filters
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <>
       <AlertDialog open={isConfirmDeleteDialogOpen} onOpenChange={setIsConfirmDeleteDialogOpen}>
@@ -394,105 +386,128 @@ export function TradeTable({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedAndFilteredTrades.map((trade) => {
-              const getOutcomeBadge = () => {
-                if (!trade.outcome) return <Badge variant="outline">Not Set</Badge>
+            <AnimatePresence mode="popLayout">
+              {sortedAndFilteredTrades.map((trade) => {
+                const isHighlighted = activeHighlight === trade.id
+                const getOutcomeBadge = () => {
+                  if (!trade.outcome) return <Badge variant="outline">Not Set</Badge>
 
-                switch (trade.outcome.toLowerCase()) {
-                  case "win":
-                    return <Badge className="bg-green-500 text-white">Win</Badge>
-                  case "loss":
-                    return <Badge className="bg-red-500 text-white">Loss</Badge>
-                  case "breakeven":
-                    return <Badge className="bg-amber-500 text-white">Breakeven</Badge>
-                  default:
-                    return <Badge variant="outline">{trade.outcome}</Badge>
+                  switch (trade.outcome.toLowerCase()) {
+                    case "win":
+                      return <Badge className="bg-green-500 text-white">Win</Badge>
+                    case "loss":
+                      return <Badge className="bg-red-500 text-white">Loss</Badge>
+                    case "breakeven":
+                      return <Badge className="bg-amber-500 text-white">Breakeven</Badge>
+                    default:
+                      return <Badge variant="outline">{trade.outcome}</Badge>
+                  }
                 }
-              }
 
-              return (
-                <Card
-                  key={trade.id}
-                  className="bg-card border shadow-lg hover:shadow-xl transition-all duration-300 group hover:scale-105"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        {getDirectionIcon(trade.direction)}
-                        <div>
-                          <span className="font-bold text-foreground text-lg">
-                            {trade.instrument || <span className="text-muted-foreground italic">Not Set</span>}
-                          </span>
-                          <p className="text-sm text-muted-foreground capitalize">{trade.direction}</p>
+                return (
+                  <motion.div
+                    key={trade.id}
+                    layout
+                    initial={isHighlighted ? { opacity: 0, x: 50, scale: 0.9 } : false}
+                    animate={{ 
+                      opacity: 1, 
+                      x: 0, 
+                      scale: 1,
+                      boxShadow: isHighlighted ? "0 0 20px rgba(79, 70, 229, 0.4)" : "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                    }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 300, 
+                      damping: 25,
+                      boxShadow: { duration: 0.5 }
+                    }}
+                  >
+                    <Card
+                      className={cn(
+                        "bg-card border shadow-lg hover:shadow-xl transition-all duration-300 group hover:scale-105",
+                        isHighlighted && "border-indigo-500 ring-2 ring-indigo-500/20"
+                      )}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-3">
+                            {getDirectionIcon(trade.direction)}
+                            <div>
+                              <span className="font-bold text-foreground text-lg">
+                                {trade.instrument || <span className="text-muted-foreground italic">Not Set</span>}
+                              </span>
+                              <p className="text-sm text-muted-foreground capitalize">{trade.direction}</p>
+                            </div>
+                          </div>
+                          {getOutcomeBadge()}
                         </div>
-                      </div>
-                      {getOutcomeBadge()}
-                    </div>
 
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="text-muted-foreground font-medium">Entry</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatPrice(trade.entry_price, trade.instrument)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="text-muted-foreground font-medium">Exit</span>
-                        <span className="font-mono font-bold text-foreground">
-                          {formatPrice(trade.exit_price, trade.instrument)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="text-muted-foreground font-medium">P&L</span>
-                        <EnhancedPnLCell trade={trade} displayFormat={displayFormat} />
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="text-muted-foreground font-medium">Date</span>
-                        <span className="font-medium text-foreground">{new Date(trade.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="text-muted-foreground font-medium">Size</span>
-                        <span className="font-mono font-bold text-foreground">{trade.size}</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="text-muted-foreground font-medium">Setup</span>
-                        <span className="font-medium text-foreground">
-                          {trade.setup_name || <span className="text-muted-foreground italic">Not Set</span>}
-                        </span>
-                      </div>
-                    </div>
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="text-muted-foreground font-medium">Entry</span>
+                            <span className="font-mono font-bold text-foreground">
+                              {formatPrice(trade.entry_price, trade.instrument)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="text-muted-foreground font-medium">Exit</span>
+                            <span className="font-mono font-bold text-foreground">
+                              {formatPrice(trade.exit_price, trade.instrument)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="text-muted-foreground font-medium">P&L</span>
+                            <EnhancedPnLCell trade={trade} displayFormat={displayFormat} />
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="text-muted-foreground font-medium">Date</span>
+                            <span className="font-medium text-foreground">{new Date(trade.date).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="text-muted-foreground font-medium">Size</span>
+                            <span className="font-mono font-bold text-foreground">{trade.size}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="text-muted-foreground font-medium">Setup</span>
+                            <span className="font-medium text-foreground">
+                              {trade.setup_name || <span className="text-muted-foreground italic">Not Set</span>}
+                            </span>
+                          </div>
+                        </div>
 
-                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/trade-details/${trade.id}`}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View
-                        </Link>
-                      </Button>
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/edit-trade/${trade.id}`}>
-                          <Edit3 className="h-4 w-4 mr-2" />
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 bg-transparent"
-                        onClick={() => handleRequestDelete(trade.id)}
-                        disabled={isPendingDelete}
-                      >
-                        {isPendingDelete && tradeToDelete === trade.id ? (
-                          <RefreshCw className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+                        <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/trade-details/${trade.id}`}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Link>
+                          </Button>
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/edit-trade/${trade.id}`}>
+                              <Edit3 className="h-4 w-4 mr-2" />
+                              Edit
+                            </Link>
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 bg-transparent"
+                            onClick={() => handleRequestDelete(trade.id)}
+                            disabled={isPendingDelete}
+                          >
+                            {isPendingDelete && tradeToDelete === trade.id ? (
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
           </div>
         </div>
       ) : (
@@ -571,201 +586,221 @@ export function TradeTable({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedAndFilteredTrades.map((trade) => {
-                    const isEditing = editingRow === trade.id
+                  <AnimatePresence mode="popLayout">
+                    {sortedAndFilteredTrades.map((trade) => {
+                      const isEditing = editingRow === trade.id
+                      const isHighlighted = activeHighlight === trade.id
 
-                    return (
-                      <TableRow
-                        key={trade.id}
-                        className="border-b border-border hover:bg-muted/50 transition-all duration-200"
-                      >
-                        <TableCell className="text-sm font-medium text-foreground">
-                          {new Date(trade.date).toLocaleDateString()}
-                        </TableCell>
-
-                        <TableCell className="text-sm">
-                          {isEditing ? (
-                            <Input
-                              value={editValues.instrument || ""}
-                              onChange={(e) => setEditValues({ ...editValues, instrument: e.target.value })}
-                              className="w-32"
-                              placeholder="Instrument"
-                            />
-                          ) : (
-                            <Badge variant="outline" className="font-semibold">
-                              {trade.instrument || "Not Set"}
-                            </Badge>
+                      return (
+                        <motion.tr
+                          key={trade.id}
+                          layout
+                          ref={(el) => { rowRefs.current[trade.id] = el }}
+                          initial={isHighlighted ? { opacity: 0, x: 50, backgroundColor: "rgba(79, 70, 229, 0.1)" } : false}
+                          animate={{ 
+                            opacity: 1, 
+                            x: 0,
+                            backgroundColor: isHighlighted ? "rgba(79, 70, 229, 0.1)" : "transparent"
+                          }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 300, 
+                            damping: 25,
+                            backgroundColor: { duration: 0.5 }
+                          }}
+                          className={cn(
+                            "border-b border-border hover:bg-muted/50 transition-all duration-200",
+                            isHighlighted && "ring-2 ring-indigo-500/50 ring-inset"
                           )}
-                        </TableCell>
+                        >
+                          <TableCell className="text-sm font-medium text-foreground">
+                            {new Date(trade.date).toLocaleDateString()}
+                          </TableCell>
 
-                        <TableCell className="text-sm">
-                          <div className="flex items-center space-x-2">
-                            {getDirectionIcon(trade.direction)}
-                            <span className="ml-2 capitalize font-medium text-foreground">{trade.direction}</span>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-sm font-mono font-bold text-foreground">
-                          {isEditing ? (
-                            <Input
-                              type="number"
-                              value={editValues.size || ""}
-                              onChange={(e) => setEditValues({ ...editValues, size: Number(e.target.value) })}
-                              className="w-24"
-                            />
-                          ) : (
-                            trade.size
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-sm font-mono font-bold text-foreground">
-                          {isEditing ? (
-                            <Input
-                              type="number"
-                              step="0.00001"
-                              value={editValues.entry_price || ""}
-                              onChange={(e) => setEditValues({ ...editValues, entry_price: Number(e.target.value) })}
-                              className="w-32"
-                            />
-                          ) : (
-                            formatPrice(trade.entry_price, trade.instrument)
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-sm font-mono font-bold text-foreground">
-                          {isEditing ? (
-                            <Input
-                              type="number"
-                              step="0.00001"
-                              value={editValues.exit_price || ""}
-                              onChange={(e) => setEditValues({ ...editValues, exit_price: Number(e.target.value) })}
-                              className="w-32"
-                            />
-                          ) : (
-                            formatPrice(trade.exit_price, trade.instrument)
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-sm">
-                          <EnhancedPnLCell trade={trade} displayFormat={displayFormat} showMultipleFormats={true} />
-                        </TableCell>
-
-                        <TableCell className="text-sm">
-                          {isEditing ? (
-                            <Select
-                              value={editValues.outcome || ""}
-                              onValueChange={(value) =>
-                                setEditValues({ ...editValues, outcome: value as Trade["outcome"] })
-                              }
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue placeholder="Outcome" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="win">Win</SelectItem>
-                                <SelectItem value="loss">Loss</SelectItem>
-                                <SelectItem value="breakeven">Breakeven</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <>
-                              {!trade.outcome && <span className="text-muted-foreground italic text-xs">Not Set</span>}
-                              {trade.outcome === "win" && (
-                                <Badge className="bg-green-500 text-white font-semibold">
-                                  <TrendingUp className="h-3 w-3 mr-1" />
-                                  Win
-                                </Badge>
-                              )}
-                              {trade.outcome === "loss" && (
-                                <Badge className="bg-red-500 text-white font-semibold">
-                                  <TrendingDown className="h-3 w-3 mr-1" />
-                                  Loss
-                                </Badge>
-                              )}
-                              {trade.outcome === "breakeven" && (
-                                <Badge className="bg-amber-500 text-white font-semibold">
-                                  <MinusCircle className="h-3 w-3 mr-1" />
-                                  Breakeven
-                                </Badge>
-                              )}
-                            </>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-sm font-medium text-foreground">
-                          {trade.risk_reward_ratio && trade.risk_reward_ratio !== 0 ? (
-                            <span className="font-mono">{trade.risk_reward_ratio.toFixed(2)}</span>
-                          ) : (
-                            <span className="text-muted-foreground italic">N/A</span>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-sm">
-                          {isEditing ? (
-                            <Input
-                              value={editValues.setup_name || ""}
-                              onChange={(e) => setEditValues({ ...editValues, setup_name: e.target.value })}
-                              className="w-32"
-                              placeholder="Setup"
-                            />
-                          ) : (
-                            <Badge variant="secondary" className="font-semibold">
-                              {trade.setup_name || "Not Set"}
-                            </Badge>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="text-sm">
-                          <div className="flex items-center justify-center space-x-2">
+                          <TableCell className="text-sm">
                             {isEditing ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => saveEditing(trade.id)}
-                                  disabled={isSaving}
-                                  className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
-                                >
-                                  {isSaving ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Check className="h-4 w-4" />
-                                  )}
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={cancelEditing} disabled={isSaving}>
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </>
+                              <Input
+                                value={editValues.instrument || ""}
+                                onChange={(e) => setEditValues({ ...editValues, instrument: e.target.value })}
+                                className="w-32"
+                                placeholder="Instrument"
+                              />
+                            ) : (
+                              <Badge variant="outline" className="font-semibold">
+                                {trade.instrument || "Not Set"}
+                              </Badge>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="text-sm">
+                            <div className="flex items-center space-x-2">
+                              {getDirectionIcon(trade.direction)}
+                              <span className="ml-2 capitalize font-medium text-foreground">{trade.direction}</span>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="text-sm font-mono font-bold text-foreground">
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                value={editValues.size || ""}
+                                onChange={(e) => setEditValues({ ...editValues, size: Number(e.target.value) })}
+                                className="w-24"
+                              />
+                            ) : (
+                              trade.size
+                            )}
+                          </TableCell>
+
+                          <TableCell className="text-sm font-mono font-bold text-foreground">
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                step="0.00001"
+                                value={editValues.entry_price || ""}
+                                onChange={(e) => setEditValues({ ...editValues, entry_price: Number(e.target.value) })}
+                                className="w-32"
+                              />
+                            ) : (
+                              formatPrice(trade.entry_price, trade.instrument)
+                            )}
+                          </TableCell>
+
+                          <TableCell className="text-sm font-mono font-bold text-foreground">
+                            {isEditing ? (
+                              <Input
+                                type="number"
+                                step="0.00001"
+                                value={editValues.exit_price || ""}
+                                onChange={(e) => setEditValues({ ...editValues, exit_price: Number(e.target.value) })}
+                                className="w-32"
+                              />
+                            ) : (
+                              formatPrice(trade.exit_price, trade.instrument)
+                            )}
+                          </TableCell>
+
+                          <TableCell className="text-sm">
+                            <EnhancedPnLCell trade={trade} displayFormat={displayFormat} showMultipleFormats={true} />
+                          </TableCell>
+
+                          <TableCell className="text-sm">
+                            {isEditing ? (
+                              <Select
+                                value={editValues.outcome || ""}
+                                onValueChange={(value) =>
+                                  setEditValues({ ...editValues, outcome: value as Trade["outcome"] })
+                                }
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="Outcome" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="win">Win</SelectItem>
+                                  <SelectItem value="loss">Loss</SelectItem>
+                                  <SelectItem value="breakeven">Breakeven</SelectItem>
+                                </SelectContent>
+                              </Select>
                             ) : (
                               <>
-                                <Button asChild size="sm" variant="outline">
-                                  <Link href={`/trade-details/${trade.id}`}>
-                                    <Eye className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => startEditing(trade)}>
-                                  <Edit3 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 bg-transparent"
-                                  onClick={() => handleRequestDelete(trade.id)}
-                                  disabled={isPendingDelete && tradeToDelete === trade.id}
-                                >
-                                  {isPendingDelete && tradeToDelete === trade.id ? (
-                                    <RefreshCw className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
+                                {!trade.outcome && <span className="text-muted-foreground italic text-xs">Not Set</span>}
+                                {trade.outcome === "win" && (
+                                  <Badge className="bg-green-500 text-white font-semibold">
+                                    <TrendingUp className="h-3 w-3 mr-1" />
+                                    Win
+                                  </Badge>
+                                )}
+                                {trade.outcome === "loss" && (
+                                  <Badge className="bg-red-500 text-white font-semibold">
+                                    <TrendingDown className="h-3 w-3 mr-1" />
+                                    Loss
+                                  </Badge>
+                                )}
+                                {trade.outcome === "breakeven" && (
+                                  <Badge className="bg-amber-500 text-white font-semibold">
+                                    <MinusCircle className="h-3 w-3 mr-1" />
+                                    Breakeven
+                                  </Badge>
+                                )}
                               </>
                             )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
+                          </TableCell>
+
+                          <TableCell className="text-sm font-medium text-foreground">
+                            {trade.risk_reward_ratio && trade.risk_reward_ratio !== 0 ? (
+                              <span className="font-mono">{trade.risk_reward_ratio.toFixed(2)}</span>
+                            ) : (
+                              <span className="text-muted-foreground italic">N/A</span>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="text-sm">
+                            {isEditing ? (
+                              <Input
+                                value={editValues.setup_name || ""}
+                                onChange={(e) => setEditValues({ ...editValues, setup_name: e.target.value })}
+                                className="w-32"
+                                placeholder="Setup"
+                              />
+                            ) : (
+                              <Badge variant="secondary" className="font-semibold">
+                                {trade.setup_name || "Not Set"}
+                              </Badge>
+                            )}
+                          </TableCell>
+
+                          <TableCell className="text-sm">
+                            <div className="flex items-center justify-center space-x-2">
+                              {isEditing ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => saveEditing(trade.id)}
+                                    disabled={isSaving}
+                                    className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-300"
+                                  >
+                                    {isSaving ? (
+                                      <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Check className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={cancelEditing} disabled={isSaving}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button asChild size="sm" variant="outline">
+                                    <Link href={`/trade-details/${trade.id}`}>
+                                      <Eye className="h-4 w-4" />
+                                    </Link>
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => startEditing(trade)}>
+                                    <Edit3 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 bg-transparent"
+                                    onClick={() => handleRequestDelete(trade.id)}
+                                    disabled={isPendingDelete && tradeToDelete === trade.id}
+                                  >
+                                    {isPendingDelete && tradeToDelete === trade.id ? (
+                                      <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </motion.tr>
+                      )
+                    })}
+                  </AnimatePresence>
                 </TableBody>
               </Table>
             </div>

@@ -569,7 +569,7 @@ export default function DashboardPage() {
             }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
-            icon={TrendingUp}
+            icon={Wallet}
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"

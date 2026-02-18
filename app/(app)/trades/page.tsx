@@ -408,7 +408,7 @@ export default function TradesPage() {
                   {/* Logo / Title */}
                   <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
                      <div className="p-1.5 bg-primary/10 rounded-md">
-                        <JournalIcon className="h-5 w-5 text-primary" />
+                        <BookOpen className="h-5 w-5 text-primary" />
                      </div>
                      <span className="text-lg hidden sm:inline tracking-tight">Trade Journal</span>
                   </div>
@@ -435,7 +435,7 @@ export default function TradesPage() {
                                     setIsCreateAccountOpen(true)
                                  }}
                               >
-                                 <AddTradeIcon className="mr-2 h-3 w-3" /> Add Portfolio
+                                 <Plus className="mr-2 h-3 w-3" /> Add Portfolio
                               </Button>
                            </div>
                            <Separator className="my-1" />
@@ -464,7 +464,7 @@ export default function TradesPage() {
                                     setIsPortfolioManagerOpen(true)
                                  }}
                               >
-                                 <SettingsIcon className="mr-2 h-3 w-3" /> Manage Portfolios
+                                 <Settings2 className="mr-2 h-3 w-3" /> Manage Portfolios
                               </Button>
                            </div>
                         </SelectContent>
@@ -483,7 +483,7 @@ export default function TradesPage() {
                   <div className="ml-auto flex items-center space-x-2">
                      <Button size="sm" className="gap-2 shadow-sm btn-enhanced magnetic-hover" asChild>
                         <NextLink href={`/add-trade?accountId=${selectedAccountId !== 'all' ? selectedAccountId : ''}`}>
-                           <AddTradeIcon className="w-4 h-4" /> <span className="hidden sm:inline">Log Trade</span>
+                           <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Log Trade</span>
                         </NextLink>
                      </Button>
 
@@ -493,7 +493,7 @@ export default function TradesPage() {
                         className="gap-2 tactile-transition"
                         onClick={() => setIsImportDialogOpen(true)}
                      >
-                        <ImportIcon className="w-4 h-4" />
+                        <Upload className="w-4 h-4" />
                         <span className="hidden sm:inline">Import CSV</span>
                      </Button>
 

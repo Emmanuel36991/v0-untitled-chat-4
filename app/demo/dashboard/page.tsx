@@ -27,15 +27,9 @@ import {
   ChevronRight,
   TrendingUp as TrendUp,
   Star,
+  Zap,
 } from "lucide-react"
-import {
-  BreakoutIcon,
-  ScalpIcon,
-  MomentumFlowIcon,
-  MeanReversionIcon,
-  CompassIcon,
-  PulseIcon,
-} from "@/components/icons/system-icons"
+// Removed custom icon imports
 import {
   Area,
   AreaChart,
@@ -105,12 +99,12 @@ const STRATEGY_COLORS = [
 
 // Strategy icons mapping (same as real dashboard)
 const STRATEGY_ICONS = {
-  Breakout: BreakoutIcon,
-  Reversal: MeanReversionIcon,
-  "Trend Following": MomentumFlowIcon,
-  Scalping: ScalpIcon,
-  "Swing Trading": Activity,
-  Default: CompassIcon,
+  Breakout: TrendingUp,
+  Reversal: RefreshCw,
+  "Trend Following": Activity,
+  Scalping: Zap,
+  "Swing Trading": Clock,
+  Default: Target,
 }
 
 const getStrategyIcon = (strategyName: string) => {

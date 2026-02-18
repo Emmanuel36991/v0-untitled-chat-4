@@ -527,7 +527,7 @@ export default function AnalyticsPage() {
                   Overview
                 </TabsTrigger>
                 <TabsTrigger value="intelligence" className="text-xs h-7 px-3 rounded-md data-[state=active]:bg-background data-[state=active]:shadow-sm font-semibold">
-                  <NeuralSparkIcon className="w-3 h-3 mr-1.5" /> Insights
+                  <Brain className="w-3 h-3 mr-1.5" /> Insights
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -799,7 +799,7 @@ export default function AnalyticsPage() {
               <Card className="border-0 shadow-sm ring-1 ring-border bg-card/60 backdrop-blur-sm card-enhanced glass-card">
                 <CardHeader className="pb-2 border-b border-border">
                   <CardTitle className="text-sm font-bold flex items-center gap-2">
-                    <MeanReversionIcon className="w-4 h-4 text-blue-500" /> Trade Outcomes
+                    <BarChart3 className="w-4 h-4 text-blue-500" /> Trade Outcomes
                   </CardTitle>
                   <CardDescription className="text-xs">Win / Loss / Breakeven distribution</CardDescription>
                 </CardHeader>

@@ -466,19 +466,19 @@ export default function DashboardPage() {
           <div className="space-y-1 relative">
             <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               <span className="flex items-center text-warning bg-warning/10 px-2 py-0.5 rounded-full">
-                <MomentumFlowIcon className="w-3 h-3 mr-1" /> {getGreeting()}
+                <TrendingUp className="w-3 h-3 mr-1" /> {getGreeting()}
               </span>
               <span>•</span>
               <span>{format(new Date(), "MMMM dd, yyyy")}</span>
             </div>
 
             <AnimatedTitle className="text-3xl sm:text-4xl flex items-center gap-3">
-              <DashboardIcon className="w-8 h-8 text-primary/80" />
+              <LayoutDashboard className="w-8 h-8 text-primary/80" />
               Dashboard Overview
             </AnimatedTitle>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-              <NeuralSparkIcon className="w-5 h-5 text-primary" />
+              <Brain className="w-5 h-5 text-primary" />
               <span className="italic text-muted-foreground">
                 "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>

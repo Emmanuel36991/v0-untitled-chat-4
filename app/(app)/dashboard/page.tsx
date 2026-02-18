@@ -28,7 +28,7 @@ import {
   Wallet,
   Activity,
   PieChart,
-  Brain,
+  MessageCircle,
 } from "lucide-react"
 
 import { CurrencySelector } from "@/components/currency-selector"
@@ -479,7 +479,7 @@ export default function DashboardPage() {
             </AnimatedTitle>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-              <Brain className="w-5 h-5 text-primary" />
+              <MessageCircle className="w-5 h-5 text-primary" />
               <span className="italic text-muted-foreground">
                 "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>

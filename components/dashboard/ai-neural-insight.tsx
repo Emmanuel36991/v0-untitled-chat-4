@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { RotateCcw } from "lucide-react"
-import { NeuralSparkIcon } from "@/components/icons/system-icons"
+import { RotateCcw, Eye } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Trade } from "@/types"
 import { saveInsight, getInsights } from "@/app/actions/insight-actions"
@@ -54,7 +53,7 @@ function PulseRing({ active }: { active: boolean }) {
         animate={active ? { scale: [1, 1.05, 1] } : {}}
         transition={{ duration: 1.5, repeat: active ? Infinity : 0 }}
       >
-        <NeuralSparkIcon
+        <Eye
           className={cn(
             "w-5 h-5 text-primary",
             active && "animate-pulse"

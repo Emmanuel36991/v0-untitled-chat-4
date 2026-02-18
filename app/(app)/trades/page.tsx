@@ -116,7 +116,7 @@ export default function TradesPage() {
          setAccounts(fetchedAccounts)
 
          // Fetch Trades (last 1000 for list; use pagination for more)
-         const fetchedTrades = await getTrades({ limit: 1000, order: "desc" })
+         const fetchedTrades = await getTrades({ limit: 1000, order: "asc" })
          const sorted = fetchedTrades
          setTrades(sorted)
 

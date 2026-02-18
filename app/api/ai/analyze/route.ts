@@ -91,24 +91,29 @@ Please provide:
 
 Be data-driven and concise.`
     } else if (type === "trade") {
-      systemPrompt = `You are a sharp trading mentor. Your job is to give ONE focused insight about this single trade — not a generic checklist.
+      systemPrompt = `You are a supportive, process-focused trading mentor. Your core ethic: what matters most is whether the trader did the right things — risk management, stop loss, R:R, following their strategy, good habits — not whether this single trade won or lost.
 
 Rules:
 - Write 2–4 sentences MAX. Punchy and direct.
-- Focus on the one thing that actually explains why this trade worked or failed (entry/exit timing, size vs risk, psychology, or setup execution). Reference the numbers.
-- No bullet lists. No "Key Strengths / Areas for Improvement" templates. No obvious fluff like "consider risk management."
-- End with a single actionable nudge for the next similar trade.
-- If the data shows a clear mistake or win (e.g. no stop, oversized size, great R), call it out directly. If notes or setup name hint at psychology (revenge, FOMO), mention it.
-- Be the insight they'd remember — not the essay they skip.`
+- Process first: If the trade shows good process (stop in place, reasonable R:R, strategy/setup followed, good habits or psychology noted), lead with that. Affirm that they did things right. A loss with good process is not a failure — outcomes are never 100% in our control. Only call out clear process failures (e.g. no stop, revenge/FOMO in notes, ignoring plan).
+- Do NOT imply the trader did something wrong just because the trade lost. One trade is never enough to judge. Never shame or "call out" a single loss when execution was disciplined.
+- If the data shows a clear process mistake (no stop, oversized size, obvious psychology in notes), mention it constructively. If they followed their plan and lost, reinforce that repeating this process is what leads to long-term edge.
+- End with a short, actionable nudge for the next similar trade. No bullet lists, no generic "Key Strengths / Areas for Improvement" templates.
+- Be the insight they'd remember — fair, specific, and respectful of good process.`
 
+      const goodHabits = data.good_habits && (Array.isArray(data.good_habits) ? data.good_habits.join(", ") : data.good_habits)
+      const psychology = data.psychology_factors && (Array.isArray(data.psychology_factors) ? data.psychology_factors.join(", ") : data.psychology_factors)
+      const rr = data.risk_reward_ratio != null ? data.risk_reward_ratio : "—"
       userPrompt = `Single trade to analyze:
 
-Direction: ${data.direction} | Entry: $${data.entry_price} | Exit: $${data.exit_price} | Stop: $${data.stop_loss || "—"} | TP: ${data.take_profit || "—"} | Size: ${data.size}
-Outcome: ${data.outcome} | P&L: $${data.pnl} | Duration: ${data.duration_minutes ?? "—"} min
+Direction: ${data.direction} | Entry: $${data.entry_price} | Exit: $${data.exit_price} | Stop: ${data.stop_loss != null ? "$" + data.stop_loss : "—"} | TP: ${data.take_profit != null ? "$" + data.take_profit : "—"} | Size: ${data.size}
+Outcome: ${data.outcome} | P&L: $${data.pnl} | Duration: ${data.duration_minutes ?? "—"} min | R:R: ${rr}
 Setup: ${data.setup_name || "—"}
+${goodHabits ? `Good habits noted: ${goodHabits}.` : ""}
+${psychology ? `Psychology/context: ${psychology}.` : ""}
 Notes: ${sanitizeInput(data.notes || "", { maxLength: 500 })}
 
-Give one focused insight and one actionable nudge. No preamble, no sections.`
+Give one focused insight and one actionable nudge. If they used a stop, followed a setup, and had good habits, affirm that first — do not treat a single loss as proof they did something wrong. No preamble, no sections.`
     } else if (type === "statistic") {
       systemPrompt =
         "You are a trading performance advisor powered by Groq's Llama 3.3. Explain trading metrics clearly and provide actionable recommendations to improve trading performance."

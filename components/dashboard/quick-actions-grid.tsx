@@ -3,17 +3,17 @@
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import {
-    AddTradeIcon,
-    TradeLedgerIcon,
-    PlaybookIcon,
-    PatternEyeIcon,
-} from "@/components/icons/system-icons"
+    Plus,
+    Upload,
+    Activity,
+    Sparkles,
+} from "lucide-react"
 
 const QUICK_ACTIONS = [
-    { label: "Add Trade", icon: AddTradeIcon, href: "/add-trade", color: "bg-primary", desc: "Log Entry" },
-    { label: "Import", icon: TradeLedgerIcon, href: "/import", color: "bg-chart-5", desc: "Sync Data" },
-    { label: "Playbook", icon: PlaybookIcon, href: "/playbook", color: "bg-warning", desc: "Strategies" },
-    { label: "AI Insights", icon: PatternEyeIcon, href: "/analytics?tab=intelligence", color: "bg-loss", desc: "Analysis" },
+    { label: "Add Trade", icon: Plus, href: "/add-trade", color: "bg-primary", desc: "Log Entry" },
+    { label: "Import", icon: Upload, href: "/import", color: "bg-chart-5", desc: "Sync Data" },
+    { label: "Playbook", icon: Activity, href: "/playbook", color: "bg-warning", desc: "Strategies" },
+    { label: "AI Insights", icon: Sparkles, href: "/analytics?tab=intelligence", color: "bg-loss", desc: "Analysis" },
 ] as const
 
 export function QuickActionsGrid() {

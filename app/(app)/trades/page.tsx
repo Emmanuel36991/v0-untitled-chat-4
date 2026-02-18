@@ -32,13 +32,16 @@ import {
    FolderOpen,
    PenLine,
    SlidersHorizontal,
+   LayoutDashboard,
+   BarChart3,
+   Brain,
 } from "lucide-react"
 import NextLink from "next/link"
 import { useSearchParams } from "next/navigation"
 import AdvancedTradeFilters, { type TradeFilters } from "@/components/trades/advanced-trade-filters"
 import { cn } from "@/lib/utils"
 import { EmptyState } from "@/components/empty-state"
-import { NoTradesIllustration, NoPortfoliosIllustration, NoResultsIllustration } from "@/components/icons/empty-state-illustrations"
+import { Database, SearchX, Wallet } from "lucide-react"
 import { SimpleConnectionModal } from "@/components/connection/simple-connection-modal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
@@ -581,7 +584,7 @@ export default function TradesPage() {
                   ) : filteredTrades.length === 0 ? (
                      accounts.length === 0 ? (
                         <EmptyState
-                           illustration={NoPortfoliosIllustration}
+                           icon={Wallet}
                            title="No portfolio yet"
                            description="Create a trading portfolio to start logging your journey."
                            action={{ label: "Create Portfolio", onClick: () => setIsCreateAccountOpen(true) }}
@@ -589,7 +592,7 @@ export default function TradesPage() {
                         />
                      ) : trades.length === 0 ? (
                         <EmptyState
-                           illustration={NoTradesIllustration}
+                           icon={Database}
                            title="No trades logged"
                            description="Start recording executions to build your trade journal and track performance."
                            action={{ label: "Add Trade", href: "/add-trade" }}
@@ -597,7 +600,7 @@ export default function TradesPage() {
                         />
                      ) : (
                         <EmptyState
-                           illustration={NoResultsIllustration}
+                           icon={SearchX}
                            title="No matching trades"
                            description="No entries match your current filters. Try broadening your search criteria."
                            action={{ label: "Clear filters", onClick: () => { setFilters({}); setSearchTerm("") }, variant: "outline" }}

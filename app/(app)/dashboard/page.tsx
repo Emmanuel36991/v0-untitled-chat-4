@@ -19,20 +19,16 @@ import { cn } from "@/lib/utils"
 // --- Icons ---
 import {
   RefreshCw,
+  TrendingUp,
+  Target,
+  Zap,
+  BarChart3,
+  Plus,
+  LayoutDashboard,
+  Wallet,
+  Activity,
+  PieChart,
 } from "lucide-react"
-import {
-  BreakoutIcon,
-  ScalpIcon,
-  ProfitChartIcon,
-  MomentumFlowIcon,
-  MeanReversionIcon,
-  CompassIcon,
-  NeuralSparkIcon,
-  AvgReturnIcon,
-  ProfitFactorIcon,
-  AddTradeIcon,
-  DashboardIcon,
-} from "@/components/icons/system-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
 import { formatCurrencyValue } from "@/lib/currency-config"
@@ -60,15 +56,15 @@ const STRATEGY_COLORS = [
 ]
 
 const STRATEGY_ICONS: Record<string, React.ElementType> = {
-  Breakout: BreakoutIcon,
-  Reversal: MeanReversionIcon,
-  "Trend Following": MomentumFlowIcon,
-  Scalping: ScalpIcon,
-  "Swing Trading": ProfitChartIcon,
-  "Mean Reversion": MeanReversionIcon,
-  Momentum: MomentumFlowIcon,
-  "Support/Resistance": BreakoutIcon,
-  Default: CompassIcon,
+  Breakout: Target,
+  Reversal: RefreshCw,
+  "Trend Following": TrendingUp,
+  Scalping: Zap,
+  "Swing Trading": BarChart3,
+  "Mean Reversion": RefreshCw,
+  Momentum: TrendingUp,
+  "Support/Resistance": Target,
+  Default: Activity,
 }
 
 const MOTIVATIONAL_QUOTES = [
@@ -542,7 +538,7 @@ export default function DashboardPage() {
                 asChild
               >
                 <Link href="/add-trade">
-                  <AddTradeIcon className="mr-2 h-4 w-4" /> New Trade
+                  <Plus className="mr-2 h-4 w-4" /> New Trade
                 </Link>
               </Button>
             </div>
@@ -572,7 +568,7 @@ export default function DashboardPage() {
             }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
-            icon={ProfitChartIcon}
+            icon={TrendingUp}
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
@@ -590,7 +586,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={MeanReversionIcon}
+            icon={Target}
             iconColor="text-chart-2"
             trendData={[
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
@@ -610,7 +606,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={ProfitFactorIcon}
+            icon={Zap}
             iconColor="text-chart-3"
             subtitle="Gross Profit / Gross Loss"
           />
@@ -620,7 +616,7 @@ export default function DashboardPage() {
             title="Avg Return"           value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
-            icon={AvgReturnIcon}
+            icon={BarChart3}
             iconColor="text-chart-4"
             trendData={chartData.map((d) => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"

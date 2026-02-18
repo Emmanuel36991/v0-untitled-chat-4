@@ -122,7 +122,7 @@ export default function LoginPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
           <div className="mb-12">
-            <ConcentradeLogo size={60} />
+            <ConcentradeLogo size={60} theme="dark" />
           </div>
           <h1 className="text-5xl font-bold text-white mb-4 leading-[1.1] tracking-tight">
             Master Your

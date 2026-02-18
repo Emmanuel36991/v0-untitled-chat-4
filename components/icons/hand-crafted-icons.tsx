@@ -245,3 +245,13 @@ export { StrategyBlueprintIcon as PlaybookIcon }
 export { SignalWaveIcon as AnalyticsIcon }
 export { TradeLedgerIcon as JournalIcon }
 export { TuningForksIcon as SettingsIcon }
+
+// ── NEW EXPORTS FOR DEPLOYMENT FIX ───────────────────────────────────────────
+export { SignalWaveIcon as ProfitChartIcon }
+export { MindMirrorIcon as MeanReversionIcon }
+export { EntryMarkerIcon as BreakoutIcon }
+export { PulseGridIcon as ScalpIcon }
+export { NeuralSparkIcon as MomentumFlowIcon }
+export { MeanLineIcon as ProfitFactorIcon }
+export { EntryMarkerIcon as AddTradeIcon }
+export { SyncArrowsIcon as ImportIcon }

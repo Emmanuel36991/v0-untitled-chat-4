@@ -14,11 +14,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 import {
   DashboardIcon,
-  PlaybookIcon,
-  JournalIcon,
+  TradeLedgerIcon,
   AnalyticsIcon,
+  PlaybookIcon,
   PsychologyIcon,
-} from "@/components/icons/hand-crafted-icons"
+} from "@/components/icons/system-icons"
 
 // Navigation Items Configuration
 const mainNavItems = [
@@ -30,7 +30,7 @@ const mainNavItems = [
   {
     title: "Trades",
     href: "/trades",
-    icon: JournalIcon,
+    icon: TradeLedgerIcon,
   },
   {
     title: "Analytics",

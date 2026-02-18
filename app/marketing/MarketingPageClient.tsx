@@ -24,16 +24,12 @@ import {
   ArrowDownRight,
   ArrowUpRight,
 } from "lucide-react"
-import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { Button } from "@/components/ui/button"
-import { MarketingNav } from "@/components/marketing/marketing-nav"
 import { motion } from "framer-motion"
 
 export default function MarketingPageClient() {
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-indigo-500/30">
-      <MarketingNav />
-
       {/* Hero Section */}
       <section className="relative pt-32 pb-24 px-4 overflow-hidden">
         {/* Background Effects */}
@@ -467,52 +463,6 @@ export default function MarketingPageClient() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-20 px-4 border-t border-slate-900 bg-slate-950">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-4 gap-12 mb-20">
-            <div className="col-span-2 md:col-span-1">
-              <ConcentradeLogo size={32} variant="full" className="mb-6" />
-              <p className="text-slate-500 text-sm leading-relaxed">
-                The institutional-grade trading journal for disciplined, data-driven performance.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Product</h4>
-              <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link href="#features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/demo" className="hover:text-white transition-colors">Live Demo</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Company</h4>
-              <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold text-white mb-6 uppercase tracking-widest text-xs">Support</h4>
-              <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-                <li><Link href="/status" className="hover:text-white transition-colors">System Status</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 pt-10 border-t border-slate-900 text-slate-600 text-xs font-bold uppercase tracking-widest">
-            <p>© 2026 Concentrade. All rights reserved.</p>
-            <div className="flex gap-8">
-              <Link href="#" className="hover:text-white transition-colors">Twitter</Link>
-              <Link href="#" className="hover:text-white transition-colors">Discord</Link>
-              <Link href="#" className="hover:text-white transition-colors">LinkedIn</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

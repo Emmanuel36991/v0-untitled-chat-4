@@ -28,12 +28,11 @@ import {
   MeanReversionIcon,
   CompassIcon,
   NeuralSparkIcon,
-  MeanLineIcon as AvgReturnIcon,
+  AvgReturnIcon,
   ProfitFactorIcon,
-  EntryMarkerIcon as AddTradeIcon,
+  AddTradeIcon,
   DashboardIcon,
-} from "@/components/icons/hand-crafted-icons"
-import { WisdomSparkIcon } from "@/components/icons/hand-crafted-icons"
+} from "@/components/icons/system-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
 import { formatCurrencyValue } from "@/lib/currency-config"
@@ -483,7 +482,7 @@ export default function DashboardPage() {
             </AnimatedTitle>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
-              <WisdomSparkIcon className="w-5 h-5 text-primary" />
+              <NeuralSparkIcon className="w-5 h-5 text-primary" />
               <span className="italic text-muted-foreground">
                 "{MOTIVATIONAL_QUOTES[quoteIndex]}"
               </span>

@@ -187,25 +187,50 @@ export default function TradesPage() {
          )
       }
 
-      // Advanced Filters
-      if (Object.keys(filters).length > 0) {
+      // Advanced Filters (instrument, outcome, setupName, direction, dateRange, minPnl, maxPnl)
+      const hasAdvancedFilters =
+         Boolean(filters.instrument?.trim()) ||
+         (filters.outcome && filters.outcome !== "any") ||
+         Boolean(filters.setupName?.trim()) ||
+         Boolean(filters.direction) ||
+         Boolean(filters.dateRange?.from || filters.dateRange?.to) ||
+         filters.minPnl !== undefined ||
+         filters.maxPnl !== undefined
+
+      if (hasAdvancedFilters) {
          result = result.filter((trade) => {
-            let passes = true
-            if (filters.instrument && !(trade.instrument || "").toLowerCase().includes(filters.instrument.toLowerCase())) passes = false
-            if (filters.outcome && filters.outcome !== "any" && trade.outcome !== filters.outcome) passes = false
-            if (filters.setupName && !(trade.setup_name || "").toLowerCase().includes(filters.setupName.toLowerCase())) passes = false
-            if (filters.dateRange?.from) {
+            if (filters.instrument?.trim() && !(trade.instrument || "").toLowerCase().includes(filters.instrument.trim().toLowerCase())) return false
+            if (filters.outcome && filters.outcome !== "any" && (trade.outcome || "").toLowerCase() !== filters.outcome.toLowerCase()) return false
+            if (filters.setupName?.trim() && !(trade.setup_name || "").toLowerCase().includes(filters.setupName.trim().toLowerCase())) return false
+            if (filters.direction && (trade.direction || "").toLowerCase() !== filters.direction.toLowerCase()) return false
+            if (filters.dateRange?.from || filters.dateRange?.to) {
                const tradeDate = new Date(trade.date)
-               if (tradeDate < filters.dateRange.from) passes = false
-               if (filters.dateRange.to && tradeDate > new Date(new Date(filters.dateRange.to).setHours(23, 59, 59, 999))) passes = false
+               if (filters.dateRange.from && tradeDate < filters.dateRange.from) return false
+               if (filters.dateRange.to) {
+                  const toEnd = new Date(filters.dateRange.to)
+                  toEnd.setHours(23, 59, 59, 999)
+                  if (tradeDate > toEnd) return false
+               }
             }
-            if (filters.minPnl !== undefined && trade.pnl < filters.minPnl) passes = false
-            if (filters.maxPnl !== undefined && trade.pnl > filters.maxPnl) passes = false
-            return passes
+            if (filters.minPnl !== undefined && (trade.pnl ?? 0) < filters.minPnl) return false
+            if (filters.maxPnl !== undefined && (trade.pnl ?? 0) > filters.maxPnl) return false
+            return true
          })
       }
       return result
    }, [trades, filters, searchTerm, selectedAccountId])
+
+   const activeFilterCount = useMemo(() => {
+      let n = 0
+      if (filters.instrument?.trim()) n++
+      if (filters.outcome && filters.outcome !== "any") n++
+      if (filters.setupName?.trim()) n++
+      if (filters.direction) n++
+      if (filters.dateRange?.from || filters.dateRange?.to) n++
+      if (filters.minPnl !== undefined) n++
+      if (filters.maxPnl !== undefined) n++
+      return n
+   }, [filters])
 
    // 4. Statistics Calculation
    const stats = useMemo(() => {
@@ -563,7 +588,7 @@ export default function TradesPage() {
                         <SheetTrigger asChild>
                            <Button variant="outline" size="sm" className="gap-2 h-9 border-dashed border-border/80">
                               <Filter className="h-4 w-4" /> Filters
-                              {Object.keys(filters).length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1">{Object.keys(filters).length}</Badge>}
+                              {activeFilterCount > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1">{activeFilterCount}</Badge>}
                            </Button>
                         </SheetTrigger>
                         <SheetContent side="right">

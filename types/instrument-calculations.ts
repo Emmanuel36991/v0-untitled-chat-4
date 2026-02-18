@@ -19,6 +19,11 @@ export interface PnLCalculationResult {
   percentage: number // P&L as percentage of entry value
 }
 
+/**
+ * Canonical config for all supported instruments. Used for PnL and display.
+ * PnL formula: (exit - entry) × size × multiplier = $ PnL (long); (entry - exit) × size × multiplier (short).
+ * Example: MNQ 20 points, 3 contracts → 20 × 3 × 2 = $120. Same data via GET /api/instruments/config.
+ */
 export const INSTRUMENT_CONFIGS: Record<string, InstrumentConfig> = {
   // Futures - Index
   NQ: {
@@ -449,6 +454,48 @@ export interface CustomInstrument {
   displayDecimals: number
 }
 
+/** Futures month codes used for stripping contract suffix (e.g. MNQH24 → MNQ) */
+const FUTURES_MONTH_CODES = new Set("FGHJKMNQUVXZ".split(""))
+
+/**
+ * Normalize symbol for config lookup: uppercase and strip futures contract suffix.
+ * E.g. "mnq", "MNQH24", "NQZ4" → "MNQ", "ES" so INSTRUMENT_CONFIGS lookup works.
+ */
+export function normalizeInstrumentSymbol(symbol: string): string {
+  if (!symbol || typeof symbol !== "string") return ""
+  const upper = symbol.trim().toUpperCase()
+  // Strip continuous contract suffix (! or 1!)
+  const base = upper.replace(/[0-9]?!$/, "").replace(/!$/, "")
+  // Strip month+year suffix: 1 letter (F,G,H,...) + 1-4 digits
+  const match = base.match(/^([A-Z0-9]{1,5})([FGHJKMNQUVXZ])(\d{1,4})$/)
+  if (match && FUTURES_MONTH_CODES.has(match[2])) return match[1]
+  return base
+}
+
+/**
+ * Get instrument config by symbol. Uses normalized symbol so "MNQH24" and "mnq" resolve to MNQ.
+ */
+export function getInstrumentConfig(
+  symbol: string,
+  customConfig?: CustomInstrument
+): InstrumentConfig | CustomInstrument | undefined {
+  if (customConfig) return customConfig
+  const key = normalizeInstrumentSymbol(symbol)
+  return key ? INSTRUMENT_CONFIGS[key] : undefined
+}
+
+/**
+ * Get the PnL multiplier for an instrument (dollars per point per contract).
+ * Example: MNQ → 2, NQ → 20, ES → 50. Used for: points × size × multiplier = $ PnL.
+ */
+export function getInstrumentMultiplier(
+  symbol: string,
+  customConfig?: CustomInstrument
+): number {
+  const config = getInstrumentConfig(symbol, customConfig)
+  return config?.multiplier ?? 1
+}
+
 // P&L calculation functions
 export function calculateInstrumentPnL(
   instrument: string,
@@ -458,7 +505,7 @@ export function calculateInstrumentPnL(
   size: number,
   customConfig?: CustomInstrument,
 ): PnLCalculationResult {
-  const config = customConfig || INSTRUMENT_CONFIGS[instrument.toUpperCase()]
+  const config = getInstrumentConfig(instrument, customConfig)
 
   // Basic price difference (with direction)
   const priceDifference = direction === "long" ? exitPrice - entryPrice : entryPrice - exitPrice
@@ -503,7 +550,7 @@ export function formatPnLDisplay(
   instrument: string,
   customConfig?: CustomInstrument,
 ): string {
-  const config = customConfig || INSTRUMENT_CONFIGS[instrument.toUpperCase()]
+  const config = getInstrumentConfig(instrument, customConfig)
 
   switch (format) {
     case "dollars":

@@ -1,47 +1,26 @@
 "use client"
 
-import React from "react"
-import { Card, CardHeader, CardContent } from "@/components/ui/card"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import {
-  ChevronDown,
-  ChevronUp,
-  Filter,
-  X,
-  Search,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
-  Target,
-  CircleDot,
-} from "lucide-react"
+import { Calendar, Filter, TrendingUp, TrendingDown, Target, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// Define and export the TradeFilters type
 export interface TradeFilters {
-  tradeId?: string
-  tradeType?: "buy" | "sell" | ""
-  asset?: string
-  counterAsset?: string
-  dateFrom?: string
-  dateTo?: string
-  minPnL?: string
-  maxPnL?: string
-  // Alternate properties for backward compatibility
-  minPnl?: number
-  maxPnl?: number
-  outcome?: "win" | "loss" | "any" | ""
-  setupName?: string
   instrument?: string
+  outcome?: "win" | "loss" | "breakeven" | "any" | ""
+  setupName?: string
+  direction?: "long" | "short" | ""
   dateRange?: {
     from?: Date
     to?: Date
   }
+  minPnl?: number
+  maxPnl?: number
+  /** Used by TradeTable (e.g. ICT concept filter). */
+  ictConcept?: string
 }
 
 interface AdvancedTradeFiltersProps {
@@ -49,371 +28,222 @@ interface AdvancedTradeFiltersProps {
   initialFilters: TradeFilters
 }
 
-// Enhanced Filter Input Component
-const FilterInput = React.memo<{
-  id: string
-  label: string
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  type?: string
-  icon?: React.ElementType
-  className?: string
-}>(({ id, label, value, onChange, placeholder, type = "text", icon: Icon, className }) => (
-  <div className="space-y-2">
-    <Label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center space-x-2">
-      {Icon && <Icon className="h-4 w-4 text-gray-500" />}
-      <span>{label}</span>
-    </Label>
-    <div className="relative">
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={cn(
-          "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700",
-          "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20",
-          "transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600",
-          "text-gray-900 dark:text-gray-100",
-          className,
-        )}
-      />
-      {value && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-          onClick={() => onChange("")}
-        >
-          <X className="h-3 w-3" />
-        </Button>
-      )}
-    </div>
-  </div>
-))
-
-// Enhanced Filter Select Component
-const FilterSelect = React.memo<{
-  id: string
-  label: string
-  value: string
-  onChange: (value: string) => void
-  options: { value: string; label: string; icon?: React.ElementType }[]
-  placeholder?: string
-  icon?: React.ElementType
-}>(({ id, label, value, onChange, options, placeholder, icon: Icon }) => (
-  <div className="space-y-2">
-    <Label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center space-x-2">
-      {Icon && <Icon className="h-4 w-4 text-gray-500" />}
-      <span>{label}</span>
-    </Label>
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger
-        className={cn(
-          "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700",
-          "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20",
-          "transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600",
-          "text-gray-900 dark:text-gray-100",
-        )}
-      >
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        {options.map((option) => (
-          <SelectItem
-            key={option.value}
-            value={option.value}
-            className="hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700"
-          >
-            <div className="flex items-center space-x-2">
-              {option.icon && <option.icon className="h-4 w-4" />}
-              <span>{option.label}</span>
-            </div>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
-))
-
-// Active Filter Badge Component
-const ActiveFilterBadge = React.memo<{
-  label: string
-  value: string
-  onRemove: () => void
-}>(({ label, value, onRemove }) => (
-  <Badge
-    variant="secondary"
-    className={cn(
-      "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
-      "border border-blue-200 dark:border-blue-800",
-      "hover:bg-blue-100 dark:hover:bg-blue-900/30",
-      "transition-all duration-200 group cursor-pointer",
-      "flex items-center space-x-2 px-3 py-1",
-    )}
-    onClick={onRemove}
-  >
-    <span className="text-xs font-medium">
-      {label}: {value}
-    </span>
-    <X className="h-3 w-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-  </Badge>
-))
+function toDateInputValue(d: Date | undefined): string {
+  if (!d) return ""
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
 
 export function AdvancedTradeFilters({ setFilters, initialFilters }: AdvancedTradeFiltersProps) {
-  const [expanded, setExpanded] = React.useState(false)
-  const [currentFilters, setCurrentFilters] = React.useState<TradeFilters>(initialFilters)
+  const [instrument, setInstrument] = useState(initialFilters.instrument ?? "")
+  const [outcome, setOutcome] = useState<string>(initialFilters.outcome && initialFilters.outcome !== "any" ? initialFilters.outcome : "any")
+  const [setupName, setSetupName] = useState(initialFilters.setupName ?? "")
+  const [direction, setDirection] = useState<string>(initialFilters.direction ?? "any")
+  const [dateFrom, setDateFrom] = useState(toDateInputValue(initialFilters.dateRange?.from))
+  const [dateTo, setDateTo] = useState(toDateInputValue(initialFilters.dateRange?.to))
+  const [minPnlInput, setMinPnlInput] = useState(
+    initialFilters.minPnl != null ? String(initialFilters.minPnl) : ""
+  )
+  const [maxPnlInput, setMaxPnlInput] = useState(
+    initialFilters.maxPnl != null ? String(initialFilters.maxPnl) : ""
+  )
 
-  React.useEffect(() => {
-    setCurrentFilters(initialFilters)
+  useEffect(() => {
+    setInstrument(initialFilters.instrument ?? "")
+    setOutcome(initialFilters.outcome && initialFilters.outcome !== "any" ? initialFilters.outcome : "any")
+    setSetupName(initialFilters.setupName ?? "")
+    setDirection(initialFilters.direction ?? "any")
+    setDateFrom(toDateInputValue(initialFilters.dateRange?.from))
+    setDateTo(toDateInputValue(initialFilters.dateRange?.to))
+    setMinPnlInput(initialFilters.minPnl != null ? String(initialFilters.minPnl) : "")
+    setMaxPnlInput(initialFilters.maxPnl != null ? String(initialFilters.maxPnl) : "")
   }, [initialFilters])
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded)
+  const buildAppliedFilters = (): TradeFilters => {
+    const applied: TradeFilters = {}
+    if (instrument.trim()) applied.instrument = instrument.trim()
+    if (outcome && outcome !== "any") applied.outcome = outcome as "win" | "loss" | "breakeven"
+    if (setupName.trim()) applied.setupName = setupName.trim()
+    if (direction && direction !== "any") applied.direction = direction as "long" | "short"
+    const from = dateFrom ? new Date(dateFrom + "T00:00:00") : undefined
+    const to = dateTo ? new Date(dateTo + "T23:59:59.999") : undefined
+    if (from || to) applied.dateRange = { from, to }
+    const min = minPnlInput.trim() === "" ? undefined : Number(minPnlInput)
+    const max = maxPnlInput.trim() === "" ? undefined : Number(maxPnlInput)
+    if (min != null && !Number.isNaN(min)) applied.minPnl = min
+    if (max != null && !Number.isNaN(max)) applied.maxPnl = max
+    return applied
   }
 
-  const handleChange = (name: keyof TradeFilters, value: string) => {
-    setCurrentFilters((prev) => ({ ...prev, [name]: value }))
+  const handleApply = () => {
+    setFilters(buildAppliedFilters())
   }
 
-  const handleApplyFilters = () => {
-    setFilters(currentFilters)
+  const handleClear = () => {
+    setInstrument("")
+    setOutcome("any")
+    setSetupName("")
+    setDirection("any")
+    setDateFrom("")
+    setDateTo("")
+    setMinPnlInput("")
+    setMaxPnlInput("")
+    setFilters({})
   }
-
-  const handleResetFilters = () => {
-    const emptyFilters: TradeFilters = {}
-    setCurrentFilters(emptyFilters)
-    setFilters(emptyFilters)
-  }
-
-  const removeFilter = (filterKey: keyof TradeFilters) => {
-    const updatedFilters = { ...currentFilters }
-    delete updatedFilters[filterKey]
-    setCurrentFilters(updatedFilters)
-    setFilters(updatedFilters)
-  }
-
-  // Get active filters for display
-  const activeFilters = Object.entries(currentFilters).filter(([_, value]) => value && value.trim() !== "")
-
-  const tradeTypeOptions = [
-    { value: "any", label: "All Types" },
-    { value: "buy", label: "Buy", icon: TrendingUp },
-    { value: "sell", label: "Sell", icon: TrendingDown },
-  ]
 
   const outcomeOptions = [
-    { value: "any", label: "All Outcomes" },
-    { value: "win", label: "Winning Trades", icon: TrendingUp },
-    { value: "loss", label: "Losing Trades", icon: TrendingDown },
+    { value: "any", label: "All outcomes" },
+    { value: "win", label: "Wins", icon: TrendingUp },
+    { value: "loss", label: "Losses", icon: TrendingDown },
+    { value: "breakeven", label: "Breakeven" },
+  ]
+
+  const directionOptions = [
+    { value: "any", label: "All directions" },
+    { value: "long", label: "Long" },
+    { value: "short", label: "Short" },
   ]
 
   return (
-    <Card
-      className={cn(
-        "bg-white dark:bg-gray-900 border-0 shadow-lg hover:shadow-xl",
-        "transition-all duration-500 group",
-        "backdrop-blur-sm border border-gray-200 dark:border-gray-800",
-      )}
-    >
-      <CardHeader
-        className="flex flex-row items-center justify-between p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200"
-        onClick={handleExpandClick}
-      >
-        <div className="flex items-center space-x-4">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-            <Filter className="h-5 w-5 text-white drop-shadow-sm" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white drop-shadow-sm">Advanced Trade Filters</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {expanded
-                ? "Configure your filter criteria below"
-                : `${activeFilters.length} active filter${activeFilters.length !== 1 ? "s" : ""}`}
-            </p>
-          </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="filter-instrument" className="text-sm font-medium text-foreground">
+            Instrument / Symbol
+          </Label>
+          <Input
+            id="filter-instrument"
+            value={instrument}
+            onChange={(e) => setInstrument(e.target.value)}
+            placeholder="e.g. ES, NQ, AAPL"
+            className="bg-background border-border"
+          />
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-        >
-          {expanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+
+        <div className="space-y-2">
+          <Label htmlFor="filter-outcome" className="text-sm font-medium text-foreground">
+            Outcome
+          </Label>
+          <Select value={outcome} onValueChange={setOutcome}>
+            <SelectTrigger id="filter-outcome" className="bg-background border-border">
+              <SelectValue placeholder="All outcomes" />
+            </SelectTrigger>
+            <SelectContent>
+              {outcomeOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <span className="flex items-center gap-2">
+                    {opt.icon && <opt.icon className="h-3.5 w-3.5 text-muted-foreground" />}
+                    {opt.label}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="filter-setup" className="text-sm font-medium text-foreground">
+            Setup name
+          </Label>
+          <Input
+            id="filter-setup"
+            value={setupName}
+            onChange={(e) => setSetupName(e.target.value)}
+            placeholder="e.g. Breakout, ICT FVG"
+            className="bg-background border-border"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="filter-direction" className="text-sm font-medium text-foreground">
+            Direction
+          </Label>
+          <Select value={direction} onValueChange={setDirection}>
+            <SelectTrigger id="filter-direction" className="bg-background border-border">
+              <SelectValue placeholder="All directions" />
+            </SelectTrigger>
+            <SelectContent>
+              {directionOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="filter-date-from" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            Date from
+          </Label>
+          <Input
+            id="filter-date-from"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="bg-background border-border"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="filter-date-to" className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+            Date to
+          </Label>
+          <Input
+            id="filter-date-to"
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="bg-background border-border"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="filter-min-pnl" className="text-sm font-medium text-foreground">
+            Min P&L ($)
+          </Label>
+          <Input
+            id="filter-min-pnl"
+            type="number"
+            step="any"
+            value={minPnlInput}
+            onChange={(e) => setMinPnlInput(e.target.value)}
+            placeholder="e.g. -500"
+            className="bg-background border-border"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="filter-max-pnl" className="text-sm font-medium text-foreground">
+            Max P&L ($)
+          </Label>
+          <Input
+            id="filter-max-pnl"
+            type="number"
+            step="any"
+            value={maxPnlInput}
+            onChange={(e) => setMaxPnlInput(e.target.value)}
+            placeholder="e.g. 1000"
+            className="bg-background border-border"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <Button onClick={handleApply} size="sm" className="gap-2">
+          <Filter className="h-4 w-4" />
+          Apply filters
         </Button>
-      </CardHeader>
-
-      {/* Active Filters Display */}
-      {activeFilters.length > 0 && !expanded && (
-        <div className="px-6 pb-4">
-          <div className="flex flex-wrap gap-2">
-            {activeFilters.map(([key, value]) => (
-              <ActiveFilterBadge
-                key={key}
-                label={key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-                value={String(value)}
-                onRemove={() => removeFilter(key as keyof TradeFilters)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {expanded && (
-        <CardContent className="p-6 pt-0 space-y-6">
-          <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-          {/* Search and Basic Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FilterInput
-              id="tradeId"
-              label="Trade ID"
-              value={currentFilters.tradeId || ""}
-              onChange={(value) => handleChange("tradeId", value)}
-              placeholder="Search by trade ID..."
-              icon={Search}
-            />
-
-            <FilterSelect
-              id="tradeType"
-              label="Trade Type"
-              /* map '' in state to 'any' for the Select component */
-              value={currentFilters.tradeType || "any"}
-              onChange={(value) => handleChange("tradeType", value === "any" ? "" : value)}
-              options={tradeTypeOptions}
-              placeholder="Select trade type"
-              icon={Target}
-            />
-
-            <FilterSelect
-              id="outcome"
-              label="Trade Outcome"
-              value={currentFilters.outcome || "any"}
-              onChange={(value) => handleChange("outcome", value === "any" ? "" : value)}
-              options={outcomeOptions}
-              placeholder="Select outcome"
-              icon={CircleDot}
-            />
-          </div>
-
-          {/* Asset Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FilterInput
-              id="asset"
-              label="Asset"
-              value={currentFilters.asset || ""}
-              onChange={(value) => handleChange("asset", value)}
-              placeholder="e.g., AAPL, TSLA, BTC..."
-            />
-
-            <FilterInput
-              id="counterAsset"
-              label="Counter Asset"
-              value={currentFilters.counterAsset || ""}
-              onChange={(value) => handleChange("counterAsset", value)}
-              placeholder="e.g., USD, EUR, USDT..."
-            />
-          </div>
-
-          {/* Date Range Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FilterInput
-              id="dateFrom"
-              label="Date From"
-              type="date"
-              value={currentFilters.dateFrom || ""}
-              onChange={(value) => handleChange("dateFrom", value)}
-              icon={Calendar}
-            />
-
-            <FilterInput
-              id="dateTo"
-              label="Date To"
-              type="date"
-              value={currentFilters.dateTo || ""}
-              onChange={(value) => handleChange("dateTo", value)}
-              icon={Calendar}
-            />
-          </div>
-
-          {/* P&L Range Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FilterInput
-              id="minPnL"
-              label="Min P&L ($)"
-              type="number"
-              value={currentFilters.minPnL || ""}
-              onChange={(value) => handleChange("minPnL", value)}
-              placeholder="Minimum profit/loss"
-            />
-
-            <FilterInput
-              id="maxPnL"
-              label="Max P&L ($)"
-              type="number"
-              value={currentFilters.maxPnL || ""}
-              onChange={(value) => handleChange("maxPnL", value)}
-              placeholder="Maximum profit/loss"
-            />
-          </div>
-
-          {/* Setup Name Filter */}
-          <div className="grid grid-cols-1 gap-6">
-            <FilterInput
-              id="setupName"
-              label="Setup Name"
-              value={currentFilters.setupName || ""}
-              onChange={(value) => handleChange("setupName", value)}
-              placeholder="Search by setup name..."
-            />
-          </div>
-
-          <Separator className="bg-gray-200 dark:bg-gray-700" />
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <Button
-              onClick={handleApplyFilters}
-              className={cn(
-                "bg-gradient-to-r from-blue-600 to-purple-600",
-                "hover:from-blue-700 hover:to-purple-700",
-                "shadow-lg hover:shadow-xl transition-all duration-300",
-                "text-white font-medium px-8 py-2.5",
-                "flex-1 sm:flex-none",
-              )}
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Apply Filters
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={handleResetFilters}
-              className={cn(
-                "border-gray-300 dark:border-gray-600",
-                "hover:bg-gray-50 dark:hover:bg-gray-800",
-                "text-gray-700 dark:text-gray-300",
-                "transition-all duration-300 px-8 py-2.5",
-                "flex-1 sm:flex-none",
-              )}
-            >
-              <X className="mr-2 h-4 w-4" />
-              Clear All
-            </Button>
-
-            {activeFilters.length > 0 && (
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 px-2">
-                <span>
-                  {activeFilters.length} active filter{activeFilters.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      )}
-    </Card>
+        <Button onClick={handleClear} variant="outline" size="sm" className="gap-2">
+          <X className="h-4 w-4" />
+          Clear all
+        </Button>
+      </div>
+    </div>
   )
 }
 

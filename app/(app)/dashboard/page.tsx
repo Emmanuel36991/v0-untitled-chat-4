@@ -7,6 +7,7 @@ import {
   subDays,
 } from "date-fns"
 import { getTrades } from "@/app/actions/trade-actions"
+import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 import { useUserConfig } from "@/hooks/use-user-config"
 import { useCurrencyConversion } from "@/hooks/use-currency-conversion"
 import type { Trade } from "@/types"
@@ -78,29 +79,6 @@ const MOTIVATIONAL_QUOTES = [
 // ==========================================
 // 3. LOGIC HELPERS
 // ==========================================
-
-/**
- * Calculates the P&L of a trade based on instrument ticks/points.
- * Embedded here to avoid external file dependency.
- */
-const calculateInstrumentPnL = (
-  instrument: string,
-  direction: "long" | "short",
-  entry: number,
-  exit: number,
-  size: number
-) => {
-  let multiplier = 1
-  // Simple multiplier logic for common instruments
-  if (["NQ", "MNQ", "ES", "MES"].includes(instrument)) multiplier = 20 // Approx futures multiplier (simplified)
-  if (["EURUSD", "GBPUSD"].includes(instrument)) multiplier = 100000 // Forex lot
-
-  const diff = direction === "long" ? exit - entry : entry - exit
-  const rawPnL = diff * size * multiplier
-
-  // Return adjusted PnL (rounded to 2 decimals)
-  return { adjustedPnL: Math.round(rawPnL * 100) / 100 }
-}
 
 const getStrategyIcon = (strategyName: string) => {
   const normalizedName = strategyName?.toLowerCase() || ""
@@ -241,7 +219,7 @@ export default function DashboardPage() {
     const processedTrades = filteredTrades.map((trade) => {
       const pnl = trade.pnl !== undefined
         ? trade.pnl
-        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size)?.adjustedPnL ?? 0
       return { ...trade, adjustedPnL: pnl }
     })
 
@@ -316,7 +294,7 @@ export default function DashboardPage() {
     return sorted.map((trade) => {
       const pnl = trade.pnl !== undefined
         ? trade.pnl
-        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size)?.adjustedPnL ?? 0
       cumulative += pnl
       return {
         date: format(new Date(trade.date), "MMM dd"),
@@ -339,7 +317,7 @@ export default function DashboardPage() {
 
       const pnl = trade.pnl !== undefined
         ? trade.pnl
-        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+        : calculateInstrumentPnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size)?.adjustedPnL ?? 0
 
       current.pnl += pnl
       current.total += 1

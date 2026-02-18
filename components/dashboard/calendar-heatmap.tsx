@@ -15,25 +15,11 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { Trade } from "@/types"
+import { calculateInstrumentPnL } from "@/types/instrument-calculations"
 
 export interface CalendarHeatmapProps {
   trades: Trade[]
   currentDate: Date
-}
-
-const calculateInstrumentPnL = (
-  instrument: string,
-  direction: "long" | "short",
-  entry: number,
-  exit: number,
-  size: number
-) => {
-  let multiplier = 1
-  if (["NQ", "MNQ", "ES", "MES"].includes(instrument)) multiplier = 20
-  if (["EURUSD", "GBPUSD"].includes(instrument)) multiplier = 100000
-  const diff = direction === "long" ? exit - entry : entry - exit
-  const rawPnL = diff * size * multiplier
-  return { adjustedPnL: Math.round(rawPnL * 100) / 100 }
 }
 
 export const CalendarHeatmap = React.memo<CalendarHeatmapProps>(

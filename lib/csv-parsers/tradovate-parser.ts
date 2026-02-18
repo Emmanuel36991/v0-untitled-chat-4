@@ -4,6 +4,7 @@ import Papa from "papaparse"
 import { BaseCSVParser } from "./base-parser"
 import type { ParseResult, ParsedTrade, ValidationError, BrokerType } from "./types"
 import type { NewTradeInput } from "@/types"
+import { getInstrumentMultiplier } from "@/types/instrument-calculations"
 
 type ExecutionSide = "Buy" | "Sell"
 
@@ -396,24 +397,7 @@ export class TradovateParser extends BaseCSVParser {
     }
 
     private getContractMultiplier(instrument: string): number {
-        const key = instrument.toUpperCase()
-
-        // Simple, high-signal multipliers (extend as needed)
-        const multipliers: Record<string, number> = {
-            ES: 50,
-            NQ: 20,
-            CL: 1000,
-            GC: 100,
-
-            // Common micros (helpful defaults)
-            MES: 5,
-            MNQ: 2,
-            MCL: 100,
-            MGC: 10,
-            MYM: 0.5,
-        }
-
-        return multipliers[key] ?? 1
+        return getInstrumentMultiplier(instrument)
     }
 
     /**

@@ -3,11 +3,22 @@ interface ConcentradeLogoProps {
   className?: string
   variant?: "full" | "icon" | "text"
   theme?: "light" | "dark" | "auto"
+  /** "indigo" = default app style; "purple" = dashboard loading / marketing (violet gradient) */
+  gradient?: "indigo" | "purple"
 }
 
-export function ConcentradeLogo({ size = 40, className = "", variant = "full", theme = "auto" }: ConcentradeLogoProps) {
+const LOGO_GRADIENTS = {
+  indigo: { id: "logoGradIndigo", colors: ["#6366f1", "#4f46e5", "#4338ca"] },
+  purple: { id: "logoGradPurple", colors: ["#8B5CF6", "#7C3AED", "#6D28D9"] },
+} as const
+
+export function ConcentradeLogo({ size = 40, className = "", variant = "full", theme = "auto", gradient = "indigo" }: ConcentradeLogoProps) {
   const iconSize = variant === "text" ? size * 0.8 : size
   const textSize = variant === "icon" ? 0 : size * 0.6
+  const grad = LOGO_GRADIENTS[gradient]
+  const textClass = gradient === "purple"
+    ? "font-bold tracking-tight bg-gradient-to-r from-purple-500 to-purple-700 bg-clip-text text-transparent"
+    : "font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-indigo-600 bg-clip-text text-transparent"
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
@@ -21,28 +32,19 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
             xmlns="http://www.w3.org/2000/svg"
             className="drop-shadow-sm"
           >
-            {/* Main geometric building blocks - purple gradient */}
             <defs>
-              <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#6366f1" />
-                <stop offset="50%" stopColor="#4f46e5" />
-                <stop offset="100%" stopColor="#4338ca" />
+              <linearGradient id={grad.id} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={grad.colors[0]} />
+                <stop offset="50%" stopColor={grad.colors[1]} />
+                <stop offset="100%" stopColor={grad.colors[2]} />
               </linearGradient>
             </defs>
 
-            {/* Back building block */}
-            <rect x="15" y="25" width="25" height="50" fill="url(#purpleGradient)" opacity="0.7" rx="2" />
+            <rect x="15" y="25" width="25" height="50" fill={`url(#${grad.id})`} opacity="0.7" rx="2" />
+            <rect x="30" y="15" width="25" height="60" fill={`url(#${grad.id})`} opacity="0.85" rx="2" />
+            <rect x="45" y="25" width="25" height="50" fill={`url(#${grad.id})`} rx="2" />
+            <rect x="60" y="20" width="20" height="55" fill={`url(#${grad.id})`} opacity="0.9" rx="2" />
 
-            {/* Middle building block */}
-            <rect x="30" y="15" width="25" height="60" fill="url(#purpleGradient)" opacity="0.85" rx="2" />
-
-            {/* Front building block - aligned top with back block, same baseline */}
-            <rect x="45" y="25" width="25" height="50" fill="url(#purpleGradient)" rx="2" />
-
-            {/* Top accent block - aligned baseline with others */}
-            <rect x="60" y="20" width="20" height="55" fill="url(#purpleGradient)" opacity="0.9" rx="2" />
-
-            {/* Subtle highlight effects */}
             <rect x="32" y="17" width="2" height="56" fill="white" opacity="0.3" rx="1" />
             <rect x="47" y="27" width="2" height="46" fill="white" opacity="0.3" rx="1" />
             <rect x="62" y="22" width="2" height="51" fill="white" opacity="0.3" rx="1" />
@@ -53,7 +55,7 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
       {variant !== "icon" && textSize > 0 && (
         <div className="flex flex-col">
           <span
-            className="font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-indigo-600 bg-clip-text text-transparent"
+            className={textClass}
             style={{ fontSize: textSize, lineHeight: 1.1 }}
           >
             Concentrade

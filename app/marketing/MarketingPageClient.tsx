@@ -23,29 +23,15 @@ import {
 } from "lucide-react"
 import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { Button } from "@/components/ui/button"
-import { MarketingNav } from "@/components/marketing/marketing-nav"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export default function MarketingPageClient() {
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-indigo-500/30 font-sans">
-      <MarketingNav />
-
-      {/* Hero Section */}
-      <section className="relative pt-48 pb-32 px-4 overflow-hidden min-h-screen flex items-center">
-        {/* Candlestick Background */}
-        <div 
-          className="absolute inset-0 z-0 opacity-25"
-          style={{
-            backgroundImage: "url('/hero-chart.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-        <div className="absolute inset-0 z-10 bg-gradient-to-b from-slate-950/90 via-slate-950/70 to-slate-950" />
-
-        <div className="container mx-auto max-w-6xl relative z-20 text-center">
+      {/* Hero Section — uses .hero-section from marketing.css for candlestick background */}
+      <section className="hero-section py-20 px-4 text-center pt-36 pb-32 min-h-[90vh] flex items-center">
+        <div className="hero-content container mx-auto max-w-6xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

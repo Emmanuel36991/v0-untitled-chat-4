@@ -26,7 +26,7 @@ function MarketingHeader() {
     <header className="marketing-nav px-4 lg:px-6 h-20 flex items-center sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2" prefetch={false}>
-          <ConcentradeLogo size={40} variant="full" />
+          <ConcentradeLogo size={40} variant="full" gradient="purple" />
         </Link>
 
         <nav className="hidden md:flex gap-8 items-center">
@@ -94,7 +94,7 @@ function MarketingFooter() {
     <footer className="py-12 w-full border-t border-slate-800/50 bg-slate-950">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-6 px-4 md:px-6">
         <div className="flex items-center gap-2">
-          <ConcentradeLogo size={32} variant="full" />
+          <ConcentradeLogo size={32} variant="full" gradient="purple" />
         </div>
         <p className="text-sm text-slate-500">
           © {new Date().getFullYear()} Concentrade. All rights reserved.

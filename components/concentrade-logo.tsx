@@ -24,9 +24,9 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
             {/* Main geometric building blocks - purple gradient */}
             <defs>
               <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8B5CF6" />
-                <stop offset="50%" stopColor="#7C3AED" />
-                <stop offset="100%" stopColor="#6D28D9" />
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="50%" stopColor="#4f46e5" />
+                <stop offset="100%" stopColor="#4338ca" />
               </linearGradient>
             </defs>
 
@@ -53,7 +53,7 @@ export function ConcentradeLogo({ size = 40, className = "", variant = "full", t
       {variant !== "icon" && textSize > 0 && (
         <div className="flex flex-col">
           <span
-            className="font-bold tracking-tight bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent"
+            className="font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-indigo-600 bg-clip-text text-transparent"
             style={{ fontSize: textSize, lineHeight: 1.1 }}
           >
             Concentrade
@@ -78,8 +78,8 @@ export function ConcentradeLogoMinimal({ size = 32, className = "" }: { size?: n
       <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="purpleGradientMini" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8B5CF6" />
-            <stop offset="100%" stopColor="#6D28D9" />
+            <stop offset="0%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#4338ca" />
           </linearGradient>
         </defs>
 

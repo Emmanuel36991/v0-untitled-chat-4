@@ -413,7 +413,7 @@ export function TradeTable({
               return (
                 <Card
                   key={trade.id}
-                  className="bg-card border shadow-lg hover:shadow-xl transition-all duration-300 group hover:scale-105"
+                  className="bg-card border shadow-lg hover:shadow-xl transition-all duration-300 group"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">

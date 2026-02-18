@@ -28,7 +28,7 @@ export function QuickActionsGrid() {
                     <div className="p-4 flex flex-row items-center justify-start gap-4 relative z-10 h-full">
                         <div
                             className={cn(
-                                "p-2.5 rounded-xl shadow-lg text-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shrink-0",
+                                "p-2.5 rounded-xl shadow-lg text-white shrink-0",
                                 action.color
                             )}
                         >

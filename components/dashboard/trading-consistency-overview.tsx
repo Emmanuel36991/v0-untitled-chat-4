@@ -348,7 +348,7 @@ export function TradingConsistencyOverview({ trades = [] }: TradingConsistencyOv
                             className={cn(
                               'w-[10px] h-[10px] rounded-sm cursor-pointer transition-all',
                               day ? getPnLColor(day.pnl, day.tradeCount) : 'bg-transparent',
-                              day && 'hover:ring-2 hover:ring-foreground/30 hover:scale-110'
+                              day && 'hover:ring-2 hover:ring-foreground/30'
                             )}
                             title={day ? `${day.dateString}: $${day.pnl.toFixed(0)}` : ''}
                           />

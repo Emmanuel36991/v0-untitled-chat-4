@@ -38,7 +38,7 @@ export const MetricCard = React.memo<MetricCardProps>(
       className={cn(
         "relative overflow-hidden border shadow-sm transition-all duration-300 group cursor-pointer",
         "bg-card backdrop-blur-xl card-enhanced glass-card",
-        "hover:shadow-md hover:-translate-y-1",
+        "hover:shadow-md",
         isHot
           ? "border-orange-500/40 shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:shadow-[0_0_25px_rgba(249,115,22,0.25)] hover:border-orange-500/60"
           : "border-border/60 hover:border-primary/20",
@@ -66,7 +66,7 @@ export const MetricCard = React.memo<MetricCardProps>(
         <div className="flex justify-between items-start mb-3">
           <div
             className={cn(
-              "p-2.5 rounded-xl transition-transform duration-200 group-hover:scale-110",
+              "p-2.5 rounded-xl",
               "bg-opacity-10 dark:bg-opacity-20",
               isHot ? "text-orange-500" : iconColor
             )}

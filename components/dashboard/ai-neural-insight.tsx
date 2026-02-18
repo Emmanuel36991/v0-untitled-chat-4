@@ -240,7 +240,7 @@ export function AINeuralInsight({ trades }: AINeuralInsightProps) {
             : "shadow-lg dark:shadow-2xl",
           // Hover lift
           "hover:shadow-xl dark:hover:shadow-[0_0_30px_-6px_rgba(var(--primary-rgb,100,80,220),0.15)]",
-          "hover:-translate-y-1 transition-all duration-300"
+          "transition-all duration-300"
         )}
       >
         {/* Scan line */}

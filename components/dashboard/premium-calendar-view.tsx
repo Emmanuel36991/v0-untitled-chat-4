@@ -202,7 +202,7 @@ export function PremiumCalendarView({ trades }: PremiumCalendarViewProps) {
                   isCurrentDay && "ring-2 ring-primary ring-offset-2 ring-offset-background border-primary",
                   isSelectedDay && "border-primary shadow-lg ring-2 ring-primary ring-offset-2 ring-offset-background",
                   !hasTrades && day.isCurrentMonth && "border-border/30 bg-muted/30 hover:border-border/60",
-                  hasTrades && "hover:scale-[1.02] hover:shadow-xl"
+                  hasTrades && "hover:shadow-lg"
                 )}
                 style={hasTrades ? getPnlStyle(day.pnl) : undefined}
               >

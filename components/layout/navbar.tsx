@@ -11,15 +11,12 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Menu, BookOpen } from "lucide-react"
 import {
-  Menu,
-  LayoutDashboard,
-  BookOpen,
-  Brain,
-} from "lucide-react"
-import {
+  DashboardIcon,
   AnalyticsIcon,
   PlaybookIcon,
+  PsychologyIcon,
 } from "@/components/icons/system-icons"
 
 // Navigation Items Configuration
@@ -27,7 +24,8 @@ const mainNavItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: LayoutDashboard,
+    icon: DashboardIcon,
+    iconClassName: "drop-shadow-[0_0_6px_rgba(59,130,246,0.7)] dark:drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]",
   },
   {
     title: "Trades",
@@ -47,7 +45,7 @@ const mainNavItems = [
   {
     title: "Psychology",
     href: "/psychology",
-    icon: Brain,
+    icon: PsychologyIcon,
   },
 ]
 
@@ -86,7 +84,7 @@ export function Navbar() {
                   {/* Hover Background */}
                   <span className="absolute inset-0 -z-10 scale-90 rounded-full bg-muted/0 transition-all duration-300 group-hover:scale-100 group-hover:bg-muted/50" />
 
-                  <Icon className={cn("h-6 w-6 transition-transform duration-300 group-hover:scale-110", isActive && "stroke-current")} />
+                  <Icon className={cn("h-6 w-6 transition-transform duration-300 group-hover:scale-110", isActive && "stroke-current", "iconClassName" in item ? (item as { iconClassName?: string }).iconClassName : null)} />
                   <span>{item.title}</span>
 
                   {/* Active State: Gradient Underline */}

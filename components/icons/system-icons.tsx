@@ -32,24 +32,17 @@ const SvgTemplate = ({ className, children, ...props }: IconProps) => (
 // ── NAVIGATION ICONS ──────────────────────────────────────────────────────────
 
 /**
- * Dashboard — Bento Grid Layout
- * Asymmetric bento-grid with broken intersections for depth.
- * The gap between cells creates visual breathing room.
+ * Dashboard — 2×2 grid of outlined squares with optional glow.
+ * Perfectly aligned, stroke-only (outlined), modern digital style.
  */
 export function DashboardIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            {/* Top-left: wide cell */}
-            <rect x="3" y="3" width="10" height="7" rx="2" />
-            {/* Top-right: square cell */}
-            <rect x="15" y="3" width="6" height="7" rx="2" />
-            {/* Bottom-left: square cell */}
-            <rect x="3" y="12" width="6" height="9" rx="2" />
-            {/* Bottom-right: wide cell */}
-            <rect x="11" y="12" width="10" height="9" rx="2" />
-            {/* Subtle data dots inside bottom-right cell for depth */}
-            <circle cx="15" cy="17" r="0.75" fill="currentColor" stroke="none" />
-            <circle cx="17.5" cy="17" r="0.75" fill="currentColor" stroke="none" opacity="0.5" />
+            {/* 2×2 grid: four equal outlined squares */}
+            <rect x="2" y="2" width="9" height="9" rx="1.5" fill="none" strokeWidth="1.5" />
+            <rect x="13" y="2" width="9" height="9" rx="1.5" fill="none" strokeWidth="1.5" />
+            <rect x="2" y="13" width="9" height="9" rx="1.5" fill="none" strokeWidth="1.5" />
+            <rect x="13" y="13" width="9" height="9" rx="1.5" fill="none" strokeWidth="1.5" />
         </SvgTemplate>
     )
 }

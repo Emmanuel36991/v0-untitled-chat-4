@@ -700,7 +700,7 @@ export default function TradesPage() {
                   <div className="flex items-center justify-center w-full my-4">
                      <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 border-muted-foreground/20 hover:border-primary/50 transition-all group">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                           <div className="p-3 bg-background rounded-full mb-3 shadow-sm group-hover:scale-110 transition-transform">
+                           <div className="p-3 bg-background rounded-full mb-3 shadow-sm">
                               <Upload className="w-5 h-5 text-primary" />
                            </div>
                            <p className="text-sm font-medium text-muted-foreground">Click to browse file</p>

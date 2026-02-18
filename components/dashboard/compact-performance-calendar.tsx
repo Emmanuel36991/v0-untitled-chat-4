@@ -209,7 +209,6 @@ export function CompactPerformanceCalendar({
                 className={cn(
                   "aspect-square rounded-md relative group cursor-pointer transition-all duration-200",
                   "hover:ring-2 hover:ring-primary/50 hover:ring-offset-1 hover:ring-offset-background",
-                  "hover:scale-110 hover:z-10",
                   isToday && "ring-2 ring-primary ring-offset-1 ring-offset-background",
                 )}
                 title={

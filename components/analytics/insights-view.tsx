@@ -59,7 +59,7 @@ function GlassCard({
         "bg-card/70 dark:bg-card/50 backdrop-blur-lg",
         "border border-border/50 dark:border-border/30",
         "shadow-sm dark:shadow-lg",
-        "transition-all duration-300 hover:-translate-y-0.5",
+        "transition-all duration-300",
         glowMap[glowColor],
         className
       )}

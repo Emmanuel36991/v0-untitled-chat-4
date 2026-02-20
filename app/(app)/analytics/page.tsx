@@ -55,7 +55,7 @@ import {
   BookOpen,
   Activity,
 } from "lucide-react"
-import { TradeIcon, WinRateIcon, ProfitFactorIcon, AvgReturnIcon, PnLIcon } from "@/components/icons/system-icons"
+import { TradeIcon, WinRateIcon, ProfitFactorIcon, AvgReturnIcon, PnLIcon, WinIcon, LossIcon, BreakevenIcon, RRRatioIcon } from "@/components/icons/system-icons"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"
@@ -617,13 +617,13 @@ export default function AnalyticsPage() {
               <MetricCard title="R:R Ratio" icon={AvgReturnIcon} accentColor="amber" value={avgRiskReward.toFixed(2)} subtitle={`Profit factor: ${analytics.profitFactor.toFixed(2)}`} />
 
               {/* Wins */}
-              <MetricCard title="Wins" icon={PnLIcon} accentColor="emerald" value={analytics.wins} subtitle={`of ${analytics.totalTrades} trades`} />
+              <MetricCard title="Wins" icon={WinIcon} accentColor="emerald" value={analytics.wins} subtitle={`of ${analytics.totalTrades} trades`} />
 
               {/* Losses */}
-              <MetricCard title="Losses" icon={ProfitFactorIcon} accentColor="rose" value={analytics.losses} subtitle={`Max DD: $${analytics.maxDrawdown.toFixed(2)}`} />
+              <MetricCard title="Losses" icon={LossIcon} accentColor="rose" value={analytics.losses} subtitle={`Max DD: $${analytics.maxDrawdown.toFixed(2)}`} />
 
               {/* Breakeven */}
-              <MetricCard title="Breakeven" icon={LayoutDashboard} accentColor="gray" value={analytics.breakeven} subtitle={`Avg P&L: $${analytics.avgPnL.toFixed(2)}`} />
+              <MetricCard title="Breakeven" icon={BreakevenIcon} accentColor="gray" value={analytics.breakeven} subtitle={`Avg P&L: $${analytics.avgPnL.toFixed(2)}`} />
             </section>
 
 

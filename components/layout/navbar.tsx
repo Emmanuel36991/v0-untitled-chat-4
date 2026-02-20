@@ -18,7 +18,6 @@ import {
   PlaybookOutlineIcon,
   PsychologyIcon,
   TradeIcon,
-  TradeLedgerIcon,
 } from "@/components/icons/system-icons"
 
 const DashboardActiveIcon = (props: any) => <LayoutDashboard {...props} fill="currentColor" />

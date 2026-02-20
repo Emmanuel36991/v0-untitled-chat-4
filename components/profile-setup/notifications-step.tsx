@@ -4,7 +4,7 @@ import type React from "react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Bell, TrendingUp, Users, Zap } from "lucide-react"
+import { Bell, TrendingUp, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { NotificationPreferences } from "@/types/user-config"
 
@@ -104,14 +104,6 @@ export function NotificationsStep({ notificationPreferences, onUpdate }: Notific
           description="Get a summary of your trading activity, insights, and performance metrics"
           value={notificationPreferences.emailWeeklyDigest}
           onChange={() => toggleNotification("emailWeeklyDigest")}
-        />
-
-        <NotificationOption
-          icon={Users}
-          title="Community Insights"
-          description="Learn from other traders' experiences and community highlights"
-          value={notificationPreferences.emailCommunityInsights}
-          onChange={() => toggleNotification("emailCommunityInsights")}
         />
 
         <NotificationOption

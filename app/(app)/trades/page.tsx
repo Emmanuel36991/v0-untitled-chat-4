@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils"
 import { EmptyState } from "@/components/empty-state"
 import { Database, SearchX } from "lucide-react"
 import { SimpleConnectionModal } from "@/components/connection/simple-connection-modal"
-import { TradeIcon } from "@/components/icons/system-icons"
+import { TradeIcon, StorageIcon } from "@/components/icons/system-icons"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -616,7 +616,7 @@ export default function TradesPage() {
                         />
                      ) : trades.length === 0 ? (
                         <EmptyState
-                           icon={Database}
+                           icon={StorageIcon}
                            title="No trades logged"
                            description="Start recording executions to build your trade journal and track performance."
                            action={{ label: "Add Trade", href: "/add-trade" }}
@@ -624,7 +624,7 @@ export default function TradesPage() {
                         />
                      ) : (
                         <EmptyState
-                           icon={SearchX}
+                           icon={StorageIcon}
                            title="No matching trades"
                            description="No entries match your current filters. Try broadening your search criteria."
                            action={{ label: "Clear filters", onClick: () => { setFilters({}); setSearchTerm("") }, variant: "outline" }}

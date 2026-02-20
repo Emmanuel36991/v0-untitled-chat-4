@@ -591,9 +591,21 @@ export function WinRateIcon({ size = 64, className = "" }: { size?: number; clas
                     <stop offset="0%" stopColor="#E5E7EB" />
                     <stop offset="100%" stopColor="#9CA3AF" />
                 </linearGradient>
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
             </defs>
 
-            <g>
+            <g filter={`url(#${id("sh")})`}>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
 
                 {/* Outer ring */}
                 <circle cx={cx} cy={cy} r="17" stroke="#4B5563" strokeWidth="2.5" fill="none" />
@@ -634,6 +646,51 @@ export function AvgReturnIcon({ size = 64, className = "" }: { size?: number; cl
     const uid = useId();
     const id = (name: string) => `ar-${name}-${uid}`;
 
+    // Geometry — circular arrow wraps clockwise around the coin
+    const cx = 31, cy = 31, r = 19;
+    const toRad = (d: number) => (d * Math.PI) / 180;
+
+    // Arc: starts at ~2 o'clock (−55°), ends at ~10 o'clock (−135°)
+    // Sweeps clockwise the long way (~280°)
+    const startAng = -55;
+    const endAng = -135;
+
+    const sx = cx + r * Math.cos(toRad(startAng));
+    const sy = cy + r * Math.sin(toRad(startAng));
+    const ex = cx + r * Math.cos(toRad(endAng));
+    const ey = cy + r * Math.sin(toRad(endAng));
+
+    // Clockwise tangent at angle θ: (−sin θ, cos θ)
+    const ea = toRad(endAng);
+    const tdx = -Math.sin(ea);
+    const tdy = Math.cos(ea);
+
+    // Arrowhead dimensions
+    const tipLen = 7;
+    const wingBack = 5;
+    const wingSpread = 5;
+    const notchBack = 2;
+
+    // Tip — ahead in tangent direction
+    const tipX = ex + tdx * tipLen;
+    const tipY = ey + tdy * tipLen;
+
+    // Wing base center — behind endpoint
+    const bx = ex - tdx * wingBack;
+    const by = ey - tdy * wingBack;
+
+    // Perpendicular: rotate tangent 90° CW → (tdy, −tdx)
+    const w1x = bx + tdy * wingSpread;
+    const w1y = by - tdx * wingSpread;
+    const w2x = bx - tdy * wingSpread;
+    const w2y = by + tdx * wingSpread;
+
+    // Notch (chevron indent)
+    const nx = ex - tdx * notchBack;
+    const ny = ey - tdy * notchBack;
+
+    const f = (n: number) => n.toFixed(1);
+
     return (
         <svg
             width={size}
@@ -656,53 +713,54 @@ export function AvgReturnIcon({ size = 64, className = "" }: { size?: number; cl
                     <stop offset="0%" stopColor="#D1D5DB" />
                     <stop offset="100%" stopColor="#9CA3AF" />
                 </linearGradient>
-                <linearGradient id={id("arrow")} x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#E5E7EB" />
-                    <stop offset="100%" stopColor="#9CA3AF" />
+                <linearGradient id={id("arrow")} x1="0" y1="1" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#9CA3AF" />
+                    <stop offset="100%" stopColor="#E5E7EB" />
                 </linearGradient>
-                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
-                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
-                </filter>
             </defs>
 
-            <g filter={`url(#${id("sh")})`}>
-
+            <g>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
 
                 {/* === COIN === */}
-                {/* Coin edge (3D depth) */}
-                <ellipse cx="31" cy="33" rx="13" ry="13" fill="#4B5563" />
-                {/* Coin face */}
-                <ellipse cx="31" cy="31" rx="13" ry="13" fill={`url(#${id("coin")})`} />
-                {/* Coin inner ring */}
-                <ellipse cx="31" cy="31" rx="10" ry="10" fill="none" stroke="#6B7280" strokeWidth="1.2" />
-
-                {/* Dollar sign in center */}
+                <ellipse cx="31" cy="33" rx="10" ry="10" fill="#4B5563" />
+                <ellipse cx="31" cy="31" rx="10" ry="10" fill={`url(#${id("coin")})`} />
+                <ellipse cx="31" cy="31" rx="7.5" ry="7.5" fill="none" stroke="#6B7280" strokeWidth="1.2" />
                 <text
-                    x="31"
-                    y="36"
+                    x="31" y="35.5"
                     textAnchor="middle"
                     fontFamily="Georgia, serif"
-                    fontSize="14"
+                    fontSize="13"
                     fill="#4B5563"
                 >
                     $
                 </text>
 
-                {/* === CIRCULAR RETURN ARROW wrapping around coin === */}
-                {/* Arc path — goes ~270° around the coin */}
+                {/* === CIRCULAR RETURN ARROW === */}
+
+                {/* Bold arc — ~280° clockwise sweep, gap at upper-left */}
                 <path
-                    d="M31,12 A19,19 0 1,1 13.5,23.5"
+                    d={`M${f(sx)},${f(sy)} A${r},${r} 0 1,1 ${f(ex)},${f(ey)}`}
                     fill="none"
                     stroke={`url(#${id("arrow")})`}
-                    strokeWidth="4.5"
+                    strokeWidth="5"
                     strokeLinecap="round"
                 />
-                {/* Arrowhead at the end of the arc */}
+
+                {/* Arrowhead — large chevron, tangent to arc end */}
                 <polygon
-                    points="13,25 6,15 20,16.5"
-                    fill="#F3F4F6"
+                    points={`${f(tipX)},${f(tipY)} ${f(w1x)},${f(w1y)} ${f(nx)},${f(ny)} ${f(w2x)},${f(w2y)}`}
+                    fill="#E5E7EB"
                     stroke="#D1D5DB"
-                    strokeWidth="1"
+                    strokeWidth="0.5"
+                    strokeLinejoin="round"
                 />
             </g>
         </svg>
@@ -793,58 +851,7 @@ export function ProfitFactorIcon({ size = 64, className = "" }: { size?: number;
     );
 }
 
-export function PnLIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
-    const uid = useId();
-    const id = (name: string) => `pnl-${name}-${uid}`;
 
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 64 64"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className={className}
-        >
-            <defs>
-                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#4B5563" />
-                    <stop offset="100%" stopColor="#1F2937" />
-                </linearGradient>
-                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#374151" />
-                    <stop offset="100%" stopColor="#1F2937" />
-                </linearGradient>
-                <linearGradient id={id("up")} x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#9CA3AF" />
-                    <stop offset="100%" stopColor="#D1D5DB" />
-                </linearGradient>
-                <linearGradient id={id("down")} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6B7280" />
-                    <stop offset="100%" stopColor="#4B5563" />
-                </linearGradient>
-                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
-                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
-                </filter>
-            </defs>
-
-            <g filter={`url(#${id("sh")})`}>
-
-
-                {/* Baseline */}
-                <line x1="13" y1="35" x2="49" y2="35" stroke="#6B7280" strokeWidth="0.8" />
-
-                {/* Profit bars */}
-                <rect x="15" y="19" width="7" height="16" rx="1.5" fill={`url(#${id("up")})`} />
-                <rect x="25" y="25" width="7" height="10" rx="1.5" fill={`url(#${id("up")})`} />
-
-                {/* Loss bars */}
-                <rect x="35" y="35" width="7" height="7" rx="1.5" fill={`url(#${id("down")})`} />
-                <rect x="45" y="35" width="7" height="12" rx="1.5" fill={`url(#${id("down")})`} />
-            </g>
-        </svg>
-    );
-}
 
 export function EquityCurveIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
     const uid = useId();
@@ -1270,4 +1277,575 @@ export function PieChartIcon({ className, ...props }: IconProps) {
             <circle cx="12" cy="12" r="1" className="fill-foreground stroke-none" />
         </SvgTemplate>
     )
+}
+
+export function WinIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `win-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+
+                {/* Arrow green gradient */}
+                <linearGradient id={id("arrow")} x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#22C55E" />
+                    <stop offset="100%" stopColor="#86EFAC" />
+                </linearGradient>
+                <linearGradient id={id("arrowEdge")} x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#15803D" />
+                    <stop offset="100%" stopColor="#16A34A" />
+                </linearGradient>
+            </defs>
+
+            <g>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* ============ BOLD UPWARD ARROW ============ */}
+
+                {/* 3D depth edge */}
+                <polygon
+                    points="31,11 44,29 37,29 37,50 27,50 27,29 20,29"
+                    fill={`url(#${id("arrowEdge")})`}
+                    transform="translate(1.2, 1.5)"
+                />
+
+                {/* Main arrow */}
+                <polygon
+                    points="31,11 44,29 37,29 37,50 25,50 25,29 18,29"
+                    fill={`url(#${id("arrow")})`}
+                />
+
+                {/* Top highlight sheen */}
+                <polygon
+                    points="31,13 40,27 35,27 31,13 27,27 22,27"
+                    fill="white"
+                    fillOpacity="0.2"
+                />
+
+                {/* "W" label */}
+                <text
+                    x="31"
+                    y="45"
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill="#0A3D2A"
+                    fontFamily="system-ui, sans-serif"
+                    opacity="0.6"
+                >
+                    W
+                </text>
+            </g>
+        </svg>
+    );
+}
+
+export function RRRatioIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `rr-${name}-${uid}`;
+
+    // Two side-by-side bars: short risk (1R) and tall reward (2R)
+    // Bottom-aligned on the card face
+
+    // Bar geometry
+    const barW = 13;        // width of each bar
+    const gap = 8;          // gap between bars
+    const totalW = barW * 2 + gap;  // 34px
+    const faceX = 9;
+    const faceW = 44;
+    const startX = faceX + (faceW - totalW) / 2;  // centered = 14
+
+    const riskX = startX;
+    const rewardX = startX + barW + gap;
+
+    const barBottom = 50;   // bottom edge of both bars
+    const riskH = 13;       // risk bar height (1R)
+    const rewardH = 26;     // reward bar height (2R — exactly 2× risk)
+
+    const riskY = barBottom - riskH;     // 37
+    const rewardY = barBottom - rewardH; // 24
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                {/* Card shell */}
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+
+                {/* Risk bar — muted red */}
+                <linearGradient id={id("risk")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#C87A7A" />
+                    <stop offset="100%" stopColor="#8B4547" />
+                </linearGradient>
+                <linearGradient id={id("riskEdge")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7A3335" />
+                    <stop offset="100%" stopColor="#5C2425" />
+                </linearGradient>
+
+                {/* Reward bar — vibrant green */}
+                <linearGradient id={id("reward")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6EE7B7" />
+                    <stop offset="100%" stopColor="#34D399" />
+                </linearGradient>
+                <linearGradient id={id("rewardEdge")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#27A87A" />
+                    <stop offset="100%" stopColor="#1A7A56" />
+                </linearGradient>
+            </defs>
+
+            <g>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* ============ RISK BAR (short, muted red) ============ */}
+
+                {/* 3D right/bottom edge */}
+                <rect
+                    x={riskX + 1.5} y={riskY + 1.5}
+                    width={barW} height={riskH}
+                    rx="2" fill={`url(#${id("riskEdge")})`}
+                />
+                {/* Main face */}
+                <rect
+                    x={riskX} y={riskY}
+                    width={barW} height={riskH}
+                    rx="2" fill={`url(#${id("risk")})`}
+                />
+                {/* Top highlight */}
+                <rect
+                    x={riskX + 1.5} y={riskY + 1}
+                    width={barW - 3} height="2.5"
+                    rx="1" fill="white" fillOpacity="0.18"
+                />
+
+                {/* ============ REWARD BAR (tall, vibrant green) ============ */}
+
+                {/* 3D right/bottom edge */}
+                <rect
+                    x={rewardX + 1.5} y={rewardY + 1.5}
+                    width={barW} height={rewardH}
+                    rx="2" fill={`url(#${id("rewardEdge")})`}
+                />
+                {/* Main face */}
+                <rect
+                    x={rewardX} y={rewardY}
+                    width={barW} height={rewardH}
+                    rx="2" fill={`url(#${id("reward")})`}
+                />
+                {/* Top highlight */}
+                <rect
+                    x={rewardX + 1.5} y={rewardY + 1}
+                    width={barW - 3} height="3"
+                    rx="1" fill="white" fillOpacity="0.22"
+                />
+
+                {/* ============ LABELS ============ */}
+
+                {/* "1R" on risk bar */}
+                <text
+                    x={riskX + barW / 2}
+                    y={riskY + riskH / 2 + 3}
+                    textAnchor="middle"
+                    fontSize="6.5"
+                    fill="#2D0E0F"
+                    fontFamily="system-ui, sans-serif"
+                    opacity="0.7"
+                >
+                    1
+                </text>
+
+                {/* "2R" on reward bar */}
+                <text
+                    x={rewardX + barW / 2}
+                    y={rewardY + rewardH / 2 + 3}
+                    textAnchor="middle"
+                    fontSize="8"
+                    fill="#0A3D2A"
+                    fontFamily="system-ui, sans-serif"
+                    opacity="0.7"
+                >
+                    2
+                </text>
+
+                {/* Ratio label "R" below, centered */}
+                <text
+                    x={faceX + faceW / 2}
+                    y={14}
+                    textAnchor="middle"
+                    fontSize="7"
+                    fill="#9CA3AF"
+                    fontFamily="system-ui, sans-serif"
+                >
+                    R:R
+                </text>
+            </g>
+        </svg>
+    );
+}
+
+export function PnLIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `pnl-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("up")} x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#9CA3AF" />
+                    <stop offset="100%" stopColor="#D1D5DB" />
+                </linearGradient>
+                <linearGradient id={id("down")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6B7280" />
+                    <stop offset="100%" stopColor="#4B5563" />
+                </linearGradient>
+            </defs>
+
+            <g>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* Baseline */}
+                <line x1="13" y1="35" x2="49" y2="35" stroke="#6B7280" strokeWidth="0.8" />
+
+                {/* Profit bars */}
+                <rect x="15" y="19" width="7" height="16" rx="1.5" fill={`url(#${id("up")})`} />
+                <rect x="25" y="25" width="7" height="10" rx="1.5" fill={`url(#${id("up")})`} />
+
+                {/* Loss bars */}
+                <rect x="35" y="35" width="7" height="7" rx="1.5" fill={`url(#${id("down")})`} />
+                <rect x="45" y="35" width="7" height="12" rx="1.5" fill={`url(#${id("down")})`} />
+            </g>
+        </svg>
+    );
+}
+
+export function LossIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `loss-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+
+                {/* Arrow red gradient */}
+                <linearGradient id={id("arrow")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FCA5A5" />
+                    <stop offset="100%" stopColor="#EF4444" />
+                </linearGradient>
+                <linearGradient id={id("arrowEdge")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#B91C1C" />
+                    <stop offset="100%" stopColor="#7F1D1D" />
+                </linearGradient>
+            </defs>
+
+            <g>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* ============ BOLD DOWNWARD ARROW ============ */}
+
+                {/* 3D depth edge */}
+                <polygon
+                    points="31,51 44,33 37,33 37,12 27,12 27,33 20,33"
+                    fill={`url(#${id("arrowEdge")})`}
+                    transform="translate(1.2, 1.5)"
+                />
+
+                {/* Main arrow — pointing down */}
+                <polygon
+                    points="31,51 44,33 37,33 37,12 25,12 25,33 18,33"
+                    fill={`url(#${id("arrow")})`}
+                />
+
+                {/* Top highlight sheen on shaft */}
+                <rect
+                    x="26.5" y="13"
+                    width="9" height="3"
+                    rx="1" fill="white" fillOpacity="0.2"
+                />
+
+                {/* "L" label */}
+                <text
+                    x="31"
+                    y="26"
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill="#4C0519"
+                    fontFamily="system-ui, sans-serif"
+                    opacity="0.55"
+                >
+                    L
+                </text>
+            </g>
+        </svg>
+    );
+}
+
+export function BreakevenIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `be-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+
+                {/* Arrow neutral gray gradient */}
+                <linearGradient id={id("arrow")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#9CA3AF" />
+                    <stop offset="100%" stopColor="#D1D5DB" />
+                </linearGradient>
+                <linearGradient id={id("arrowEdge")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#6B7280" />
+                </linearGradient>
+            </defs>
+
+            <g>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* ============ BOLD HORIZONTAL RIGHT ARROW ============ */}
+
+                {/* 3D depth edge */}
+                <polygon
+                    points="50,31 36,20 36,25 13,25 13,37 36,37 36,42"
+                    fill={`url(#${id("arrowEdge")})`}
+                    transform="translate(1.2, 1.5)"
+                />
+
+                {/* Main arrow — pointing right (flat / breakeven) */}
+                <polygon
+                    points="50,31 36,20 36,25 12,25 12,37 36,37 36,42"
+                    fill={`url(#${id("arrow")})`}
+                />
+
+                {/* Top highlight sheen on shaft */}
+                <rect
+                    x="14" y="26"
+                    width="20" height="2.5"
+                    rx="1" fill="white" fillOpacity="0.18"
+                />
+
+                {/* Highlight on arrowhead */}
+                <polygon
+                    points="47,31 38,23 38,26.5 47,31"
+                    fill="white"
+                    fillOpacity="0.15"
+                />
+
+                {/* "BE" label */}
+                <text
+                    x="24"
+                    y="34"
+                    textAnchor="middle"
+                    fontSize="6.5"
+                    fill="#1F2937"
+                    fontFamily="system-ui, sans-serif"
+                    opacity="0.5"
+                >
+                    BE
+                </text>
+            </g>
+        </svg>
+    );
+}
+
+export function StorageIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `st-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("body")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="35%" stopColor="#6B7280" />
+                    <stop offset="65%" stopColor="#6B7280" />
+                    <stop offset="100%" stopColor="#374151" />
+                </linearGradient>
+                <linearGradient id={id("top")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#9CA3AF" />
+                    <stop offset="100%" stopColor="#6B7280" />
+                </linearGradient>
+                <linearGradient id={id("disc")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#808993" />
+                    <stop offset="100%" stopColor="#555e6b" />
+                </linearGradient>
+                <linearGradient id={id("sheen")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="white" stopOpacity="0" />
+                    <stop offset="25%" stopColor="white" stopOpacity="0.14" />
+                    <stop offset="45%" stopColor="white" stopOpacity="0" />
+                </linearGradient>
+            </defs>
+
+            <g>
+                {/* ===== 3D DROP SHADOW OFFSET ===== */}
+                <path
+                    d="M17,12 L17,51 A16,5.5 0 0,0 49,51 L49,12"
+                    fill="#111827"
+                />
+
+                {/* ===== FULL CYLINDER BODY ===== */}
+                <path
+                    d="M16,12 L16,50 A16,5.5 0 0,0 48,50 L48,12"
+                    fill={`url(#${id("body")})`}
+                />
+
+                {/* ===== BOTTOM ELLIPSE (visible base) ===== */}
+                <ellipse cx="32" cy="50" rx="16" ry="5.5" fill="#374151" stroke="#1F2937" strokeWidth="0.5" />
+
+                {/* ===== LOWER TIER DISC at y=38 ===== */}
+                {/* Shadow below disc */}
+                <ellipse cx="32" cy="39" rx="16" ry="4.5" fill="#1F2937" fillOpacity="0.25" />
+                {/* Disc face */}
+                <ellipse cx="32" cy="38" rx="16" ry="5" fill={`url(#${id("disc")})`} />
+                <ellipse cx="32" cy="38" rx="16" ry="5" fill="none" stroke="#374151" strokeWidth="0.7" />
+                {/* Subtle highlight */}
+                <ellipse cx="32" cy="37.5" rx="10" ry="2.8" fill="none" stroke="#9CA3AF" strokeWidth="0.35" strokeOpacity="0.4" />
+
+                {/* ===== UPPER TIER DISC at y=25 ===== */}
+                {/* Shadow below disc */}
+                <ellipse cx="32" cy="26" rx="16" ry="4.5" fill="#1F2937" fillOpacity="0.25" />
+                {/* Disc face */}
+                <ellipse cx="32" cy="25" rx="16" ry="5" fill={`url(#${id("disc")})`} />
+                <ellipse cx="32" cy="25" rx="16" ry="5" fill="none" stroke="#374151" strokeWidth="0.7" />
+                {/* Subtle highlight */}
+                <ellipse cx="32" cy="24.5" rx="10" ry="2.8" fill="none" stroke="#9CA3AF" strokeWidth="0.35" strokeOpacity="0.4" />
+
+                {/* ===== TOP LID DISC at y=12 ===== */}
+                <ellipse cx="32" cy="12" rx="16" ry="5.5" fill={`url(#${id("top")})`} />
+                <ellipse cx="32" cy="12" rx="16" ry="5.5" fill="none" stroke="#374151" strokeWidth="0.8" />
+                {/* Inner rings */}
+                <ellipse cx="32" cy="12" rx="10.5" ry="3.5" fill="none" stroke="#4B5563" strokeWidth="0.8" />
+                <ellipse cx="32" cy="11.5" rx="5.5" ry="1.8" fill="none" stroke="#D1D5DB" strokeWidth="0.4" strokeOpacity="0.4" />
+
+                {/* ===== SHEEN ===== */}
+                <path
+                    d="M17,12 L17,50 A16,5.5 0 0,0 24,54 L24,17 A16,5.5 0 0,1 17,12 Z"
+                    fill={`url(#${id("sheen")})`}
+                />
+
+                {/* ===== OUTER STROKE ===== */}
+                <path
+                    d="M16,12 L16,50 A16,5.5 0 0,0 48,50 L48,12"
+                    fill="none"
+                    stroke="#1F2937"
+                    strokeWidth="1.1"
+                />
+                <ellipse cx="32" cy="12" rx="16" ry="5.5" fill="none" stroke="#1F2937" strokeWidth="1" />
+            </g>
+        </svg>
+    );
 }

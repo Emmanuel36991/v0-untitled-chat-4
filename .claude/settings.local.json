@@ -15,7 +15,10 @@
       "Bash(npx:*)",
       "Bash(npm.cmd pack:*)",
       "Bash(npm.cmd install:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)"
     ]
   }
 }

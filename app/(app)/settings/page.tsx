@@ -811,13 +811,6 @@ export default function SettingsPage() {
                 />
                 <Separator />
                 <ToggleRow
-                  label="Community Insights"
-                  description="Popular strategies and anonymized community trends."
-                  checked={config.notificationPreferences?.emailCommunityInsights}
-                  onCheckedChange={(c) => updateNotificationPreferences({ emailCommunityInsights: c })}
-                />
-                <Separator />
-                <ToggleRow
                   label="Real-Time Trade Alerts"
                   description="Notifications when your open positions hit key levels."
                   checked={config.notificationPreferences?.tradeAlerts}

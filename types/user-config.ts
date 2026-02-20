@@ -54,7 +54,6 @@ export interface NotificationPreferences {
   emailNewFeatures?: boolean
   emailTradeMilestones?: boolean
   emailWeeklyDigest?: boolean
-  emailCommunityInsights?: boolean
   tradeAlerts?: boolean
   weeklyReport?: boolean
 }
@@ -102,7 +101,6 @@ export const DEFAULT_USER_CONFIGURATION: UserConfiguration = {
     emailNewFeatures: true,
     emailTradeMilestones: false,
     emailWeeklyDigest: false,
-    emailCommunityInsights: false,
     tradeAlerts: false,
     weeklyReport: false,
   },

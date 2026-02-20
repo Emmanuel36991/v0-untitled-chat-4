@@ -360,7 +360,7 @@ function ProfileSetupContent() {
   const enableAllNotifications = () => {
     updateNotificationPreferences({
       emailNewFeatures: true, emailTradeMilestones: true, emailWeeklyDigest: true,
-      emailCommunityInsights: true, tradeAlerts: true,
+      tradeAlerts: true,
     })
   }
 

@@ -48,56 +48,42 @@ export function DashboardIcon(props: IconProps) {
 }
 
 /**
- * Trades — Animated Candlestick & Trendline
- * Dynamic market chart with an animated glowing trendline cutting through the data.
+ * Trades / Trade Ledger
+ * A meticulous hybrid of candlestick chart and horizontal ledger.
+ * Minimal, geometric, and airy (Linear/Vercel styling).
  */
 export function TradeLedgerIcon({ className, ...props }: IconProps) {
     return (
-        <SvgTemplate className={cn("group overflow-visible", className)} {...props}>
-            {/* Grid background */}
-            <path d="M3 14h18" opacity="0.1" strokeDasharray="2 4" />
-            <path d="M3 8h18" opacity="0.1" strokeDasharray="2 4" />
+        <SvgTemplate className={className} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" {...props}>
+            {/* Left side: Candlesticks (Wicks are 1px) */}
+            {/* Gridline behind candles */}
+            <path d="M3 10h9" stroke="currentColor" opacity="0.1" strokeDasharray="1 2" />
+            <path d="M3 14h9" stroke="currentColor" opacity="0.1" strokeDasharray="1 2" />
 
-            {/* Base Candles */}
-            {/* Bearish candle */}
-            <line x1="6" y1="5" x2="6" y2="15" className="text-muted-foreground/40 transition-colors duration-500 group-hover:text-loss/60" />
-            <rect x="5" y="7" width="2" height="6" rx="0.5" className="fill-muted-foreground/20 transition-colors duration-500 group-hover:fill-loss" stroke="none" />
+            {/* Candle 1 (Bearish) */}
+            <path d="M5 5v9" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+            <rect x="4" y="7" width="2" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2" />
 
-            {/* Bullish candle */}
-            <line x1="12" y1="9" x2="12" y2="19" className="text-muted-foreground/40 transition-colors duration-500 group-hover:text-profit/60" />
-            <rect x="11" y="11" width="2" height="5" rx="0.5" className="fill-muted-foreground/20 transition-colors duration-500 group-hover:fill-profit" stroke="none" />
+            {/* Candle 2 (Bullish) */}
+            <path d="M8.5 8v10" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+            <rect x="7.5" y="11" width="2" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.5" />
 
-            {/* Bullish breakout candle */}
-            <line x1="18" y1="3" x2="18" y2="11" className="text-muted-foreground/40 transition-colors duration-500 group-hover:text-profit/60" />
-            <rect x="17" y="5" width="2" height="4" rx="0.5" className="fill-muted-foreground/20 transition-colors duration-500 group-hover:fill-profit" stroke="none" />
+            {/* Candle 3 (Bearish) */}
+            <path d="M12 4v7" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+            <rect x="11" y="6" width="2" height="3" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2" />
 
-            {/* The Animated Trendline */}
-            <path
-                d="M3 17l6-6 4 4 8-10"
-                className="stroke-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                strokeWidth="1.8"
-                strokeDasharray="30"
-                strokeDashoffset="30"
-                style={{
-                    transitionProperty: "stroke-dashoffset, opacity",
-                    transitionDuration: "0.8s",
-                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)"
-                }}
-            />
-            {/* Embedded style to trigger the line draw on hover using CSS parent selector */}
-            <style>{`.group:hover path[stroke-dasharray="30"] { stroke-dashoffset: 0 !important; }`}</style>
+            {/* Center Divider */}
+            <path d="M15 4v16" stroke="currentColor" opacity="0.15" />
 
-            {/* Glowing execution Node at the tip of the trendline */}
-            <circle
-                cx="21" cy="5" r="2"
-                className="fill-primary opacity-0 scale-50 transition-all duration-300 delay-500 group-hover:opacity-100 group-hover:scale-100"
-                stroke="none"
-            />
-            <circle
-                cx="21" cy="5" r="4"
-                className="fill-primary/30 opacity-0 scale-50 transition-all duration-300 delay-500 group-hover:opacity-100 group-hover:scale-150 animate-pulse"
-                stroke="none"
-            />
+            {/* Right side: Ledger Row Items */}
+            <path d="M17 6h4" stroke="currentColor" strokeLinecap="round" />
+            <path d="M17 10h2" stroke="currentColor" strokeLinecap="round" opacity="0.6" />
+            <path d="M17 14h3" stroke="currentColor" strokeLinecap="round" />
+            <path d="M17 18h4" stroke="currentColor" strokeLinecap="round" opacity="0.4" />
+
+            {/* Micro indicators on the ledger rows */}
+            <circle cx="21" cy="6" r="0.5" fill="currentColor" stroke="none" opacity="0.5" />
+            <circle cx="21" cy="14" r="0.5" fill="currentColor" stroke="none" opacity="0.5" />
         </SvgTemplate>
     )
 }
@@ -129,69 +115,28 @@ export function AnalyticsIcon(props: IconProps) {
 }
 
 /**
- * Playbook — Animated Dimensional Strategy Journal
- * Re-imagined as an open grimoire/holographic tablet where data streams out from the center on hover.
+ * Playbook (Strategy Playbook)
+ * Sleek, geometric, editorial style (Linear/Vercel aesthetic).
+ * Layered card/page stack with a precision crosshair overlaid.
  */
 export function PlaybookIcon({ className, ...props }: IconProps) {
     return (
-        <SvgTemplate className={cn("group overflow-visible perspective-[1000px]", className)} {...props}>
-            {/* The physical book cover structure */}
-            <path
-                d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19"
-                className="opacity-60 transition-transform duration-300 group-hover:-translate-x-0.5"
-            />
-            <path
-                d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"
-                className="opacity-40"
-            />
-            <path
-                d="M19 2v20"
-                className="opacity-30 transition-transform duration-300 group-hover:translate-x-0.5"
-            />
+        <SvgTemplate className={className} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" {...props}>
+            {/* Background Page Elements */}
+            <path d="M7 6h11a2 2 0 0 1 2 2v10" stroke="currentColor" opacity="0.4" />
+            <path d="M11 3h7" stroke="currentColor" opacity="0.15" />
 
-            {/* The pages inside the book */}
-            <path
-                d="M7 6h9 M7 10h6"
-                className="opacity-30 stroke-current transition-all duration-500 ease-out group-hover:opacity-0 group-hover:translate-x-2"
-            />
+            {/* Main Blueprint/Card */}
+            <rect x="4" y="9" width="13" height="12" rx="2" stroke="currentColor" />
 
-            {/* Glowing Bookmark / Anchor — slides down and glows on hover */}
-            <path
-                d="M13 2v6l2-1.5 2 1.5V2"
-                className="fill-current opacity-20 transition-all duration-300 group-hover:fill-primary group-hover:opacity-100 group-hover:translate-y-1 drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]"
-                stroke="none"
-            />
+            {/* Crosshair/reticle element for 'tactical' feel */}
+            <circle cx="10.5" cy="15" r="2.5" stroke="currentColor" />
 
-            {/* The Holographic Knowledge Core (Animated rings that erupt from the center) */}
-            <circle
-                cx="11" cy="14" r="3"
-                className="stroke-primary opacity-0 scale-50 transition-all duration-500 group-hover:opacity-80 group-hover:scale-100"
-                strokeDasharray="2 3"
-            />
-            <circle
-                cx="11" cy="14" r="5"
-                className="stroke-cyan-500 opacity-0 scale-50 transition-all duration-700 delay-75 group-hover:opacity-60 group-hover:scale-100"
-                strokeDasharray="4 4"
-            />
-            <circle
-                cx="11" cy="14" r="1.5"
-                className="fill-primary opacity-0 scale-0 transition-all duration-300 delay-150 group-hover:opacity-100 group-hover:scale-100 drop-shadow-[0_0_6px_rgba(var(--primary-rgb),1)] animate-pulse"
-                stroke="none"
-            />
+            {/* Crosshair ticks */}
+            <path d="M10.5 11v1.5 M10.5 17.5v1.5 M6.5 15h1.5 M13 15h1.5" stroke="currentColor" />
 
-            {/* Embedded styles for spinning the rings */}
-            <style>{`
-                @keyframes slow-spin { 
-                    from { transform: rotate(0deg); transform-origin: 11px 14px; } 
-                    to { transform: rotate(360deg); transform-origin: 11px 14px; } 
-                }
-                @keyframes slow-spin-reverse { 
-                    from { transform: rotate(360deg); transform-origin: 11px 14px; } 
-                    to { transform: rotate(0deg); transform-origin: 11px 14px; } 
-                }
-                .group:hover circle[stroke-dasharray="2 3"] { animation: slow-spin 3s linear infinite; }
-                .group:hover circle[stroke-dasharray="4 4"] { animation: slow-spin-reverse 5s linear infinite; }
-            `}</style>
+            {/* Center target node */}
+            <circle cx="10.5" cy="15" r="1" fill="currentColor" opacity="0.25" stroke="none" />
         </SvgTemplate>
     )
 }

@@ -26,27 +26,42 @@ const mainNavItems = [
     title: "Dashboard",
     href: "/dashboard",
     icon: DashboardIcon,
+    activeColor: "text-blue-600 dark:text-blue-400",
+    indicatorColor: "from-blue-600 via-blue-400 to-blue-600 dark:from-blue-500 dark:via-blue-300 dark:to-blue-500",
+    mobileActiveBg: "bg-blue-500/10 border-blue-500/20",
     iconClassName: "drop-shadow-[0_0_6px_rgba(59,130,246,0.7)] dark:drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]",
   },
   {
     title: "Trades",
     href: "/trades",
     icon: TradeIcon,
+    activeColor: "text-emerald-600 dark:text-emerald-400",
+    indicatorColor: "from-emerald-600 via-emerald-400 to-emerald-600 dark:from-emerald-500 dark:via-emerald-300 dark:to-emerald-500",
+    mobileActiveBg: "bg-emerald-500/10 border-emerald-500/20",
   },
   {
     title: "Analytics",
     href: "/analytics",
     icon: AnalyticsIcon,
+    activeColor: "text-violet-600 dark:text-violet-400",
+    indicatorColor: "from-violet-600 via-violet-400 to-violet-600 dark:from-violet-500 dark:via-violet-300 dark:to-violet-500",
+    mobileActiveBg: "bg-violet-500/10 border-violet-500/20",
   },
   {
     title: "Playbook",
     href: "/playbook",
     icon: PlaybookIcon,
+    activeColor: "text-amber-600 dark:text-amber-400",
+    indicatorColor: "from-amber-600 via-amber-400 to-amber-600 dark:from-amber-500 dark:via-amber-300 dark:to-amber-500",
+    mobileActiveBg: "bg-amber-500/10 border-amber-500/20",
   },
   {
     title: "Psychology",
     href: "/psychology",
     icon: PsychologyIcon,
+    activeColor: "text-indigo-600 dark:text-indigo-400",
+    indicatorColor: "from-indigo-600 via-indigo-400 to-indigo-600 dark:from-indigo-500 dark:via-indigo-300 dark:to-indigo-500",
+    mobileActiveBg: "bg-indigo-500/10 border-indigo-500/20",
   },
 ]
 
@@ -79,20 +94,27 @@ export function Navbar() {
                   href={item.href}
                   className={cn(
                     "group relative flex items-center gap-2.5 rounded-full px-5 py-2.5 text-base font-semibold transition-all duration-300",
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    isActive ? item.activeColor : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {/* Hover Background */}
                   <span className="absolute inset-0 -z-10 scale-90 rounded-full bg-muted/0 transition-all duration-300 group-hover:scale-100 group-hover:bg-muted/50" />
 
-                  <Icon className={cn("h-6 w-6 transition-transform duration-300 group-hover:scale-110", isActive && "stroke-current", "iconClassName" in item ? (item as { iconClassName?: string }).iconClassName : null)} />
+                  <Icon className={cn(
+                    "h-6 w-6 transition-all duration-300 group-hover:scale-110",
+                    isActive ? "saturate-100 opacity-100 drop-shadow-md stroke-current" : "saturate-0 opacity-60 group-hover:saturate-50 group-hover:opacity-80",
+                    "iconClassName" in item && isActive ? (item as { iconClassName?: string }).iconClassName : null
+                  )} />
                   <span>{item.title}</span>
 
                   {/* Active State: Gradient Underline */}
                   {isActive && (
                     <motion.div
                       layoutId="navbar-active-indicator"
-                      className="absolute bottom-[-0.75rem] left-4 right-4 h-[3px] rounded-t-full bg-gradient-to-r from-primary via-blue-500 to-primary"
+                      className={cn(
+                        "absolute bottom-[-0.75rem] left-4 right-4 h-[3px] rounded-t-full bg-gradient-to-r",
+                        item.indicatorColor
+                      )}
                       transition={{
                         type: "spring",
                         stiffness: 380,
@@ -146,10 +168,13 @@ export function Navbar() {
                         onClick={() => setIsOpen(false)}
                         className={cn(
                           "flex items-center gap-4 rounded-xl px-4 py-3.5 text-lg font-semibold transition-all duration-200",
-                          isActive ? "bg-primary/10 text-primary border border-primary/20" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                          isActive ? cn(item.mobileActiveBg, item.activeColor) : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                         )}
                       >
-                        <Icon className="h-6 w-6" />
+                        <Icon className={cn(
+                          "h-6 w-6 transition-all duration-300",
+                          isActive ? "saturate-100 opacity-100" : "saturate-0 opacity-60"
+                        )} />
                         {item.title}
                       </Link>
                     )

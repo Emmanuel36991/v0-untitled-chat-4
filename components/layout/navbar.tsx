@@ -17,12 +17,11 @@ import {
   PlaybookIcon,
   PlaybookOutlineIcon,
   PsychologyIcon,
+  TradeIcon,
   TradeLedgerIcon,
 } from "@/components/icons/system-icons"
 
 const DashboardActiveIcon = (props: any) => <LayoutDashboard {...props} fill="currentColor" />
-const PsychologyActiveIcon = (props: any) => <PsychologyIcon {...props} fill="currentColor" />
-const TradesActiveIcon = (props: any) => <TradeLedgerIcon {...props} filled={true} />
 const AnalyticsActiveIcon = (props: any) => <AnalyticsIcon {...props} filled={true} />
 
 // Navigation Items Configuration
@@ -40,11 +39,11 @@ const mainNavItems = [
   {
     title: "Trades",
     href: "/trades",
-    icon: TradeLedgerIcon,
-    activeIcon: TradesActiveIcon,
+    icon: TradeIcon,
     activeColor: "text-emerald-600 dark:text-emerald-400",
     indicatorColor: "from-emerald-600 via-emerald-400 to-emerald-600 dark:from-emerald-500 dark:via-emerald-300 dark:to-emerald-500",
     mobileActiveBg: "bg-emerald-500/10 border-emerald-500/20",
+    preserveIconColor: true,
   },
   {
     title: "Analytics",
@@ -69,7 +68,6 @@ const mainNavItems = [
     title: "Psychology",
     href: "/psychology",
     icon: PsychologyIcon,
-    activeIcon: PsychologyActiveIcon,
     activeColor: "text-indigo-600 dark:text-indigo-400",
     indicatorColor: "from-indigo-600 via-indigo-400 to-indigo-600 dark:from-indigo-500 dark:via-indigo-300 dark:to-indigo-500",
     mobileActiveBg: "bg-indigo-500/10 border-indigo-500/20",

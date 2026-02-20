@@ -203,25 +203,348 @@ export function AnalyticsIcon(props: IconProps) {
     )
 }
 
-export function PlaybookIcon(props: IconProps) {
+export function PlaybookOutlineIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `pbo-${name}-${uid}`;
+
     return (
-        <SvgTemplate {...props}>
-            {/* The main notebook cover hollow outline */}
-            <path d="M7 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7z" />
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("ring")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#E5E7EB" />
+                    <stop offset="40%" stopColor="#9CA3AF" />
+                    <stop offset="80%" stopColor="#D1D5DB" />
+                    <stop offset="100%" stopColor="#6B7280" />
+                </linearGradient>
+                <linearGradient id={id("coverFill")} x1="16" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#4B5563" stopOpacity="0.12" />
+                    <stop offset="100%" stopColor="#1F2937" stopOpacity="0.18" />
+                </linearGradient>
+                <linearGradient id={id("labelFill")} x1="25" y1="16" x2="51" y2="34" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#F9FAFB" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#D1D5DB" stopOpacity="0.1" />
+                </linearGradient>
+            </defs>
 
-            {/* The spine line */}
-            <line x1="10" y1="4" x2="10" y2="20" />
+            {/* ===== WIRE RINGS — back half (behind the cover) ===== */}
+            {[11, 19, 27, 35, 43, 51].map((cy) => (
+                <path
+                    key={`rb-${cy}`}
+                    d={`M18 ${cy - 3} 
+              C18 ${cy - 3} 8 ${cy - 3} 8 ${cy} 
+              C8 ${cy + 3} 18 ${cy + 3} 18 ${cy + 3}`}
+                    fill="none"
+                    stroke="#6B7280"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                />
+            ))}
 
-            {/* A subtle label plate hollow outline on the cover */}
-            <rect x="13" y="10" width="5" height="4" rx="0.5" />
+            {/* ===== MAIN COVER ===== */}
+            {/* Subtle fill for visibility */}
+            <rect
+                x="16" y="4" width="40" height="56" rx="4"
+                fill={`url(#${id("coverFill")})`}
+            />
+            {/* Bold stroke outline */}
+            <rect
+                x="16" y="4" width="40" height="56" rx="4"
+                fill="none"
+                stroke="#D1D5DB"
+                strokeWidth="2.4"
+            />
 
-            {/* The binding spiral rings (little arcs sticking out the left) */}
-            <path d="M7 6H5" />
-            <path d="M7 10H5" />
-            <path d="M7 14H5" />
-            <path d="M7 18H5" />
-        </SvgTemplate>
-    )
+            {/* Spine line — thick */}
+            <line
+                x1="22" y1="6" x2="22" y2="58"
+                stroke="#9CA3AF"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+            />
+
+            {/* ===== LABEL PLATE ===== */}
+            {/* Subtle fill */}
+            <rect
+                x="25" y="16" width="26" height="18" rx="3"
+                fill={`url(#${id("labelFill")})`}
+            />
+            {/* Bold stroke */}
+            <rect
+                x="25" y="16" width="26" height="18" rx="3"
+                fill="none"
+                stroke="#D1D5DB"
+                strokeWidth="1.8"
+            />
+
+            {/* ===== "PLAYBOOK" TEXT ===== */}
+            <text
+                x="38"
+                y="24"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontFamily="'Georgia', 'Times New Roman', serif"
+                fontSize="5.2"
+                fontWeight="bold"
+                letterSpacing="1.2"
+                fill="#111827"
+                stroke="#111827"
+                strokeWidth="0.3"
+            >
+                PLAY
+            </text>
+            <text
+                x="38"
+                y="29.5"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontFamily="'Georgia', 'Times New Roman', serif"
+                fontSize="5.2"
+                fontWeight="bold"
+                letterSpacing="1.2"
+                fill="#111827"
+                stroke="#111827"
+                strokeWidth="0.3"
+            >
+                BOOK
+            </text>
+
+            {/* Decorative lines in label */}
+            <line x1="28" y1="20.5" x2="48" y2="20.5" stroke="#9CA3AF" strokeWidth="0.8" />
+            <line x1="28" y1="32.5" x2="48" y2="32.5" stroke="#9CA3AF" strokeWidth="0.8" />
+
+            {/* ===== WIRE RINGS — front half (over the cover) ===== */}
+            {[11, 19, 27, 35, 43, 51].map((cy) => (
+                <path
+                    key={`rf-${cy}`}
+                    d={`M18 ${cy - 3}
+              C18 ${cy - 5.5} 13 ${cy - 5.5} 13 ${cy}
+              C13 ${cy + 5.5} 18 ${cy + 5.5} 18 ${cy + 3}`}
+                    fill="none"
+                    stroke={`url(#${id("ring")})`}
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                />
+            ))}
+
+            {/* ===== RING HOLES — filled dots for visibility ===== */}
+            {[11, 19, 27, 35, 43, 51].map((cy) => (
+                <g key={`hole-${cy}`}>
+                    <circle cx="18" cy={cy - 3} r="1.4" fill="#6B7280" stroke="#9CA3AF" strokeWidth="0.6" />
+                    <circle cx="18" cy={cy + 3} r="1.4" fill="#6B7280" stroke="#9CA3AF" strokeWidth="0.6" />
+                </g>
+            ))}
+        </svg>
+    );
+}
+
+export function PlaybookIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `pb-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                {/* Cover gradient */}
+                <linearGradient id={id("cover")} x1="16" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+
+                {/* Spine darkening */}
+                <linearGradient id={id("spine")} x1="16" y1="32" x2="24" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#111827" stopOpacity="0.6" />
+                    <stop offset="100%" stopColor="#111827" stopOpacity="0" />
+                </linearGradient>
+
+                {/* Cover sheen */}
+                <radialGradient id={id("sheen")} cx="0.35" cy="0.3" r="0.65" fx="0.3" fy="0.25">
+                    <stop offset="0%" stopColor="white" stopOpacity="0.18" />
+                    <stop offset="100%" stopColor="white" stopOpacity="0" />
+                </radialGradient>
+
+                {/* Label gradient */}
+                <linearGradient id={id("label")} x1="26" y1="18" x2="52" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#F9FAFB" />
+                    <stop offset="100%" stopColor="#D1D5DB" />
+                </linearGradient>
+
+                {/* Ring gradient */}
+                <linearGradient id={id("ring")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#D1D5DB" />
+                    <stop offset="35%" stopColor="#9CA3AF" />
+                    <stop offset="70%" stopColor="#E5E7EB" />
+                    <stop offset="100%" stopColor="#6B7280" />
+                </linearGradient>
+
+                {/* Drop shadow */}
+                <filter id={id("shadow")} x="-12%" y="-8%" width="135%" height="130%">
+                    <feDropShadow dx="0.8" dy="1.5" stdDeviation="1.2" floodColor="#000" floodOpacity="0.35" />
+                </filter>
+
+                {/* Clip for spine darkening */}
+                <clipPath id={id("coverClip")}>
+                    <rect x="16" y="4" width="40" height="56" rx="4" />
+                </clipPath>
+            </defs>
+
+            <g filter={`url(#${id("shadow")})`}>
+
+                {/* ===== WIRE RINGS — back half (behind the cover) ===== */}
+                {[11, 19, 27, 35, 43, 51].map((cy) => (
+                    <path
+                        key={`rb-${cy}`}
+                        d={`M18 ${cy - 3} 
+                C18 ${cy - 3} 8 ${cy - 3} 8 ${cy} 
+                C8 ${cy + 3} 18 ${cy + 3} 18 ${cy + 3}`}
+                        fill="none"
+                        stroke="#6B7280"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                    />
+                ))}
+
+                {/* ===== MAIN COVER (single unified shape) ===== */}
+                <rect x="16" y="4" width="40" height="56" rx="4" fill={`url(#${id("cover")})`} />
+
+                {/* Cover outline */}
+                <rect x="16" y="4" width="40" height="56" rx="4" fill="none" stroke="#111827" strokeWidth="1" />
+
+                {/* Spine darkening overlay */}
+                <rect x="16" y="4" width="8" height="56" fill={`url(#${id("spine")})`} clipPath={`url(#${id("coverClip")})`} />
+
+                {/* Spine edge line */}
+                <line x1="22" y1="6" x2="22" y2="58" stroke="white" strokeWidth="0.4" strokeOpacity="0.08" />
+
+                {/* ===== COVER SHEEN ===== */}
+                <rect x="16" y="4" width="40" height="56" rx="4" fill={`url(#${id("sheen")})`} />
+
+                {/* Left edge curved highlight */}
+                <path
+                    d="M20 58 C17 45 17 20 20 6"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="0.8"
+                    strokeOpacity="0.07"
+                />
+
+                {/* ===== LABEL PLATE ===== */}
+                <rect x="25" y="16" width="26" height="18" rx="3" fill={`url(#${id("label")})`} />
+                <rect x="25" y="16" width="26" height="18" rx="3" fill="none" stroke="#9CA3AF" strokeWidth="0.5" />
+                {/* Label inner highlight */}
+                <rect x="27" y="17.5" width="22" height="1.5" rx="0.75" fill="white" fillOpacity="0.6" />
+
+                {/* ===== "PLAYBOOK" TEXT ===== */}
+                {/* Shadow/deboss layer */}
+                <text
+                    x="38"
+                    y="24.5"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontFamily="'Georgia', 'Times New Roman', serif"
+                    fontSize="5.2"
+                    fontWeight="bold"
+                    letterSpacing="1.2"
+                    fill="#6B7280"
+                    fillOpacity="0.5"
+                >
+                    PLAY
+                </text>
+                <text
+                    x="38"
+                    y="30"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontFamily="'Georgia', 'Times New Roman', serif"
+                    fontSize="5.2"
+                    fontWeight="bold"
+                    letterSpacing="1.2"
+                    fill="#6B7280"
+                    fillOpacity="0.5"
+                >
+                    BOOK
+                </text>
+                {/* Main text layer */}
+                <text
+                    x="38"
+                    y="24"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontFamily="'Georgia', 'Times New Roman', serif"
+                    fontSize="5.2"
+                    fontWeight="bold"
+                    letterSpacing="1.2"
+                    fill="#374151"
+                >
+                    PLAY
+                </text>
+                <text
+                    x="38"
+                    y="29.5"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontFamily="'Georgia', 'Times New Roman', serif"
+                    fontSize="5.2"
+                    fontWeight="bold"
+                    letterSpacing="1.2"
+                    fill="#374151"
+                >
+                    BOOK
+                </text>
+                {/* Subtle decorative lines around text */}
+                <line x1="28" y1="20.5" x2="48" y2="20.5" stroke="#9CA3AF" strokeWidth="0.4" strokeOpacity="0.5" />
+                <line x1="28" y1="32.5" x2="48" y2="32.5" stroke="#9CA3AF" strokeWidth="0.4" strokeOpacity="0.5" />
+
+                {/* ===== WIRE RINGS — front half (over the cover) ===== */}
+                {[11, 19, 27, 35, 43, 51].map((cy) => (
+                    <g key={`rf-${cy}`}>
+                        {/* Ring front arc — comes out from cover holes */}
+                        <path
+                            d={`M18 ${cy - 3}
+                  C18 ${cy - 5.5} 13 ${cy - 5.5} 13 ${cy}
+                  C13 ${cy + 5.5} 18 ${cy + 5.5} 18 ${cy + 3}`}
+                            fill="none"
+                            stroke={`url(#${id("ring")})`}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                        />
+                        {/* Ring highlight */}
+                        <path
+                            d={`M17.5 ${cy - 2.5}
+                  C17.5 ${cy - 4.5} 14 ${cy - 4.5} 14 ${cy - 1}`}
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="0.8"
+                            strokeLinecap="round"
+                            strokeOpacity="0.55"
+                        />
+                    </g>
+                ))}
+
+                {/* ===== RING HOLES IN COVER ===== */}
+                {[11, 19, 27, 35, 43, 51].map((cy) => (
+                    <g key={`hole-${cy}`}>
+                        <circle cx="18" cy={cy - 3} r="1.2" fill="#111827" fillOpacity="0.4" />
+                        <circle cx="18" cy={cy + 3} r="1.2" fill="#111827" fillOpacity="0.4" />
+                    </g>
+                ))}
+
+            </g>
+        </svg>
+    );
 }
 
 /**

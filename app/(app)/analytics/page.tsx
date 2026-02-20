@@ -585,7 +585,7 @@ export default function AnalyticsPage() {
               {/* P&L */}
               <MetricCard
                 title="Total P&L"
-                icon={TradeIcon}
+                icon={PnLIcon}
                 accentColor={analytics.totalPnL >= 0 ? "emerald" : "rose"}
                 value={`${analytics.totalPnL >= 0 ? "+" : ""}$${analytics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
               >

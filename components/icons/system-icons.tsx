@@ -1788,9 +1788,12 @@ export function StorageIcon({ size = 64, className = "" }: { size?: number; clas
                     <stop offset="25%" stopColor="white" stopOpacity="0.14" />
                     <stop offset="45%" stopColor="white" stopOpacity="0" />
                 </linearGradient>
+                <filter id={id("sh")} x="-15%" y="-8%" width="135%" height="130%">
+                    <feDropShadow dx="0.5" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
             </defs>
 
-            <g>
+            <g filter={`url(#${id("sh")})`}>
                 {/* ===== 3D DROP SHADOW OFFSET ===== */}
                 <path
                     d="M17,12 L17,51 A16,5.5 0 0,0 49,51 L49,12"

@@ -203,16 +203,23 @@ export function AnalyticsIcon(props: IconProps) {
     )
 }
 
-/**
- * Playbook (Strategy Playbook)
- * Sleek, geometric, editorial style
- */
 export function PlaybookIcon(props: IconProps) {
     return (
         <SvgTemplate {...props}>
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-            <path d="M8 7h6" />
-            <path d="M8 11h8" />
+            {/* The main notebook cover hollow outline */}
+            <path d="M7 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7z" />
+
+            {/* The spine line */}
+            <line x1="10" y1="4" x2="10" y2="20" />
+
+            {/* A subtle label plate hollow outline on the cover */}
+            <rect x="13" y="10" width="5" height="4" rx="0.5" />
+
+            {/* The binding spiral rings (little arcs sticking out the left) */}
+            <path d="M7 6H5" />
+            <path d="M7 10H5" />
+            <path d="M7 14H5" />
+            <path d="M7 18H5" />
         </SvgTemplate>
     )
 }

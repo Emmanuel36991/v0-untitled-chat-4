@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { UserNav } from "@/components/layout/user-nav"
@@ -103,12 +103,25 @@ export function Navbar() {
                   {/* Hover Background */}
                   <span className="absolute inset-0 -z-10 scale-90 rounded-full bg-muted/0 transition-all duration-300 group-hover:scale-100 group-hover:bg-muted/50" />
 
-                  <Icon className={cn(
-                    "h-6 w-6 transition-all duration-300 group-hover:scale-110",
-                    !("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "saturate-100 opacity-100 drop-shadow-md stroke-current" : "saturate-0 opacity-60 group-hover:saturate-50 group-hover:opacity-80"),
-                    ("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "opacity-100 drop-shadow-md" : "saturate-50 opacity-60 group-hover:saturate-100 group-hover:opacity-80"),
-                    "iconClassName" in item && isActive ? (item as { iconClassName?: string }).iconClassName : null
-                  )} />
+                  <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      <motion.div
+                        key={isActive && item.activeIcon ? "active" : "inactive"}
+                        initial={item.activeIcon ? { opacity: 0, scale: 0.5, rotate: isActive ? 15 : -15 } : undefined}
+                        animate={item.activeIcon ? { opacity: 1, scale: 1, rotate: 0 } : undefined}
+                        exit={item.activeIcon ? { opacity: 0, scale: 0.5, rotate: isActive ? -15 : 15 } : undefined}
+                        transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 20 }}
+                        className="absolute inset-0 flex items-center justify-center"
+                      >
+                        <Icon className={cn(
+                          "h-full w-full transition-all duration-300 group-hover:scale-110",
+                          !("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "saturate-100 opacity-100 drop-shadow-md stroke-current" : "saturate-0 opacity-60 group-hover:saturate-50 group-hover:opacity-80"),
+                          ("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "opacity-100 drop-shadow-md" : "saturate-50 opacity-60 group-hover:saturate-100 group-hover:opacity-80"),
+                          "iconClassName" in item && isActive ? (item as { iconClassName?: string }).iconClassName : null
+                        )} />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
                   <span>{item.title}</span>
 
                   {/* Active State: Gradient Underline */}
@@ -175,11 +188,24 @@ export function Navbar() {
                           isActive ? cn(item.mobileActiveBg, item.activeColor) : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                         )}
                       >
-                        <Icon className={cn(
-                          "h-6 w-6 transition-all duration-300",
-                          !("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "saturate-100 opacity-100 stroke-current" : "saturate-0 opacity-60"),
-                          ("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "opacity-100" : "saturate-50 opacity-60")
-                        )} />
+                        <div className="relative flex h-6 w-6 shrink-0 items-center justify-center">
+                          <AnimatePresence mode="popLayout" initial={false}>
+                            <motion.div
+                              key={isActive && item.activeIcon ? "active" : "inactive"}
+                              initial={item.activeIcon ? { opacity: 0, scale: 0.5, rotate: isActive ? 15 : -15 } : undefined}
+                              animate={item.activeIcon ? { opacity: 1, scale: 1, rotate: 0 } : undefined}
+                              exit={item.activeIcon ? { opacity: 0, scale: 0.5, rotate: isActive ? -15 : 15 } : undefined}
+                              transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 20 }}
+                              className="absolute inset-0 flex items-center justify-center"
+                            >
+                              <Icon className={cn(
+                                "h-full w-full transition-all duration-300",
+                                !("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "saturate-100 opacity-100 stroke-current" : "saturate-0 opacity-60"),
+                                ("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "opacity-100" : "saturate-50 opacity-60")
+                              )} />
+                            </motion.div>
+                          </AnimatePresence>
+                        </div>
                         {item.title}
                       </Link>
                     )

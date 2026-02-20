@@ -15,6 +15,7 @@ import { Menu, BookOpen, LayoutDashboard } from "lucide-react"
 import {
   AnalyticsIcon,
   PlaybookIcon,
+  PlaybookOutlineIcon,
   PsychologyIcon,
   TradeIcon,
 } from "@/components/icons/system-icons"
@@ -50,7 +51,8 @@ const mainNavItems = [
   {
     title: "Playbook",
     href: "/playbook",
-    icon: PlaybookIcon,
+    icon: PlaybookOutlineIcon,
+    activeIcon: PlaybookIcon,
     activeColor: "text-amber-600 dark:text-amber-400",
     indicatorColor: "from-amber-600 via-amber-400 to-amber-600 dark:from-amber-500 dark:via-amber-300 dark:to-amber-500",
     mobileActiveBg: "bg-amber-500/10 border-amber-500/20",
@@ -87,7 +89,7 @@ export function Navbar() {
           <nav className="flex items-center gap-1 rounded-full bg-muted/30 p-1 px-2 backdrop-blur-sm border border-border">
             {mainNavItems.map((item) => {
               const isActive = pathname === item.href
-              const Icon = item.icon
+              const Icon = isActive && item.activeIcon ? item.activeIcon : item.icon
 
               return (
                 <Link
@@ -161,8 +163,8 @@ export function Navbar() {
                 </Link>
                 <nav className="flex flex-col gap-2">
                   {mainNavItems.map((item) => {
-                    const Icon = item.icon
                     const isActive = pathname === item.href
+                    const Icon = isActive && item.activeIcon ? item.activeIcon : item.icon
                     return (
                       <Link
                         key={item.href}

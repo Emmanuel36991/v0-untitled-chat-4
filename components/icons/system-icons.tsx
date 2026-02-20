@@ -92,9 +92,9 @@ export function TradeLedgerIcon({ className, ...props }: IconProps) {
 /**
  * Trade Icon (Rich 3D)
  */
-export function TradeIcon({ size = 64, className = "", ...props }: { size?: number; className?: string } & React.SVGProps<SVGSVGElement>) {
-    const uid = useId()
-    const id = (name: string) => `tr-${name}-${uid}`
+export function TradeIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `tr-${name}-${uid}`;
 
     return (
         <svg
@@ -104,113 +104,77 @@ export function TradeIcon({ size = 64, className = "", ...props }: { size?: numb
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={className}
-            {...props}
         >
             <defs>
-                {/* Front cover */}
-                <linearGradient id={id("coverF")} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#7B8290" />
-                    <stop offset="100%" stopColor="#4B5563" />
-                </linearGradient>
-
-                {/* Back cover */}
-                <linearGradient id={id("coverB")} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#5C6370" />
+                <linearGradient id={id("folder")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6B7280" />
                     <stop offset="100%" stopColor="#374151" />
                 </linearGradient>
-
-                {/* Spine */}
-                <linearGradient id={id("spine")} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#374151" />
-                    <stop offset="50%" stopColor="#4B5563" />
-                    <stop offset="100%" stopColor="#374151" />
+                <linearGradient id={id("folderFront")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
                 </linearGradient>
-
-                {/* Paper */}
                 <linearGradient id={id("paper")} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#FFFFFF" />
+                    <stop offset="0%" stopColor="#F9FAFB" />
                     <stop offset="100%" stopColor="#E5E7EB" />
                 </linearGradient>
-
-                {/* Drop shadow */}
                 <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
-                    <feDropShadow dx="0.5" dy="1" stdDeviation="0.8" floodColor="#000" floodOpacity="0.3" />
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
                 </filter>
             </defs>
 
             <g filter={`url(#${id("sh")})`}>
-                {/* ===== BACK COVER (left edge) ===== */}
-                <rect
-                    x="10" y="18" width="6" height="40" rx="2"
-                    fill={`url(#${id("coverB")})`}
-                    stroke="#1F2937" strokeWidth="0.8"
+
+                {/* ===== BACK OF FOLDER ===== */}
+                <rect x="6" y="22" width="52" height="38" rx="3" fill={`url(#${id("folder")})`} stroke="#1F2937" strokeWidth="0.8" />
+
+                {/* ===== FOLDER TAB (top-left) ===== */}
+                <path
+                    d="M6,25 L6,20 Q6,17 9,17 L22,17 Q24,17 25,19 L27,22 L6,22 Z"
+                    fill={`url(#${id("folder")})`}
+                    stroke="#1F2937"
+                    strokeWidth="0.8"
                 />
 
-                {/* ===== DOCUMENTS peeking above folder ===== */}
-                {/* Doc 1 — line chart, peeks highest */}
-                <rect x="17" y="2" width="8" height="52" rx="1.2" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.4" />
-                {/* Rising line chart */}
+                {/* ===== DOCUMENTS PEEKING OUT ===== */}
+
+                {/* Doc 1 — left, tallest peek: rising trend line */}
+                <rect x="11" y="8" width="14" height="30" rx="1.5" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.5" />
+                {/* Bold rising line chart */}
                 <polyline
-                    points="19,16 21,12 22.5,13.5 23.5,7"
-                    fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    points="14,24 17,20 20,22 22,14"
+                    fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                 />
-                <circle cx="23.5" cy="7" r="1.5" fill="#374151" />
+                {/* Dot at peak */}
+                <circle cx="22" cy="14" r="2" fill="#374151" />
+                {/* Small upward arrow at peak */}
+                <path d="M22,11 L24,14 L20,14 Z" fill="#6B7280" />
 
-                {/* Doc 2 — candlesticks, peeks medium */}
-                <rect x="26" y="5" width="8" height="49" rx="1.2" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.4" />
-                {/* Candlestick bars — bigger and lower */}
-                <line x1="28.5" y1="8" x2="28.5" y2="17" stroke="#9CA3AF" strokeWidth="0.6" />
-                <rect x="27.2" y="10" width="2.6" height="5" rx="0.6" fill="#374151" />
-                <line x1="31" y1="7.5" x2="31" y2="16.5" stroke="#9CA3AF" strokeWidth="0.6" />
-                <rect x="29.7" y="9" width="2.6" height="5.5" rx="0.6" fill="#6B7280" />
-                <line x1="33.5" y1="7" x2="33.5" y2="16" stroke="#9CA3AF" strokeWidth="0.6" />
-                <rect x="32.2" y="8.5" width="2.6" height="4.5" rx="0.6" fill="#374151" />
+                {/* Doc 2 — center, medium peek: candlesticks */}
+                <rect x="26" y="11" width="14" height="27" rx="1.5" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.5" />
+                {/* Bold candlestick bars */}
+                {/* Candle 1 - bearish */}
+                <line x1="30" y1="15" x2="30" y2="27" stroke="#9CA3AF" strokeWidth="0.8" />
+                <rect x="28.2" y="17" width="3.6" height="7" rx="0.8" fill="#374151" />
+                {/* Candle 2 - bullish */}
+                <line x1="35" y1="14" x2="35" y2="26" stroke="#9CA3AF" strokeWidth="0.8" />
+                <rect x="33.2" y="16" width="3.6" height="6" rx="0.8" fill="#6B7280" />
 
-                {/* Doc 3 — up arrow, peeks least */}
-                <rect x="35" y="8" width="8" height="46" rx="1.2" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.4" />
-                {/* Up arrow — bigger and lower */}
-                <path d="M39 10 L42 15 L40.8 15 L40.8 17.5 L37.2 17.5 L37.2 15 L36 15 Z" fill="#374151" />
+                {/* Doc 3 — right, shortest peek: bar chart */}
+                <rect x="41" y="14" width="14" height="24" rx="1.5" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.5" />
+                {/* Bold bar chart */}
+                <rect x="43.5" y="22" width="3" height="8" rx="0.6" fill="#374151" />
+                <rect x="47.5" y="18" width="3" height="12" rx="0.6" fill="#6B7280" />
+                <rect x="51.5" y="20" width="3" height="10" rx="0.6" fill="#4B5563" />
 
-                {/* ===== FRONT COVER (right edge) ===== */}
-                <rect
-                    x="44" y="18" width="6" height="40" rx="2"
-                    fill={`url(#${id("coverF")})`}
-                    stroke="#1F2937" strokeWidth="0.8"
-                />
-                {/* Front cover highlight sheen */}
-                <rect x="44.8" y="19.5" width="2" height="37" rx="1" fill="white" fillOpacity="0.1" />
+                {/* ===== FRONT OF FOLDER ===== */}
+                <rect x="6" y="34" width="52" height="26" rx="3" fill={`url(#${id("folderFront")})`} stroke="#1F2937" strokeWidth="0.8" />
+                {/* Front folder highlight */}
+                <rect x="8" y="36" width="48" height="1.5" rx="0.75" fill="white" fillOpacity="0.08" />
 
-                {/* ===== SPINE (bottom connecting both covers) ===== */}
-                <path
-                    d="M10 56 Q10 60 14 60 L46 60 Q50 60 50 56"
-                    fill={`url(#${id("spine")})`}
-                    stroke="#1F2937" strokeWidth="0.8"
-                />
-                {/* Spine inner highlight */}
-                <path
-                    d="M13 57 Q13 59 15 59 L45 59 Q47 59 47 57"
-                    fill="white" fillOpacity="0.05"
-                />
-
-                {/* ===== TAB sticking out from back cover ===== */}
-                <path
-                    d="M7 26 Q5 26 5 28 L5 38 Q5 40 7 40 L10 40 L10 26 Z"
-                    fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="0.5"
-                />
-                {/* Tab label lines */}
-                <rect x="6" y="29.5" width="3" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.5" />
-                <rect x="6" y="31.5" width="2.5" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.4" />
-                <rect x="6" y="33.5" width="3" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.35" />
-                <rect x="6" y="35.5" width="2" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.3" />
-
-                {/* ===== Top edges of covers (visible above documents at the top) ===== */}
-                {/* Back cover top cap */}
-                <rect x="10" y="17.5" width="6" height="2" rx="1" fill="#5C6370" stroke="#1F2937" strokeWidth="0.4" />
-                {/* Front cover top cap */}
-                <rect x="44" y="17.5" width="6" height="2" rx="1" fill="#7B8290" stroke="#1F2937" strokeWidth="0.4" />
             </g>
         </svg>
-    )
+    );
 }
 
 /**
@@ -464,44 +428,416 @@ export function UpdatesIcon({ className, ...props }: IconProps) {
 }
 
 /**
- * Avg Return — Average profit per trade
- * Dollar sign with averaging tilde (~) — represents the mean P&L per execution.
- * Clear, financial, and instantly recognizable.
+ * Win Rate — Bullseye / Target
  */
-export function AvgReturnIcon(props: IconProps) {
+export function WinRateIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `wr-${name}-${uid}`;
+
+    const cx = 31;
+    const cy = 32;
+
     return (
-        <SvgTemplate {...props}>
-            {/* Upward trending line — represents average return direction */}
-            <path d="M4 16l6-6 4 4 6-6" strokeWidth="1.8" />
-            {/* Arrow head */}
-            <path d="M17 8l3-3" strokeWidth="1.8" />
-            <path d="M20 5h-4" strokeWidth="1.8" />
-            <path d="M20 5v4" strokeWidth="1.8" />
-        </SvgTemplate>
-    )
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("ring")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#D1D5DB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                </linearGradient>
+                <linearGradient id={id("dart")} x1="0" y1="1" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#E5E7EB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                </linearGradient>
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
+            </defs>
+
+            <g filter={`url(#${id("sh")})`}>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* Outer ring */}
+                <circle cx={cx} cy={cy} r="17" stroke="#4B5563" strokeWidth="2.5" fill="none" />
+                {/* Middle ring */}
+                <circle cx={cx} cy={cy} r="11" stroke={`url(#${id("ring")})`} strokeWidth="2.5" fill="none" />
+                {/* Inner ring */}
+                <circle cx={cx} cy={cy} r="5" stroke="#9CA3AF" strokeWidth="2.5" fill="none" />
+
+                {/* Bullseye center dot */}
+                <circle cx={cx} cy={cy} r="2" fill="#D1D5DB" />
+
+                {/* === DART — much bolder === */}
+                {/* Dart shaft — thick and clear */}
+                <line x1={cx + 1} y1={cy - 1} x2="46" y2="14" stroke={`url(#${id("dart")})`} strokeWidth="2.8" strokeLinecap="round" />
+
+                {/* Dart tip — bright triangle pointing into center */}
+                <polygon points={`${cx},${cy} ${cx + 4},${cy - 5} ${cx + 5},${cy - 3}`} fill="#F3F4F6" />
+
+                {/* Dart flights — two big bold fins at the tail */}
+                {/* Top-left fin */}
+                <polygon points="44,16 49,10 46,12" fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="0.4" />
+                {/* Bottom-right fin */}
+                <polygon points="44,16 51,15 47,12" fill="#9CA3AF" stroke="#6B7280" strokeWidth="0.4" />
+                {/* Third fin for volume */}
+                <polygon points="45,15 50,11 50,15" fill="#B0B7C0" stroke="#9CA3AF" strokeWidth="0.3" />
+
+                {/* Bright impact dot at bullseye */}
+                <circle cx={cx} cy={cy} r="1.3" fill="#F9FAFB" />
+            </g>
+        </svg>
+    );
+}
+
+/**
+ * Avg Return — Average profit per trade
+ */
+export function AvgReturnIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `ar-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("coin")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#D1D5DB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                </linearGradient>
+                <linearGradient id={id("arrow")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#E5E7EB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                </linearGradient>
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
+            </defs>
+
+            <g filter={`url(#${id("sh")})`}>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* === COIN === */}
+                {/* Coin edge (3D depth) */}
+                <ellipse cx="31" cy="33" rx="13" ry="13" fill="#4B5563" />
+                {/* Coin face */}
+                <ellipse cx="31" cy="31" rx="13" ry="13" fill={`url(#${id("coin")})`} />
+                {/* Coin inner ring */}
+                <ellipse cx="31" cy="31" rx="10" ry="10" fill="none" stroke="#6B7280" strokeWidth="1.2" />
+
+                {/* Dollar sign in center */}
+                <text
+                    x="31"
+                    y="36"
+                    textAnchor="middle"
+                    fontFamily="Georgia, serif"
+                    fontSize="14"
+                    fill="#4B5563"
+                >
+                    $
+                </text>
+
+                {/* === CIRCULAR RETURN ARROW wrapping around coin === */}
+                {/* Arc path — goes ~270° around the coin */}
+                <path
+                    d="M31,12 A19,19 0 1,1 14,24"
+                    fill="none"
+                    stroke={`url(#${id("arrow")})`}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                />
+                {/* Arrowhead at the end of the arc */}
+                <polygon
+                    points="14,24 10,18 18,19"
+                    fill="#D1D5DB"
+                />
+            </g>
+        </svg>
+    );
 }
 
 /**
  * Profit Factor — Ratio of gross profit to gross loss
- * Multiplication/ratio symbol with upward trend arrow.
- * Represents the profit multiplier concept (e.g., 2.5x means $2.50 profit per $1 loss).
  */
-export function ProfitFactorIcon(props: IconProps) {
+export function ProfitFactorIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `pf-${name}-${uid}`;
+
     return (
-        <SvgTemplate {...props}>
-            {/* Balance beam — center fulcrum */}
-            <path d="M12 6v12" opacity="0.3" />
-            <polygon points="12,18 10,20 14,20" fill="currentColor" opacity="0.3" />
-            {/* Beam — tilted up-left to show profit outweighs loss */}
-            <line x1="4" y1="9" x2="20" y2="11" strokeWidth="1.8" />
-            {/* Left pan — heavier (profit), sits higher */}
-            <path d="M4 9l2 5h-4z" fill="currentColor" opacity="0.25" />
-            <line x1="2" y1="14" x2="6" y2="14" strokeWidth="1.5" />
-            {/* Right pan — lighter (loss), sits lower */}
-            <path d="M20 11l1.5 4h-3z" fill="currentColor" opacity="0.15" />
-            <line x1="18.5" y1="15" x2="21.5" y2="15" strokeWidth="1.5" />
-        </SvgTemplate>
-    )
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("pan")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#D1D5DB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                </linearGradient>
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
+            </defs>
+
+            <g filter={`url(#${id("sh")})`}>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* === SCALE === */}
+
+                {/* Center post */}
+                <rect x="29" y="16" width="4" height="32" rx="1.2" fill="#6B7280" />
+
+                {/* Base platform */}
+                <path d="M22,48 L40,48 L38,46 L24,46 Z" fill="#9CA3AF" />
+                <rect x="24" y="46" width="14" height="2.5" rx="1" fill="#6B7280" />
+
+                {/* Pivot triangle at top */}
+                <polygon points="31,14 27.5,19 34.5,19" fill="#D1D5DB" />
+
+                {/* Beam — tilted: left side (profit) lower = heavier */}
+                <line x1="12" y1="24" x2="50" y2="18" stroke="#D1D5DB" strokeWidth="2.8" strokeLinecap="round" />
+
+                {/* === LEFT PAN (heavier — profit) === */}
+                {/* Left chains */}
+                <line x1="14" y1="24.5" x2="14" y2="32" stroke="#9CA3AF" strokeWidth="1.5" />
+                <line x1="24" y1="22.5" x2="24" y2="30" stroke="#9CA3AF" strokeWidth="1.5" />
+
+                {/* Left pan bowl */}
+                <path d="M10,32 C10,32 11,38 19,38 C27,38 28,32 28,32 Z" fill={`url(#${id("pan")})`} stroke="#9CA3AF" strokeWidth="0.6" />
+                {/* Left pan rim */}
+                <ellipse cx="19" cy="32" rx="9" ry="1.8" fill="#D1D5DB" />
+
+                {/* Coins stacked in left pan */}
+                <ellipse cx="19" cy="31" rx="5" ry="1.5" fill="#9CA3AF" />
+                <ellipse cx="19" cy="29.5" rx="5" ry="1.5" fill="#B0B7C0" />
+                <ellipse cx="19" cy="28" rx="5" ry="1.5" fill="#D1D5DB" />
+
+                {/* === RIGHT PAN (lighter — loss) === */}
+                {/* Right chains */}
+                <line x1="38" y1="17" x2="38" y2="24" stroke="#9CA3AF" strokeWidth="1.5" />
+                <line x1="48" y1="18.5" x2="48" y2="26" stroke="#9CA3AF" strokeWidth="1.5" />
+
+                {/* Right pan bowl */}
+                <path d="M34,26 C34,26 35,31 43,31 C51,31 52,26 52,26 Z" fill="#4B5563" stroke="#6B7280" strokeWidth="0.6" />
+                {/* Right pan rim */}
+                <ellipse cx="43" cy="26" rx="9" ry="1.8" fill="#6B7280" />
+
+                {/* Single small coin in right pan */}
+                <ellipse cx="43" cy="25" rx="3.5" ry="1.2" fill="#4B5563" stroke="#6B7280" strokeWidth="0.5" />
+            </g>
+        </svg>
+    );
+}
+
+export function PnLIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `pnl-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("up")} x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#9CA3AF" />
+                    <stop offset="100%" stopColor="#D1D5DB" />
+                </linearGradient>
+                <linearGradient id={id("down")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6B7280" />
+                    <stop offset="100%" stopColor="#4B5563" />
+                </linearGradient>
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
+            </defs>
+
+            <g filter={`url(#${id("sh")})`}>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* Baseline */}
+                <line x1="13" y1="35" x2="49" y2="35" stroke="#6B7280" strokeWidth="0.8" />
+
+                {/* Profit bars */}
+                <rect x="15" y="19" width="7" height="16" rx="1.5" fill={`url(#${id("up")})`} />
+                <rect x="25" y="25" width="7" height="10" rx="1.5" fill={`url(#${id("up")})`} />
+
+                {/* Loss bars */}
+                <rect x="35" y="35" width="7" height="7" rx="1.5" fill={`url(#${id("down")})`} />
+                <rect x="45" y="35" width="7" height="12" rx="1.5" fill={`url(#${id("down")})`} />
+            </g>
+        </svg>
+    );
+}
+
+export function EquityCurveIcon({ size = 64, className = "" }: { size?: number; className?: string }) {
+    const uid = useId();
+    const id = (name: string) => `ec-${name}-${uid}`;
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <defs>
+                <linearGradient id={id("card")} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("face")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="100%" stopColor="#1F2937" />
+                </linearGradient>
+                <linearGradient id={id("line")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#9CA3AF" />
+                    <stop offset="100%" stopColor="#E5E7EB" />
+                </linearGradient>
+                <linearGradient id={id("fill")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#9CA3AF" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#9CA3AF" stopOpacity="0.02" />
+                </linearGradient>
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
+                </filter>
+                <filter id={id("glow")}>
+                    <feGaussianBlur stdDeviation="1" result="blur" />
+                    <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+
+            <g filter={`url(#${id("sh")})`}>
+                {/* 3D bottom edge */}
+                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
+                {/* Main card */}
+                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
+                {/* Inner face */}
+                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
+                {/* Sheen */}
+                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
+                {/* === CHART AREA === */}
+
+                {/* Subtle grid lines */}
+                <line x1="14" y1="18" x2="48" y2="18" stroke="#4B5563" strokeWidth="0.5" strokeOpacity="0.5" />
+                <line x1="14" y1="27" x2="48" y2="27" stroke="#4B5563" strokeWidth="0.5" strokeOpacity="0.5" />
+                <line x1="14" y1="36" x2="48" y2="36" stroke="#4B5563" strokeWidth="0.5" strokeOpacity="0.5" />
+                <line x1="14" y1="45" x2="48" y2="45" stroke="#4B5563" strokeWidth="0.5" strokeOpacity="0.5" />
+
+                {/* Y axis */}
+                <line x1="14" y1="12" x2="14" y2="48" stroke="#6B7280" strokeWidth="1.2" strokeLinecap="round" />
+                {/* X axis */}
+                <line x1="14" y1="48" x2="50" y2="48" stroke="#6B7280" strokeWidth="1.2" strokeLinecap="round" />
+
+                {/* Area fill under the equity curve */}
+                <path
+                    d="M14,43 C17,42 19,40 21,38 C23,36 24,37 26,35 C28,33 29,30 31,28 C33,26 34,27 36,24 C38,21 39,22 41,19 C43,16 45,15 48,13 L48,48 L14,48 Z"
+                    fill={`url(#${id("fill")})`}
+                />
+
+                {/* Equity curve line — smooth upward trend with realistic dips */}
+                <path
+                    d="M14,43 C17,42 19,40 21,38 C23,36 24,37 26,35 C28,33 29,30 31,28 C33,26 34,27 36,24 C38,21 39,22 41,19 C43,16 45,15 48,13"
+                    stroke={`url(#${id("line")})`}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                    filter={`url(#${id("glow")})`}
+                />
+
+                {/* End dot — current equity point */}
+                <circle cx="48" cy="13" r="2.2" fill="#D1D5DB" />
+                <circle cx="48" cy="13" r="1" fill="#F9FAFB" />
+            </g>
+        </svg>
+    );
 }
 
 /**

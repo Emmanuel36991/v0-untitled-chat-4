@@ -35,6 +35,8 @@ import {
   MeanReversionIcon,
   MomentumFlowIcon,
   PulseIcon,
+  PnLIcon,
+  WinRateIcon,
 } from "@/components/icons/system-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
@@ -552,7 +554,7 @@ export default function DashboardPage() {
             }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
-            icon={ProfitChartIcon}
+            icon={PnLIcon}
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
@@ -571,7 +573,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={ScalpIcon}
+            icon={WinRateIcon}
             iconColor="text-chart-2"
             trendData={[
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }

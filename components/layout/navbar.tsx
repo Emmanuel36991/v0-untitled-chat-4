@@ -38,6 +38,7 @@ const mainNavItems = [
     activeColor: "text-emerald-600 dark:text-emerald-400",
     indicatorColor: "from-emerald-600 via-emerald-400 to-emerald-600 dark:from-emerald-500 dark:via-emerald-300 dark:to-emerald-500",
     mobileActiveBg: "bg-emerald-500/10 border-emerald-500/20",
+    preserveIconColor: true,
   },
   {
     title: "Analytics",
@@ -54,6 +55,7 @@ const mainNavItems = [
     activeColor: "text-amber-600 dark:text-amber-400",
     indicatorColor: "from-amber-600 via-amber-400 to-amber-600 dark:from-amber-500 dark:via-amber-300 dark:to-amber-500",
     mobileActiveBg: "bg-amber-500/10 border-amber-500/20",
+    preserveIconColor: true,
   },
   {
     title: "Psychology",
@@ -102,7 +104,8 @@ export function Navbar() {
 
                   <Icon className={cn(
                     "h-6 w-6 transition-all duration-300 group-hover:scale-110",
-                    isActive ? "saturate-100 opacity-100 drop-shadow-md stroke-current" : "saturate-0 opacity-60 group-hover:saturate-50 group-hover:opacity-80",
+                    !("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "saturate-100 opacity-100 drop-shadow-md stroke-current" : "saturate-0 opacity-60 group-hover:saturate-50 group-hover:opacity-80"),
+                    ("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "opacity-100 drop-shadow-md" : "saturate-50 opacity-60 group-hover:saturate-100 group-hover:opacity-80"),
                     "iconClassName" in item && isActive ? (item as { iconClassName?: string }).iconClassName : null
                   )} />
                   <span>{item.title}</span>
@@ -173,7 +176,8 @@ export function Navbar() {
                       >
                         <Icon className={cn(
                           "h-6 w-6 transition-all duration-300",
-                          isActive ? "saturate-100 opacity-100" : "saturate-0 opacity-60"
+                          !("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "saturate-100 opacity-100 stroke-current" : "saturate-0 opacity-60"),
+                          ("preserveIconColor" in item && item.preserveIconColor) && (isActive ? "opacity-100" : "saturate-50 opacity-60")
                         )} />
                         {item.title}
                       </Link>

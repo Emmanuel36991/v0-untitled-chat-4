@@ -16,9 +16,7 @@ import {
   AnalyticsIcon,
   PlaybookIcon,
   NeuralSparkIcon,
-  BacktestIcon,
   PatternEyeIcon,
-  SocialIcon,
   PsychologyIcon,
   CompassIcon,
   SettingsIcon,
@@ -80,22 +78,10 @@ const navigation: NavItem[] = [
 
 const secondaryNavigation: NavItem[] = [
   {
-    name: "Backtesting",
-    href: "/backtesting",
-    icon: BacktestIcon,
-    description: "Test strategies",
-  },
-  {
     name: "AI Insights",
     href: "/insights",
     icon: PatternEyeIcon,
     description: "Setup patterns, psychology & risk analysis",
-  },
-  {
-    name: "Social Insights",
-    href: "/social-insights",
-    icon: SocialIcon,
-    description: "Community features",
   },
   {
     name: "Psychology",

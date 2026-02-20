@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, UserIcon, Loader2, Settings, BookOpen, Users } from "lucide-react"
+import { LogOut, UserIcon, Loader2, Settings, BookOpen } from "lucide-react"
 
 export function UserNav() {
   const router = useRouter()
@@ -129,10 +129,6 @@ export function UserNav() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push("/social-insights")} className="cursor-pointer">
-            <Users className="mr-2 h-4 w-4" />
-            <span>Community</span>
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/guides")} className="cursor-pointer">
             <BookOpen className="mr-2 h-4 w-4" />
             <span>Guides</span>

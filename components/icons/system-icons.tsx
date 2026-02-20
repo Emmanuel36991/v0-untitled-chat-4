@@ -48,25 +48,56 @@ export function DashboardIcon(props: IconProps) {
 }
 
 /**
- * Trades — Sleek Tabular Ledger
- * Horizontal ruled lines with left accent marks.
- * Broken lines at varying lengths create a data-table feel.
+ * Trades — Animated Candlestick & Trendline
+ * Dynamic market chart with an animated glowing trendline cutting through the data.
  */
-export function TradeLedgerIcon(props: IconProps) {
+export function TradeLedgerIcon({ className, ...props }: IconProps) {
     return (
-        <SvgTemplate {...props}>
-            {/* Vertical left rail — open at top */}
-            <path d="M4 6v14" opacity="0.3" />
-            {/* Row lines with varying lengths for realism */}
-            <line x1="7" y1="7" x2="20" y2="7" />
-            <line x1="7" y1="11" x2="17" y2="11" opacity="0.6" />
-            <line x1="7" y1="15" x2="20" y2="15" />
-            <line x1="7" y1="19" x2="15" y2="19" opacity="0.6" />
-            {/* Left accent ticks — broken from the rail for depth */}
-            <line x1="4" y1="7" x2="5.5" y2="7" />
-            <line x1="4" y1="11" x2="5.5" y2="11" />
-            <line x1="4" y1="15" x2="5.5" y2="15" />
-            <line x1="4" y1="19" x2="5.5" y2="19" />
+        <SvgTemplate className={cn("group overflow-visible", className)} {...props}>
+            {/* Grid background */}
+            <path d="M3 14h18" opacity="0.1" strokeDasharray="2 4" />
+            <path d="M3 8h18" opacity="0.1" strokeDasharray="2 4" />
+
+            {/* Base Candles */}
+            {/* Bearish candle */}
+            <line x1="6" y1="5" x2="6" y2="15" className="text-muted-foreground/40 transition-colors duration-500 group-hover:text-loss/60" />
+            <rect x="5" y="7" width="2" height="6" rx="0.5" className="fill-muted-foreground/20 transition-colors duration-500 group-hover:fill-loss" stroke="none" />
+
+            {/* Bullish candle */}
+            <line x1="12" y1="9" x2="12" y2="19" className="text-muted-foreground/40 transition-colors duration-500 group-hover:text-profit/60" />
+            <rect x="11" y="11" width="2" height="5" rx="0.5" className="fill-muted-foreground/20 transition-colors duration-500 group-hover:fill-profit" stroke="none" />
+
+            {/* Bullish breakout candle */}
+            <line x1="18" y1="3" x2="18" y2="11" className="text-muted-foreground/40 transition-colors duration-500 group-hover:text-profit/60" />
+            <rect x="17" y="5" width="2" height="4" rx="0.5" className="fill-muted-foreground/20 transition-colors duration-500 group-hover:fill-profit" stroke="none" />
+
+            {/* The Animated Trendline */}
+            <path
+                d="M3 17l6-6 4 4 8-10"
+                className="stroke-primary opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                strokeWidth="1.8"
+                strokeDasharray="30"
+                strokeDashoffset="30"
+                style={{
+                    transitionProperty: "stroke-dashoffset, opacity",
+                    transitionDuration: "0.8s",
+                    transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)"
+                }}
+            />
+            {/* Embedded style to trigger the line draw on hover using CSS parent selector */}
+            <style>{`.group:hover path[stroke-dasharray="30"] { stroke-dashoffset: 0 !important; }`}</style>
+
+            {/* Glowing execution Node at the tip of the trendline */}
+            <circle
+                cx="21" cy="5" r="2"
+                className="fill-primary opacity-0 scale-50 transition-all duration-300 delay-500 group-hover:opacity-100 group-hover:scale-100"
+                stroke="none"
+            />
+            <circle
+                cx="21" cy="5" r="4"
+                className="fill-primary/30 opacity-0 scale-50 transition-all duration-300 delay-500 group-hover:opacity-100 group-hover:scale-150 animate-pulse"
+                stroke="none"
+            />
         </SvgTemplate>
     )
 }
@@ -98,30 +129,69 @@ export function AnalyticsIcon(props: IconProps) {
 }
 
 /**
- * Playbook — Detailed Notebook
- * A spiral-bound notebook with ruled lines, margin, and a bookmark ribbon.
- * Feels tactile and purposeful — a trader's strategy journal.
+ * Playbook — Animated Dimensional Strategy Journal
+ * Re-imagined as an open grimoire/holographic tablet where data streams out from the center on hover.
  */
-export function PlaybookIcon(props: IconProps) {
+export function PlaybookIcon({ className, ...props }: IconProps) {
     return (
-        <SvgTemplate {...props}>
-            {/* Notebook cover */}
-            <rect x="5" y="3" width="14" height="18" rx="2" fill="currentColor" opacity="0.04" />
-            <rect x="5" y="3" width="14" height="18" rx="2" />
-            {/* Spiral rings */}
-            <circle cx="5" cy="7" r="1" fill="currentColor" opacity="0.3" />
-            <circle cx="5" cy="12" r="1" fill="currentColor" opacity="0.3" />
-            <circle cx="5" cy="17" r="1" fill="currentColor" opacity="0.3" />
-            {/* Margin line */}
-            <line x1="8.5" y1="3" x2="8.5" y2="21" opacity="0.15" />
-            {/* Ruled lines */}
-            <line x1="10" y1="8" x2="17" y2="8" opacity="0.35" />
-            <line x1="10" y1="11" x2="16" y2="11" opacity="0.35" />
-            <line x1="10" y1="14" x2="17" y2="14" opacity="0.35" />
-            <line x1="10" y1="17" x2="14" y2="17" opacity="0.35" />
-            {/* Bookmark ribbon */}
-            <path d="M16 3v5l1.5-1.5L19 8V3" fill="currentColor" opacity="0.12" stroke="none" />
-            <path d="M16 3v5l1.5-1.5L19 8V3" opacity="0.5" />
+        <SvgTemplate className={cn("group overflow-visible perspective-[1000px]", className)} {...props}>
+            {/* The physical book cover structure */}
+            <path
+                d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19"
+                className="opacity-60 transition-transform duration-300 group-hover:-translate-x-0.5"
+            />
+            <path
+                d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"
+                className="opacity-40"
+            />
+            <path
+                d="M19 2v20"
+                className="opacity-30 transition-transform duration-300 group-hover:translate-x-0.5"
+            />
+
+            {/* The pages inside the book */}
+            <path
+                d="M7 6h9 M7 10h6"
+                className="opacity-30 stroke-current transition-all duration-500 ease-out group-hover:opacity-0 group-hover:translate-x-2"
+            />
+
+            {/* Glowing Bookmark / Anchor — slides down and glows on hover */}
+            <path
+                d="M13 2v6l2-1.5 2 1.5V2"
+                className="fill-current opacity-20 transition-all duration-300 group-hover:fill-primary group-hover:opacity-100 group-hover:translate-y-1 drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)]"
+                stroke="none"
+            />
+
+            {/* The Holographic Knowledge Core (Animated rings that erupt from the center) */}
+            <circle
+                cx="11" cy="14" r="3"
+                className="stroke-primary opacity-0 scale-50 transition-all duration-500 group-hover:opacity-80 group-hover:scale-100"
+                strokeDasharray="2 3"
+            />
+            <circle
+                cx="11" cy="14" r="5"
+                className="stroke-cyan-500 opacity-0 scale-50 transition-all duration-700 delay-75 group-hover:opacity-60 group-hover:scale-100"
+                strokeDasharray="4 4"
+            />
+            <circle
+                cx="11" cy="14" r="1.5"
+                className="fill-primary opacity-0 scale-0 transition-all duration-300 delay-150 group-hover:opacity-100 group-hover:scale-100 drop-shadow-[0_0_6px_rgba(var(--primary-rgb),1)] animate-pulse"
+                stroke="none"
+            />
+
+            {/* Embedded styles for spinning the rings */}
+            <style>{`
+                @keyframes slow-spin { 
+                    from { transform: rotate(0deg); transform-origin: 11px 14px; } 
+                    to { transform: rotate(360deg); transform-origin: 11px 14px; } 
+                }
+                @keyframes slow-spin-reverse { 
+                    from { transform: rotate(360deg); transform-origin: 11px 14px; } 
+                    to { transform: rotate(0deg); transform-origin: 11px 14px; } 
+                }
+                .group:hover circle[stroke-dasharray="2 3"] { animation: slow-spin 3s linear infinite; }
+                .group:hover circle[stroke-dasharray="4 4"] { animation: slow-spin-reverse 5s linear infinite; }
+            `}</style>
         </SvgTemplate>
     )
 }
@@ -460,6 +530,68 @@ export function SparkIcon(props: IconProps) {
             {/* Tertiary dot */}
             <circle cx="6" cy="18" r="1" opacity="0.35" />
             <circle cx="18" cy="18" r="0.75" opacity="0.25" />
+        </SvgTemplate>
+    )
+}
+
+/**
+ * Import — Data synchronization and upload
+ * Animated glowing up-arrow piercing a cloud/data structure.
+ */
+export function ImportIcon({ className, ...props }: IconProps) {
+    return (
+        <SvgTemplate className={cn("group", className)} {...props}>
+            {/* Cloud / Base structure */}
+            <path
+                d="M7 16a4 4 0 0 1-.88-7.903A5 5 0 1 1 15.9 6L16 6a5 5 0 0 1 1 9.9"
+                className="opacity-40 transition-opacity duration-300 group-hover:opacity-60"
+            />
+            {/* Upload Arrow */}
+            <path
+                d="M12 12v9"
+                className="transition-transform duration-300 group-hover:-translate-y-1"
+            />
+            <path
+                d="M8 16l4-4 4 4"
+                className="transition-transform duration-300 group-hover:-translate-y-1"
+            />
+            {/* Data flow dot moving up the line */}
+            <circle
+                cx="12" cy="20" r="1.5"
+                className="fill-primary opacity-0 group-hover:opacity-100"
+                stroke="none"
+                style={{ animation: "upload-flow 1.5s ease-out infinite" }}
+            />
+            <style>{`
+                @keyframes upload-flow {
+                   0% { transform: translateY(0); opacity: 0; }
+                   50% { opacity: 1; }
+                   100% { transform: translateY(-8px); opacity: 0; }
+                }
+            `}</style>
+        </SvgTemplate>
+    )
+}
+
+/**
+ * PieChart — Strategy Breakdown / Distribution
+ * Premium layered pie chart replacing Lucide's generic outline.
+ */
+export function PieChartIcon({ className, ...props }: IconProps) {
+    return (
+        <SvgTemplate className={cn("group", className)} {...props}>
+            {/* Base circle */}
+            <circle
+                cx="12" cy="12" r="9"
+                className="opacity-30"
+            />
+            {/* Cutout slice — pops out on hover */}
+            <path
+                d="M12 3a9 9 0 0 1 9 9h-9V3z"
+                className="fill-primary/20 stroke-primary transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
+            />
+            {/* Center pin */}
+            <circle cx="12" cy="12" r="1" className="fill-foreground stroke-none" />
         </SvgTemplate>
     )
 }

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { AlpacaClient, AlpacaApiError } from "@/lib/alpaca/client"
 import type { AlpacaCredentials } from "@/types/alpaca"
 import { logger } from "@/lib/logger"
+import { encryptCredentials } from "@/lib/security/encryption"
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,12 +83,15 @@ export async function POST(request: NextRequest) {
 
     let connectionId: string
 
+    // Encrypt credentials before storing
+    const encryptedCreds = encryptCredentials({ apiKey, secretKey, isPaper })
+
     if (existingConnection) {
       // Update existing connection
       const { error: updateError } = await supabase
         .from("broker_connections")
         .update({
-          credentials: { apiKey, secretKey, isPaper },
+          credentials: encryptedCreds,
           is_active: true,
           is_paper_trading: isPaper,
           status: "connected",
@@ -115,7 +119,7 @@ export async function POST(request: NextRequest) {
           broker_id: broker.id,
           name: `Alpaca ${isPaper ? "Paper" : "Live"} - ${account.account_number}`,
           account_id: account.account_number,
-          credentials: { apiKey, secretKey, isPaper },
+          credentials: encryptedCreds,
           is_active: true,
           is_paper_trading: isPaper,
           status: "connected",

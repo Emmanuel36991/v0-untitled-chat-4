@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { PieChart } from "lucide-react"
+import { PieChartIcon } from "@/components/icons/system-icons"
 import {
     Card,
     CardContent,
@@ -45,7 +45,7 @@ export function StrategyBreakdownCard({
         <Card className="flex-1 border-0 shadow-lg ring-1 ring-border backdrop-blur-sm card-enhanced glass-card">
             <CardHeader className="pb-2 border-b border-border">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <PieChart className="w-5 h-5 text-chart-5" />
+                    <PieChartIcon className="w-5 h-5 text-chart-5" />
                     Strategy Edge
                 </CardTitle>
             </CardHeader>

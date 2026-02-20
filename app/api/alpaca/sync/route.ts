@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { AlpacaClient, AlpacaApiError, mapAlpacaOrderToTrade } from "@/lib/alpaca/client"
 import type { AlpacaCredentials } from "@/types/alpaca"
 import { logger } from "@/lib/logger"
+import { decryptCredentials } from "@/lib/security/encryption"
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +43,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const credentials = connection.credentials as AlpacaCredentials
+    // Decrypt credentials from DB (stored as AES-256-GCM encrypted string)
+    let credentials: AlpacaCredentials
+    if (typeof connection.credentials === "string") {
+      // New format: encrypted string
+      credentials = decryptCredentials<AlpacaCredentials>(connection.credentials)
+    } else {
+      // Legacy format: plain JSON (migrate on next connect)
+      credentials = connection.credentials as AlpacaCredentials
+    }
 
     // 3. Update connection status to syncing
     await supabase

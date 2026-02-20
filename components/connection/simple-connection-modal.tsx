@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +26,6 @@ interface ConnectionOption {
 }
 
 export function SimpleConnectionModal({ onConnectionCreated, onClose }: SimpleConnectionModalProps) {
-  const router = useRouter()
   const [activeForm, setActiveForm] = useState<string | null>(null)
 
   const CONNECTION_OPTIONS: ConnectionOption[] = [
@@ -46,10 +44,13 @@ export function SimpleConnectionModal({ onConnectionCreated, onClose }: SimpleCo
       description: "Professional futures trading platform with full API integration",
       icon: <div className="text-2xl">🚀</div>,
       features: ["Real-time sync", "Order history", "Position tracking", "P&L calculation"],
-      available: true,
+      available: false,
       action: () => {
-        onClose?.()
-        router.push("/tradovate/login")
+        toast({
+          title: "Coming Soon",
+          description: "Tradovate integration is currently in development and will be available soon.",
+          variant: "default",
+        })
       },
     },
     {

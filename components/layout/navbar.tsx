@@ -17,6 +17,7 @@ import {
   AnalyticsIcon,
   PlaybookIcon,
   PsychologyIcon,
+  TradeLedgerIcon,
 } from "@/components/icons/system-icons"
 
 // Navigation Items Configuration
@@ -30,7 +31,7 @@ const mainNavItems = [
   {
     title: "Trades",
     href: "/trades",
-    icon: BookOpen,
+    icon: TradeLedgerIcon,
   },
   {
     title: "Analytics",

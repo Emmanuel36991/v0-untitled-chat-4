@@ -21,16 +21,21 @@ import { cn } from "@/lib/utils"
 import {
   RefreshCw,
   TrendingUp,
-  Target,
-  Zap,
-  BarChart3,
   Plus,
   LayoutDashboard,
-  Wallet,
-  Activity,
-  PieChart,
   MessageCircle,
 } from "lucide-react"
+
+import {
+  ProfitChartIcon,
+  ScalpIcon,
+  ProfitFactorIcon,
+  AvgReturnIcon,
+  BreakoutIcon,
+  MeanReversionIcon,
+  MomentumFlowIcon,
+  PulseIcon,
+} from "@/components/icons/system-icons"
 
 import { CurrencySelector } from "@/components/currency-selector"
 import { formatCurrencyValue } from "@/lib/currency-config"
@@ -58,15 +63,15 @@ const STRATEGY_COLORS = [
 ]
 
 const STRATEGY_ICONS: Record<string, React.ElementType> = {
-  Breakout: Target,
-  Reversal: RefreshCw,
-  "Trend Following": TrendingUp,
-  Scalping: Zap,
-  "Swing Trading": BarChart3,
-  "Mean Reversion": RefreshCw,
-  Momentum: TrendingUp,
-  "Support/Resistance": Target,
-  Default: Activity,
+  Breakout: BreakoutIcon,
+  Reversal: MeanReversionIcon,
+  "Trend Following": MomentumFlowIcon,
+  Scalping: ScalpIcon,
+  "Swing Trading": ProfitChartIcon,
+  "Mean Reversion": MeanReversionIcon,
+  Momentum: MomentumFlowIcon,
+  "Support/Resistance": BreakoutIcon,
+  Default: PulseIcon,
 }
 
 const MOTIVATIONAL_QUOTES = [
@@ -533,7 +538,7 @@ export default function DashboardPage() {
 
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up">
-      <MetricCard
+          <MetricCard
             className="stagger-1"
             title="Net P&L"
             value={
@@ -547,7 +552,7 @@ export default function DashboardPage() {
             }
             change={`${stats.totalTrades} Executions`}
             changeType={stats.totalPnL >= 0 ? "positive" : "negative"}
-            icon={Wallet}
+            icon={ProfitChartIcon}
             iconColor="text-chart-1"
             trendData={chartData.map((d) => ({ value: d.cumulativePnl }))}
             subtitle="Net profit after commissions"
@@ -556,7 +561,8 @@ export default function DashboardPage() {
 
           <MetricCard
             className="stagger-2"
-            title="Win Rate"         value={`${stats.winRate.toFixed(1)}%`}
+            title="Win Rate"
+            value={`${stats.winRate.toFixed(1)}%`}
             change={`${stats.winningTrades}W - ${stats.losingTrades}L`}
             changeType={
               stats.winRate > 50
@@ -565,7 +571,7 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={Target}
+            icon={ScalpIcon}
             iconColor="text-chart-2"
             trendData={[
               { value: 45 }, { value: 48 }, { value: 52 }, { value: stats.winRate }
@@ -574,9 +580,10 @@ export default function DashboardPage() {
             isHot={stats.consecutiveWins >= 3}
           />
 
-        <MetricCard
+          <MetricCard
             className="stagger-3"
-            title="Profit Factor"           value={stats.profitFactor.toFixed(2)}
+            title="Profit Factor"
+            value={stats.profitFactor.toFixed(2)}
             change={`Exp: $${stats.expectancy.toFixed(2)}`}
             changeType={
               stats.profitFactor >= 1.5
@@ -585,17 +592,18 @@ export default function DashboardPage() {
                   ? "neutral"
                   : "negative"
             }
-            icon={Zap}
+            icon={ProfitFactorIcon}
             iconColor="text-chart-3"
             subtitle="Gross Profit / Gross Loss"
           />
 
-        <MetricCard
+          <MetricCard
             className="stagger-4"
-            title="Avg Return"           value={`$${stats.avgReturn.toFixed(2)}`}
+            title="Avg Return"
+            value={`$${stats.avgReturn.toFixed(2)}`}
             change={`DD: -$${Math.abs(stats.largestDrawdown).toFixed(0)}`}
             changeType={stats.avgReturn > 0 ? "positive" : "negative"}
-            icon={BarChart3}
+            icon={AvgReturnIcon}
             iconColor="text-chart-4"
             trendData={chartData.map((d) => ({ value: d.tradePnl }))}
             subtitle="Average P&L per trade"

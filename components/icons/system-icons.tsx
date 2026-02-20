@@ -567,16 +567,18 @@ export function AvgReturnIcon({ size = 64, className = "" }: { size?: number; cl
                 {/* === CIRCULAR RETURN ARROW wrapping around coin === */}
                 {/* Arc path — goes ~270° around the coin */}
                 <path
-                    d="M31,12 A19,19 0 1,1 14,24"
+                    d="M31,12 A19,19 0 1,1 13.5,23.5"
                     fill="none"
                     stroke={`url(#${id("arrow")})`}
-                    strokeWidth="3"
+                    strokeWidth="4.5"
                     strokeLinecap="round"
                 />
                 {/* Arrowhead at the end of the arc */}
                 <polygon
-                    points="14,24 10,18 18,19"
-                    fill="#D1D5DB"
+                    points="13,25 6,15 20,16.5"
+                    fill="#F3F4F6"
+                    stroke="#D1D5DB"
+                    strokeWidth="1"
                 />
             </g>
         </svg>

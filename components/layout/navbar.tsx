@@ -11,9 +11,8 @@ import { ConcentradeLogo } from "@/components/concentrade-logo"
 import { ThemeToggle } from "@/components/layout/theme-toggle"
 import { WhatsNewDialog } from "@/components/whats-new-dialog"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu, BookOpen } from "lucide-react"
+import { Menu, BookOpen, LayoutDashboard } from "lucide-react"
 import {
-  DashboardIcon,
   AnalyticsIcon,
   PlaybookIcon,
   PsychologyIcon,
@@ -25,7 +24,7 @@ const mainNavItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: DashboardIcon,
+    icon: LayoutDashboard,
     activeColor: "text-blue-600 dark:text-blue-400",
     indicatorColor: "from-blue-600 via-blue-400 to-blue-600 dark:from-blue-500 dark:via-blue-300 dark:to-blue-500",
     mobileActiveBg: "bg-blue-500/10 border-blue-500/20",

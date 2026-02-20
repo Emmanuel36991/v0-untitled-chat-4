@@ -20,44 +20,58 @@ function ScanLine({ active }: { active: boolean }) {
   )
 }
 
-// --- Pulsing ring around the brain icon ---
+// --- Sentient Neural Core Orb ---
 function PulseRing({ active }: { active: boolean }) {
   return (
-    <div className="relative">
+    <div className="relative flex items-center justify-center w-12 h-12">
       {active && (
         <>
           <motion.div
-            className="absolute inset-0 rounded-full border border-primary/30"
-            animate={{ scale: [1, 1.8, 2.2], opacity: [0.5, 0.2, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+            className="absolute inset-0 rounded-full border border-primary/40 mix-blend-screen"
+            animate={{ scale: [1, 1.8, 2.5], opacity: [0.6, 0.2, 0], rotate: [0, 180] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
           />
           <motion.div
-            className="absolute inset-0 rounded-full border border-primary/20"
-            animate={{ scale: [1, 1.5, 1.9], opacity: [0.4, 0.15, 0] }}
+            className="absolute inset-0 rounded-full border border-cyan-400/30 mix-blend-screen"
+            animate={{ scale: [1, 1.5, 2], opacity: [0.5, 0.15, 0], rotate: [0, -180] }}
             transition={{
-              duration: 2,
-              delay: 0.6,
+              duration: 2.5,
+              delay: 0.8,
               repeat: Infinity,
               ease: "easeOut",
             }}
           />
         </>
       )}
+
+      {/* 3D Orb Core */}
       <motion.div
         className={cn(
-          "relative flex items-center justify-center w-10 h-10 rounded-full",
-          "bg-gradient-to-br from-primary/20 to-primary/5",
-          "border border-primary/20 dark:border-primary/30",
-          "shadow-[0_0_15px_rgba(var(--primary-rgb,100,80,220),0.15)]"
+          "relative flex items-center justify-center w-10 h-10 rounded-full overflow-hidden",
+          "shadow-[0_0_20px_rgba(var(--primary-rgb,100,80,220),0.4),0_0_40px_rgba(var(--primary-rgb,100,80,220),0.2)]",
+          "transition-all duration-300 z-10"
         )}
-        animate={active ? { scale: [1, 1.05, 1] } : {}}
-        transition={{ duration: 1.5, repeat: active ? Infinity : 0 }}
+        style={{
+          background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(var(--primary-rgb,139,92,246),0.9) 20%, rgba(var(--primary-rgb,109,40,217),1) 60%, #000 100%)",
+          boxShadow: "inset -4px -4px 10px rgba(0,0,0,0.5), inset 4px 4px 10px rgba(255,255,255,0.4)",
+        }}
+        animate={active ? {
+          scale: [1, 1.15, 1],
+          filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"]
+        } : {
+          scale: [1, 1.05, 1],
+          filter: ["brightness(0.9)", "brightness(1.1)", "brightness(0.9)"]
+        }}
+        transition={{ duration: active ? 1.2 : 4, repeat: Infinity, ease: "easeInOut" }}
       >
-        <Eye
-          className={cn(
-            "w-5 h-5 text-primary",
-            active && "animate-pulse"
-          )}
+        {/* Plasma swirls inside the orb */}
+        <motion.div
+          className="absolute inset-0 opacity-50 mix-blend-overlay"
+          style={{
+            background: "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.8) 25%, transparent 50%, rgba(0,255,255,0.5) 75%, transparent 100%)"
+          }}
+          animate={{ rotate: active ? 360 : 180 }}
+          transition={{ duration: active ? 2 : 8, repeat: Infinity, ease: "linear" }}
         />
       </motion.div>
     </div>

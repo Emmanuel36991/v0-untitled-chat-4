@@ -17,8 +17,13 @@ import {
   PlaybookIcon,
   PlaybookOutlineIcon,
   PsychologyIcon,
-  TradeIcon,
+  TradeLedgerIcon,
 } from "@/components/icons/system-icons"
+
+const DashboardActiveIcon = (props: any) => <LayoutDashboard {...props} fill="currentColor" />
+const PsychologyActiveIcon = (props: any) => <PsychologyIcon {...props} fill="currentColor" />
+const TradesActiveIcon = (props: any) => <TradeLedgerIcon {...props} filled={true} />
+const AnalyticsActiveIcon = (props: any) => <AnalyticsIcon {...props} filled={true} />
 
 // Navigation Items Configuration
 const mainNavItems = [
@@ -26,6 +31,7 @@ const mainNavItems = [
     title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    activeIcon: DashboardActiveIcon,
     activeColor: "text-blue-600 dark:text-blue-400",
     indicatorColor: "from-blue-600 via-blue-400 to-blue-600 dark:from-blue-500 dark:via-blue-300 dark:to-blue-500",
     mobileActiveBg: "bg-blue-500/10 border-blue-500/20",
@@ -34,16 +40,17 @@ const mainNavItems = [
   {
     title: "Trades",
     href: "/trades",
-    icon: TradeIcon,
+    icon: TradeLedgerIcon,
+    activeIcon: TradesActiveIcon,
     activeColor: "text-emerald-600 dark:text-emerald-400",
     indicatorColor: "from-emerald-600 via-emerald-400 to-emerald-600 dark:from-emerald-500 dark:via-emerald-300 dark:to-emerald-500",
     mobileActiveBg: "bg-emerald-500/10 border-emerald-500/20",
-    preserveIconColor: true,
   },
   {
     title: "Analytics",
     href: "/analytics",
     icon: AnalyticsIcon,
+    activeIcon: AnalyticsActiveIcon,
     activeColor: "text-violet-600 dark:text-violet-400",
     indicatorColor: "from-violet-600 via-violet-400 to-violet-600 dark:from-violet-500 dark:via-violet-300 dark:to-violet-500",
     mobileActiveBg: "bg-violet-500/10 border-violet-500/20",
@@ -62,6 +69,7 @@ const mainNavItems = [
     title: "Psychology",
     href: "/psychology",
     icon: PsychologyIcon,
+    activeIcon: PsychologyActiveIcon,
     activeColor: "text-indigo-600 dark:text-indigo-400",
     indicatorColor: "from-indigo-600 via-indigo-400 to-indigo-600 dark:from-indigo-500 dark:via-indigo-300 dark:to-indigo-500",
     mobileActiveBg: "bg-indigo-500/10 border-indigo-500/20",

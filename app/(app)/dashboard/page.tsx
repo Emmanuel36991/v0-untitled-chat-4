@@ -116,6 +116,23 @@ const AnimatedTitle = React.memo<{ children: React.ReactNode; className?: string
   )
 )
 
+const MotivationalQuote = () => {
+  const [quoteIndex, setQuoteIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)
+    }, 15000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <span className="italic text-muted-foreground animate-in fade-in duration-500">
+      "{MOTIVATIONAL_QUOTES[quoteIndex]}"
+    </span>
+  )
+}
+
 // ==========================================
 // 5. MAIN DASHBOARD COMPONENT
 // ==========================================
@@ -134,7 +151,6 @@ export default function DashboardPage() {
   // UI State
   const [selectedPeriod, setSelectedPeriod] = useState<"7d" | "30d" | "90d" | "ytd" | "all">("30d")
   const [chartViewMode, setChartViewMode] = useState<"cumulative" | "daily" | "calendar">("cumulative")
-  const [quoteIndex, setQuoteIndex] = useState(0)
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date())
 
   // --- Load user config ---
@@ -179,13 +195,7 @@ export default function DashboardPage() {
     loadTrades()
   }, [loadTrades])
 
-  // Cycle quotes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length)
-    }, 15000)
-    return () => clearInterval(interval)
-  }, [])
+
 
   // --- Data Processing ---
 
@@ -465,9 +475,7 @@ export default function DashboardPage() {
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-2xl pt-1">
               <MessageCircle className="w-5 h-5 text-primary" />
-              <span className="italic text-muted-foreground">
-                "{MOTIVATIONAL_QUOTES[quoteIndex]}"
-              </span>
+              <MotivationalQuote />
             </div>
           </div>
 

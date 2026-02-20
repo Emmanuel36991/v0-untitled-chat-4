@@ -53,7 +53,7 @@ export function DashboardIcon(props: IconProps) {
  * A meticulous hybrid of candlestick chart and horizontal ledger.
  * Minimal, geometric, and airy (Linear/Vercel styling).
  */
-export function TradeLedgerIcon({ className, ...props }: IconProps) {
+export function TradeLedgerIcon({ className, filled, ...props }: IconProps & { filled?: boolean }) {
     return (
         <SvgTemplate className={className} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" {...props}>
             {/* Left side: Candlesticks (Wicks are 1px) */}
@@ -62,29 +62,29 @@ export function TradeLedgerIcon({ className, ...props }: IconProps) {
             <path d="M3 14h9" stroke="currentColor" opacity="0.1" strokeDasharray="1 2" />
 
             {/* Candle 1 (Bearish) */}
-            <path d="M5 5v9" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-            <rect x="4" y="7" width="2" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2" />
+            <path d="M5 5v9" stroke="currentColor" strokeWidth="1" opacity={filled ? 0.8 : 0.5} />
+            <rect x="4" y="7" width="2" height="4" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill={filled ? "currentColor" : "none"} fillOpacity={filled ? 1 : 0.2} />
 
             {/* Candle 2 (Bullish) */}
-            <path d="M8.5 8v10" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-            <rect x="7.5" y="11" width="2" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M8.5 8v10" stroke="currentColor" strokeWidth="1" opacity={filled ? 0.8 : 0.5} />
+            <rect x="7.5" y="11" width="2" height="5" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill={filled ? "currentColor" : "none"} />
 
             {/* Candle 3 (Bearish) */}
-            <path d="M12 4v7" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-            <rect x="11" y="6" width="2" height="3" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2" />
+            <path d="M12 4v7" stroke="currentColor" strokeWidth="1" opacity={filled ? 0.8 : 0.5} />
+            <rect x="11" y="6" width="2" height="3" rx="0.5" stroke="currentColor" strokeWidth="1.5" fill={filled ? "currentColor" : "none"} fillOpacity={filled ? 1 : 0.2} />
 
             {/* Center Divider */}
             <path d="M15 4v16" stroke="currentColor" opacity="0.15" />
 
             {/* Right side: Ledger Row Items */}
-            <path d="M17 6h4" stroke="currentColor" strokeLinecap="round" />
-            <path d="M17 10h2" stroke="currentColor" strokeLinecap="round" opacity="0.6" />
-            <path d="M17 14h3" stroke="currentColor" strokeLinecap="round" />
-            <path d="M17 18h4" stroke="currentColor" strokeLinecap="round" opacity="0.4" />
+            <path d="M17 6h4" stroke="currentColor" strokeLinecap="round" strokeWidth={filled ? 2.5 : 1.5} />
+            <path d="M17 10h2" stroke="currentColor" strokeLinecap="round" opacity={filled ? 0.8 : 0.6} strokeWidth={filled ? 2.5 : 1.5} />
+            <path d="M17 14h3" stroke="currentColor" strokeLinecap="round" strokeWidth={filled ? 2.5 : 1.5} />
+            <path d="M17 18h4" stroke="currentColor" strokeLinecap="round" opacity={filled ? 0.6 : 0.4} strokeWidth={filled ? 2.5 : 1.5} />
 
             {/* Micro indicators on the ledger rows */}
-            <circle cx="21" cy="6" r="0.5" fill="currentColor" stroke="none" opacity="0.5" />
-            <circle cx="21" cy="14" r="0.5" fill="currentColor" stroke="none" opacity="0.5" />
+            <circle cx="21" cy="6" r="0.5" fill="currentColor" stroke="none" opacity={filled ? 1 : 0.5} />
+            <circle cx="21" cy="14" r="0.5" fill="currentColor" stroke="none" opacity={filled ? 1 : 0.5} />
         </SvgTemplate>
     )
 }
@@ -118,12 +118,9 @@ export function TradeIcon({ size = 64, className = "" }: { size?: number; classN
                     <stop offset="0%" stopColor="#F9FAFB" />
                     <stop offset="100%" stopColor="#E5E7EB" />
                 </linearGradient>
-                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
-                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
-                </filter>
             </defs>
 
-            <g filter={`url(#${id("sh")})`}>
+            <g>
 
                 {/* ===== BACK OF FOLDER ===== */}
                 <rect x="6" y="22" width="52" height="38" rx="3" fill={`url(#${id("folder")})`} stroke="#1F2937" strokeWidth="0.8" />
@@ -182,23 +179,23 @@ export function TradeIcon({ size = 64, className = "" }: { size?: number; classN
  * Three OHLC candlestick bars with wicks — the universal symbol
  * for market price action and technical analysis.
  */
-export function AnalyticsIcon(props: IconProps) {
+export function AnalyticsIcon({ filled, ...props }: IconProps & { filled?: boolean }) {
     return (
         <SvgTemplate {...props}>
             {/* X-axis baseline */}
-            <path d="M3 20h18" opacity="0.2" />
+            <path d="M3 20h18" opacity="0.2" strokeWidth={filled ? 2 : 1.5} />
             {/* Candle 1 — bearish (tall) */}
-            <line x1="6" y1="5" x2="6" y2="18" opacity="0.4" />
-            <rect x="4.5" y="7" width="3" height="7" rx="0.5" fill="currentColor" opacity="0.15" />
-            <rect x="4.5" y="7" width="3" height="7" rx="0.5" />
+            <line x1="6" y1="5" x2="6" y2="18" opacity={filled ? 0.8 : 0.4} strokeWidth={filled ? 2 : 1.5} />
+            <rect x="4.5" y="7" width="3" height="7" rx="0.5" fill="currentColor" opacity={filled ? 1 : 0.15} />
+            <rect x="4.5" y="7" width="3" height="7" rx="0.5" strokeWidth={filled ? 2 : 1.5} />
             {/* Candle 2 — bullish (short, higher) */}
-            <line x1="12" y1="4" x2="12" y2="15" opacity="0.4" />
-            <rect x="10.5" y="6" width="3" height="5" rx="0.5" fill="currentColor" opacity="0.08" />
-            <rect x="10.5" y="6" width="3" height="5" rx="0.5" />
+            <line x1="12" y1="4" x2="12" y2="15" opacity={filled ? 0.8 : 0.4} strokeWidth={filled ? 2 : 1.5} />
+            <rect x="10.5" y="6" width="3" height="5" rx="0.5" fill="currentColor" opacity={filled ? 1 : 0.08} />
+            <rect x="10.5" y="6" width="3" height="5" rx="0.5" strokeWidth={filled ? 2 : 1.5} />
             {/* Candle 3 — bullish (medium, highest) */}
-            <line x1="18" y1="3" x2="18" y2="13" opacity="0.4" />
-            <rect x="16.5" y="5" width="3" height="4" rx="0.5" fill="currentColor" opacity="0.08" />
-            <rect x="16.5" y="5" width="3" height="4" rx="0.5" />
+            <line x1="18" y1="3" x2="18" y2="13" opacity={filled ? 0.8 : 0.4} strokeWidth={filled ? 2 : 1.5} />
+            <rect x="16.5" y="5" width="3" height="4" rx="0.5" fill="currentColor" opacity={filled ? 1 : 0.08} />
+            <rect x="16.5" y="5" width="3" height="4" rx="0.5" strokeWidth={filled ? 2 : 1.5} />
         </SvgTemplate>
     )
 }
@@ -390,18 +387,13 @@ export function PlaybookIcon({ size = 64, className = "" }: { size?: number; cla
                     <stop offset="100%" stopColor="#6B7280" />
                 </linearGradient>
 
-                {/* Drop shadow */}
-                <filter id={id("shadow")} x="-12%" y="-8%" width="135%" height="130%">
-                    <feDropShadow dx="0.8" dy="1.5" stdDeviation="1.2" floodColor="#000" floodOpacity="0.35" />
-                </filter>
-
                 {/* Clip for spine darkening */}
                 <clipPath id={id("coverClip")}>
                     <rect x="16" y="4" width="40" height="56" rx="4" />
                 </clipPath>
             </defs>
 
-            <g filter={`url(#${id("shadow")})`}>
+            <g>
 
                 {/* ===== WIRE RINGS — back half (behind the cover) ===== */}
                 {[11, 19, 27, 35, 43, 51].map((cy) => (
@@ -599,13 +591,9 @@ export function WinRateIcon({ size = 64, className = "" }: { size?: number; clas
                     <stop offset="0%" stopColor="#E5E7EB" />
                     <stop offset="100%" stopColor="#9CA3AF" />
                 </linearGradient>
-                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
-                    <feDropShadow dx="0.6" dy="1.2" stdDeviation="1" floodColor="#000" floodOpacity="0.35" />
-                </filter>
             </defs>
 
-            <g filter={`url(#${id("sh")})`}>
-
+            <g>
 
                 {/* Outer ring */}
                 <circle cx={cx} cy={cy} r="17" stroke="#4B5563" strokeWidth="2.5" fill="none" />

@@ -469,15 +469,7 @@ export function WinRateIcon({ size = 64, className = "" }: { size?: number; clas
             </defs>
 
             <g filter={`url(#${id("sh")})`}>
-                {/* 3D bottom edge */}
-                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
-                {/* Main card */}
-                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
-                {/* Inner face */}
-                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
 
-                {/* Sheen */}
-                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
 
                 {/* Outer ring */}
                 <circle cx={cx} cy={cy} r="17" stroke="#4B5563" strokeWidth="2.5" fill="none" />
@@ -550,14 +542,7 @@ export function AvgReturnIcon({ size = 64, className = "" }: { size?: number; cl
             </defs>
 
             <g filter={`url(#${id("sh")})`}>
-                {/* 3D bottom edge */}
-                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
-                {/* Main card */}
-                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
-                {/* Inner face */}
-                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
-                {/* Sheen */}
-                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
 
                 {/* === COIN === */}
                 {/* Coin edge (3D depth) */}
@@ -633,14 +618,7 @@ export function ProfitFactorIcon({ size = 64, className = "" }: { size?: number;
             </defs>
 
             <g filter={`url(#${id("sh")})`}>
-                {/* 3D bottom edge */}
-                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
-                {/* Main card */}
-                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
-                {/* Inner face */}
-                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
-                {/* Sheen */}
-                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
 
                 {/* === SCALE === */}
 
@@ -725,15 +703,7 @@ export function PnLIcon({ size = 64, className = "" }: { size?: number; classNam
             </defs>
 
             <g filter={`url(#${id("sh")})`}>
-                {/* 3D bottom edge */}
-                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
-                {/* Main card */}
-                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
-                {/* Inner face */}
-                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
 
-                {/* Sheen */}
-                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
 
                 {/* Baseline */}
                 <line x1="13" y1="35" x2="49" y2="35" stroke="#6B7280" strokeWidth="0.8" />
@@ -793,14 +763,7 @@ export function EquityCurveIcon({ size = 64, className = "" }: { size?: number; 
             </defs>
 
             <g filter={`url(#${id("sh")})`}>
-                {/* 3D bottom edge */}
-                <rect x="6" y="5" width="52" height="56" rx="5" fill="#111827" />
-                {/* Main card */}
-                <rect x="5" y="3" width="52" height="56" rx="5" fill={`url(#${id("card")})`} stroke="#111827" strokeWidth="0.8" />
-                {/* Inner face */}
-                <rect x="9" y="7" width="44" height="48" rx="3" fill={`url(#${id("face")})`} />
-                {/* Sheen */}
-                <path d="M10 3 L52 3 Q57 3 57 8 L57 10 Q40 14 10 8 Z" fill="white" fillOpacity="0.06" />
+
 
                 {/* === CHART AREA === */}
 

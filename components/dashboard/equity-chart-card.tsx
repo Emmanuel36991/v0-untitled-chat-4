@@ -8,6 +8,7 @@ import {
     ChevronRight,
     LineChart,
 } from "lucide-react"
+import { EquityCurveIcon } from "@/components/icons/system-icons"
 import {
     Card,
     CardContent,
@@ -79,7 +80,7 @@ export function EquityChartCard({
             <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-border">
                 <div className="space-y-1">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-primary" />
+                        <EquityCurveIcon className="w-8 h-8 text-primary drop-shadow-sm" />
                         Equity Curve
                     </CardTitle>
                     <CardDescription>

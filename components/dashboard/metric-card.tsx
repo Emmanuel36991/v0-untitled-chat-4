@@ -140,7 +140,7 @@ export const MetricCard = React.memo<MetricCardProps>(
                   isHot ? "text-orange-500 bg-orange-500/10" : iconColor
                 )}
               >
-                <Icon className="h-5 w-5 drop-shadow-md" />
+                <Icon className="h-10 w-10 drop-shadow-md" />
               </div>
               {change && (
                 <Badge

@@ -300,11 +300,11 @@ function MetricCard({
     <Card className="group relative border-0 shadow-sm hover:shadow-md transition-shadow dark:bg-card/60 backdrop-blur-sm ring-1 ring-border overflow-hidden">
       <div className={cn("absolute top-0 left-0 right-0 h-0.5", colors.strip)} />
       <CardContent className="p-4 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0", colors.iconBg)}>
-            <Icon className={cn("w-3.5 h-3.5", colors.iconText)} />
+        <div className="flex items-center gap-3">
+          <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-inner", colors.iconBg)}>
+            <Icon className={cn("w-8 h-8 drop-shadow-sm", colors.iconText)} />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{title}</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{title}</span>
         </div>
         <div className={cn("text-2xl font-extrabold font-mono tracking-tight leading-none", colors.valueText || "text-foreground")}>
           {value}

@@ -301,9 +301,7 @@ function MetricCard({
       <div className={cn("absolute top-0 left-0 right-0 h-0.5", colors.strip)} />
       <CardContent className="p-4 flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-inner", colors.iconBg)}>
-            <Icon className={cn("w-8 h-8 drop-shadow-sm", colors.iconText)} />
-          </div>
+          <Icon className={cn("w-10 h-10 drop-shadow-sm shrink-0", colors.iconText)} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{title}</span>
         </div>
         <div className={cn("text-2xl font-extrabold font-mono tracking-tight leading-none", colors.valueText || "text-foreground")}>

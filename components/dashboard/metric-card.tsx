@@ -134,10 +134,8 @@ export const MetricCard = React.memo<MetricCardProps>(
             <div className="flex justify-between items-start mb-3">
               <div
                 className={cn(
-                  "p-2.5 rounded-xl transition-transform duration-300 group-hover:scale-110",
-                  "bg-opacity-10 dark:bg-opacity-20",
-                  "shadow-inner dark:shadow-none",
-                  isHot ? "text-orange-500 bg-orange-500/10" : iconColor
+                  "transition-transform duration-300 group-hover:scale-110",
+                  isHot ? "text-orange-500" : iconColor
                 )}
               >
                 <Icon className="h-10 w-10 drop-shadow-md" />

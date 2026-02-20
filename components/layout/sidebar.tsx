@@ -12,7 +12,7 @@ import { PulseIcon } from "@/components/icons/system-icons"
 import {
   DashboardIcon,
   AddTradeIcon,
-  TradeLedgerIcon,
+  TradeIcon,
   AnalyticsIcon,
   PlaybookIcon,
   NeuralSparkIcon,
@@ -51,7 +51,7 @@ const navigation: NavItem[] = [
   {
     name: "All Trades",
     href: "/trades",
-    icon: TradeLedgerIcon,
+    icon: TradeIcon,
     description: "View and manage trades",
   },
   {

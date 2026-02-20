@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils"
 import { EmptyState } from "@/components/empty-state"
 import { Database, SearchX } from "lucide-react"
 import { SimpleConnectionModal } from "@/components/connection/simple-connection-modal"
+import { TradeIcon } from "@/components/icons/system-icons"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -432,10 +433,8 @@ export default function TradesPage() {
                <div className="flex h-16 items-center px-4 md:px-8 max-w-[1600px] mx-auto w-full">
                   {/* Logo / Title */}
                   <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
-                     <div className="p-1.5 bg-primary/10 rounded-md">
-                        <BookOpen className="h-5 w-5 text-primary" />
-                     </div>
-                     <span className="text-lg hidden sm:inline tracking-tight">Trade Journal</span>
+                     <TradeIcon size={32} className="drop-shadow-sm" />
+                     <span className="text-lg hidden sm:inline tracking-tight ml-1">Trade Journal</span>
                   </div>
 
                   <Separator orientation="vertical" className="mx-4 h-6 hidden md:block" />

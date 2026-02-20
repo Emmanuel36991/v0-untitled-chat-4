@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
 import { cn } from "@/lib/utils"
-import { PulseIcon } from "@/components/icons/system-icons"
+import { PulseIcon, PlaybookIcon } from "@/components/icons/system-icons"
 import { EmptyState } from "@/components/empty-state"
 import {
   getStrategies,
@@ -265,10 +265,10 @@ export default function PlaybookPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg text-primary hidden md:flex">
-                <BookOpen className="w-5 h-5" />
+              <div className="hidden md:flex items-center justify-center">
+                <PlaybookIcon size={40} className="drop-shadow-sm" />
               </div>
-              <div>
+              <div className="ml-1">
                 <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">Playbook</h1>
                 <p className="text-[11px] text-muted-foreground hidden md:block">Your strategy library and trade systems.</p>
               </div>

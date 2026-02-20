@@ -90,6 +90,130 @@ export function TradeLedgerIcon({ className, ...props }: IconProps) {
 }
 
 /**
+ * Trade Icon (Rich 3D)
+ */
+export function TradeIcon({ size = 64, className = "", ...props }: { size?: number; className?: string } & React.SVGProps<SVGSVGElement>) {
+    const uid = useId()
+    const id = (name: string) => `tr-${name}-${uid}`
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <defs>
+                {/* Front cover */}
+                <linearGradient id={id("coverF")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7B8290" />
+                    <stop offset="100%" stopColor="#4B5563" />
+                </linearGradient>
+
+                {/* Back cover */}
+                <linearGradient id={id("coverB")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#5C6370" />
+                    <stop offset="100%" stopColor="#374151" />
+                </linearGradient>
+
+                {/* Spine */}
+                <linearGradient id={id("spine")} x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#374151" />
+                    <stop offset="50%" stopColor="#4B5563" />
+                    <stop offset="100%" stopColor="#374151" />
+                </linearGradient>
+
+                {/* Paper */}
+                <linearGradient id={id("paper")} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#FFFFFF" />
+                    <stop offset="100%" stopColor="#E5E7EB" />
+                </linearGradient>
+
+                {/* Drop shadow */}
+                <filter id={id("sh")} x="-8%" y="-4%" width="120%" height="116%">
+                    <feDropShadow dx="0.5" dy="1" stdDeviation="0.8" floodColor="#000" floodOpacity="0.3" />
+                </filter>
+            </defs>
+
+            <g filter={`url(#${id("sh")})`}>
+                {/* ===== BACK COVER (left edge) ===== */}
+                <rect
+                    x="10" y="18" width="6" height="40" rx="2"
+                    fill={`url(#${id("coverB")})`}
+                    stroke="#1F2937" strokeWidth="0.8"
+                />
+
+                {/* ===== DOCUMENTS peeking above folder ===== */}
+                {/* Doc 1 — line chart, peeks highest */}
+                <rect x="17" y="2" width="8" height="52" rx="1.2" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.4" />
+                {/* Rising line chart */}
+                <polyline
+                    points="19,16 21,12 22.5,13.5 23.5,7"
+                    fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                />
+                <circle cx="23.5" cy="7" r="1.5" fill="#374151" />
+
+                {/* Doc 2 — candlesticks, peeks medium */}
+                <rect x="26" y="5" width="8" height="49" rx="1.2" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.4" />
+                {/* Candlestick bars — bigger and lower */}
+                <line x1="28.5" y1="8" x2="28.5" y2="17" stroke="#9CA3AF" strokeWidth="0.6" />
+                <rect x="27.2" y="10" width="2.6" height="5" rx="0.6" fill="#374151" />
+                <line x1="31" y1="7.5" x2="31" y2="16.5" stroke="#9CA3AF" strokeWidth="0.6" />
+                <rect x="29.7" y="9" width="2.6" height="5.5" rx="0.6" fill="#6B7280" />
+                <line x1="33.5" y1="7" x2="33.5" y2="16" stroke="#9CA3AF" strokeWidth="0.6" />
+                <rect x="32.2" y="8.5" width="2.6" height="4.5" rx="0.6" fill="#374151" />
+
+                {/* Doc 3 — up arrow, peeks least */}
+                <rect x="35" y="8" width="8" height="46" rx="1.2" fill={`url(#${id("paper")})`} stroke="#D1D5DB" strokeWidth="0.4" />
+                {/* Up arrow — bigger and lower */}
+                <path d="M39 10 L42 15 L40.8 15 L40.8 17.5 L37.2 17.5 L37.2 15 L36 15 Z" fill="#374151" />
+
+                {/* ===== FRONT COVER (right edge) ===== */}
+                <rect
+                    x="44" y="18" width="6" height="40" rx="2"
+                    fill={`url(#${id("coverF")})`}
+                    stroke="#1F2937" strokeWidth="0.8"
+                />
+                {/* Front cover highlight sheen */}
+                <rect x="44.8" y="19.5" width="2" height="37" rx="1" fill="white" fillOpacity="0.1" />
+
+                {/* ===== SPINE (bottom connecting both covers) ===== */}
+                <path
+                    d="M10 56 Q10 60 14 60 L46 60 Q50 60 50 56"
+                    fill={`url(#${id("spine")})`}
+                    stroke="#1F2937" strokeWidth="0.8"
+                />
+                {/* Spine inner highlight */}
+                <path
+                    d="M13 57 Q13 59 15 59 L45 59 Q47 59 47 57"
+                    fill="white" fillOpacity="0.05"
+                />
+
+                {/* ===== TAB sticking out from back cover ===== */}
+                <path
+                    d="M7 26 Q5 26 5 28 L5 38 Q5 40 7 40 L10 40 L10 26 Z"
+                    fill="#D1D5DB" stroke="#9CA3AF" strokeWidth="0.5"
+                />
+                {/* Tab label lines */}
+                <rect x="6" y="29.5" width="3" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.5" />
+                <rect x="6" y="31.5" width="2.5" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.4" />
+                <rect x="6" y="33.5" width="3" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.35" />
+                <rect x="6" y="35.5" width="2" height="0.9" rx="0.45" fill="#6B7280" fillOpacity="0.3" />
+
+                {/* ===== Top edges of covers (visible above documents at the top) ===== */}
+                {/* Back cover top cap */}
+                <rect x="10" y="17.5" width="6" height="2" rx="1" fill="#5C6370" stroke="#1F2937" strokeWidth="0.4" />
+                {/* Front cover top cap */}
+                <rect x="44" y="17.5" width="6" height="2" rx="1" fill="#7B8290" stroke="#1F2937" strokeWidth="0.4" />
+            </g>
+        </svg>
+    )
+}
+
+/**
  * Analytics — Candlestick Chart Pattern
  * Three OHLC candlestick bars with wicks — the universal symbol
  * for market price action and technical analysis.

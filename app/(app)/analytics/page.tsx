@@ -55,7 +55,7 @@ import {
   BookOpen,
   Activity,
 } from "lucide-react"
-import { TradeLedgerIcon } from "@/components/icons/system-icons"
+import { TradeIcon } from "@/components/icons/system-icons"
 import { getTrades } from "@/app/actions/trade-actions"
 import { getAnalyticsData } from "@/app/actions/analytics-actions"
 import type { Trade } from "@/types"
@@ -587,7 +587,7 @@ export default function AnalyticsPage() {
               {/* P&L */}
               <MetricCard
                 title="Total P&L"
-                icon={TradeLedgerIcon}
+                icon={TradeIcon}
                 accentColor={analytics.totalPnL >= 0 ? "emerald" : "rose"}
                 value={`${analytics.totalPnL >= 0 ? "+" : ""}$${analytics.totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
               >

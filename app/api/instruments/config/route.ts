@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 import { INSTRUMENT_CONFIGS } from "@/types/instrument-calculations"
 
 /**
@@ -12,6 +13,12 @@ import { INSTRUMENT_CONFIGS } from "@/types/instrument-calculations"
  * Example: MNQ 20 points, 3 contracts → 20 × 3 × 2 = $120
  */
 export async function GET() {
+  const supabase = await createClient()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const configs = Object.values(INSTRUMENT_CONFIGS).map((c) => ({
     symbol: c.symbol,
     name: c.name,
@@ -22,5 +29,10 @@ export async function GET() {
     currency: c.currency,
     displayDecimals: c.displayDecimals,
   }))
-  return NextResponse.json({ instruments: configs })
+
+  return NextResponse.json({ instruments: configs }, {
+    headers: {
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
+    },
+  })
 }

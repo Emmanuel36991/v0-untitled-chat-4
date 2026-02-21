@@ -1,15 +1,46 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
-import { rateLimiter, getRateLimitKey } from "@/lib/security/rate-limiter"
+import { rateLimiter, getRateLimitKeyForIP } from "@/lib/security/rate-limiter"
+
+// Endpoint-specific rate limit configs
+const ENDPOINT_LIMITS: { path: string; limit: number; window: number }[] = [
+  { path: "/api/tradovate/auth", limit: 5, window: 900 },   // 5 per 15 min (brute-force protection)
+  { path: "/api/trades/sample", limit: 3, window: 900 },    // 3 per 15 min (prevent DB flooding)
+  { path: "/api/ohlc", limit: 30, window: 60 },             // 30 per min (protect Finnhub API key)
+]
+
+function getClientIP(request: NextRequest): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.ip || "unknown"
+}
 
 export async function middleware(request: NextRequest) {
   // 1. Rate Limiting for API routes
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    const rateLimitKey = getRateLimitKey("api")
+    const clientIP = getClientIP(request)
+
+    // Check endpoint-specific limits first
+    for (const ep of ENDPOINT_LIMITS) {
+      if (request.nextUrl.pathname.startsWith(ep.path)) {
+        const epLimit = rateLimiter({
+          key: getRateLimitKeyForIP(ep.path, clientIP),
+          limit: ep.limit,
+          window: ep.window,
+        })
+        if (!epLimit.allowed) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+            status: 429,
+            headers: { "Content-Type": "application/json", "Retry-After": String(ep.window) },
+          })
+        }
+        break
+      }
+    }
+
+    // General per-IP rate limit: 100 requests per minute
     const limit = rateLimiter({
-      key: rateLimitKey,
+      key: getRateLimitKeyForIP("api", clientIP),
       limit: 100,
-      window: 60, // 100 requests per minute
+      window: 60,
     })
 
     if (!limit.allowed) {

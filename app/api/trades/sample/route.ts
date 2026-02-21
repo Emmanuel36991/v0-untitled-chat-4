@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
+import { rateLimiter, getRateLimitKeyForUser } from "@/lib/security/rate-limiter"
 
 const SAMPLE_TRADES = [
   {
@@ -96,6 +97,19 @@ export async function POST() {
 
     if (authError || !user) {
       return NextResponse.json({ error: "User not authenticated" }, { status: 401 })
+    }
+
+    // Per-user rate limit: 3 requests per 15 minutes
+    const rateLimit = rateLimiter({
+      key: getRateLimitKeyForUser("sample-trades", user.id),
+      limit: 3,
+      window: 900,
+    })
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "You've created sample trades recently. Please try again later." },
+        { status: 429 },
+      )
     }
 
     // Add user_id to each sample trade

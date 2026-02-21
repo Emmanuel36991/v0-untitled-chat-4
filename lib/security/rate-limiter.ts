@@ -1,6 +1,10 @@
 // In-memory rate limiter store (resets on server restart)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
+// Counter for periodic cleanup
+let invocationCount = 0
+const CLEANUP_INTERVAL = 100
+
 export interface RateLimitConfig {
   key: string
   limit: number
@@ -14,10 +18,29 @@ export interface RateLimitResult {
 }
 
 /**
+ * Periodic cleanup of expired entries to prevent memory leak.
+ * Runs every CLEANUP_INTERVAL invocations.
+ */
+function cleanupExpiredEntries(): void {
+  const now = Date.now()
+  for (const [key, entry] of rateLimitStore) {
+    if (now >= entry.resetTime) {
+      rateLimitStore.delete(key)
+    }
+  }
+}
+
+/**
  * Simple in-memory rate limiter
  * Tracks requests per key with a sliding window
  */
 export function rateLimiter(config: RateLimitConfig): RateLimitResult {
+  // Periodic cleanup to prevent memory leak from abandoned keys
+  invocationCount++
+  if (invocationCount % CLEANUP_INTERVAL === 0) {
+    cleanupExpiredEntries()
+  }
+
   const now = Date.now()
   const key = config.key
   let entry = rateLimitStore.get(key)
@@ -48,6 +71,13 @@ export function rateLimiter(config: RateLimitConfig): RateLimitResult {
  */
 export function getRateLimitKey(endpoint: string): string {
   return `${endpoint}:global`
+}
+
+/**
+ * Per-IP rate limit key (prevents one user from blocking everyone)
+ */
+export function getRateLimitKeyForIP(endpoint: string, ip: string): string {
+  return `${endpoint}:ip:${ip}`
 }
 
 /**

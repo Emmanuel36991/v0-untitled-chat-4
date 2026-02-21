@@ -61,7 +61,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 }
 
 export function TopTimeChart({ trades }: TopTimeChartProps) {
-  const { winData, lossData } = useMemo(() => {
+  const { winData, lossData, truncated } = useMemo(() => {
     const wins: any[] = []
     const losses: any[] = []
 

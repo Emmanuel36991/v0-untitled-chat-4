@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { useAIAdvisor } from "@/hooks/use-ai-advisor"
 import { AdvisorPanel } from "@/components/ai/advisor-panel"
 import { EmptyState } from "@/components/empty-state"
+import { StorageIcon } from "@/components/icons/system-icons"
 
 interface SimpleTradeTableProps {
   trades: Trade[]
@@ -59,7 +60,7 @@ export function SimpleTradeTable({ trades, onRefresh, highlightTradeId }: Simple
     }, 2200)
     return () => clearTimeout(t)
   }, [highlightTradeId, router])
-  
+
   // FIX: Destructure the correct values from the hook
   const { openAdvisor, advisorProps } = useAIAdvisor()
 
@@ -201,8 +202,8 @@ export function SimpleTradeTable({ trades, onRefresh, highlightTradeId }: Simple
       <Card className="shadow-lg border-border bg-card relative overflow-hidden">
         <CardHeader className="relative">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary rounded-xl">
-              <Database className="h-5 w-5 text-primary-foreground" />
+            <div className="p-2 bg-primary/20 rounded-xl">
+              <StorageIcon size={24} className="text-primary-foreground drop-shadow-md" />
             </div>
             <div>
               <CardTitle className="text-2xl text-foreground">
@@ -261,9 +262,8 @@ export function SimpleTradeTable({ trades, onRefresh, highlightTradeId }: Simple
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`font-mono font-bold text-lg ${
-                            (trade.pnl || 0) >= 0 ? "text-success" : "text-destructive"
-                          }`}
+                          className={`font-mono font-bold text-lg ${(trade.pnl || 0) >= 0 ? "text-success" : "text-destructive"
+                            }`}
                         >
                           {formatPnL(trade.pnl)}
                         </span>
@@ -272,8 +272,8 @@ export function SimpleTradeTable({ trades, onRefresh, highlightTradeId }: Simple
                       <TableCell className="font-mono text-foreground font-semibold">
                         {trade.risk_reward_ratio !== null && trade.risk_reward_ratio !== undefined ? (
                           <span className="text-foreground">
-                            {typeof trade.risk_reward_ratio === "number"
-                              ? trade.risk_reward_ratio.toFixed(2)
+                            {!isNaN(Number(trade.risk_reward_ratio)) && trade.risk_reward_ratio !== ""
+                              ? Number(trade.risk_reward_ratio).toFixed(2)
                               : trade.risk_reward_ratio}
                           </span>
                         ) : (

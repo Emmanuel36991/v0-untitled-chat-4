@@ -683,7 +683,8 @@ export class TradovateParser extends BaseCSVParser {
                 let qtyToProcess = exec.qty
 
                 // Keep a record of raw contract strings that contributed to this cycle.
-                if (currentCycle) currentCycle.rawContracts.add(exec.rawContract)
+                const currentCycleVal1 = currentCycle as CycleAggregate | null;
+                if (currentCycleVal1) currentCycleVal1.rawContracts.add(exec.rawContract)
 
                 while (qtyToProcess > 0) {
                     const queueSide = queue[0]?.side
@@ -700,7 +701,8 @@ export class TradovateParser extends BaseCSVParser {
                             rowIndex: exec.rowIndex
                         })
 
-                        if (currentCycle) currentCycle.rawContracts.add(exec.rawContract)
+                        const currentCycleVal2 = currentCycle as CycleAggregate | null;
+                        if (currentCycleVal2) currentCycleVal2.rawContracts.add(exec.rawContract)
                         qtyToProcess = 0
                         break
                     }
@@ -711,7 +713,8 @@ export class TradovateParser extends BaseCSVParser {
 
                     // Ensure we have a cycle (should always be true if there's an open lot)
                     startCycleIfNeeded(exec)
-                    if (!currentCycle) {
+                    const cycle = currentCycle as CycleAggregate | null;
+                    if (!cycle) {
                         // Defensive: should never happen
                         warnings.push({
                             row: exec.rowIndex + 1,
@@ -723,18 +726,18 @@ export class TradovateParser extends BaseCSVParser {
                         break
                     }
 
-                    currentCycle.exitTime = exec.timestamp
-                    currentCycle.matches += 1
-                    currentCycle.totalQty += matchedQty
-                    currentCycle.entryNotional += lot.price * matchedQty
-                    currentCycle.exitNotional += exec.price * matchedQty
+                    cycle.exitTime = exec.timestamp
+                    cycle.matches += 1
+                    cycle.totalQty += matchedQty
+                    cycle.entryNotional += lot.price * matchedQty
+                    cycle.exitNotional += exec.price * matchedQty
 
                     const direction: "long" | "short" = lot.side === "Buy" ? "long" : "short"
                     const pnlPoints =
                         direction === "long"
                             ? (exec.price - lot.price) * matchedQty
                             : (lot.price - exec.price) * matchedQty
-                    currentCycle.pnl += pnlPoints * multiplier
+                    cycle.pnl += pnlPoints * multiplier
 
                     // Reduce quantities
                     lot.qtyRemaining -= matchedQty

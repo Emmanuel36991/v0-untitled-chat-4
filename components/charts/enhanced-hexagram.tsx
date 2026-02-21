@@ -46,11 +46,18 @@ export function EnhancedHexagram({
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               {metric.icon}
-              <span className="font-bold text-muted-foreground tracking-wide uppercase">{metric.label}</span>
+              <span id={`dna-label-${i}`} className="font-bold text-muted-foreground tracking-wide uppercase">{metric.label}</span>
             </div>
             <span className="font-mono font-bold text-foreground">{metric.raw}</span>
           </div>
-          <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden flex">
+          <div
+            role="meter"
+            aria-labelledby={`dna-label-${i}`}
+            aria-valuenow={Math.round(metric.value)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="h-2 w-full bg-muted/50 rounded-full overflow-hidden flex"
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${metric.value}%` }}

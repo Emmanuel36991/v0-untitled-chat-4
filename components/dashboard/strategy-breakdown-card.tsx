@@ -91,15 +91,17 @@ export function StrategyBreakdownCard({
                     {strategyData.slice(0, 4).map((strategy, idx) => {
                         const color = strategyColors[idx % strategyColors.length]
                         return (
-                            <div
+                            <button
                                 key={strategy.name}
-                                className="flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-muted/50 transition-all cursor-pointer border border-transparent hover:border-border/40"
+                                type="button"
+                                aria-label={`Filter dashboard by ${strategy.name} strategy`}
+                                className="w-full flex items-center justify-between gap-4 text-sm group p-2 rounded-lg hover:bg-muted/50 transition-all border border-transparent hover:border-border/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:ring-offset-background"
                             >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                     <div
                                         className={`w-2.5 h-2.5 rounded-full shrink-0 ${color.bg}`}
                                     />
-                                    <span className="font-medium text-foreground/80 truncate" title={strategy.name}>
+                                    <span className="font-medium text-foreground/80 truncate text-left" title={strategy.name}>
                                         {strategy.name}
                                     </span>
                                 </div>
@@ -118,7 +120,7 @@ export function StrategyBreakdownCard({
                                         ${strategy.pnl.toFixed(0)}
                                     </span>
                                 </div>
-                            </div>
+                            </button>
                         )
                     })}
                 </div>

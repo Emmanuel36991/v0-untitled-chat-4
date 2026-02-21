@@ -74,7 +74,18 @@ function HUDCard({ label, value, subtext, icon: Icon, trend, trendType = "neutra
   )
 }
 
-export default function PsychologyPageClient({ stats, trades }: Props) {
+export default function PsychologyPageClient({ stats, trades, initialJournalEntries }: Props & { initialJournalEntries: any[] }) {
+  const [entries, setEntries] = React.useState(initialJournalEntries || [])
+
+  const handleAddEntry = (newEntry: any) => {
+    // Optimistic UI: instant front-end update
+    setEntries(prev => [newEntry, ...prev])
+  }
+
+  const handleDeleteEntry = (id: string) => {
+    setEntries(prev => prev.filter(e => e.id !== id))
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -109,8 +120,8 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
               stats && stats.currentStreak >= 7
                 ? `+${Math.floor(stats.currentStreak / 7)} weeks`
                 : stats && stats.currentStreak > 0
-                ? "Building"
-                : "Start Today"
+                  ? "Building"
+                  : "Start Today"
             }
             trendType={stats && stats.currentStreak >= 7 ? "positive" : "warning"}
           />
@@ -123,15 +134,15 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
               stats && stats.focusScore >= 7
                 ? "Excellent"
                 : stats && stats.focusScore >= 5
-                ? "Good"
-                : "Improve"
+                  ? "Good"
+                  : "Improve"
             }
             trendType={
               stats && stats.focusScore >= 7
                 ? "positive"
                 : stats && stats.focusScore >= 5
-                ? "neutral"
-                : "warning"
+                  ? "neutral"
+                  : "warning"
             }
           />
           <HUDCard
@@ -144,15 +155,15 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
           />
           <HUDCard
             label="Total Entries"
-            value={stats?.totalJournalEntries || "0"}
+            value={entries.length}
             subtext="LOGS"
             icon={CalendarDays}
             trend={
-              stats && stats.totalJournalEntries >= 30
+              entries.length >= 30
                 ? "+30 Logs"
-                : stats && stats.totalJournalEntries > 0
-                ? `+${stats.totalJournalEntries}`
-                : "No Data"
+                : entries.length > 0
+                  ? `+${entries.length}`
+                  : "No Data"
             }
             trendType="neutral"
           />
@@ -166,7 +177,11 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
           {/* Left Column: Journal Input (40%) */}
           <div className="lg:col-span-5 w-full animate-fade-in-up stagger-2">
             <div className="sticky top-6">
-              <SimplePsychologyJournal />
+              <SimplePsychologyJournal
+                entries={entries}
+                onAddEntry={handleAddEntry}
+                onDeleteEntry={handleDeleteEntry}
+              />
             </div>
           </div>
 
@@ -176,6 +191,8 @@ export default function PsychologyPageClient({ stats, trades }: Props) {
               disciplineScore={stats?.disciplineScore || 0}
               dominantEmotion={stats?.dominantEmotion || "Unknown"}
               winRate={stats?.winRate || 0}
+              entries={entries}
+              trades={trades}
             />
           </div>
         </div>

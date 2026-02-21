@@ -521,8 +521,8 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                               <Cell
                                 key={i}
                                 fill={p.winRate >= 0.5
-                                  ? "oklch(0.72 0.17 160)"
-                                  : "oklch(0.64 0.2 25)"}
+                                  ? "var(--color-profit, #10b981)"
+                                  : "var(--color-loss, #f43f5e)"}
                                 fillOpacity={0.8}
                               />
                             ))}
@@ -562,7 +562,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                           <Tooltip content={<CustomBarTooltip />} />
                           <Bar dataKey="winRate" radius={[4, 4, 0, 0]} maxBarSize={32}>
                             {hourGroup.patterns.map((p, i) => (
-                              <Cell key={i} fill={p.winRate >= 0.5 ? "oklch(0.72 0.17 160)" : "oklch(0.64 0.2 25)"} fillOpacity={0.8} />
+                              <Cell key={i} fill={p.winRate >= 0.5 ? "var(--color-profit, #10b981)" : "var(--color-loss, #f43f5e)"} fillOpacity={0.8} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -589,7 +589,7 @@ export function InsightsView({ trades, isLoading }: InsightsViewProps) {
                           <Tooltip content={<CustomBarTooltip />} />
                           <Bar dataKey="avgPnl" radius={[6, 6, 0, 0]} maxBarSize={48}>
                             {dayGroup.patterns.map((p, i) => (
-                              <Cell key={i} fill={p.avgPnl >= 0 ? "oklch(0.72 0.17 160)" : "oklch(0.64 0.2 25)"} fillOpacity={0.8} />
+                              <Cell key={i} fill={p.avgPnl >= 0 ? "var(--color-profit, #10b981)" : "var(--color-loss, #f43f5e)"} fillOpacity={0.8} />
                             ))}
                           </Bar>
                         </BarChart>
@@ -664,7 +664,7 @@ function WeeklyHeatmap({ data }: { data: { day: string; hour: number; winRate: n
                     count > 0 && wr >= 0.4 && wr < 0.6 && "bg-amber-500/50 text-foreground",
                     count > 0 && wr < 0.4 && "bg-red-500/60 text-white",
                   )}
-                  title={`${day} ${h}:00 - ${count} trades, ${(wr * 100).toFixed(0)}% win rate`}
+                  aria-label={`${day} ${h}:00 - ${count} trades, ${(wr * 100).toFixed(0)}% win rate`}
                 >
                   {count > 0 ? count : ""}
                 </div>
@@ -942,8 +942,8 @@ function PsychologySection({ result }: { result: PsychologyCorrelationResult }) 
                       <Cell
                         key={i}
                         fill={f.type === "good"
-                          ? "oklch(0.72 0.17 160)"
-                          : "oklch(0.64 0.2 25)"}
+                          ? "var(--color-profit, #10b981)"
+                          : "var(--color-loss, #f43f5e)"}
                         fillOpacity={0.75}
                       />
                     ))}

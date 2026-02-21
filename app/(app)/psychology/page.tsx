@@ -20,7 +20,7 @@ export default async function PsychologyPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return <PsychologyPageClient stats={null} trades={[]} />
+    return <PsychologyPageClient stats={null} trades={[]} initialJournalEntries={[]} />
   }
 
   // Fetch FULL trade data so the psychology correlation engine can work
@@ -32,19 +32,25 @@ export default async function PsychologyPage() {
 
   if (error) {
     console.error("Error fetching trades:", error)
-    return <PsychologyPageClient stats={null} trades={[]} />
+    return <PsychologyPageClient stats={null} trades={[]} initialJournalEntries={[]} />
   }
 
-  // Fetch journal entries
+  // Fetch journal entries with full data for the charts and journals
   const { data: journalEntries } = await supabase
     .from("psychology_journal_entries")
-    .select("created_at, mood, emotions, trade_id")
+    .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl, outcome)")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
 
   const stats: PsychologyStats = calculateStats(trades || [], journalEntries || [])
 
-  return <PsychologyPageClient stats={stats} trades={(trades || []) as Trade[]} />
+  return (
+    <PsychologyPageClient
+      stats={stats}
+      trades={(trades || []) as Trade[]}
+      initialJournalEntries={journalEntries || []}
+    />
+  )
 }
 
 function calculateStats(trades: any[], journalEntries: any[]): PsychologyStats {

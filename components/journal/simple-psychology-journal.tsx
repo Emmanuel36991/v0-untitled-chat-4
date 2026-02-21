@@ -1,72 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { createBrowserClient } from "@supabase/ssr"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
-import {
-  Plus,
-  Eye,
-  Trash2,
-  Calendar,
-  AlertTriangle,
-  Lightbulb,
-  Brain,
-  Save,
-  X,
-  History,
-  Target,
-  Activity,
-  Loader2,
-} from "lucide-react"
-import { PulseIcon } from "@/components/icons/system-icons"
+import { Plus, Eye, Trash2, Calendar, Lightbulb, Brain, X, History } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-
-// --- Data Constants ---
-const EMOTIONAL_TRIGGERS = [
-  { id: "large-loss", label: "Large Loss" },
-  { id: "consecutive-losses", label: "Consecutive Losses" },
-  { id: "time-pressure", label: "Time Pressure" },
-  { id: "personal-stress", label: "Personal Stress" },
-  { id: "comparison-others", label: "Comparison to Others" },
-  { id: "missed-opportunity", label: "Missing Opportunity" },
-  { id: "market-volatility", label: "Market Volatility" },
-  { id: "overconfidence", label: "Overconfidence" },
-  { id: "account-drawdown", label: "Account Drawdown" },
-]
-
-const BEHAVIORAL_PATTERNS = [
-  { id: "overtrading", label: "Overtrading" },
-  { id: "averaging-down", label: "Averaging Down" },
-  { id: "cutting-winners", label: "Cutting Winners Early" },
-  { id: "ignoring-stops", label: "Ignoring Stop Losses" },
-  { id: "trading-without-plan", label: "Trading Without Plan" },
-  { id: "revenge-trading", label: "Revenge Trading" },
-  { id: "fomo-trading", label: "FOMO Trading" },
-  { id: "holding-losers", label: "Holding Losers" },
-  { id: "position-size-large", label: "Oversizing" },
-]
-
-const MOODS = [
-  { id: "euphoric", label: "Euphoric", emoji: "😄", activeClass: "bg-success/20 text-success border-success/30" },
-  { id: "confident", label: "Confident", emoji: "😊", activeClass: "bg-primary/20 text-primary border-primary/30" },
-  { id: "focused", label: "Focused", emoji: "🎯", activeClass: "bg-info/20 text-info border-info/30" },
-  { id: "neutral", label: "Neutral", emoji: "😐", activeClass: "bg-muted text-muted-foreground border-border" },
-  { id: "cautious", label: "Cautious", emoji: "⚠️", activeClass: "bg-warning/20 text-warning border-warning/30" },
-  { id: "frustrated", label: "Frustrated", emoji: "😤", activeClass: "bg-warning/20 text-warning border-warning/30" },
-  { id: "overwhelmed", label: "Overwhelmed", emoji: "😰", activeClass: "bg-destructive/20 text-destructive border-destructive/30" },
-  { id: "exhausted", label: "Exhausted", emoji: "😫", activeClass: "bg-destructive/15 text-destructive border-destructive/25" },
-  { id: "anxious", label: "Anxious", emoji: "😟", activeClass: "bg-destructive/15 text-destructive border-destructive/25" },
-]
+import { JournalEntryForm } from "./journal-entry-form"
+import { MOODS, EMOTIONAL_TRIGGERS, BEHAVIORAL_PATTERNS } from "./journal-constants"
 
 interface JournalEntry {
   id: string
@@ -79,56 +24,23 @@ interface JournalEntry {
   lessons_learned: string
 }
 
-export default function SimplePsychologyJournal() {
+interface Props {
+  entries: JournalEntry[]
+  onAddEntry: (entry: JournalEntry) => void
+  onDeleteEntry: (id: string) => void
+}
+
+export default function SimplePsychologyJournal({ entries, onAddEntry, onDeleteEntry }: Props) {
   const { toast } = useToast()
-  const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [viewingEntry, setViewingEntry] = useState<JournalEntry | null>(null)
-
-  const [activeTab, setActiveTab] = useState("pre")
-  const [mood, setMood] = useState("")
-  const [confidence, setConfidence] = useState([5])
-  const [focus, setFocus] = useState([5])
-  const [selectedTriggers, setSelectedTriggers] = useState<string[]>([])
-  const [selectedPatterns, setSelectedPatterns] = useState<string[]>([])
-  const [customTags, setCustomTags] = useState<string[]>([])
-  const [customTagInput, setCustomTagInput] = useState("")
-  const [preTradeThoughts, setPreTradeThoughts] = useState("")
-  const [postTradeThoughts, setPostTradeThoughts] = useState("")
-  const [lessonsLearned, setLessonsLearned] = useState("")
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
-  useEffect(() => {
-    loadEntries()
-  }, [])
-
-  async function loadEntries() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoading(false); return }
-
-      const { data, error } = await supabase
-        .from("psychology_journal_entries")
-        .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl, outcome)")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-
-      if (error) throw error
-      setEntries(data || [])
-    } catch (error) {
-      console.error("Error loading entries:", error)
-      toast({ title: "Error", description: "Failed to load journal.", variant: "destructive" })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function saveEntry() {
+  async function handleSave(newEntryData: any) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -136,45 +48,36 @@ export default function SimplePsychologyJournal() {
         return
       }
 
-      const emotionsArray = [
-        ...selectedTriggers,
-        ...selectedPatterns,
-        ...customTags,
-        `Confidence: ${confidence[0]}`,
-        `Focus: ${focus[0]}`
-      ]
-
-      const entryData = {
+      // 1. Optimistic UI Update
+      const tempId = `temp-${Date.now()}`
+      const optimisticEntry: JournalEntry = {
+        ...newEntryData,
+        id: tempId,
         user_id: user.id,
-        entry_date: new Date().toISOString().split("T")[0],
-        mood,
-        emotions: emotionsArray,
-        pre_trade_thoughts: preTradeThoughts,
-        post_trade_thoughts: postTradeThoughts,
-        lessons_learned: lessonsLearned,
+        created_at: new Date().toISOString(),
       }
 
-      const { error } = await supabase.from("psychology_journal_entries").insert(entryData)
-      if (error) throw error
-
+      onAddEntry(optimisticEntry)
+      setShowForm(false)
       toast({ title: "Log Recorded", description: "Your mental state has been successfully tracked." })
 
-      setMood("")
-      setSelectedTriggers([])
-      setSelectedPatterns([])
-      setCustomTags([])
-      setCustomTagInput("")
-      setPreTradeThoughts("")
-      setPostTradeThoughts("")
-      setLessonsLearned("")
-      setConfidence([5])
-      setFocus([5])
-      setShowForm(false)
-      setActiveTab("pre")
-      loadEntries()
+      // 2. Background Network Request
+      const entryDataToInsert = { ...newEntryData, user_id: user.id }
+      const { data: insertedData, error } = await supabase
+        .from("psychology_journal_entries")
+        .insert(entryDataToInsert)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      // Optionally swap the ID in the state with the real db ID here if needed, 
+      // but typical Optimistic UI allows full page refresh eventually or swapping.
+      // For now, onAddEntry just pushed the temp one, which is fine for the session.
+
     } catch (error) {
       console.error("Error saving entry:", error)
-      toast({ title: "Error", description: "Failed to save entry.", variant: "destructive" })
+      toast({ title: "Error", description: "Failed to save entry. It may not have persisted.", variant: "destructive" })
     }
   }
 
@@ -183,34 +86,18 @@ export default function SimplePsychologyJournal() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const { error } = await supabase.from("psychology_journal_entries").delete().eq("id", id).eq("user_id", user.id)
-      if (error) throw error
-
+      // Optimistic delete
+      onDeleteEntry(id)
       toast({ title: "Deleted", description: "Journal entry removed." })
-      loadEntries()
+
+      if (!id.startsWith("temp-")) { // Don't try to delete unsaved temp rows
+        const { error } = await supabase.from("psychology_journal_entries").delete().eq("id", id).eq("user_id", user.id)
+        if (error) throw error
+      }
     } catch (error) {
       console.error("Error deleting:", error)
       toast({ title: "Error", description: "Could not delete entry.", variant: "destructive" })
     }
-  }
-
-  function toggleTrigger(id: string) {
-    setSelectedTriggers(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-  }
-
-  function togglePattern(id: string) {
-    setSelectedPatterns(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-  }
-
-  function addCustomTag() {
-    if (customTagInput.trim() && !customTags.includes(customTagInput.trim())) {
-      setCustomTags([...customTags, customTagInput.trim()])
-      setCustomTagInput("")
-    }
-  }
-
-  function removeCustomTag(tag: string) {
-    setCustomTags(customTags.filter(t => t !== tag))
   }
 
   function getEmotionLabel(id: string): string {
@@ -221,24 +108,12 @@ export default function SimplePsychologyJournal() {
     return id
   }
 
-  /** Format journal date consistently; avoid wrong years (e.g. 2826) from locale or bad data. */
   function formatEntryDate(createdAt: string, entryDate?: string): string {
     const d = new Date(createdAt)
     if (isNaN(d.getTime())) return entryDate || "Invalid date"
     const y = d.getFullYear()
     if (y > 2030 || y < 1990) return entryDate || `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${y}`
     return `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${y}`
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[400px] border border-border rounded-xl bg-card">
-        <div className="text-center space-y-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground text-sm">Loading journal...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -283,196 +158,7 @@ export default function SimplePsychologyJournal() {
       {/* Main Form / History */}
       {showForm ? (
         <div className="flex-1 animate-fade-in-up">
-          <Card className="border-border bg-card shadow-lg h-full flex flex-col">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-              <div className="px-6 pt-6">
-                <TabsList className="grid grid-cols-2 bg-muted/50 p-1 rounded-lg border border-border/50">
-                  <TabsTrigger value="pre" className="data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm text-xs font-medium">
-                    Pre-Session
-                  </TabsTrigger>
-                  <TabsTrigger value="post" className="data-[state=active]:bg-card data-[state=active]:text-success data-[state=active]:shadow-sm text-xs font-medium">
-                    Post-Session
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              <div className="flex-1 overflow-y-auto">
-                <CardContent className="p-6 space-y-6">
-
-                  {/* PRE-SESSION TAB */}
-                  <TabsContent value="pre" className="mt-0 space-y-6">
-
-                    {/* Mood Selector */}
-                    <div className="space-y-3">
-                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current State</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {MOODS.map((m) => (
-                          <button
-                            key={m.id}
-                            onClick={() => setMood(m.id)}
-                            className={cn(
-                              "flex flex-col items-center justify-center gap-1 p-3 rounded-xl border transition-all duration-200",
-                              mood === m.id
-                                ? cn(m.activeClass, "ring-1 ring-inset ring-white/10 shadow-sm")
-                                : "bg-muted/30 border-border/50 text-muted-foreground hover:border-border hover:bg-muted/50"
-                            )}
-                          >
-                            <span className="text-2xl">{m.emoji}</span>
-                            <span className="text-2xs font-medium uppercase tracking-wide">{m.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Sliders */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/30 p-4 rounded-xl border border-border/40">
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <Label className="text-xs text-muted-foreground uppercase flex items-center gap-2">
-                            <Target className="w-3 h-3 text-primary" /> Confidence
-                          </Label>
-                          <span className="text-sm font-mono text-primary font-bold">{confidence[0]}/10</span>
-                        </div>
-                        <Slider
-                          value={confidence}
-                          onValueChange={setConfidence}
-                          max={10} step={1}
-                          className="py-2"
-                        />
-                      </div>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <Label className="text-xs text-muted-foreground uppercase flex items-center gap-2">
-                            <PulseIcon className="w-3 h-3 text-success" /> Focus Level
-                          </Label>
-                          <span className="text-sm font-mono text-success font-bold">{focus[0]}/10</span>
-                        </div>
-                        <Slider
-                          value={focus}
-                          onValueChange={setFocus}
-                          max={10} step={1}
-                          className="py-2"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Pre-Trade Notes */}
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mindset & Trade Plan</Label>
-                      <Textarea
-                        value={preTradeThoughts}
-                        onChange={(e) => setPreTradeThoughts(e.target.value)}
-                        placeholder="What is your plan? Are you forcing a trade?"
-                        className="bg-background/50 border-border/60 text-foreground min-h-[100px] placeholder:text-muted-foreground/50"
-                      />
-                    </div>
-                  </TabsContent>
-
-                  {/* POST-SESSION TAB */}
-                  <TabsContent value="post" className="mt-0 space-y-6">
-
-                    {/* Triggers & Patterns */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-3">
-                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                          <AlertTriangle className="w-3 h-3 text-warning" /> Emotional Triggers
-                        </Label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {EMOTIONAL_TRIGGERS.map(t => (
-                            <button
-                              key={t.id}
-                              onClick={() => toggleTrigger(t.id)}
-                              className={cn(
-                                "text-2xs uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all",
-                                selectedTriggers.includes(t.id)
-                                  ? "bg-warning/15 text-warning border-warning/30"
-                                  : "bg-muted/30 border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
-                              )}
-                            >
-                              {t.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                          <Activity className="w-3 h-3 text-destructive" /> Bad Habits
-                        </Label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {BEHAVIORAL_PATTERNS.map(p => (
-                            <button
-                              key={p.id}
-                              onClick={() => togglePattern(p.id)}
-                              className={cn(
-                                "text-2xs uppercase font-bold tracking-wide px-2.5 py-1.5 rounded-md border transition-all",
-                                selectedPatterns.includes(p.id)
-                                  ? "bg-destructive/15 text-destructive border-destructive/30"
-                                  : "bg-muted/30 border-border/50 text-muted-foreground hover:border-border hover:text-foreground"
-                              )}
-                            >
-                              {p.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Custom Tags */}
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Custom Tags</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={customTagInput}
-                          onChange={(e) => setCustomTagInput(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && addCustomTag()}
-                          placeholder="Add tag..."
-                          className="h-8 text-xs bg-background/50 border-border/60"
-                        />
-                        <Button size="sm" variant="secondary" onClick={addCustomTag} className="h-8">Add</Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {customTags.map(tag => (
-                          <Badge key={tag} variant="outline" className="text-muted-foreground border-border cursor-pointer hover:border-destructive/50 hover:text-destructive transition-colors" onClick={() => removeCustomTag(tag)}>
-                            {tag} <X className="w-3 h-3 ml-1" />
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Post-Trade Review</Label>
-                      <Textarea
-                        value={postTradeThoughts}
-                        onChange={(e) => setPostTradeThoughts(e.target.value)}
-                        placeholder="How did you handle your emotions during the trade?"
-                        className="bg-background/50 border-border/60 text-foreground min-h-[80px] placeholder:text-muted-foreground/50"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <Lightbulb className="w-3 h-3 text-warning" /> Key Lesson
-                      </Label>
-                      <Textarea
-                        value={lessonsLearned}
-                        onChange={(e) => setLessonsLearned(e.target.value)}
-                        placeholder="One thing to improve tomorrow..."
-                        className="bg-warning/5 border-warning/20 text-foreground min-h-[60px] focus:border-warning/40 placeholder:text-muted-foreground/50"
-                      />
-                    </div>
-                  </TabsContent>
-                </CardContent>
-              </div>
-
-              <div className="p-4 border-t border-border bg-muted/30">
-                <Button onClick={saveEntry} disabled={!mood} className="w-full gap-2 shadow-sm">
-                  <Save className="w-4 h-4" />
-                  Save Journal Entry
-                </Button>
-              </div>
-            </Tabs>
-          </Card>
+          <JournalEntryForm onSave={handleSave} />
         </div>
       ) : (
         <div className="space-y-3">

@@ -179,3 +179,55 @@
 ### 27. CORS Allows Specific Origin
 - **File**: `next.config.mjs:47`
 - **Issue**: CORS is set to `https://v0-concentrade-mu.vercel.app`. Make sure this matches your actual production domain. If you've changed domains, update this.
+
+---
+
+# ANALYTICS PAGE UX AUDIT (Feb 21, 2026)
+
+Full UX/design/code-quality audit of `app/(app)/analytics/page.tsx` and child components. Scored 70.5/100, fixed to ~88/100.
+
+## Files Modified
+- `app/(app)/analytics/page.tsx` — main analytics page
+- `components/analytics/redesigned-calendar-heatmap.tsx` — calendar heatmap
+- `components/charts/enhanced-hexagram.tsx` — Trader DNA progress bars
+
+## Fixes Applied
+
+### 1. Usability & Friction (was 16/25, now ~23/25)
+- **Multi-select filters**: Replaced single-select `<Select>` dropdowns with multi-select `<Checkbox>` groups for Instruments, Setups, and added the missing Outcome filter (win/loss/breakeven)
+- **Active filter indicators**: Badge count on Filters button, colored dismissible chips for each active filter, "Clear all" / "Reset All" actions
+- **Keyboard accessibility / ARIA**: Calendar heatmap cells now have `role="button"`, `tabIndex`, `aria-label`, `onKeyDown`, `focus-visible`. Hexagram progress bars have `role="meter"` with `aria-valuenow/min/max` and `aria-labelledby`. Chart containers wrapped with `role="img"` + descriptive `aria-label`
+- **TimingAnalyticsDashboard data bug**: Now receives `analytics.filteredTrades` instead of the full unfiltered `trades` array
+- **Responsive date picker**: Uses `matchMedia("max-width: 640px")` to render `numberOfMonths={1}` on mobile, `{2}` on desktop
+
+### 2. Visual Hierarchy & Data Density (was 19/25, now ~23/25)
+- **Theme-aware chart colors**: Replaced all hardcoded hex colors (`#10b981`, `#f43f5e`, `#818cf8`, `#6b7280`) with CSS variable references (`var(--color-profit)`, `var(--color-loss)`, `var(--color-chart-1)`, `var(--color-muted-foreground)`) that respond to light/dark mode
+- **Collapsible Timing Analytics**: Section D (timing charts + 4 stat boxes + 2 scatter plots) is now collapsed by default behind a clickable header with chevron toggle, reducing initial chart density from ~13 to ~9 visualizations
+- **Loading skeleton accuracy**: Skeleton now matches the actual page layout (header + tabs + 6 KPI cards + calendar/hexagram + 3 charts grid)
+
+### 3. Core Functionality & Utility (was 15/20, now ~19/20)
+- **Win/loss double-counting fixed**: Outcome tag takes priority; PnL only used as fallback when outcome is not explicitly set. `breakeven = total - wins - losses` guarantees no double-counting
+- **Profit factor Infinity**: When `grossLoss === 0`, profit factor is now `Infinity` instead of arbitrary cap of `10`. UI displays "∞ (no losses)" in the R:R metric subtitle
+- **Drawdown base equity**: Uses peak cumulative P&L instead of `Math.abs(totalPnL) + 1000`. Scaling factor adjusted to 200 (was 400) for more realistic risk management scores
+- **Removed unused fetch**: `getAnalyticsData()` and `confluenceStats` state removed — was a wasted network request with no rendering
+
+### 4. Performance & Responsiveness (was 10/15, now ~13/15)
+- **Memoized `getBestSetup`**: Calendar heatmap pre-computes best setup per day into a `Map` via `useMemo` instead of O(n) filter per cell render
+- **Memoized presets**: Date picker `presets` array wrapped in `useMemo([], [])` to avoid recreating 6 closures per render
+- **Cleaned unused imports**: Removed `ChevronRight`, `LayoutDashboard`, `Target`, `Zap`, `BookOpen`, `TradeIcon`, `ProfitFactorIcon`, `AvgReturnIcon`
+- **Note**: Client-side 10k trade fetch remains as-is — server-side aggregation is a larger architectural change tracked separately
+
+### 5. Error Handling & Edge Cases (was 7/10, now ~9/10)
+- **Error state UI**: Added `error` state with retry button. Distinguishes "fetch failed" (shows error card with "Try Again") from "no trades" (shows normal empty analytics)
+- **`fetchData` as callback**: Extracted into `useCallback` for retry button reuse
+- **NaN guard in `getBestSetup`**: `reduce` comparison guards against `NaN`/`undefined` pnl with explicit `typeof` + `isNaN` check and `-Infinity` fallback
+
+### 6. Delight & Intelligence (was 3.5/5, now ~4.5/5)
+- **AI Summary Card**: `AiSummaryCard` (streaming Groq-powered AI analysis) is now imported and rendered in the Overview tab below the charts
+- **Chart entrance animations**: Charts row (`section C`) wrapped in `motion.section` with staggered fade-in/slide-up animation. Timing section uses `AnimatePresence` for smooth expand/collapse
+
+## Known Remaining Issues
+- **Colorblind mode**: No toggle for colorblind-safe palette. Secondary encoding (arrows in legends) partially exists but not comprehensive
+- **10k client-side fetch**: All trade data is fetched client-side. For traders with >5k trades, consider server-side aggregation via Supabase functions
+- **Sparkline context**: The tiny equity curve in the P&L metric card still lacks min/max axis labels (decorative only)
+- **Chart fixed heights**: `h-[280px]` on chart cards is not responsive to viewport; could benefit from `min-h-[200px] h-[35vh] max-h-[350px]` pattern

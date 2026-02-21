@@ -45,6 +45,31 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
     return vals.length > 0 ? Math.max(...vals) : 1
   }, [dailyData])
 
+  // Pre-compute best setup per day into a Map (avoids O(n) per cell)
+  const bestSetupByDate = useMemo(() => {
+    const map = new Map<string, string>()
+    if (!trades.length) return map
+    const grouped = new Map<string, Trade[]>()
+    trades.forEach(t => {
+      const dateStr = format(new Date(t.date), "yyyy-MM-dd")
+      const arr = grouped.get(dateStr) || []
+      arr.push(t)
+      grouped.set(dateStr, arr)
+    })
+    grouped.forEach((dayTrades, dateStr) => {
+      const best = dayTrades.reduce((a, b) => {
+        const aPnl = typeof a.pnl === "number" && !isNaN(a.pnl) ? a.pnl : -Infinity
+        const bPnl = typeof b.pnl === "number" && !isNaN(b.pnl) ? b.pnl : -Infinity
+        return aPnl >= bPnl ? a : b
+      })
+      map.set(dateStr, best.setup_name || "Discretionary")
+    })
+    return map
+  }, [trades])
+
+  // #3: Pre-compute dailyData into a Map for O(1) lookup per cell
+  const dailyDataMap = useMemo(() => new Map(dailyData.map(d => [d.date, d])), [dailyData])
+
   const getHeatmapStyle = (pnl: number, tradeCount: number): string => {
     if (tradeCount === 0) return "bg-muted/60"
     const intensity = Math.min(Math.abs(pnl) / maxPnl, 1)
@@ -61,13 +86,6 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
     }
   }
 
-  const getBestSetup = (dateStr: string): string => {
-    if (!trades.length) return "N/A"
-    const dayTrades = trades.filter(t => format(new Date(t.date), "yyyy-MM-dd") === dateStr)
-    if (!dayTrades.length) return "N/A"
-    const best = dayTrades.reduce((a, b) => (a.pnl > b.pnl ? a : b))
-    return best.setup_name || "Discretionary"
-  }
 
   return (
     <div className="w-full select-none">
@@ -152,15 +170,21 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
 
           {calendarGrid.days.map((day) => {
             const dateStr = format(day, "yyyy-MM-dd")
-            const data = dailyData.find(d => d.date === dateStr)
+            const data = dailyDataMap.get(dateStr)
             const isToday = isSameDay(day, new Date())
             const pnl = data?.pnl || 0
             const tradeCount = data?.trades || 0
 
             const CellContent = (
               <div
+                role={tradeCount > 0 ? "button" : undefined}
+                tabIndex={tradeCount > 0 ? 0 : undefined}
+                aria-label={tradeCount > 0
+                  ? `${format(day, "MMMM d")}: ${tradeCount} trade${tradeCount !== 1 ? "s" : ""}, ${pnl >= 0 ? "profit" : "loss"} $${Math.abs(pnl).toFixed(2)}`
+                  : `${format(day, "MMMM d")}: no trades`}
                 onClick={() => onDayClick?.(dateStr)}
-                className="aspect-square rounded-md relative group cursor-pointer transition-all hover:ring-2 ring-primary/50 ring-offset-1 ring-offset-background"
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onDayClick?.(dateStr) } }}
+                className="aspect-square rounded-md relative group cursor-pointer transition-all hover:scale-105 hover:ring-2 ring-primary/50 ring-offset-1 ring-offset-background focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               >
                 <div
                   className={cn(
@@ -174,8 +198,10 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
                   <span
                     className={cn(
                       "text-2xs font-medium transition-colors",
-                      tradeCount > 0
-                        ? "text-white/90"
+                      tradeCount > 0 && Math.abs(pnl) / maxPnl > 0.25
+                        ? "text-white"
+                        : tradeCount > 0
+                        ? "text-foreground"
                         : "text-muted-foreground/60"
                     )}
                   >
@@ -217,7 +243,7 @@ export function RedesignedCalendarHeatmap({ dailyData, trades = [], onDayClick }
                         <div className="flex justify-between gap-4">
                           <span className="text-muted-foreground">Best Setup</span>
                           <span className="font-medium text-primary truncate max-w-[90px]">
-                            {getBestSetup(dateStr)}
+                            {bestSetupByDate.get(dateStr) || "N/A"}
                           </span>
                         </div>
                       </div>

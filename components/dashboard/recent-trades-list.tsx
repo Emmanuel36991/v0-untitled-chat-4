@@ -67,9 +67,7 @@ export function RecentTradesList({
                     const isWin = trade.outcome === "win"
                     const isLong = trade.direction === "long"
                     const StrategyIcon = getStrategyIcon(trade.setup_name || "")
-                    const tradePnl = trade.pnl !== undefined
-                        ? trade.pnl
-                        : calculatePnL(trade.instrument, trade.direction, trade.entry_price, trade.exit_price, trade.size).adjustedPnL
+                    const tradePnl = trade.pnl ?? 0
 
                     return (
                         <div

@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { createBrowserClient } from "@supabase/ssr"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -39,6 +38,7 @@ import {
   PolarRadiusAxis,
 } from "recharts"
 import { cn } from "@/lib/utils"
+import { analyzePsychologyCorrelation } from "@/lib/insights/psychology-correlation"
 
 interface JournalEntry {
   id: string
@@ -68,51 +68,30 @@ interface PsychologyAnalyticsProps {
   disciplineScore?: number
   dominantEmotion?: string
   winRate?: number
+  entries?: JournalEntry[]
+  trades?: any[]
 }
 
 export default function PsychologyAnalytics({
   disciplineScore = 0,
   dominantEmotion = "Unknown",
-  winRate = 0
+  winRate = 0,
+  entries: allEntries = [],
+  trades = []
 }: PsychologyAnalyticsProps) {
-  const [entries, setEntries] = useState<JournalEntry[]>([])
-  const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d")
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  const entries = useMemo(() => {
+    const daysAgo = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - daysAgo)
+    return allEntries.filter(e => new Date(e.created_at) >= startDate)
+  }, [allEntries, timeRange])
+
+  const psychResult = useMemo(
+    () => analyzePsychologyCorrelation(trades),
+    [trades]
   )
-
-  useEffect(() => {
-    loadEntries()
-  }, [timeRange])
-
-  async function loadEntries() {
-    setLoading(true)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoading(false); return }
-
-      const daysAgo = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90
-      const startDate = new Date()
-      startDate.setDate(startDate.getDate() - daysAgo)
-
-      const { data, error } = await supabase
-        .from("psychology_journal_entries")
-        .select("*, trades!psychology_journal_entries_trade_id_fkey(instrument, pnl)")
-        .eq("user_id", user.id)
-        .gte("created_at", startDate.toISOString())
-        .order("created_at", { ascending: true })
-
-      if (error) throw error
-      setEntries(data || [])
-    } catch (error) {
-      console.error("Error loading entries:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const analytics = useMemo(() => {
     if (entries.length === 0) return null
@@ -200,57 +179,70 @@ export default function PsychologyAnalytics({
     const moodChange = recentAvg - olderAvg
     const moodTrendDirection = moodChange > 0.5 ? "improving" : moodChange < -0.5 ? "declining" : "stable"
 
-    const insights = generateInsights(entries, topTriggers, moodTrendDirection, avgMood)
+    const insights = generateInsights(entries, topTriggers, moodTrendDirection, avgMood, psychResult)
 
     return { moodTrend, moodDistribution, topTriggers, radarData, avgMood, moodTrendDirection, moodChange, insights, totalEntries: entries.length }
-  }, [entries])
+  }, [entries, psychResult])
 
   function generateInsights(
     entries: JournalEntry[],
     topTriggers: { name: string; count: number }[],
     trend: string,
     avgMood: number,
+    correlationData: any
   ) {
     const insights: { type: string; icon: React.ElementType; title: string; description: string }[] = []
 
+    // 1. Data-Driven Correlation Insight (Replaces Fake AI)
+    if (correlationData && correlationData.factorImpacts && correlationData.factorImpacts.length > 0) {
+      // Find the most damaging habit based on actual PnL
+      const worstFactor = [...correlationData.factorImpacts].sort((a, b) => a.avgPnl - b.avgPnl)[0]
+      // Find the most profitable habit
+      const bestFactor = [...correlationData.factorImpacts].sort((a, b) => b.avgPnl - a.avgPnl)[0]
+
+      if (worstFactor && worstFactor.avgPnl < 0 && worstFactor.count > 2) {
+        insights.push({
+          type: "warning",
+          icon: ShieldAlert,
+          title: `High Cost Pattern: ${worstFactor.factor}`,
+          description: `Our analysis detected that trades associated with "${worstFactor.factor}" result in an average loss of $${Math.abs(worstFactor.avgPnl).toFixed(2)}. ${correlationData.recommendation || ''}`
+        })
+      } else if (correlationData.recommendation) {
+        insights.push({
+          type: "info",
+          icon: Brain,
+          title: "Neural Analysis",
+          description: correlationData.recommendation
+        })
+      }
+
+      if (bestFactor && bestFactor.avgPnl > 0 && bestFactor.count > 2) {
+        insights.push({
+          type: "positive",
+          icon: Target,
+          title: `Profitable Edge: ${bestFactor.factor}`,
+          description: `You show a strong edge when driven by "${bestFactor.factor}", yielding $${bestFactor.avgPnl.toFixed(2)} per trade on average. Lean into this state.`
+        })
+      }
+    }
+
+    // 2. Trend & Base Analytics
     if (trend === "improving") {
-      insights.push({ type: "positive", icon: TrendingUp, title: "Positive Momentum", description: "Your emotional state has been improving over the past week. Keep up the good work with your mental discipline practices." })
+      insights.push({ type: "positive", icon: TrendingUp, title: "Positive Momentum", description: "Your emotional baseline has climbed functionally over the past rolling week." })
     } else if (trend === "declining") {
-      insights.push({ type: "warning", icon: TrendingDown, title: "Attention Needed", description: "Your mood trend shows a decline. Consider taking a break, reviewing your trading plan, or seeking support." })
+      insights.push({ type: "warning", icon: TrendingDown, title: "Attention Needed", description: "Your mood trend shows a quantified decline. Lower sizing until equilibrium is reached." })
     }
 
-    if (topTriggers.length > 0) {
+    // Fallback if no triggers found in correlation
+    if (insights.length < 2 && topTriggers.length > 0) {
       const topTrigger = topTriggers[0]
-      insights.push({ type: "info", icon: ShieldAlert, title: `Watch Out for "${topTrigger.name}"`, description: `This trigger appears in ${topTrigger.count} of your entries. Develop strategies to manage this emotional response.` })
+      insights.push({ type: "info", icon: Lightbulb, title: `Frequent Trigger: "${topTrigger.name}"`, description: `This emotional trigger appeared ${topTrigger.count} times. Monitor your execution when this state surfaces.` })
     }
 
-    if (entries.length >= 20) {
-      insights.push({ type: "positive", icon: Target, title: "Consistent Journaling", description: "Excellent consistency! Regular journaling helps identify patterns and improve self-awareness." })
-    } else if (entries.length < 5) {
-      insights.push({ type: "info", icon: Lightbulb, title: "Build the Habit", description: "Try to journal more frequently to gain better insights into your trading psychology patterns." })
-    }
-
-    if (avgMood >= 7) {
-      insights.push({ type: "positive", icon: Award, title: "Strong Mental State", description: "Your overall mood is positive. This is a great foundation for disciplined trading decisions." })
-    } else if (avgMood <= 4) {
-      insights.push({ type: "warning", icon: Brain, title: "Mental Health Check", description: "Your average mood is low. Consider taking a break from trading and focusing on self-care." })
-    }
-
-    return insights
+    return insights.slice(0, 4) // Keep HUD clean with top 4
   }
 
   // --- Rendering ---
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px] h-full bg-card rounded-xl border border-border">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground text-sm">Loading analytics...</p>
-        </div>
-      </div>
-    )
-  }
 
   if (!analytics || entries.length === 0) {
     return (

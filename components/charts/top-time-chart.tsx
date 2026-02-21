@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo } from "react"
+import React, { useMemo } from "react"
 import { Clock, Info } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   ScatterChart,
@@ -82,10 +83,28 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
       }
     })
 
-    return { winData: wins, lossData: losses }
+    // #7: Cap at 500 most recent points per series
+    const MAX_POINTS = 500
+    const cappedWins = wins.length > MAX_POINTS ? wins.slice(-MAX_POINTS) : wins
+    const cappedLosses = losses.length > MAX_POINTS ? losses.slice(-MAX_POINTS) : losses
+    const truncated = wins.length > MAX_POINTS || losses.length > MAX_POINTS
+
+    return { winData: cappedWins, lossData: cappedLosses, truncated }
   }, [trades])
 
   const hasData = winData.length > 0 || lossData.length > 0
+
+  // #18: Custom diamond shape for loss points
+  const DiamondShape = (props: any) => {
+    const { cx, cy, fill, fillOpacity } = props
+    return (
+      <polygon
+        points={`${cx},${cy - 5} ${cx + 5},${cy} ${cx},${cy + 5} ${cx - 5},${cy}`}
+        fill={fill}
+        fillOpacity={fillOpacity}
+      />
+    )
+  }
 
   // Compute tick values from actual data
   const allHours = useMemo(() => {
@@ -104,7 +123,10 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
             </div>
             Trade Time Performance
           </div>
-          <Info className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center gap-2">
+            {truncated && <Badge variant="secondary" className="text-[10px]">Latest 500</Badge>}
+            <Info className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-4 pb-2 px-2">
@@ -156,7 +178,7 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
                 fill="var(--loss)"
                 fillOpacity={0.85}
                 r={5}
-                shape="circle"
+                shape={<DiamondShape />}
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -165,11 +187,11 @@ export function TopTimeChart({ trades }: TopTimeChartProps) {
           <div className="flex items-center justify-center gap-5 pt-1 pb-1">
             <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
               <span className="inline-block h-2 w-2 rounded-full bg-profit" />
-              Profit
+              Profit (circle)
             </div>
             <div className="flex items-center gap-1.5 text-2xs text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-loss" />
-              Loss
+              <svg width="8" height="8" viewBox="0 0 8 8" className="inline-block"><polygon points="4,0 8,4 4,8 0,4" className="fill-loss" /></svg>
+              Loss (diamond)
             </div>
           </div>
         )}

@@ -433,7 +433,7 @@ export default function TradesPage() {
                <div className="flex h-16 items-center px-4 md:px-8 max-w-[1600px] mx-auto w-full">
                   {/* Logo / Title */}
                   <div className="flex items-center gap-2 font-semibold min-w-fit mr-4">
-                     <TradeIcon size={40} className="drop-shadow-sm" />
+                     <StorageIcon size={40} className="drop-shadow-sm" />
                      <span className="text-lg hidden sm:inline tracking-tight ml-1">Trade Journal</span>
                   </div>
 

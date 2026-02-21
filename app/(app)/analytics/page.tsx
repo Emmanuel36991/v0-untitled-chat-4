@@ -614,7 +614,7 @@ export default function AnalyticsPage() {
               </MetricCard>
 
               {/* R:R */}
-              <MetricCard title="R:R Ratio" icon={AvgReturnIcon} accentColor="amber" value={avgRiskReward.toFixed(2)} subtitle={`Profit factor: ${analytics.profitFactor.toFixed(2)}`} />
+              <MetricCard title="R:R Ratio" icon={RRRatioIcon} accentColor="amber" value={avgRiskReward.toFixed(2)} subtitle={`Profit factor: ${analytics.profitFactor.toFixed(2)}`} />
 
               {/* Wins */}
               <MetricCard title="Wins" icon={WinIcon} accentColor="emerald" value={analytics.wins} subtitle={`of ${analytics.totalTrades} trades`} />
